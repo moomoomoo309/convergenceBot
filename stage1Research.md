@@ -1,0 +1,34 @@
+# Dynamically Loading from a jar at runtime
+https://dzone.com/articles/add-jar-file-java-load-path
+
+The name of the class loaded by the jar needs to be standardized, or
+the jar needs to include some kind of file specifying which class to load.
+Files inside of a jar can be read directly at runtime as if they were in
+a normal folder, so reading which class to load from a file at runtime
+is possible.
+
+
+# Interface specs
+- Base
+    - On Receive message (Protocol, chat, message, sender)
+    - Send message (Protocol, chat, message, sender)
+    - Get bot's name (Protocol, chat)
+    - List users (Protocol, chat)
+- Nicknames
+    - Get user's nickname (Protocol, chat, user)
+    - Get bot's nickname (Protocol, chat)
+- Images
+    - Send image (Protocol, chat, base64data/URL)
+    - Receive image (Protocol, chat, base64data/URL)
+- Editing other user's messages
+    - Edit Received Message (Protocol, chat, message, sender, newMessage)
+- Mentioning users
+    - Get Mention Text (Protocol, chat, user)
+    - On Bot mentioned (Protocol, chat, message, sender)
+- Typing Status
+    - On user start typing (Protocol, chat, user)
+    - On user stop typing (Procotol, chat, user)
+    - Set bot typing status (status)
+- Stickers? (Same as images?)
+    - Send sticker (Protocol, chat, stickerID?)
+    - On Receive sticker (Protocol, chat, sender)
