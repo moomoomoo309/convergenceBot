@@ -9,6 +9,10 @@ is possible.
 
 
 # Interface specs
+Every protocol will be an instance of the base interface, and can
+optionally implement several of the interfaces below depending on the
+feature set of the given protocol.
+
 - Base
     - On Receive message (Protocol, chat, message, sender)
     - Send message (Protocol, chat, message, sender)
