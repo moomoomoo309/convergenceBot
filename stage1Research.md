@@ -22,6 +22,11 @@ is possible.
     - Receive image (Protocol, chat, base64data/URL)
 - Editing other user's messages
     - Edit Received Message (Protocol, chat, message, sender, newMessage)
+    - On message edited (Protocol chat, oldMessage,  editor, newMessage)
+        - May have the option to edit the message immediately, since this interface doesn't including indexing past messages?
+- Message History (Not all protocols support this, or the bot API might be rate limited)
+    - Get user's messages (Protocol, chat, user, sinceDateTime)
+    - Get all messages (Protocol, chat, user, sinceDateTime)
 - Mentioning users
     - Get Mention Text (Protocol, chat, user)
     - On Bot mentioned (Protocol, chat, message, sender)
