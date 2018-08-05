@@ -32,3 +32,11 @@ is possible.
 - Stickers? (Same as images?)
     - Send sticker (Protocol, chat, stickerID?)
     - On Receive sticker (Protocol, chat, sender)
+- User status (Skype, IRC)
+    - Set bot's status (Protocol, chat, status)
+    - Get user's status (Protocol, chat, user)
+- User availability (Online, offline, away, do not disturb)
+    - Set bot's availability (Protocol, chat, availability)
+    - Get user's availability (Protocol, chat, user)
+    - List users with given availability (Protocol, chat, availability)
+-
