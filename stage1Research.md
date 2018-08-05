@@ -44,4 +44,6 @@ is possible.
     - Set bot's availability (Protocol, chat, availability)
     - Get user's availability (Protocol, chat, user)
     - List users with given availability (Protocol, chat, availability)
-
+- Read status
+    - Get read status of a message (Requires message history) (Protocol, chat, messageId)
+    - Set read status of a message (Requires message history) (Protocol, chat, messageId, status)
