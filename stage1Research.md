@@ -51,3 +51,9 @@ feature set of the given protocol.
 - Read status
     - Get read status of a message (Requires message history) (Protocol, chat, messageId)
     - Set read status of a message (Requires message history) (Protocol, chat, messageId, status)
+- Formatting
+    - Get formatting delimiters (Protocol, format)
+        - The format class will have to include stuff like italics, bold, code, and whatnot, but not all will support everything.
+        - Will return a Pair<String, String>, the first element being the start, the second being the end, in case they aren't identical, like HTML.
+    - Get supported formating elements (Protocol)
+        - Tells you which things are supported. Some kind of naming standard would have to be decided upon, so italics in one language will be equal to italics in another (instead of it being called i or italic or something).

@@ -1,6 +1,6 @@
 # Command Registration
 - Protocols need to register themselves with the command system
-    - In doing so, they set the command delimiter (is it !help or |help or what?)
+    - ~~In doing so, they set the command delimiter (is it !help or |help or what?)~~
     - When they do that, it'll give them their instance (or _the_ instance, if you want it to be a singleton) of the command system.
     - Through this, they can register their own commands.
     - registerProtocol(baseInterface, commandDelimiter) -> commandHandler
