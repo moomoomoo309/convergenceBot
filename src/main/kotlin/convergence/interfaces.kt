@@ -1,10 +1,12 @@
+@file:Suppress("unused", "UNUSED_PARAMETER")
+
 package convergence
 
 import java.time.LocalDateTime
 
-open class Protocol(name: String)
-open class User //Intentionally empty, because it might be represented as an int or a string or whatever.
-open class Chat //Same as above.
+abstract class Protocol(name: String)
+abstract class User //Intentionally empty, because it might be represented as an int or a string or whatever.
+abstract class Chat //Same as above.
 
 abstract class BaseInterface {
     abstract fun receivedMessage(protocol: Protocol, chat: Chat, message: String, sender: User)
@@ -73,7 +75,7 @@ interface IReadStatus {
 interface IFormatting {
     // If possible, the name would be an enum instead, but I cannot predict what will be supported, so it's a string.
     // This is also so if multiple protocols support the same thing, like bolding, they can share the same name.
-    open class Format(name: String)
+    abstract class Format(name: String)
 
     fun getDelimiters(protocol: Protocol, format: Format)
     fun getSupportedFormats(protocol: Protocol): List<Format>
