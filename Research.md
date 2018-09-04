@@ -5,7 +5,7 @@
 - Write up interface for each chat protocol - Documented, not implemented
 
 ### Stage 2
-- Implement command registration - Documented, not implemented
+- Implement Command registration - Documented, not implemented
     - Allow commands to be limited by protocol if necessary
 - Implement alias registration - Documented, not implemented.
     - Make sure aliases can only execute commands they have access to in their scope (it must be supported on the protocol)

@@ -5,71 +5,72 @@ package convergence
 import java.time.LocalDateTime
 
 abstract class Protocol(name: String)
-abstract class User //Intentionally empty, because it might be represented as an int or a string or whatever.
-abstract class Chat //Same as above.
+abstract class User(protocol: Protocol) //Intentionally empty, because it might be represented as an int or a string or whatever.
+abstract class Chat(protocol: Protocol) //Same as above.
 
 abstract class BaseInterface {
-    abstract fun receivedMessage(protocol: Protocol, chat: Chat, message: String, sender: User)
-    abstract fun sendMessage(protocol: Protocol, chat: Chat, message: String, sender: User): Boolean
-    abstract fun getBotName(protocol: Protocol, chat: Chat): String
-    abstract fun listUsers(protocol: Protocol, chat: Chat): List<String>
+    abstract val name: String
+    abstract fun receivedMessage(chat: Chat, message: String, sender: User)
+    abstract fun sendMessage(chat: Chat, message: String, sender: User): Boolean
+    abstract fun getBotName(chat: Chat): String
+    abstract fun listUsers(chat: Chat): List<String>
 }
 
 interface INickname {
-    fun getUserNickname(protocol: Protocol, chat: Chat, user: User): String?
-    fun getBotNickname(protocol: Protocol, chat: Chat): String?
+    fun getUserNickname(chat: Chat, user: User): String?
+    fun getBotNickname(chat: Chat): String?
 }
 
 interface IImages {
     open class Image
-    fun sendImage(protocol: Protocol, chat: Chat, image: Image)
-    fun receivedImage(protocol: Protocol, chat: Chat, image: Image)
+    fun sendImage(chat: Chat, image: Image)
+    fun receivedImage(chat: Chat, image: Image)
 }
 
 interface IOtherMessageEditable {
-    fun receivedMessage(protocol: Protocol, chat: Chat, message: String, sender: User, newMessage: String)
-    fun editedMessage(protocol: Protocol, oldMessage: String, sender: User, newMessage: String)
+    fun receivedMessage(chat: Chat, message: String, sender: User, newMessage: String)
+    fun editedMessage(oldMessage: String, sender: User, newMessage: String)
 }
 
 interface IMessageHistory {
-    data class MessageHistory(var message: String, val sender: User)
-    fun getMessages(protocol: Protocol, chat: Chat, since: LocalDateTime?): List<MessageHistory>
-    fun getUserMessages(protocol: Protocol, chat: Chat, user: User, since: LocalDateTime?): List<MessageHistory>
+    data class MessageHistory(var message: String, val timestamp: LocalDateTime, val sender: User)
+    fun getMessages(chat: Chat, since: LocalDateTime? = null): List<MessageHistory>
+    fun getUserMessages(chat: Chat, user: User, since: LocalDateTime? = null): List<MessageHistory>
 }
 
 interface IMention {
-    fun getMentionText(protocol: Protocol, chat: Chat, user: User): String
-    fun mentionedBot(protocol: Protocol, chat: Chat, message: String, user: User)
+    fun getMentionText(chat: Chat, user: User): String
+    fun mentionedBot(chat: Chat, message: String, user: User)
 }
 
 interface ITypingStatus {
-    fun startedTyping(protocol: Protocol, chat: Chat, user: User)
-    fun stoppedTyping(protocol: Protocol, chat: Chat, user: User)
-    fun setBotTypingStatus(protocol: Protocol, chat: Chat, status: Boolean)
+    fun startedTyping(chat: Chat, user: User)
+    fun stoppedTyping(chat: Chat, user: User)
+    fun setBotTypingStatus(chat: Chat, status: Boolean)
 }
 
 interface IStickers {
     open class Sticker
-    fun sendSticker(protocol: Protocol, chat: Chat, sticker: Sticker)
-    fun receivedSticker(protocol: Protocol, chat: Chat, sticker: Sticker)
+    fun sendSticker(chat: Chat, sticker: Sticker)
+    fun receivedSticker(chat: Chat, sticker: Sticker)
 }
 
 interface IUserStatus { // Like your status on Skype.
-    fun setBotStatus(protocol: Protocol, chat: Chat, status: String)
-    fun getUserStatus(protocol: Protocol, chat: Chat, user: User): String
+    fun setBotStatus(chat: Chat, status: String)
+    fun getUserStatus(chat: Chat, user: User): String
 }
 
 interface IUserAvailability {
     enum class Availability {
         Online, Offline, Away, DoNotDisturb
     }
-    fun setBotAvailability(protocol: Protocol, chat: Chat, availability: Availability)
-    fun getUserAvailability(protocol: Protocol, chat: Chat, user: User): Availability
+    fun setBotAvailability(chat: Chat, availability: Availability)
+    fun getUserAvailability(chat: Chat, user: User): Availability
 }
 
 interface IReadStatus {
-    fun getReadStatus(protocol: Protocol, chat: Chat, message: IMessageHistory.MessageHistory): Boolean
-    fun setReadStatus(protocol: Protocol, chat: Chat, message: IMessageHistory.MessageHistory, status: Boolean)
+    fun getReadStatus(chat: Chat, message: IMessageHistory.MessageHistory): Boolean
+    fun setReadStatus(chat: Chat, message: IMessageHistory.MessageHistory, status: Boolean)
 }
 
 interface IFormatting {
