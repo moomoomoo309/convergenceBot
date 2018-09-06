@@ -9,5 +9,8 @@
         <module name="convergenceBot" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="convergenceBot" target="1.5" />
+    </bytecodeTargetLevel>
   </component>
 </project>
