@@ -50,7 +50,7 @@ interface ITypingStatus {
 }
 
 interface IStickers {
-    open class Sticker
+    abstract class Sticker
     fun sendSticker(chat: Chat, sticker: Sticker)
     fun receivedSticker(chat: Chat, sticker: Sticker)
 }

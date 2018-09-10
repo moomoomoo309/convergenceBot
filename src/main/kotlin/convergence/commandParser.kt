@@ -15,10 +15,10 @@ private fun isEscapeSequence(s: String): Boolean {
     val c = s[0]
     val l = s.length
     return when (c) {
-        'u' -> s.length <= 5 && s.subSequence(1, s.length).all { it in validUnicodeChars }
+        'u' -> l == 5 && s.subSequence(1, 5).all { it in validUnicodeChars }
         in ('0'..'9') -> when (l) {
-            1 -> ('0'..'3').contains(c)
-            2, 3 -> ('0'..'7').contains(c)
+            1 -> c in '0'..'3'
+            2, 3 -> c in '0'..'7'
             else -> false
         }
         else -> isEscapeCharacter(c, l)
@@ -31,15 +31,16 @@ fun getCommand(command: String, chat: Chat): Command? {
     return when {
         chat in universalCommands -> universalCommands[chat]!![command]
         commands[chat] != null -> commands[chat]!![command]
-        else -> null
+        else -> throw CommandDoesNotExist()
     }
 }
 
-fun parse(command: String, commandDelimiter: String, chat: Chat): CommandData? {
+fun parseCommand(command: String, commandDelimiter: String, chat: Chat): CommandData? {
     var commandName: String? = null
     var argList: List<String> = emptyList()
     var inQuote = false
     var hasCommandDelimiter = false
+    var unicodeEscapeCharactersRead: Byte = 0
     var escapeLength = 0
     val currentContent = StringBuilder()
     val currentEscapeCharacter = StringBuilder()
@@ -55,10 +56,37 @@ fun parse(command: String, commandDelimiter: String, chat: Chat): CommandData? {
             if (escapeLength > 0) {
                 escapeLength++
                 currentEscapeCharacter.append(c)
-                if (!isEscapeSequence(currentEscapeCharacter.toString()))
+                if (c == 'u')
+                    unicodeEscapeCharactersRead = 1
+                if (unicodeEscapeCharactersRead in 0..4)
+                    if (c in validUnicodeChars)
+                        unicodeEscapeCharactersRead++
+                    else
+                        throw InvalidEscapeSequence()
+                else if (!isEscapeSequence(currentEscapeCharacter.toString()))
                     if (escapeLength <= 2)
                         throw InvalidEscapeSequence()
                     else {
+                        val currentEscapeStr = currentEscapeCharacter.toString()
+                        currentContent.append(when (currentEscapeStr) {
+                            "b" -> '\b'
+                            "t" -> '\t'
+                            "n" -> '\n'
+                            "f" -> '\u000c' // IntelliJ thinks \f is an invalid escape, and it's wrong.
+                            "r" -> '\r'
+                            "\"" -> '"'
+                            "'" -> '\''
+                            "\\" -> '\\'
+                            "u" -> throw InvalidEscapeSequence()
+                            else -> {
+                                when {
+                                    currentEscapeStr[0] == 'u' -> Integer.parseInt(currentEscapeStr.substring(1, 5))
+                                    currentEscapeStr[0] in '0'..'9' -> Integer.parseInt(currentEscapeStr.substring(1), 8)
+                                    else -> throw InvalidEscapeSequence()
+                                }
+                                unicodeEscapeCharactersRead = 0
+                            }
+                        })
                         currentEscapeCharacter.setLength(0)
                         escapeLength = 0
                     }

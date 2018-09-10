@@ -2,9 +2,9 @@ package convergence
 
 import java.util.function.Consumer
 
-class ProtocolAlreadyExists(): Exception()
-class CommandAlreadyExists(): Exception()
-class CommandDoesNotExist(): Exception()
+class ProtocolAlreadyExists: Exception()
+class CommandAlreadyExists: Exception()
+class CommandDoesNotExist: Exception()
 
 val protocols = mutableMapOf<String, BaseInterface>()
 fun registerProtocol(protocol: BaseInterface) {
