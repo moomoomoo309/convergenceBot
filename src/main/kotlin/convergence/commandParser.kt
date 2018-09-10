@@ -16,10 +16,15 @@ private fun isEscapeSequence(s: String): Boolean {
     val l = s.length
     return when (c) {
         'u' -> l == 5 && s.subSequence(1, 5).all { it in validUnicodeChars }
-        in ('0'..'9') -> when (l) {
-            1 -> c in '0'..'3'
-            2, 3 -> c in '0'..'7'
-            else -> false
+        in '0'..'9' -> {
+            var i = 0
+            s.all {
+                when (i) {
+                    0 -> s[i++] in '0'..'3'
+                    1, 2 -> s[i++] in '0'..'7'
+                    else -> false
+                }
+            }
         }
         else -> isEscapeCharacter(c, l)
     }
@@ -28,9 +33,9 @@ private fun isEscapeSequence(s: String): Boolean {
 class InvalidEscapeSequence : Exception()
 
 fun getCommand(command: String, chat: Chat): Command? {
-    return when {
-        chat in universalCommands -> universalCommands[chat]!![command]
-        commands[chat] != null -> commands[chat]!![command]
+    return when (chat) {
+        in commands -> commands[chat]!![command]
+        in universalCommands -> universalCommands[chat]!![command]
         else -> throw CommandDoesNotExist()
     }
 }
@@ -44,71 +49,85 @@ fun parseCommand(command: String, commandDelimiter: String, chat: Chat): Command
     var escapeLength = 0
     val currentContent = StringBuilder()
     val currentEscapeCharacter = StringBuilder()
-    for (c: Char in command) {
+    command.forEachIndexed { i, c ->
         // Make sure the command delimiter is on there, or it's not a command.
         if (!hasCommandDelimiter) {
             if (currentContent.toString() == commandDelimiter) {
                 hasCommandDelimiter = true
                 currentContent.setLength(0)
-            }
-        } else {
-            // Deal with escape characters.
-            if (escapeLength > 0) {
-                escapeLength++
-                currentEscapeCharacter.append(c)
-                if (c == 'u')
-                    unicodeEscapeCharactersRead = 1
-                if (unicodeEscapeCharactersRead in 0..4)
-                    if (c in validUnicodeChars)
-                        unicodeEscapeCharactersRead++
-                    else
-                        throw InvalidEscapeSequence()
-                else if (!isEscapeSequence(currentEscapeCharacter.toString()))
-                    if (escapeLength <= 2)
-                        throw InvalidEscapeSequence()
-                    else {
-                        val currentEscapeStr = currentEscapeCharacter.toString()
-                        currentContent.append(when (currentEscapeStr) {
-                            "b" -> '\b'
-                            "t" -> '\t'
-                            "n" -> '\n'
-                            "f" -> '\u000c' // IntelliJ thinks \f is an invalid escape, and it's wrong.
-                            "r" -> '\r'
-                            "\"" -> '"'
-                            "'" -> '\''
-                            "\\" -> '\\'
-                            "u" -> throw InvalidEscapeSequence()
-                            else -> {
-                                when {
-                                    currentEscapeStr[0] == 'u' -> Integer.parseInt(currentEscapeStr.substring(1, 5))
-                                    currentEscapeStr[0] in '0'..'9' -> Integer.parseInt(currentEscapeStr.substring(1), 8)
-                                    else -> throw InvalidEscapeSequence()
-                                }
-                                unicodeEscapeCharactersRead = 0
+            } else
+                currentContent.append(c)
+        }
+        // Deal with escape characters.
+        if (escapeLength > 0) {
+            escapeLength++
+            currentEscapeCharacter.append(c)
+            if (c == 'u')
+                unicodeEscapeCharactersRead = 1
+            else if (unicodeEscapeCharactersRead in 1..4)
+                if (c in validUnicodeChars)
+                    unicodeEscapeCharactersRead++
+                else
+                    throw InvalidEscapeSequence()
+            // Previously, this was an else if, but on the last character, we still need to go here,
+            // even if one of the two branches above run.
+            if (unicodeEscapeCharactersRead !in 1..4 && !isEscapeSequence(currentEscapeCharacter.toString()) || i == command.length - 1)
+                if (escapeLength < 2)
+                    throw InvalidEscapeSequence()
+                else {
+                    if (i < command.length - 1)
+                        currentEscapeCharacter.setLength(currentEscapeCharacter.length - 1)
+                    val currentEscapeStr = currentEscapeCharacter.toString()
+                    currentContent.append(when (currentEscapeStr) {
+                        "b" -> '\b'
+                        "t" -> '\t'
+                        "n" -> '\n'
+                        "f" -> '\u000c' // Kotlin thinks \f is an invalid escape, and it's wrong.
+                        "r" -> '\r'
+                        "\"" -> '"'
+                        "'" -> '\''
+                        "\\" -> '\\'
+                        "u" -> throw InvalidEscapeSequence()
+                        else -> {
+                            unicodeEscapeCharactersRead = 0
+                            if (currentEscapeStr.isEmpty()) // For an invalid octal escape starting with a character higher than 3.
+                                throw InvalidEscapeSequence()
+                            when (currentEscapeStr[0]) {
+                                'u' -> if (isEscapeSequence(currentEscapeStr))
+                                    Integer.parseInt(currentEscapeStr.substring(1, 5), 16).toChar()
+                                else
+                                    throw InvalidEscapeSequence() // This will only run if the last character is part of an invalid unicode escape.
+                                in '0'..'9' -> Integer.parseInt(currentEscapeStr, 8).toChar()
+                                else -> throw InvalidEscapeSequence()
                             }
-                        })
-                        currentEscapeCharacter.setLength(0)
-                        escapeLength = 0
-                    }
-            }
-            // Actually get the command and its arguments.
-            if (escapeLength == 0)
-                when {
-                    c.isWhitespace() ->
-                        if (!inQuote) {
-                            if (commandName == null)
-                                commandName = currentContent.toString()
-                            else
-                                argList += currentContent.toString()
-                            currentContent.setLength(0)
                         }
-                    c == '"' -> inQuote = !inQuote
-                    c == '\\' -> escapeLength++
-                    else -> currentContent.append(c)
+                    })
+                    currentEscapeCharacter.setLength(0)
+                    escapeLength = 0
                 }
         }
+
+        // Actually get the command and its arguments.
+        if (hasCommandDelimiter && escapeLength == 0)
+            when {
+                c == '\\' -> when {
+                    i == command.length - 1 -> throw InvalidEscapeSequence() // Only occurs when the last character is an empty escape (just a lone backslash)
+                    escapeLength == 0 -> escapeLength = 1
+                }
+                c.isWhitespace() || i == command.length - 1 ->
+                    if (!inQuote) {
+                        if (commandName == null)
+                            commandName = currentContent.toString()
+                        else
+                            argList += currentContent.toString()
+                        currentContent.setLength(0)
+                    }
+                c == '"' -> inQuote = !inQuote
+                else -> currentContent.append(c)
+            }
     }
-    val cmd = if (commandName != null) getCommand(commandName, chat) else null
+
+    val cmd = if (commandName != null) getCommand(commandName!!, chat) else null
     return if (cmd != null) CommandData(cmd, argList) else null
 }
 

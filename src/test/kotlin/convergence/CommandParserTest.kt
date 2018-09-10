@@ -21,11 +21,11 @@ class CommandParserTest {
     @Test
     fun validEscapes() {
         val testCommandData = loadCommandData("!test \\f \\\\ \\u0014 \\b")
-        assertEquals(testCommandData?.command?.name, "test", "Did not load test command correctly.")
-        assertEquals(testCommandData?.args?.get(0), "\u000c", "Did not escape \\f properly.")
-        assertEquals(testCommandData?.args?.get(1), "\\", "Did not escape \\\\ properly.")
-        assertEquals(testCommandData?.args?.get(2), "\u0014", "Did not escape \\u0014 properly.")
-        assertEquals(testCommandData?.args?.get(3), "\b", "Did not escape \\b properly.")
+        assertEquals("test", testCommandData?.command?.name, "Did not load test command correctly.")
+        assertEquals("\u000c", testCommandData?.args?.get(0), "Did not escape \\f properly.")
+        assertEquals("\\", testCommandData?.args?.get(1), "Did not escape \\\\ properly.")
+        assertEquals("\u0014", testCommandData?.args?.get(2), "Did not escape \\u0014 properly.")
+        assertEquals("\b", testCommandData?.args?.get(3), "Did not escape \\b properly.")
     }
 
     @Test
@@ -54,10 +54,10 @@ class CommandParserTest {
     @Test
     fun validOctalEscapes() {
         val testCommandData = loadCommandData("!test5 \\0 \\10 \\100")
-        assertEquals(testCommandData?.command?.name, "test5", "Did not load test5 command correctly.")
-        assertEquals(testCommandData?.args?.get(0), "\u0000", "Did not escape \\0 properly.")
-        assertEquals(testCommandData?.args?.get(1), "\u0008", "Did not escape \\10 properly.")
-        assertEquals(testCommandData?.args?.get(2), "\u0064", "Did not escape \\100 properly.")
+        assertEquals("test5", testCommandData?.command?.name, "Did not load test5 command correctly.")
+        assertEquals("\u0000", testCommandData?.args?.get(0), "Did not escape \\0 properly.")
+        assertEquals("\u0008", testCommandData?.args?.get(1), "Did not escape \\10 properly.")
+        assertEquals("\u0040", testCommandData?.args?.get(2), "Did not escape \\100 properly.")
     }
 
     @Test

@@ -2,9 +2,10 @@ package convergence
 
 import java.util.function.Consumer
 
-class ProtocolAlreadyExists: Exception()
-class CommandAlreadyExists: Exception()
-class CommandDoesNotExist: Exception()
+class ProtocolAlreadyExists : Exception()
+class CommandAlreadyExists : Exception()
+class CommandDoesNotExist : Exception()
+class InvalidCommandDelimiter: Exception()
 
 val protocols = mutableMapOf<String, BaseInterface>()
 fun registerProtocol(protocol: BaseInterface) {
@@ -14,6 +15,7 @@ fun registerProtocol(protocol: BaseInterface) {
 }
 
 data class Command(val name: String, val function: Consumer<Array<String>>, val helpText: String, val syntaxText: String)
+
 val universalCommands = mutableMapOf<Chat, MutableMap<String, Command>>()
 fun registerUniversalCommand(chat: Chat, command: Command) {
     // Make sure the map exists, and if it does, add the Command.
@@ -41,10 +43,13 @@ val commandDelimiters = mutableMapOf<Chat, String>()
  * Sets the Command delimiter used for the bot's commands. (is it !help, |help, @help, or something else?)
  */
 fun setCommandDelimiter(chat: Chat, commandDelimiter: String) {
+    if (commandDelimiter.any { it.isWhitespace() || it == '"' })
+        throw InvalidCommandDelimiter()
     commandDelimiters[chat] = commandDelimiter
 }
 
 data class Alias(val command: String, val helpText: String, val syntaxText: String)
+
 val aliases = mutableMapOf<Chat, Alias>()
 fun setAlias(chat: Chat, alias: Alias) {
     aliases[chat] = alias
