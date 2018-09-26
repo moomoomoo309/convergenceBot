@@ -1,6 +1,8 @@
 package convergence
 
-data class CommandData(val command: Command, val args: List<String>)
+data class CommandData(var command: Command, var args: List<String>) {
+    constructor(alias: Alias, args: List<String>): this(alias.command, alias.args + args)
+}
 
 private fun isEscapeCharacter(c: Char, l: Int): Boolean {
     return when (c) {
@@ -30,12 +32,12 @@ private fun isEscapeSequence(s: String): Boolean {
     }
 }
 
-class InvalidEscapeSequence : Exception()
+class InvalidEscapeSequence: Exception()
 
-fun getCommand(command: String, chat: Chat): Command? {
-    return when (chat) {
-        in commands -> commands[chat]!![command]
-        in universalCommands -> universalCommands[chat]!![command]
+fun getCommand(command: String, chat: Chat): CommandLike {
+    return when {
+        chat in commands && command in commands[chat]!! -> commands[chat]!![command] as CommandLike
+        chat in aliases && command in aliases[chat]!! -> aliases[chat]!![command] as CommandLike
         else -> throw CommandDoesNotExist()
     }
 }
@@ -49,6 +51,7 @@ fun parseCommand(command: String, commandDelimiter: String, chat: Chat): Command
     var escapeLength = 0
     val currentContent = StringBuilder()
     val currentEscapeCharacter = StringBuilder()
+    var lastCharWasEscape = false // Needed if the last character is not an escape.
     command.forEachIndexed { i, c ->
         // Make sure the command delimiter is on there, or it's not a command.
         if (!hasCommandDelimiter) {
@@ -102,6 +105,7 @@ fun parseCommand(command: String, commandDelimiter: String, chat: Chat): Command
                             }
                         }
                     })
+                    lastCharWasEscape = true
                     currentEscapeCharacter.setLength(0)
                     escapeLength = 0
                 }
@@ -118,16 +122,20 @@ fun parseCommand(command: String, commandDelimiter: String, chat: Chat): Command
                     if (!inQuote) {
                         if (commandName == null)
                             commandName = currentContent.toString()
-                        else
+                        else {
+                            if (!lastCharWasEscape && i == command.length - 1) // If the last char isn't an escape and we're at the end of the string, this kicks in.
+                                currentContent.append(c)
                             argList += currentContent.toString()
+                        }
                         currentContent.setLength(0)
                     }
                 c == '"' -> inQuote = !inQuote
                 else -> currentContent.append(c)
             }
+        lastCharWasEscape = false
     }
 
-    val cmd = if (commandName != null) getCommand(commandName!!, chat) else null
-    return if (cmd != null) CommandData(cmd, argList) else null
+    val cmd = if (commandName != null) getCommand(commandName!!, chat) else throw CommandDoesNotExist()
+    return if (cmd is Command) CommandData(cmd, argList) else CommandData(cmd as Alias, argList)
 }
 

@@ -55,5 +55,5 @@ feature set of the given protocol.
     - Get formatting delimiters (Protocol, format)
         - The format class will have to include stuff like italics, bold, code, and whatnot, but not all will support everything.
         - Will return a Pair<String, String>, the first element being the start, the second being the end, in case they aren't identical, like HTML.
-    - Get supported formating elements (Protocol)
+    - Get supported formatting elements (Protocol)
         - Tells you which things are supported. Some kind of naming standard would have to be decided upon, so italics in one language will be equal to italics in another (instead of it being called i or italic or something).

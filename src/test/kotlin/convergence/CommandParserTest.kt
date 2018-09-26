@@ -2,11 +2,11 @@ package convergence
 
 import org.junit.Test
 import java.util.function.Consumer
-import kotlin.test.assert
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
-class TestChat : Chat(TestProtocol())
-class TestProtocol : Protocol("Test")
+class TestChat: Chat(TestProtocol())
+class TestProtocol: Protocol("Test")
 
 class CommandParserTest {
     private fun loadCommandData(command: String): CommandData? {
@@ -14,7 +14,7 @@ class CommandParserTest {
         val testIndex = command.indexOf(" ")
         val testCommandStr = command.substring(1, if (testIndex == -1) command.length else testIndex)
         val testCommand = Command(testCommandStr, Consumer {}, "test", "test")
-        universalCommands[testChat] = mutableMapOf(testCommandStr to testCommand)
+        commands[testChat] = mutableMapOf(testCommandStr to testCommand)
         return parseCommand(command, "!", testChat)
     }
 
@@ -30,24 +30,18 @@ class CommandParserTest {
 
     @Test
     fun invalidEscape() {
-        try {
+        assertFailsWith<InvalidEscapeSequence>("Did not fail on empty escape.") {
             loadCommandData("!test2 \\")
-            assert(false) { "Did not fail on empty escape." }
-        } catch (e: InvalidEscapeSequence) {
         }
     }
 
     @Test
     fun invalidUnicodeEscapes() {
-        try {
+        assertFailsWith<InvalidEscapeSequence>("Did not fail on empty unicode escape.") {
             loadCommandData("!test3 \\u")
-            assert(false) { "Did not fail on empty unicode escape." }
-        } catch (e: InvalidEscapeSequence) {
         }
-        try {
+        assertFailsWith<InvalidEscapeSequence>("Did not fail on partial unicode escape.") {
             loadCommandData("!test4 \\u0")
-            assert(false) { "Did not fail on partial unicode escape." }
-        } catch (e: InvalidEscapeSequence) {
         }
     }
 
@@ -62,10 +56,29 @@ class CommandParserTest {
 
     @Test
     fun invalidOctalEscape() {
-        try {
+        assertFailsWith<InvalidEscapeSequence>("Did not fail on out of range octal escape.") {
             loadCommandData("!test6 \\400")
-            assert(false) { "Did not fail on out of range octal escape." }
-        } catch (e: InvalidEscapeSequence) {
         }
+    }
+
+    private fun loadAliasData(command: String): CommandData? {
+        val testChat = TestChat()
+        val testIndex = command.indexOf(" ")
+        val testAliasStr = command.substring(1, if (testIndex == -1) command.length else testIndex)
+        val testCommand = Command("test", Consumer {}, "test", "test")
+        val testAlias = Alias(testAliasStr, testCommand, listOf("testArg1", "testArg2"), "testAlias", "testAlias")
+        commands[testChat] = mutableMapOf("test" to testCommand)
+        aliases[testChat] = mutableMapOf(testAliasStr to testAlias)
+        return parseCommand(command, "!", testChat)
+    }
+
+    @Test
+    fun aliasExpansion() {
+        val testCommandData = loadAliasData("!testAlias nonAliasArg1 nonAliasArg2")
+        assertEquals("test", testCommandData?.command?.name, "Did not expand alias correctly.")
+        assertEquals("testArg1", testCommandData?.args?.get(0), "Did not expand first alias argument correctly.")
+        assertEquals("testArg2", testCommandData?.args?.get(1), "Did not expand second alias argument correctly.")
+        assertEquals("nonAliasArg1", testCommandData?.args?.get(2), "Did not expand first non-alias argument correctly.")
+        assertEquals("nonAliasArg2", testCommandData?.args?.get(3), "Did not expand second non-alias argument correctly.")
     }
 }
