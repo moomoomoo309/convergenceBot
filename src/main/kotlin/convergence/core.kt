@@ -1,55 +1,44 @@
 package convergence
 
-import java.util.function.Consumer
-
-
-
-class ProtocolAlreadyExists(): Exception()
-class CommandAlreadyExists(): Exception()
-class CommandDoesNotExist(): Exception()
+class CommandDoesNotExist: Exception()
 
 val protocols = mutableMapOf<String, BaseInterface>()
-fun registerProtocol(protocol: BaseInterface) {
+fun registerProtocol(protocol: BaseInterface): Boolean {
     if (protocols.containsKey(protocol.name))
-        throw ProtocolAlreadyExists()
+        return false
     protocols[protocol.name] = protocol
+    return true
 }
 
-data class Command(val name: String, val function: Consumer<Array<String>>, val helpText: String, val syntaxText: String)
-val universalCommands = mutableMapOf<Chat, MutableMap<String, Command>>()
-fun registerUniversalCommand(chat: Chat, command: Command) {
-    // Make sure the map exists, and if it does, add the Command.
-    if (!universalCommands.containsKey(chat))
-        universalCommands[chat] = mutableMapOf(command.name to command)
-
-    // The cast is required here because the key could be undefined, and the compiler decided not to smart cast it.
-    if (command.name in universalCommands[chat]!!)
-        throw CommandAlreadyExists()
-    universalCommands[chat]!![command.name] = command
-}
 
 val commands = mutableMapOf<Chat, MutableMap<String, Command>>()
-fun registerCommand(chat: Chat, command: Command) {
+fun registerCommand(chat: Chat, command: Command): Boolean {
     if (!commands.containsKey(chat))
         commands[chat] = mutableMapOf(command.name to command)
 
     if (commands[chat]!!.contains(command.name))
-        throw CommandAlreadyExists()
+        return false
     commands[chat]!![command.name] = command
+    return true
 }
 
 val commandDelimiters = mutableMapOf<Chat, String>()
 /**
  * Sets the Command delimiter used for the bot's commands. (is it !help, |help, @help, or something else?)
  */
-fun setCommandDelimiter(chat: Chat, commandDelimiter: String) {
+fun setCommandDelimiter(chat: Chat, commandDelimiter: String): Boolean {
+    if (commandDelimiter.any { it.isWhitespace() || it == '"' })
+        return false
     commandDelimiters[chat] = commandDelimiter
+    return true
 }
 
-data class Alias(val command: String, val helpText: String, val syntaxText: String)
-val aliases = mutableMapOf<Chat, Alias>()
+val aliases = mutableMapOf<Chat, MutableMap<String, Alias>>()
 fun setAlias(chat: Chat, alias: Alias) {
-    aliases[chat] = alias
+    if (aliases[chat] !is MutableMap<String, Alias>)
+        aliases[chat] = mutableMapOf(alias.name to alias)
+    else
+        (aliases[chat] as MutableMap<String, Alias>)[alias.name] = alias
 }
 
 /**
