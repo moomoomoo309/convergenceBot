@@ -55,11 +55,14 @@ fun parseCommand(command: String, commandDelimiter: String, chat: Chat): Command
     command.forEachIndexed { i, c ->
         // Make sure the command delimiter is on there, or it's not a command.
         if (!hasCommandDelimiter) {
-            if (currentContent.toString() == commandDelimiter) {
-                hasCommandDelimiter = true
-                currentContent.setLength(0)
-            } else
-                currentContent.append(c)
+            when {
+                currentContent.toString() == commandDelimiter -> {
+                    hasCommandDelimiter = true
+                    currentContent.setLength(0)
+                }
+                commandDelimiter.startsWith(currentContent.toString()) -> currentContent.append(c)
+                else -> return null
+            }
         }
         // Deal with escape characters.
         if (escapeLength > 0) {

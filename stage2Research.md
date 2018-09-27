@@ -15,12 +15,13 @@
     - Argument parsing needs to be handled DONE
         - There is most likely a class built in for this. If not, look at how OpenJDK does Command line arguments. DONE
 - Aliases
-    - An alias is a Command which runs other commands.
+    - ~~An alias is a Command which runs other commands.~~ DONE
         - Ex: "!alias !hi !echo hi" will run "!echo hi" when you put in "!hi".
             - This doesn't have to be the syntax, it's just an example.
+            - Then, if you run "!hi mom", it'll run "!echo hi mom".
         - If you _really_ want to go crazy, a shell-type language can be made for this, but that's not necessary.
             - This can be emulated through other commands.
-    - Aliases have to be designed per-_chat_.
+    - ~~Aliases have to be designed per-_chat_.~~ DONE
         - registerAlias(Protocol, chat, name, commandToRun, helpText, syntaxText)
 
 

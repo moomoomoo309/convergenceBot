@@ -4,6 +4,7 @@ import org.junit.Test
 import java.util.function.Consumer
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertNull
 
 class TestChat: Chat(TestProtocol())
 class TestProtocol: Protocol("Test")
@@ -60,6 +61,13 @@ class CommandParserTest {
             loadCommandData("!test6 \\400")
         }
     }
+
+    @Test
+    fun notACommand() {
+        val testCommandData = loadCommandData("Not a command")
+        assertNull(testCommandData, "Tried to load a non-command as a command.")
+    }
+
 
     private fun loadAliasData(command: String): CommandData? {
         val testChat = TestChat()

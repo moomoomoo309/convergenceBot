@@ -1,36 +1,36 @@
 package convergence
 
-class ProtocolAlreadyExists: Exception()
-class CommandAlreadyExists: Exception()
 class CommandDoesNotExist: Exception()
-class InvalidCommandDelimiter: Exception()
 
 val protocols = mutableMapOf<String, BaseInterface>()
-fun registerProtocol(protocol: BaseInterface) {
+fun registerProtocol(protocol: BaseInterface): Boolean {
     if (protocols.containsKey(protocol.name))
-        throw ProtocolAlreadyExists()
+        return false
     protocols[protocol.name] = protocol
+    return true
 }
 
 
 val commands = mutableMapOf<Chat, MutableMap<String, Command>>()
-fun registerCommand(chat: Chat, command: Command) {
+fun registerCommand(chat: Chat, command: Command): Boolean {
     if (!commands.containsKey(chat))
         commands[chat] = mutableMapOf(command.name to command)
 
     if (commands[chat]!!.contains(command.name))
-        throw CommandAlreadyExists()
+        return false
     commands[chat]!![command.name] = command
+    return true
 }
 
 val commandDelimiters = mutableMapOf<Chat, String>()
 /**
  * Sets the Command delimiter used for the bot's commands. (is it !help, |help, @help, or something else?)
  */
-fun setCommandDelimiter(chat: Chat, commandDelimiter: String) {
+fun setCommandDelimiter(chat: Chat, commandDelimiter: String): Boolean {
     if (commandDelimiter.any { it.isWhitespace() || it == '"' })
-        throw InvalidCommandDelimiter()
+        return false
     commandDelimiters[chat] = commandDelimiter
+    return true
 }
 
 val aliases = mutableMapOf<Chat, MutableMap<String, Alias>>()

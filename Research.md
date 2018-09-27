@@ -1,14 +1,19 @@
 ### TODO
 
+## Writing the core
+
 ## Stage 1
-- Figure out dynamic class loading in kotlin - DONE
+- Figure out dynamic class loading in kotlin - Partially implemented
 - Write up interface for each chat protocol - Implemented
 
 ## Stage 2
-- Implement Command registration - Documented, not implemented
+- Implement Command registration - Implemented
     - Allow commands to be limited by protocol if necessary
-- Implement alias registration - Documented, not implemented.
+- Implement alias registration - Implemented.
     - Make sure aliases can only execute commands they have access to in their scope (it must be supported on the protocol)
+        - Implemented because of how chats work.
+
+## Writing the bots
 
 ## Stage 3
 - Implement bot for each chat protocol

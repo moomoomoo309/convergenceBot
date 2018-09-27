@@ -8,14 +8,18 @@ import java.util.function.Consumer
 abstract class Protocol(name: String)
 abstract class User(protocol: Protocol) //Intentionally empty, because it might be represented as an int or a string or whatever.
 abstract class Chat(protocol: Protocol) //Same as above.
-private object UniversalProtocol: Protocol("Universal")
+private object UniversalProtocol: Protocol("Universal") // Used to represent the universal chat.
 object UniversalChat: Chat(UniversalProtocol)
 
+
 abstract class CommandLike(open val name: String, open val helpText: String, open val syntaxText: String)
+
 data class Command(override val name: String, val function: Consumer<Array<String>>, override val helpText: String,
                    override val syntaxText: String): CommandLike(name, helpText, syntaxText)
+
 data class Alias(override val name: String, val command: Command, val args: List<String>,
                  override val helpText: String, override val syntaxText: String): CommandLike(name, helpText, syntaxText)
+
 
 abstract class BaseInterface {
     abstract val name: String
@@ -31,7 +35,7 @@ interface INickname {
 }
 
 interface IImages {
-    open class Image
+    abstract class Image
 
     fun sendImage(chat: Chat, image: Image)
     fun receivedImage(chat: Chat, image: Image)
@@ -73,9 +77,7 @@ interface IUserStatus { // Like your status on Skype.
 }
 
 interface IUserAvailability {
-    enum class Availability {
-        Online, Offline, Away, DoNotDisturb
-    }
+    enum class Availability
 
     fun setBotAvailability(chat: Chat, availability: Availability)
     fun getUserAvailability(chat: Chat, user: User): Availability
