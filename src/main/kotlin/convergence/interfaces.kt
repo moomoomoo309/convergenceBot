@@ -5,27 +5,27 @@ package convergence
 import java.time.LocalDateTime
 import java.util.function.Consumer
 
-abstract class Protocol(name: String)
-abstract class User(protocol: Protocol) //Intentionally empty, because it might be represented as an int or a string or whatever.
-abstract class Chat(protocol: Protocol) //Same as above.
+abstract class Protocol(val name: String)
+abstract class User(val protocol: Protocol) //Intentionally empty, because it might be represented as an int or a string or whatever.
+abstract class Chat(val protocol: Protocol) //Same as above.
 private object UniversalProtocol: Protocol("Universal") // Used to represent the universal chat.
 object UniversalChat: Chat(UniversalProtocol)
 
 
 abstract class CommandLike(open val name: String, open val helpText: String, open val syntaxText: String)
 
-data class Command(override val name: String, val function: Consumer<Array<String>>, override val helpText: String,
+data class Command(override val name: String, val function: Consumer<List<String>>, override val helpText: String,
                    override val syntaxText: String): CommandLike(name, helpText, syntaxText)
 
 data class Alias(override val name: String, val command: Command, val args: List<String>,
                  override val helpText: String, override val syntaxText: String): CommandLike(name, helpText, syntaxText)
-
+val interfaceMap = mutableMapOf<Protocol, BaseInterface>()
 
 abstract class BaseInterface {
     abstract val name: String
     abstract fun receivedMessage(chat: Chat, message: String, sender: User)
     abstract fun sendMessage(chat: Chat, message: String, sender: User): Boolean
-    abstract fun getBotName(chat: Chat): String
+    abstract fun getBot(chat: Chat): User
     abstract fun listUsers(chat: Chat): List<String>
 }
 

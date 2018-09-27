@@ -36,9 +36,9 @@ class InvalidEscapeSequence: Exception()
 
 fun getCommand(command: String, chat: Chat): CommandLike {
     return when {
-        chat in commands && command in commands[chat]!! -> commands[chat]!![command] as CommandLike
-        chat in aliases && command in aliases[chat]!! -> aliases[chat]!![command] as CommandLike
-        else -> throw CommandDoesNotExist()
+        chat in commands && commands[chat] is MutableMap<String, Command> && command in commands[chat]!! -> commands[chat]!![command] as CommandLike
+        chat in aliases && aliases[chat] is MutableMap<String, Alias> && command in aliases[chat]!! -> aliases[chat]!![command] as CommandLike
+        else -> throw CommandDoesNotExist(command)
     }
 }
 
@@ -138,7 +138,7 @@ fun parseCommand(command: String, commandDelimiter: String, chat: Chat): Command
         lastCharWasEscape = false
     }
 
-    val cmd = if (commandName != null) getCommand(commandName!!, chat) else throw CommandDoesNotExist()
+    val cmd = if (commandName != null) getCommand(commandName!!, chat) else return null
     return if (cmd is Command) CommandData(cmd, argList) else CommandData(cmd as Alias, argList)
 }
 
