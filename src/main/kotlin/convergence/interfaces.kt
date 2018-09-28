@@ -3,18 +3,18 @@
 package convergence
 
 import java.time.LocalDateTime
-import java.util.function.Consumer
+import kotlin.reflect.KFunction3
 
 abstract class Protocol(val name: String)
-abstract class User(val protocol: Protocol) //Intentionally empty, because it might be represented as an int or a string or whatever.
-abstract class Chat(val protocol: Protocol) //Same as above.
+abstract class User(val chat: Chat) //Intentionally empty, because it might be represented as an int or a string or whatever.
+abstract class Chat(val protocol: Protocol, val name: String) //Same as above.
 private object UniversalProtocol: Protocol("Universal") // Used to represent the universal chat.
-object UniversalChat: Chat(UniversalProtocol)
+object UniversalChat: Chat(UniversalProtocol, "Universal")
 
 
 abstract class CommandLike(open val name: String, open val helpText: String, open val syntaxText: String)
 
-data class Command(override val name: String, val function: Consumer<List<String>>, override val helpText: String,
+data class Command(override val name: String, val function: KFunction3<Chat, List<String>, User, String?>, override val helpText: String,
                    override val syntaxText: String): CommandLike(name, helpText, syntaxText)
 
 data class Alias(override val name: String, val command: Command, val args: List<String>,
@@ -27,6 +27,8 @@ abstract class BaseInterface {
     abstract fun sendMessage(chat: Chat, message: String, sender: User): Boolean
     abstract fun getBot(chat: Chat): User
     abstract fun listUsers(chat: Chat): List<String>
+    abstract fun getName(chat: Chat, user: User): String
+    abstract fun getChats(): List<Chat>
 }
 
 interface INickname {
