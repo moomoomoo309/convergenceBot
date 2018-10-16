@@ -1,6 +1,13 @@
+@file:Suppress("unused", "UNUSED_PARAMETER")
+
 package convergence
 
+import com.joestelmach.natty.DateGroup
+import com.joestelmach.natty.Parser
 import java.lang.StringBuilder
+import java.time.Duration
+import java.time.LocalDateTime
+import java.time.ZoneId
 import java.util.*
 import kotlin.math.nextUp
 
@@ -74,6 +81,85 @@ private fun chats(unused: Chat, args: List<String>, sender: User): String? {
     return builder.toString()
 }
 
+val dateTimeParser = Parser()
+
+fun dateToLocalDateTime(d: Date, tz: ZoneId? = null): LocalDateTime {
+    return LocalDateTime.ofInstant(d.toInstant(), tz ?: ZoneId.systemDefault())
+}
+
+private fun scheduleLoc(groups: List<DateGroup>, chat: Chat, location: String, durationStr: String,
+                        duration: Duration, time: String): String {
+    val thisCommand = commands[UniversalChat]!!["goingto"]!!
+    groups.forEachIndexed { i2, group ->
+        if (group.isRecurring) {
+            return "Sorry, the bot doesn't support recurring events."
+        } else {
+            group.dates.forEach {
+                schedule(chat, CommandData(thisCommand,
+                        if (durationStr.isEmpty())
+                            listOf(location)
+                        else
+                            listOf(location, "for", durationStr)),
+                        dateToLocalDateTime(it))
+            }
+        }
+    }
+    return ""
+}
+
+val defaultDuration = Duration.ofMinutes(45)!!
+private val locations = HashMap<User, Pair<LocalDateTime, String>>()
+private fun setLocation(chat: Chat, args: List<String>, sender: User): String? {
+    val location = StringBuilder(args[0])
+    val timeStr = StringBuilder()
+    val durationStr = StringBuilder()
+    var duration: Duration = defaultDuration
+    var continueUntil = -1
+    var timeGroups: List<DateGroup> = emptyList()
+    findInOrAt@ for (i in 1 until args.size) {
+        if (continueUntil > i)
+            continue
+        when (args[i]) {
+            "at", "on", "in" -> {
+                if (i == args.size - 1)
+                    return "You can't just put \"at\" and not put a time after it!"
+                for (i2 in i+1 until args.size)
+                    if (args[i2] == "for") {
+                        continueUntil = i2
+                        if (i2 == i + 1)
+                            return "You can't just put \"at\" and not put a time after it!"
+                        break
+                    } else
+                        timeStr.append(args[i2]).append(' ')
+                timeStr.setLength(timeStr.length - 1)
+                timeGroups = dateTimeParser.parse(timeStr.toString())
+            }
+            "for" -> {
+                for (i2 in i+1 until args.size)
+                    if (args[i2] in setOf("at", "in", "on")) {
+                        continueUntil = i2
+                        if (i2 == i + 1)
+                            return "You can't just put \"for\" and not put a time after it!"
+                        break
+                    } else
+                        durationStr.append(args[i2]).append(' ')
+                durationStr.setLength(durationStr.length - 1)
+                val groups = dateTimeParser.parse(durationStr.toString())
+                if (groups.size > 1 || groups[0].dates.size > 1)
+                    return "You can't have the duration be more than one time!"
+                else if (groups.size == 0 || groups[0].dates.size == 0)
+                    return "You can't just put \"for\" and not put a time after it!"
+                duration = Duration.between(LocalDateTime.now(), dateToLocalDateTime(groups[0].dates[0]))
+            }
+            else -> {
+                location.append(' ').append(args[i])
+            }
+        }
+    }
+
+    return scheduleLoc(timeGroups, chat, location.toString(), durationStr.toString(), duration, timeStr.toString())
+}
+
 
 fun registerDefaultCommands() {
     registerCommand(UniversalChat, Command("help", ::help,
@@ -94,5 +180,9 @@ fun registerDefaultCommands() {
     registerCommand(UniversalChat, Command("chats", ::chats,
             "Lists all chats the bot knows of by name.",
             "chats (Takes no arguments)"))
+    registerCommand(UniversalChat, Command("goingto", ::setLocation,
+            "Tells the chat you're going somewhere for some time.",
+            "goingto \"location\" [for (duration)] [at (time)/in (timedelta)/on (datetime)] (Order does not matter with for/at/in/on)"))
+
 }
 

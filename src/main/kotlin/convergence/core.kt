@@ -1,4 +1,8 @@
+@file:Suppress("unused", "UNUSED_PARAMETER")
+
 package convergence
+
+import java.time.LocalDateTime
 
 class CommandDoesNotExist(cmd: String): Exception(cmd)
 
@@ -114,5 +118,12 @@ fun runCommand(chat: Chat, message: String, sender: User) {
         return
     }
     sendMessage(chat, commandData?.command?.function?.invoke(chat, commandData.args, sender))
+}
+
+/**
+ * Schedules [command] to run at [time] in [chat].
+ */
+fun schedule(chat: Chat, command: CommandData, time: LocalDateTime): String? {
+    return null
 }
 

@@ -3,7 +3,6 @@
 package convergence
 
 import java.time.LocalDateTime
-import kotlin.reflect.KFunction3
 
 abstract class Protocol(val name: String)
 abstract class User(val chat: Chat) //Intentionally empty, because it might be represented as an int or a string or whatever.
@@ -14,15 +13,17 @@ object UniversalChat: Chat(UniversalProtocol, "Universal")
 
 abstract class CommandLike(open val name: String, open val helpText: String, open val syntaxText: String)
 
-data class Command(override val name: String, val function: KFunction3<Chat, List<String>, User, String?>, override val helpText: String,
+data class Command(override val name: String, val function: (Chat, List<String>, User) -> String?, override val helpText: String,
                    override val syntaxText: String): CommandLike(name, helpText, syntaxText)
 
 data class Alias(override val name: String, val command: Command, val args: List<String>,
                  override val helpText: String, override val syntaxText: String): CommandLike(name, helpText, syntaxText)
+
 val interfaceMap = mutableMapOf<Protocol, BaseInterface>()
 
 abstract class BaseInterface {
     abstract val name: String
+    abstract val protocol: Protocol
     abstract fun receivedMessage(chat: Chat, message: String, sender: User)
     abstract fun sendMessage(chat: Chat, message: String, sender: User): Boolean
     abstract fun getBot(chat: Chat): User
@@ -44,8 +45,8 @@ interface IImages {
 }
 
 interface IOtherMessageEditable {
-    fun receivedMessage(chat: Chat, message: String, sender: User, newMessage: String)
     fun editedMessage(oldMessage: String, sender: User, newMessage: String)
+    fun editMessage(message: IMessageHistory.MessageHistory, oldMessage: String, sender: User, newMessage: String)
 }
 
 interface IMessageHistory {
@@ -95,7 +96,7 @@ interface IFormatting {
     // This is also so if multiple protocols support the same thing, like bolding, they can share the same name.
     abstract class Format(name: String)
 
-    fun getDelimiters(protocol: Protocol, format: Format)
+    fun getDelimiters(protocol: Protocol, format: Format): List<String>
     fun getSupportedFormats(protocol: Protocol): List<Format>
     fun supportsFormat(protocol: Protocol, format: Format): Boolean
 }

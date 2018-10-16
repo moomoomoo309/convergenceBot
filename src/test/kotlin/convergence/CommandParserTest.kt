@@ -5,7 +5,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 
-class TestChat: Chat(TestProtocol())
+class TestChat: Chat(TestProtocol(), "Test")
 class TestProtocol: Protocol("Test")
 
 fun doNothing(unused: Chat, unused2: List<String>, unused3: User): String? {
