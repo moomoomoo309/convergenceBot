@@ -2,19 +2,21 @@
 
 package convergence
 
+import java.lang.StringBuilder
 import java.time.LocalDateTime
+import java.util.*
 
 class CommandDoesNotExist(cmd: String): Exception(cmd)
 
-val protocols = mutableMapOf<String, BaseInterface>()
+val protocols = mutableSetOf<Protocol>()
 /**
  * Adds a protocol to the protocol registry.
  * @return true if a protocol with that name does not already exist in the registry, false otherwise.
  */
-fun registerProtocol(protocol: BaseInterface): Boolean {
-    if (protocol.name in protocols)
+fun registerProtocol(protocol: Protocol): Boolean {
+    if (protocol in protocols)
         return false
-    protocols[protocol.name] = protocol
+    protocols += protocol
     return true
 }
 
@@ -86,21 +88,61 @@ fun setCommandDelimiter(chat: Chat, commandDelimiter: String): Boolean {
 fun sendMessage(chat: Chat, message: String?) {
     if (message == null)
         return
-    if (chat.protocol.name !in protocols) {
+    if (chat.protocol !in protocols) {
         System.err.println("Protocol \"${chat.protocol.name}\" not properly registered!")
         return
     }
-    val currentProtocol = protocols[chat.protocol.name]!!
-    val bot = currentProtocol.getBot(chat)
-    currentProtocol.sendMessage(chat, message, bot)
+    val baseInterface = chat.protocol.baseInterface
+    val bot = baseInterface.getBot(chat)
+    baseInterface.sendMessage(chat, message, bot)
 }
 
 fun getUserName(chat: Chat, sender: User): String {
-    val protocol = protocols[chat.protocol.name]!!
-    return if (protocol is INickname)
-        protocol.getUserNickname(chat, sender) ?: protocol.getName(chat, sender)
+    val baseInterface = chat.protocol.baseInterface
+    return if (baseInterface is INickname)
+        baseInterface.getUserNickname(chat, sender) ?: baseInterface.getName(chat, sender)
     else
-        protocol.getName(chat, sender)
+        baseInterface.getName(chat, sender)
+}
+
+val aliasVars = mutableSetOf("sender", "botname", "chatname")
+fun replaceAliasVars(chat: Chat, message: String?, sender: User): String? {
+    if (message == null)
+        return null
+    val stringBuilder = StringBuilder()
+    var charIndex = -1
+    val bitSet = BitSet(aliasVars.size)
+    var anyTrue = false
+    for (currentChar in message) {
+        stringBuilder.append(currentChar)
+        if (currentChar == '%')
+            charIndex = 0
+        if (charIndex >= 0) {
+            var i = -1
+            for (aliasVar in aliasVars) {
+                i++ // I didn't use forEachIndexed here because of the return later on.
+                if (bitSet[i]) {
+                    anyTrue = true
+                    if (charIndex == aliasVar.length) {
+                        val baseInterface = chat.protocol.baseInterface
+                        stringBuilder.setLength(stringBuilder.length - aliasVar.length - 1)
+                        stringBuilder.append(when (aliasVar) {
+                            "sender" -> baseInterface.getName(chat, sender)
+                            "botname" -> baseInterface.getName(chat, baseInterface.getBot(chat))
+                            "chatname" -> baseInterface.getChatName(chat)
+                            else -> return "Invalid alias var! This is a bug that shouldn't happen!"
+                        })
+                        charIndex = -1
+                        break
+                    }
+                    if (currentChar != aliasVar[charIndex])
+                        bitSet[i] = false
+                }
+            }
+        }
+        charIndex = if (anyTrue) charIndex + 1 else -1
+    }
+    return stringBuilder.toString()
 }
 
 /**
@@ -114,16 +156,16 @@ fun runCommand(chat: Chat, message: String, sender: User) {
         sendMessage(chat, "No command exists with name \"${e.message}\".")
         return
     } catch (e: InvalidEscapeSequence) {
-        sendMessage(chat, "Invalid escape sequence passed. Are your backslashes correct?")
+        sendMessage(chat, "Invalid escape sequence \"${e.message}\" passed. Are your backslashes correct?")
         return
     }
-    sendMessage(chat, commandData?.command?.function?.invoke(chat, commandData.args, sender))
+    sendMessage(chat, replaceAliasVars(chat, commandData?.command?.function?.invoke(chat, commandData.args, sender), sender))
 }
 
 /**
  * Schedules [command] to run at [time] in [chat].
  */
 fun schedule(chat: Chat, command: CommandData, time: LocalDateTime): String? {
-    return null
+    return "Not yet implemented."
 }
 

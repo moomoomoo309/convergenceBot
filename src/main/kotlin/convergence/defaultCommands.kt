@@ -4,6 +4,8 @@ package convergence
 
 import com.joestelmach.natty.DateGroup
 import com.joestelmach.natty.Parser
+import java.io.PrintWriter
+import java.io.StringWriter
 import java.lang.StringBuilder
 import java.time.Duration
 import java.time.LocalDateTime
@@ -11,8 +13,45 @@ import java.time.ZoneId
 import java.util.*
 import kotlin.math.nextUp
 
+class UnregisteredChat: Exception()
+
+@Suppress("NOTHING_TO_INLINE") // It's inlined so it won't show up in the stack trace, not for performance.
+inline fun unregisteredChat(chat: Chat) {
+    try {
+        throw UnregisteredChat()
+    } catch (e: UnregisteredChat) {
+        val writer = StringWriter()
+        e.printStackTrace(PrintWriter(writer))
+        sendMessage(chat, "Bot error: Chat either is missing a protocol, or its BaseInterface is not" +
+                "registered to that protocol.\nStack Trace:\n$writer")
+        writer.close()
+    }
+}
+
+fun getUserFromName(chat: Chat, name: String): User? {
+    var alternateOption: User? = null
+    val baseInterface = chat.protocol.baseInterface
+    for (user in baseInterface.getUsers(chat)) {
+        val currentName = baseInterface.getName(chat, user)
+        if (currentName == name)
+            return user
+        else if (alternateOption == null && name in currentName)
+            alternateOption = user
+    }
+    return alternateOption
+}
+
+fun getFullName(chat: Chat, name: String): String? {
+    val user = getUserFromName(chat, name)
+    if (chat.protocol in protocols)
+        return if (user != null) chat.protocol.baseInterface.getName(chat, user) else null
+    unregisteredChat(chat)
+    return null
+}
+
+
 const val commandsPerPage = 10
-private fun help(chat: Chat, args: List<String>, sender: User): String? {
+fun help(chat: Chat, args: List<String>, sender: User): String? {
     val pageOrCommand = if (args.isEmpty()) 1 else args[0].toIntOrNull() ?: args[0]
     val numPages = Math.ceil(sortedHelpText.size.toDouble() / commandsPerPage).nextUp().toInt()
     return when (pageOrCommand) {
@@ -32,15 +71,15 @@ private fun help(chat: Chat, args: List<String>, sender: User): String? {
     }
 }
 
-private fun echo(chat: Chat, args: List<String>, sender: User): String? {
+fun echo(chat: Chat, args: List<String>, sender: User): String? {
     return args.joinToString(" ")
 }
 
-private fun ping(chat: Chat, args: List<String>, sender: User): String? {
+fun ping(chat: Chat, args: List<String>, sender: User): String? {
     return "Pong!"
 }
 
-private fun addAlias(chat: Chat, args: List<String>, sender: User): String? {
+fun addAlias(chat: Chat, args: List<String>, sender: User): String? {
     val commandDelimiter = commandDelimiters.getOrDefault(chat, defaultCommandDelimiter)
     val command = parseCommand(commandDelimiter + args[1], commandDelimiter, chat)
             ?: return "Alias does not refer to a valid command!"
@@ -49,7 +88,7 @@ private fun addAlias(chat: Chat, args: List<String>, sender: User): String? {
     return "Alias \"${args[0]}\" registered to \"${args[1]}\"."
 }
 
-private fun removeAlias(chat: Chat, args: List<String>, sender: User): String? {
+fun removeAlias(chat: Chat, args: List<String>, sender: User): String? {
     val validAliases = BitSet(args.size)
     var anyInvalid = false
     for (i in 0..args.size) {
@@ -65,15 +104,15 @@ private fun removeAlias(chat: Chat, args: List<String>, sender: User): String? {
     else "Aliases \"${args.asSequence().filterIndexed { i, _ -> validAliases[i] }.joinToString("\", \"")}\" removed."
 }
 
-private fun me(chat: Chat, args: List<String>, sender: User): String? {
+fun me(chat: Chat, args: List<String>, sender: User): String? {
     return "*${getUserName(chat, sender)} ${args.joinToString("")}"
 }
 
-private fun chats(unused: Chat, args: List<String>, sender: User): String? {
+fun chats(unused: Chat, args: List<String>, sender: User): String? {
     val builder = StringBuilder()
-    for (protocolEntry in protocols) {
-        builder.append("${protocolEntry.value.name}\n\t")
-        for (chat in protocolEntry.value.getChats())
+    for (protocol in protocols) {
+        builder.append("${protocol.name}\n\t")
+        for (chat in protocol.baseInterface.getChats())
             builder.append(chat.name).append(", ")
         builder.setLength(builder.length - 2) // Remove the last ", ".
         builder.append('\n')
@@ -109,21 +148,26 @@ private fun scheduleLoc(groups: List<DateGroup>, chat: Chat, location: String, d
 
 val defaultDuration = Duration.ofMinutes(45)!!
 private val locations = HashMap<User, Pair<LocalDateTime, String>>()
-private fun setLocation(chat: Chat, args: List<String>, sender: User): String? {
+fun setLocation(chat: Chat, args: List<String>, sender: User): String? {
     val location = StringBuilder(args[0])
     val timeStr = StringBuilder()
     val durationStr = StringBuilder()
     var duration: Duration = defaultDuration
     var continueUntil = -1
     var timeGroups: List<DateGroup> = emptyList()
+    var hasAtInOn = false
+    var hasFor = false
     findInOrAt@ for (i in 1 until args.size) {
         if (continueUntil > i)
             continue
         when (args[i]) {
             "at", "on", "in" -> {
+                if (hasAtInOn)
+                    return "You can't put multiple times in!"
+                hasAtInOn = true
                 if (i == args.size - 1)
                     return "You can't just put \"at\" and not put a time after it!"
-                for (i2 in i+1 until args.size)
+                for (i2 in i + 1 until args.size)
                     if (args[i2] == "for") {
                         continueUntil = i2
                         if (i2 == i + 1)
@@ -135,7 +179,10 @@ private fun setLocation(chat: Chat, args: List<String>, sender: User): String? {
                 timeGroups = dateTimeParser.parse(timeStr.toString())
             }
             "for" -> {
-                for (i2 in i+1 until args.size)
+                if (hasFor)
+                    return "You can't put multiple durations in!"
+                hasFor = true
+                for (i2 in i + 1 until args.size)
                     if (args[i2] in setOf("at", "in", "on")) {
                         continueUntil = i2
                         if (i2 == i + 1)
@@ -160,6 +207,12 @@ private fun setLocation(chat: Chat, args: List<String>, sender: User): String? {
     return scheduleLoc(timeGroups, chat, location.toString(), durationStr.toString(), duration, timeStr.toString())
 }
 
+fun target(chat: Chat, args: List<String>, sender: User): String? {
+    //TODO: Check if -1 works for subList
+    val baseInterface = chat.protocol.baseInterface
+    val user = getUserFromName(chat, args[args.size - 1]) ?: return "No user by the name \"${args[args.size - 1]}\" found."
+    return args.subList(0, -1).joinToString(" ").replace("%target", baseInterface.getName(chat, user))
+}
 
 fun registerDefaultCommands() {
     registerCommand(UniversalChat, Command("help", ::help,

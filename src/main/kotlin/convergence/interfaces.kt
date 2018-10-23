@@ -4,12 +4,54 @@ package convergence
 
 import java.time.LocalDateTime
 
-abstract class Protocol(val name: String)
+abstract class Protocol(val name: String, val baseInterface: BaseInterface) {
+    init {
+        registerProtocol(this)
+    }
+}
+
 abstract class User(val chat: Chat) //Intentionally empty, because it might be represented as an int or a string or whatever.
 abstract class Chat(val protocol: Protocol, val name: String) //Same as above.
-private object UniversalProtocol: Protocol("Universal") // Used to represent the universal chat.
+private object UniversalUser: User(UniversalChat)
 object UniversalChat: Chat(UniversalProtocol, "Universal")
+private object FakeBaseInterface: BaseInterface() {
+    override val protocol: Protocol = UniversalProtocol
+    override fun receivedMessage(chat: Chat, message: String, sender: User) {
+        throw Exception("You can't receive a message on the FakeBaseInterface!")
+    }
 
+    override fun sendMessage(chat: Chat, message: String, sender: User): Boolean {
+        return false
+    }
+
+    override fun getBot(chat: Chat): User {
+        return UniversalUser
+    }
+
+    override fun listUsers(chat: Chat): List<String> {
+        return emptyList()
+    }
+
+    override fun getName(chat: Chat, user: User): String {
+        return ""
+    }
+
+    override fun getChats(): List<Chat> {
+        return emptyList()
+    }
+
+    override fun getUsers(chat: Chat): List<User> {
+        return emptyList()
+    }
+
+    override fun getChatName(chat: Chat): String {
+        return ""
+    }
+
+    override val name: String = "FakeBaseInterface"
+}
+
+private object UniversalProtocol: Protocol("Universal", FakeBaseInterface) // Used to represent the universal chat.
 
 abstract class CommandLike(open val name: String, open val helpText: String, open val syntaxText: String)
 
@@ -30,6 +72,8 @@ abstract class BaseInterface {
     abstract fun listUsers(chat: Chat): List<String>
     abstract fun getName(chat: Chat, user: User): String
     abstract fun getChats(): List<Chat>
+    abstract fun getUsers(chat: Chat): List<User>
+    abstract fun getChatName(chat: Chat): String
 }
 
 interface INickname {
