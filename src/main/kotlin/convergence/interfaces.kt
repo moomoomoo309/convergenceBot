@@ -14,7 +14,7 @@ abstract class User(val chat: Chat) //Intentionally empty, because it might be r
 abstract class Chat(val protocol: Protocol, val name: String) //Same as above.
 private object UniversalUser: User(UniversalChat)
 object UniversalChat: Chat(UniversalProtocol, "Universal")
-private object FakeBaseInterface: BaseInterface() {
+object FakeBaseInterface: BaseInterface() {
     override val protocol: Protocol = UniversalProtocol
     override fun receivedMessage(chat: Chat, message: String, sender: User) {
         throw Exception("You can't receive a message on the FakeBaseInterface!")

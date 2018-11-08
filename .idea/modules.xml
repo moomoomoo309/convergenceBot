@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/bot_main.iml" filepath="$PROJECT_DIR$/.idea/modules/bot_main.iml" group="bot" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/bot_test.iml" filepath="$PROJECT_DIR$/.idea/modules/bot_test.iml" group="bot" />
+      <module fileurl="file://$PROJECT_DIR$/basicPlugin/basicPlugin.iml" filepath="$PROJECT_DIR$/basicPlugin/basicPlugin.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/convergenceBot.iml" filepath="$PROJECT_DIR$/.idea/modules/convergenceBot.iml" />
     </modules>
   </component>
 </project>
