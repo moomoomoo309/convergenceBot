@@ -3,30 +3,77 @@
 package convergence
 
 import java.time.LocalDateTime
-import java.util.function.Consumer
 
-abstract class Protocol(name: String)
-abstract class User(protocol: Protocol) //Intentionally empty, because it might be represented as an int or a string or whatever.
-abstract class Chat(protocol: Protocol) //Same as above.
-private object UniversalProtocol: Protocol("Universal") // Used to represent the universal chat.
-object UniversalChat: Chat(UniversalProtocol)
+abstract class Protocol(val name: String, val baseInterface: BaseInterface) {
+    init {
+        registerProtocol(this)
+    }
+}
 
+abstract class User(val chat: Chat) //Intentionally empty, because it might be represented as an int or a string or whatever.
+abstract class Chat(val protocol: Protocol, val name: String) //Same as above.
+private object UniversalUser: User(UniversalChat)
+object UniversalChat: Chat(UniversalProtocol, "Universal")
+private object FakeBaseInterface: BaseInterface() {
+    override val protocol: Protocol = UniversalProtocol
+    override fun receivedMessage(chat: Chat, message: String, sender: User) {
+        throw Exception("You can't receive a message on the FakeBaseInterface!")
+    }
+
+    override fun sendMessage(chat: Chat, message: String, sender: User): Boolean {
+        return false
+    }
+
+    override fun getBot(chat: Chat): User {
+        return UniversalUser
+    }
+
+    override fun listUsers(chat: Chat): List<String> {
+        return emptyList()
+    }
+
+    override fun getName(chat: Chat, user: User): String {
+        return ""
+    }
+
+    override fun getChats(): List<Chat> {
+        return emptyList()
+    }
+
+    override fun getUsers(chat: Chat): List<User> {
+        return emptyList()
+    }
+
+    override fun getChatName(chat: Chat): String {
+        return ""
+    }
+
+    override val name: String = "FakeBaseInterface"
+}
+
+private object UniversalProtocol: Protocol("Universal", FakeBaseInterface) // Used to represent the universal chat.
 
 abstract class CommandLike(open val name: String, open val helpText: String, open val syntaxText: String)
 
-data class Command(override val name: String, val function: Consumer<Array<String>>, override val helpText: String,
+data class Command(override val name: String, val function: (Chat, List<String>, User) -> String?, override val helpText: String,
                    override val syntaxText: String): CommandLike(name, helpText, syntaxText)
 
 data class Alias(override val name: String, val command: Command, val args: List<String>,
                  override val helpText: String, override val syntaxText: String): CommandLike(name, helpText, syntaxText)
 
+val interfaceMap = mutableMapOf<Protocol, BaseInterface>()
 
 abstract class BaseInterface {
     abstract val name: String
+    abstract val protocol: Protocol
     abstract fun receivedMessage(chat: Chat, message: String, sender: User)
     abstract fun sendMessage(chat: Chat, message: String, sender: User): Boolean
-    abstract fun getBotName(chat: Chat): String
+    abstract fun getBot(chat: Chat): User
     abstract fun listUsers(chat: Chat): List<String>
+    abstract fun getName(chat: Chat, user: User): String
+    abstract fun getChats(): List<Chat>
+    abstract fun getUsers(chat: Chat): List<User>
+    abstract fun getChatName(chat: Chat): String
 }
 
 interface INickname {
@@ -42,8 +89,8 @@ interface IImages {
 }
 
 interface IOtherMessageEditable {
-    fun receivedMessage(chat: Chat, message: String, sender: User, newMessage: String)
     fun editedMessage(oldMessage: String, sender: User, newMessage: String)
+    fun editMessage(message: IMessageHistory.MessageHistory, oldMessage: String, sender: User, newMessage: String)
 }
 
 interface IMessageHistory {
@@ -93,7 +140,7 @@ interface IFormatting {
     // This is also so if multiple protocols support the same thing, like bolding, they can share the same name.
     abstract class Format(name: String)
 
-    fun getDelimiters(protocol: Protocol, format: Format)
+    fun getDelimiters(protocol: Protocol, format: Format): List<String>
     fun getSupportedFormats(protocol: Protocol): List<Format>
     fun supportsFormat(protocol: Protocol, format: Format): Boolean
 }

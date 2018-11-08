@@ -1,20 +1,23 @@
 package convergence
 
 import org.junit.Test
-import java.util.function.Consumer
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 
-class TestChat: Chat(TestProtocol())
+class TestChat: Chat(TestProtocol(), "Test")
 class TestProtocol: Protocol("Test")
+
+fun doNothing(unused: Chat, unused2: List<String>, unused3: User): String? {
+    return null
+}
 
 class CommandParserTest {
     private fun loadCommandData(command: String): CommandData? {
         val testChat = TestChat()
         val testIndex = command.indexOf(" ")
         val testCommandStr = command.substring(1, if (testIndex == -1) command.length else testIndex)
-        val testCommand = Command(testCommandStr, Consumer {}, "test", "test")
+        val testCommand = Command(testCommandStr, ::doNothing, "test", "test")
         commands[testChat] = mutableMapOf(testCommandStr to testCommand)
         return parseCommand(command, "!", testChat)
     }
@@ -73,7 +76,7 @@ class CommandParserTest {
         val testChat = TestChat()
         val testIndex = command.indexOf(" ")
         val testAliasStr = command.substring(1, if (testIndex == -1) command.length else testIndex)
-        val testCommand = Command("test", Consumer {}, "test", "test")
+        val testCommand = Command("test", ::doNothing, "test", "test")
         val testAlias = Alias(testAliasStr, testCommand, listOf("testArg1", "testArg2"), "testAlias", "testAlias")
         commands[testChat] = mutableMapOf("test" to testCommand)
         aliases[testChat] = mutableMapOf(testAliasStr to testAlias)
