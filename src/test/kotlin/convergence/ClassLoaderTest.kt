@@ -1,18 +1,21 @@
-package convergence
-
-import org.junit.Test
-import org.xeustechnologies.jcl.JarClassLoader
-import org.xeustechnologies.jcl.JclObjectFactory
-import org.xeustechnologies.jcl.JclUtils
+import convergence.classLoader
+import java.io.ByteArrayOutputStream
+import java.io.PrintStream
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 
 class ClassLoaderTest {
     @Test
     fun loadBasicPlugin() {
-        val jcl = JarClassLoader()
-        jcl.add("/home/nicholasdelello/IntelliJIDEAProjects/convergenceBot/basicPlugin/build/libs/")
-        println(jcl.loadedResources)
-        val factory = JclObjectFactory.getInstance()
-        val basicPlugin = factory.create(jcl, "convergence.testPlugins.basicPlugin.Main")
-        JclUtils.cast(basicPlugin, plugin::class.java).init()
+        val pluginVal = classLoader.loadClass("/home/nicholasdelello/IntelliJIDEAProjects/convergenceBot/basicPlugin/build/libs/")
+        assertNotNull(pluginVal, "Could not load plugin!")
+        val strOut = ByteArrayOutputStream()
+        val oldOut = System.out
+        System.setOut(PrintStream(strOut))
+        pluginVal.init()
+        System.out.close()
+        System.setOut(oldOut)
+        assertEquals("basicPlugin init\n", strOut.toString(), "basicPlugin did not print expected output.")
     }
 }

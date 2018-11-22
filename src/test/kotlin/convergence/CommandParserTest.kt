@@ -9,6 +9,7 @@ class TestChat: Chat(TestProtocol(), "Test")
 class TestProtocol: Protocol("Test", FakeBaseInterface)
 
 fun doNothing(unused: Chat, unused2: List<String>, unused3: User): String? {
+    unused.run { unused2.run { unused3.run {} } }
     return null
 }
 

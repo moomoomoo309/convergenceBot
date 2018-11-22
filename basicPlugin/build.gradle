@@ -12,7 +12,11 @@ tasks.withType(JavaCompile) {
 sourceSets {
     main {
         kotlin {
-            srcDirs = ["./src", "../src/main/kotlin"]
+            //noinspection GroovyAssignabilityCheck
+            srcDir 'src'
+        }
+        resources {
+            srcDirs 'resources'
         }
     }
 }

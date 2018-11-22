@@ -6,14 +6,17 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="bot" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="bot_main" target="1.5" />
       <module name="bot_test" target="1.5" />
+      <module name="convergence.bot.main" target="1.5" />
+      <module name="convergence.bot.test" target="1.5" />
       <module name="convergence.test.basicPlugin.basicPlugin" target="1.5" />
       <module name="convergence.test.basicPlugin.mai" target="1.5" />
+      <module name="convergence.test.basicPlugin.main" target="1.5" />
+      <module name="convergence.test.basicPlugin.test" target="1.5" />
       <module name="convergenceBot" target="1.5" />
     </bytecodeTargetLevel>
   </component>

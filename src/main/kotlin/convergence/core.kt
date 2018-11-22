@@ -169,3 +169,6 @@ fun schedule(chat: Chat, command: CommandData, time: LocalDateTime): String? {
     return "Not yet implemented."
 }
 
+fun init() {
+
+}

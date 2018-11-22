@@ -1,7 +1,7 @@
 package convergence
 
 import com.joestelmach.natty.Parser
-import junit.framework.Assert.assertEquals
+import kotlin.test.assertEquals
 import org.junit.Test
 
 

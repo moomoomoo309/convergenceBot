@@ -129,7 +129,7 @@ fun dateToLocalDateTime(d: Date, tz: ZoneId? = null): LocalDateTime {
 private fun scheduleLoc(groups: List<DateGroup>, chat: Chat, location: String, durationStr: String,
                         duration: Duration, time: String): String {
     val thisCommand = commands[UniversalChat]!!["goingto"]!!
-    groups.forEachIndexed { i2, group ->
+    for (group in groups) {
         if (group.isRecurring) {
             return "Sorry, the bot doesn't support recurring events."
         } else {
