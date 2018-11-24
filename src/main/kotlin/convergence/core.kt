@@ -2,7 +2,12 @@
 
 package convergence
 
+import net.sourceforge.argparse4j.ArgumentParsers
+import net.sourceforge.argparse4j.inf.ArgumentParserException
+import net.sourceforge.argparse4j.inf.Namespace
+import java.io.File
 import java.lang.StringBuilder
+import java.nio.file.Paths
 import java.time.LocalDateTime
 import java.util.*
 
@@ -169,6 +174,24 @@ fun schedule(chat: Chat, command: CommandData, time: LocalDateTime): String? {
     return "Not yet implemented."
 }
 
-fun init() {
-
+var commandLineArgs: Namespace = Namespace(emptyMap())
+fun main(args: Array<String>) {
+    val argParser = ArgumentParsers.newFor("Convergence Bot").build()
+            .defaultHelp(true)
+            .description("Sets the paths used by the bot.")
+    val paths = argParser.addArgumentGroup("Paths")
+    paths.addArgument("-pp", "--plugin-path")
+            .type(File::class.java).default = Paths.get(System.getProperty("user.home"), ".convergence")
+    paths.addArgument("-bpp", "--basic-plugin-path")
+            .type(File::class.java).default = Paths.get("basicPlugin/build/libs")
+    try {
+        commandLineArgs = argParser.parseArgs(args)
+    } catch (e: ArgumentParserException) {
+        System.err.println(e.message)
+        return
+    }
+    val plugins = PluginLoader.loadPlugin((commandLineArgs.get("plugin-path") as File).path)
+    for (plugin in plugins) {
+        Thread(plugin::init).start()
+    }
 }
