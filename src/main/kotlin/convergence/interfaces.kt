@@ -65,8 +65,6 @@ data class Alias(override val name: String,
                  override val helpText: String,
                  override val syntaxText: String): CommandLike(name, helpText, syntaxText)
 
-val interfaceMap = mutableMapOf<Protocol, BaseInterface>()
-
 abstract class BaseInterface {
     abstract val name: String
     abstract val protocol: Protocol
@@ -159,7 +157,9 @@ sealed class BonusInterface {
     interface IFormatting {
         // If possible, the name would be an enum instead, but I cannot predict what will be supported, so it's a string.
         // This is also so if multiple protocols support the same thing, like bolding, they can share the same name.
-        abstract class Format(name: String)
+        abstract class Format(val name: String)
+
+        val supportedFormats: Set<Format>
 
         fun getDelimiters(protocol: Protocol, format: Format): List<String>
         fun getSupportedFormats(protocol: Protocol): List<Format>

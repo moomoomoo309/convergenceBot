@@ -6,9 +6,9 @@ import net.sourceforge.argparse4j.ArgumentParsers
 import net.sourceforge.argparse4j.inf.ArgumentParserException
 import net.sourceforge.argparse4j.inf.Namespace
 import java.io.File
-import java.lang.StringBuilder
 import java.nio.file.Paths
 import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
 import java.util.*
 
 class CommandDoesNotExist(cmd: String): Exception(cmd)
@@ -90,6 +90,9 @@ fun setCommandDelimiter(chat: Chat, commandDelimiter: String): Boolean {
     return true
 }
 
+/**
+ * Sends the provided message in the given chat.
+ */
 fun sendMessage(chat: Chat, message: String?) {
     if (message == null)
         return
@@ -102,7 +105,11 @@ fun sendMessage(chat: Chat, message: String?) {
     baseInterface.sendMessage(chat, message, bot)
 }
 
-fun getUserName(chat: Chat, sender: User): String {
+/**
+ * Gets the nickname (if applicable) or name of a user.
+ */
+fun getUserName(sender: User): String {
+    val chat = sender.chat
     val baseInterface = chat.protocol.baseInterface
     return if (baseInterface is INickname)
         baseInterface.getUserNickname(chat, sender) ?: baseInterface.getName(chat, sender)
@@ -110,7 +117,16 @@ fun getUserName(chat: Chat, sender: User): String {
         baseInterface.getName(chat, sender)
 }
 
-val aliasVars = mutableSetOf("sender", "botname", "chatname")
+val aliasVars = mutableMapOf(
+        "sender" to fun(b: BaseInterface, c: Chat, s: User): String { return b.getName(c, s) },
+        "botname" to fun(b: BaseInterface, c: Chat, _: User): String { return b.getName(c, b.getBot(c)) },
+        "chatname" to fun(b: BaseInterface, c: Chat, _: User): String { return b.getChatName(c) })
+
+fun replaceAliasVars(message: String?, sender: User) = replaceAliasVars(sender.chat, message, sender)
+/**
+ * Replaces instances of the keys in [aliasVars] preceded by a percent sign with the result of the functions therein,
+ * such as %sender with the name of the user who sent the message.
+ */
 fun replaceAliasVars(chat: Chat, message: String?, sender: User): String? {
     if (message == null)
         return null
@@ -125,22 +141,17 @@ fun replaceAliasVars(chat: Chat, message: String?, sender: User): String? {
         if (charIndex >= 0) {
             var i = -1
             for (aliasVar in aliasVars) {
-                i++ // I didn't use forEachIndexed here because of the return later on.
+                i++ // I didn't use forEachIndexed here because of the return in this loop.
                 if (bitSet[i]) {
                     anyTrue = true
-                    if (charIndex == aliasVar.length) {
+                    if (charIndex == aliasVar.key.length) {
                         val baseInterface = chat.protocol.baseInterface
-                        stringBuilder.setLength(stringBuilder.length - aliasVar.length - 1)
-                        stringBuilder.append(when (aliasVar) {
-                            "sender" -> baseInterface.getName(chat, sender)
-                            "botname" -> baseInterface.getName(chat, baseInterface.getBot(chat))
-                            "chatname" -> baseInterface.getChatName(chat)
-                            else -> return "Invalid alias var! This is a bug that shouldn't happen!"
-                        })
+                        stringBuilder.setLength(stringBuilder.length - aliasVar.key.length - 1)
+                        stringBuilder.append(aliasVar.value(baseInterface, chat, sender))
                         charIndex = -1
                         break
                     }
-                    if (currentChar != aliasVar[charIndex])
+                    if (currentChar != aliasVar.key[charIndex])
                         bitSet[i] = false
                 }
             }
@@ -153,8 +164,9 @@ fun replaceAliasVars(chat: Chat, message: String?, sender: User): String? {
 /**
  * Run the Command in the given message, or do nothing if none exists.
  */
-fun runCommand(chat: Chat, message: String, sender: User) {
+fun runCommand(message: String, sender: User) {
     val commandData: CommandData?
+    val chat = sender.chat
     try {
         commandData = parseCommand(message, commandDelimiters.getOrDefault(chat, defaultCommandDelimiter), chat)
     } catch (e: CommandDoesNotExist) {
@@ -164,14 +176,49 @@ fun runCommand(chat: Chat, message: String, sender: User) {
         sendMessage(chat, "Invalid escape sequence \"${e.message}\" passed. Are your backslashes correct?")
         return
     }
-    sendMessage(chat, replaceAliasVars(chat, commandData?.command?.function?.invoke(chat, commandData.args, sender), sender))
+    if (commandData != null)
+        runCommand(commandData, sender)
+    else
+        sendMessage(chat, "Unspecified error occurred when trying to process \"$message\".")
+}
+
+fun runCommand(commandData: CommandData, sender: User) {
+    val chat = sender.chat
+    val args = commandData.args
+    sendMessage(chat, replaceAliasVars(chat, commandData.command.function.invoke(chat, args, sender), sender))
+}
+
+const val allowedTimeDifference = 30
+
+object SchedulerThread: Thread() {
+    private val scheduledCommands = TreeMap<LocalDateTime, ArrayList<Pair<User, CommandData>>>()
+    override fun run() {
+        val now = LocalDateTime.now()
+        val commandIter = scheduledCommands.iterator()
+        while (commandIter.hasNext()) {
+            val cmdEntry = commandIter.next()
+            if (cmdEntry.key.until(now, ChronoUnit.SECONDS) in 0..allowedTimeDifference) {
+                for (cmdPair in cmdEntry.value)
+                    runCommand(cmdPair.second, cmdPair.first)
+                commandIter.remove()
+            } else
+                break
+        }
+    }
+
+    fun schedule(sender: User, command: CommandData, time: LocalDateTime): String? {
+        if (time !in scheduledCommands)
+            scheduledCommands[time] = ArrayList(2)
+        scheduledCommands[time]!!.add(Pair(sender, command))
+        return "Scheduled ${getUserName(sender)} to run \"$command\" to run at $time."
+    }
 }
 
 /**
- * Schedules [command] to run at [time] in [chat].
+ * Schedules [command] to run at [time] from [sender].
  */
-fun schedule(chat: Chat, command: CommandData, time: LocalDateTime): String? {
-    return "Not yet implemented."
+fun schedule(sender: User, command: CommandData, time: LocalDateTime): String? {
+    return SchedulerThread.schedule(sender, command, time)
 }
 
 var commandLineArgs: Namespace = Namespace(emptyMap())
@@ -190,6 +237,7 @@ fun main(args: Array<String>) {
         System.err.println(e.message)
         return
     }
+    SchedulerThread.start()
     val plugins = PluginLoader.loadPlugin((commandLineArgs.get("plugin-path") as File).path)
     for (plugin in plugins) {
         Thread(plugin::init).start()
