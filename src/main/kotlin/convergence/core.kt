@@ -6,7 +6,6 @@ import net.sourceforge.argparse4j.ArgumentParsers
 import net.sourceforge.argparse4j.inf.ArgumentParserException
 import net.sourceforge.argparse4j.inf.Namespace
 import java.io.File
-import java.nio.file.Paths
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
@@ -177,15 +176,15 @@ fun runCommand(message: String, sender: User) {
         return
     }
     if (commandData != null)
-        runCommand(commandData, sender)
+        runCommand(sender, commandData)
     else
         sendMessage(chat, "Unspecified error occurred when trying to process \"$message\".")
 }
 
-fun runCommand(commandData: CommandData, sender: User) {
+fun runCommand(sender: User, commandData: CommandData) {
     val chat = sender.chat
     val args = commandData.args
-    sendMessage(chat, replaceAliasVars(chat, commandData.command.function.invoke(chat, args, sender), sender))
+    sendMessage(chat, replaceAliasVars(chat, commandData.command.function.invoke(args, sender), sender))
 }
 
 const val allowedTimeDifference = 30
@@ -193,16 +192,19 @@ const val allowedTimeDifference = 30
 object SchedulerThread: Thread() {
     private val scheduledCommands = TreeMap<LocalDateTime, ArrayList<Pair<User, CommandData>>>()
     override fun run() {
-        val now = LocalDateTime.now()
-        val commandIter = scheduledCommands.iterator()
-        while (commandIter.hasNext()) {
-            val cmdEntry = commandIter.next()
-            if (cmdEntry.key.until(now, ChronoUnit.SECONDS) in 0..allowedTimeDifference) {
-                for (cmdPair in cmdEntry.value)
-                    runCommand(cmdPair.second, cmdPair.first)
-                commandIter.remove()
-            } else
-                break
+        while (this.isAlive) {
+            val now = LocalDateTime.now()
+            val commandIter = scheduledCommands.iterator()
+            while (commandIter.hasNext()) {
+                val cmdEntry = commandIter.next()
+                if (cmdEntry.key.until(now, ChronoUnit.SECONDS) in 0..allowedTimeDifference) {
+                    for (cmdPair in cmdEntry.value)
+                        runCommand(cmdPair.first, cmdPair.second)
+                    commandIter.remove()
+                } else
+                    break
+            }
+            sleep(1000)
         }
     }
 
@@ -217,29 +219,36 @@ object SchedulerThread: Thread() {
 /**
  * Schedules [command] to run at [time] from [sender].
  */
-fun schedule(sender: User, command: CommandData, time: LocalDateTime): String? {
-    return SchedulerThread.schedule(sender, command, time)
-}
+fun schedule(sender: User, command: CommandData, time: LocalDateTime): String? = SchedulerThread.schedule(sender, command, time)
 
 var commandLineArgs: Namespace = Namespace(emptyMap())
-fun main(args: Array<String>) {
-    val argParser = ArgumentParsers.newFor("Convergence Bot").build()
-            .defaultHelp(true)
-            .description("Sets the paths used by the bot.")
-    val paths = argParser.addArgumentGroup("Paths")
-    paths.addArgument("-pp", "--plugin-path")
-            .type(File::class.java).default = Paths.get(System.getProperty("user.home"), ".convergence")
-    paths.addArgument("-bpp", "--basic-plugin-path")
-            .type(File::class.java).default = Paths.get("basicPlugin/build/libs")
-    try {
-        commandLineArgs = argParser.parseArgs(args)
-    } catch (e: ArgumentParserException) {
-        System.err.println(e.message)
-        return
-    }
-    SchedulerThread.start()
-    val plugins = PluginLoader.loadPlugin((commandLineArgs.get("plugin-path") as File).path)
-    for (plugin in plugins) {
-        Thread(plugin::init).start()
+
+class core {
+    companion object {
+        @JvmStatic
+        fun main(args: Array<String>) {
+            val argParser = ArgumentParsers.newFor("Convergence Bot").build()
+                    .defaultHelp(true)
+                    .description("Sets the paths used by the bot.")
+            val paths = argParser.addArgumentGroup("Paths")
+            paths.addArgument("-pp", "--plugin-path")
+                    .type(File::class.java).default = File(System.getProperty("user.home"), ".convergence")
+            paths.addArgument("-bpp", "--basic-plugin-path")
+                    .type(File::class.java).default = File("basicPlugin/build/libs")
+            try {
+                commandLineArgs = argParser.parseArgs(args)
+            } catch (e: ArgumentParserException) {
+                System.err.println(e.message)
+                return
+            }
+            println("Starting scheduler thread...")
+            SchedulerThread.start()
+            val plugins = PluginLoader.loadPlugin((commandLineArgs.get("plugin_path") as File).path)
+            println("Loaded Plugins:\n${plugins.joinToString("\n")}")
+            for (plugin in plugins) {
+                println("Starting plugin: ${plugin.name}")
+                Thread(plugin::init).start()
+            }
+        }
     }
 }

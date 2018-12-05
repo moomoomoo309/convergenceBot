@@ -44,7 +44,7 @@ fun getCommand(command: String, chat: Chat): CommandLike {
 
 fun parseCommand(command: String, commandDelimiter: String, chat: Chat): CommandData? {
     var commandName: String? = null
-    var argList: List<String> = emptyList()
+    val argList = ArrayList<String>()
     var inQuote = false
     var hasCommandDelimiter = false
     var unicodeEscapeCharactersRead: Byte = 0
@@ -128,7 +128,7 @@ fun parseCommand(command: String, commandDelimiter: String, chat: Chat): Command
                         else {
                             if (!lastCharWasEscape && i == command.length - 1) // If the last char isn't an escape and we're at the end of the string, this kicks in.
                                 currentContent.append(c)
-                            argList += currentContent.toString()
+                            argList.add(currentContent.toString())
                         }
                         currentContent.setLength(0)
                     }

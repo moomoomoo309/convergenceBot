@@ -8,8 +8,8 @@ import kotlin.test.assertNull
 class TestChat: Chat(TestProtocol(), "Test")
 class TestProtocol: Protocol("Test", FakeBaseInterface)
 
-fun doNothing(unused: Chat, unused2: List<String>, unused3: User): String? {
-    unused.run { unused2.run { unused3.run {} } }
+fun doNothing(unused: List<String>, unused2: User): String? {
+    unused.run { unused2.run {} }
     return null
 }
 

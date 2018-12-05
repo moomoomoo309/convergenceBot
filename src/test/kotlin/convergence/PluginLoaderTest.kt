@@ -1,11 +1,13 @@
 import convergence.Plugin
 import convergence.PluginLoader
-import convergence.commandLineArgs
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.PrintStream
 import java.nio.file.Files
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
 class PluginLoaderTest {
     var pluginList: List<Plugin> = emptyList()
@@ -13,7 +15,7 @@ class PluginLoaderTest {
     private var oldOut: PrintStream? = null
     private var printStreamOut: PrintStream? = null
     private fun loadPlugin() {
-        val basicPluginPath = (commandLineArgs.get("basic-plugin-path") as File).absoluteFile.toPath()
+        val basicPluginPath = File("basicPlugin/build/libs").absoluteFile.toPath()
         assertTrue(Files.exists(basicPluginPath), "basicPluginDir is not a file or folder.")
         assertTrue(Files.isDirectory(basicPluginPath), "basicPluginDir is not a folder.")
         assertTrue(Files.list(basicPluginPath).count() > 0, "No files exist in basicPluginDir.")

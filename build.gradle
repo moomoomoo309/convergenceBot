@@ -90,4 +90,12 @@ compileTestKotlin {
     }
 }
 
-mainClassName = ':init'
+jar {
+    manifest {
+        attributes 'Main-Class': 'convergence.coreKt'
+    }
+}
+
+mainClassName = 'convergence.core'
+
+defaultTasks 'run'

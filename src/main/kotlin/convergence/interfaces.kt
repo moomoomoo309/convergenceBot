@@ -55,7 +55,7 @@ abstract class CommandLike(open val name: String,
                            open val syntaxText: String)
 
 data class Command(override val name: String,
-                   val function: (Chat, List<String>, User) -> String?,
+                   val function: (List<String>, User) -> String?,
                    override val helpText: String,
                    override val syntaxText: String): CommandLike(name, helpText, syntaxText)
 
@@ -68,7 +68,7 @@ data class Alias(override val name: String,
 abstract class BaseInterface {
     abstract val name: String
     abstract val protocol: Protocol
-    fun receivedMessage(chat: Chat, message: String, sender: User) = runCommand(chat, message, sender)
+    fun receivedMessage(chat: Chat, message: String, sender: User) = runCommand(message, sender)
     abstract fun sendMessage(chat: Chat, message: String, sender: User): Boolean
     abstract fun getBot(chat: Chat): User
     abstract fun listUsers(chat: Chat): List<String>
