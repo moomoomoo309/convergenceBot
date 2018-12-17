@@ -6,7 +6,7 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 
 class TestChat: Chat(TestProtocol(), "Test")
-class TestProtocol: Protocol("Test", FakeBaseInterface)
+class TestProtocol: Protocol("Test")
 
 fun doNothing(unused: List<String>, unused2: User): String? {
     unused.run { unused2.run {} }
@@ -92,5 +92,11 @@ class CommandParserTest {
         assertEquals("testArg2", testCommandData?.args?.get(1), "Did not expand second alias argument correctly.")
         assertEquals("nonAliasArg1", testCommandData?.args?.get(2), "Did not expand first non-alias argument correctly.")
         assertEquals("nonAliasArg2", testCommandData?.args?.get(3), "Did not expand second non-alias argument correctly.")
+    }
+
+    @Test
+    fun validCommand() {
+        val testCommandData = loadCommandData("!commands")
+        assertEquals("commands", testCommandData?.command?.name)
     }
 }

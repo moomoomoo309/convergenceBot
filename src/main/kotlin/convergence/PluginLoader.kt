@@ -7,6 +7,7 @@ import java.net.URI
 import java.net.URL
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.util.*
 
 interface Plugin {
     val name: String
@@ -15,8 +16,14 @@ interface Plugin {
     fun init()
 }
 
+private val _jcl = JarClassLoader()
 object PluginLoader {
-    private val jcl = JarClassLoader()
+    init {
+        _jcl.localLoader.order = 100
+        _jcl.addLoader(_jcl.localLoader)
+    }
+
+    private val jcl = _jcl
     private val factory = JclObjectFactory.getInstance()
     private const val classNameFile = "MainClass.txt"
 
@@ -36,10 +43,10 @@ object PluginLoader {
         for (entry in jcl.loadedResources)
             if (entry.key.endsWith(classNameFile)) {
                 mainClassName = String(entry.value).trim()
-                val plugin = JclUtils.cast(factory.create(jcl, mainClassName), Plugin::class.java)
+                val plugin = JclUtils.deepClone(factory.create(jcl, mainClassName)) as Plugin
                 // Don't register test plugins, since they won't actually be used outside of tests.
                 if (plugin.baseInterface !is FakeBaseInterface)
-                    registerProtocol(plugin.baseInterface.protocol)
+                    registerProtocol(plugin.baseInterface.protocol, plugin.baseInterface)
                 pluginList.add(plugin)
             }
         return pluginList

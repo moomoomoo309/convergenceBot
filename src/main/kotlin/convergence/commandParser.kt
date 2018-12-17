@@ -38,6 +38,7 @@ fun getCommand(command: String, chat: Chat): CommandLike {
     return when {
         chat in commands && commands[chat] is MutableMap<String, Command> && command in commands[chat]!! -> commands[chat]!![command] as CommandLike
         chat in aliases && aliases[chat] is MutableMap<String, Alias> && command in aliases[chat]!! -> aliases[chat]!![command] as CommandLike
+        UniversalChat in commands && commands[UniversalChat] is MutableMap<String, Command> && command in commands[UniversalChat]!! -> commands[UniversalChat]!![command] as CommandLike
         else -> throw CommandDoesNotExist(command)
     }
 }
@@ -123,11 +124,11 @@ fun parseCommand(command: String, commandDelimiter: String, chat: Chat): Command
                 }
                 c.isWhitespace() || i == command.length - 1 ->
                     if (!inQuote) {
+                        if (!lastCharWasEscape && i == command.length - 1) // If the last char isn't an escape and we're at the end of the string, this kicks in.
+                            currentContent.append(c)
                         if (commandName == null)
                             commandName = currentContent.toString()
                         else {
-                            if (!lastCharWasEscape && i == command.length - 1) // If the last char isn't an escape and we're at the end of the string, this kicks in.
-                                currentContent.append(c)
                             argList.add(currentContent.toString())
                         }
                         currentContent.setLength(0)

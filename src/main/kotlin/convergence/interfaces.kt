@@ -4,16 +4,17 @@ package convergence
 
 import java.time.LocalDateTime
 
-abstract class Protocol(val name: String, val baseInterface: BaseInterface)
+abstract class Protocol(val name: String)
 abstract class User(val chat: Chat) //Intentionally empty, because it might be represented as an int or a string or whatever.
 abstract class Chat(val protocol: Protocol, val name: String) //Same as above.
 private object UniversalUser: User(UniversalChat)
+object UniversalProtocol: Protocol("Universal") // Used to represent the universal chat.
 object UniversalChat: Chat(UniversalProtocol, "Universal")
-object FakeBaseInterface: BaseInterface() {
+object FakeBaseInterface: BaseInterface {
     override val protocol: Protocol = UniversalProtocol
 
     init {
-        if (!registerProtocol(this.protocol))
+        if (!registerProtocol(this.protocol, this))
             System.err.println("Protocol with name \"$this.protocol.name\" registered more than once!")
     }
 
@@ -23,10 +24,6 @@ object FakeBaseInterface: BaseInterface() {
 
     override fun getBot(chat: Chat): User {
         return UniversalUser
-    }
-
-    override fun listUsers(chat: Chat): List<String> {
-        return emptyList()
     }
 
     override fun getName(chat: Chat, user: User): String {
@@ -48,8 +45,6 @@ object FakeBaseInterface: BaseInterface() {
     override val name: String = "FakeBaseInterface"
 }
 
-private object UniversalProtocol: Protocol("Universal", FakeBaseInterface) // Used to represent the universal chat.
-
 abstract class CommandLike(open val name: String,
                            open val helpText: String,
                            open val syntaxText: String)
@@ -65,17 +60,16 @@ data class Alias(override val name: String,
                  override val helpText: String,
                  override val syntaxText: String): CommandLike(name, helpText, syntaxText)
 
-abstract class BaseInterface {
-    abstract val name: String
-    abstract val protocol: Protocol
+interface BaseInterface {
+    val name: String
+    val protocol: Protocol
     fun receivedMessage(chat: Chat, message: String, sender: User) = runCommand(message, sender)
-    abstract fun sendMessage(chat: Chat, message: String, sender: User): Boolean
-    abstract fun getBot(chat: Chat): User
-    abstract fun listUsers(chat: Chat): List<String>
-    abstract fun getName(chat: Chat, user: User): String
-    abstract fun getChats(): List<Chat>
-    abstract fun getUsers(chat: Chat): List<User>
-    abstract fun getChatName(chat: Chat): String
+    fun sendMessage(chat: Chat, message: String, sender: User): Boolean
+    fun getBot(chat: Chat): User
+    fun getName(chat: Chat, user: User): String
+    fun getChats(): List<Chat>
+    fun getUsers(chat: Chat): List<User>
+    fun getChatName(chat: Chat): String
 }
 
 private val callbacks = HashMap<Class<out BonusInterface>, ArrayList<(Chat, User, String) -> Boolean>>()

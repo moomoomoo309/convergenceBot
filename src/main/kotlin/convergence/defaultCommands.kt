@@ -10,6 +10,7 @@ import java.time.Duration
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.*
+import kotlin.math.min
 import kotlin.math.nextUp
 
 class UnregisteredChat: Exception()
@@ -29,7 +30,7 @@ inline fun unregisteredChat(chat: Chat) {
 
 fun getUserFromName(chat: Chat, name: String): User? {
     var alternateOption: User? = null
-    val baseInterface = chat.protocol.baseInterface
+    val baseInterface = baseInterfaceMap[chat.protocol]!!
     for (user in baseInterface.getUsers(chat)) {
         val currentName = baseInterface.getName(chat, user)
         if (currentName == name)
@@ -43,7 +44,7 @@ fun getUserFromName(chat: Chat, name: String): User? {
 fun getFullName(chat: Chat, name: String): String? {
     val user = getUserFromName(chat, name)
     if (chat.protocol in protocols)
-        return if (user != null) chat.protocol.baseInterface.getName(chat, user) else null
+        return if (user != null) baseInterfaceMap[chat.protocol]!!.getName(chat, user) else null
     unregisteredChat(chat)
     return null
 }
@@ -57,8 +58,8 @@ fun help(args: List<String>, sender: User): String? {
     return when (pageOrCommand) {
         is Int -> {
             val helpText = StringBuilder("Help page $pageOrCommand/$numPages:\n")
-            for (i in 0..commandsPerPage) {
-                val currentCommand = sortedHelpText[i + pageOrCommand * commandsPerPage]
+            for (i in 0..min(sortedHelpText.size - 1, commandsPerPage)) {
+                val currentCommand = sortedHelpText[i + (pageOrCommand - 1) * commandsPerPage]
                 helpText.append("(${if (currentCommand is Command) 'C' else 'A'}) ${currentCommand.name} - ${currentCommand.helpText}\n")
             }
             helpText.toString()
@@ -107,14 +108,14 @@ fun removeAlias(args: List<String>, sender: User): String? {
 }
 
 fun me(args: List<String>, sender: User): String? {
-    return "*${getUserName(sender)} ${args.joinToString("")}"
+    return "*${getUserName(sender)} ${args.joinToString(" ")}"
 }
 
 fun chats(args: List<String>, sender: User): String? {
     val builder = StringBuilder()
     for (protocol in protocols) {
         builder.append("${protocol.name}\n\t")
-        for (chat in protocol.baseInterface.getChats())
+        for (chat in baseInterfaceMap[protocol]!!.getChats())
             builder.append(chat.name).append(", ")
         builder.setLength(builder.length - 2) // Remove the last ", ".
         builder.append('\n')
@@ -212,9 +213,24 @@ fun setLocation(args: List<String>, sender: User): String? {
 fun target(args: List<String>, sender: User): String? {
     //TODO: Check if -1 works for subList
     val chat = sender.chat
-    val baseInterface = chat.protocol.baseInterface
-    val user = getUserFromName(chat, args[args.size - 1]) ?: return "No user by the name \"${args[args.size - 1]}\" found."
+    val baseInterface = baseInterfaceMap[chat.protocol]!!
+    val user = getUserFromName(chat, args[args.size - 1])
+            ?: return "No user by the name \"${args[args.size - 1]}\" found."
     return args.subList(0, -1).joinToString(" ").replace("%target", baseInterface.getName(chat, user))
+}
+
+fun commands(args: List<String>, sender: User): String? {
+    val commandList = ArrayList<String>(10)
+    commands[sender.chat]?.forEach { commandList.add(it.key) }
+    commands[UniversalChat]?.forEach { commandList.add(it.key) }
+    return if (commandList.isNotEmpty()) commandList.joinToString(", ") else "No commands found."
+}
+
+fun aliases(args: List<String>, sender: User): String? {
+    val aliasList = ArrayList<String>(10)
+    aliases[sender.chat]?.forEach { aliasList.add(it.key) }
+    aliases[UniversalChat]?.forEach { aliasList.add(it.key) }
+    return if (aliasList.isNotEmpty()) aliasList.joinToString(", ") else "No aliases found."
 }
 
 fun registerDefaultCommands() {
@@ -239,6 +255,11 @@ fun registerDefaultCommands() {
     registerCommand(UniversalChat, Command("goingto", ::setLocation,
             "Tells the chat you're going somewhere for some time.",
             "goingto \"location\" [for (duration)] [at (time)/in (timedelta)/on (datetime)] (Order does not matter with for/at/in/on)"))
-
+    registerCommand(UniversalChat, Command("commands", ::commands,
+            "Lists all of the commands in this chat.",
+            "commands (Takes no arguments)"))
+    registerCommand(UniversalChat, Command("aliases", ::aliases,
+            "Lists all of the aliases in this chat.",
+            "aliases (Takes no arguments)"))
 }
 
