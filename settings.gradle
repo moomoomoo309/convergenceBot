@@ -1,3 +1,5 @@
 rootProject.name = 'convergence.bot'
 
 include 'basicPlugin'
+include 'consolePlugin'
+

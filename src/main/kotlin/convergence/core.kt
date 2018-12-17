@@ -13,14 +13,16 @@ import java.util.*
 class CommandDoesNotExist(cmd: String): Exception(cmd)
 
 val protocols = mutableSetOf<Protocol>()
+val baseInterfaceMap = mutableMapOf<Protocol, BaseInterface>()
 /**
  * Adds a protocol to the protocol registry.
  * @return true if a protocol with that name does not already exist in the registry, false otherwise.
  */
-fun registerProtocol(protocol: Protocol): Boolean {
+fun registerProtocol(protocol: Protocol, baseInterface: BaseInterface): Boolean {
     if (protocol in protocols)
         return false
     protocols += protocol
+    baseInterfaceMap[protocol] = baseInterface
     return true
 }
 
@@ -45,7 +47,7 @@ fun registerCommand(chat: Chat, command: Command): Boolean {
             }
         }
     else
-        sortedHelpText[0] = command
+        sortedHelpText.add(command)
 
     commands[chat]!![command.name] = command
     return true
@@ -99,7 +101,7 @@ fun sendMessage(chat: Chat, message: String?) {
         System.err.println("Protocol \"${chat.protocol.name}\" not properly registered!")
         return
     }
-    val baseInterface = chat.protocol.baseInterface
+    val baseInterface = baseInterfaceMap[chat.protocol]!!
     val bot = baseInterface.getBot(chat)
     baseInterface.sendMessage(chat, message, bot)
 }
@@ -109,7 +111,7 @@ fun sendMessage(chat: Chat, message: String?) {
  */
 fun getUserName(sender: User): String {
     val chat = sender.chat
-    val baseInterface = chat.protocol.baseInterface
+    val baseInterface = baseInterfaceMap[chat.protocol]!!
     return if (baseInterface is INickname)
         baseInterface.getUserNickname(chat, sender) ?: baseInterface.getName(chat, sender)
     else
@@ -144,7 +146,7 @@ fun replaceAliasVars(chat: Chat, message: String?, sender: User): String? {
                 if (bitSet[i]) {
                     anyTrue = true
                     if (charIndex == aliasVar.key.length) {
-                        val baseInterface = chat.protocol.baseInterface
+                        val baseInterface = baseInterfaceMap[chat.protocol]!!
                         stringBuilder.setLength(stringBuilder.length - aliasVar.key.length - 1)
                         stringBuilder.append(aliasVar.value(baseInterface, chat, sender))
                         charIndex = -1
@@ -177,14 +179,15 @@ fun runCommand(message: String, sender: User) {
     }
     if (commandData != null)
         runCommand(sender, commandData)
-    else
-        sendMessage(chat, "Unspecified error occurred when trying to process \"$message\".")
+    else {
+        // Not a command, just a message
+    }
 }
 
 fun runCommand(sender: User, commandData: CommandData) {
     val chat = sender.chat
     val args = commandData.args
-    sendMessage(chat, replaceAliasVars(chat, commandData.command.function.invoke(args, sender), sender))
+    sendMessage(chat, replaceAliasVars(chat, commandData.command.function(args, sender), sender))
 }
 
 const val allowedTimeDifference = 30
@@ -234,19 +237,24 @@ class core {
             paths.addArgument("-pp", "--plugin-path")
                     .type(File::class.java).default = File(System.getProperty("user.home"), ".convergence")
             paths.addArgument("-bpp", "--basic-plugin-path")
-                    .type(File::class.java).default = File("basicPlugin/build/libs")
+                    .type(File::class.java).default = File("consolePlugin/build/libs")
             try {
                 commandLineArgs = argParser.parseArgs(args)
             } catch (e: ArgumentParserException) {
                 System.err.println(e.message)
                 return
             }
+            println("Registering default commands...")
+            registerDefaultCommands()
             println("Starting scheduler thread...")
             SchedulerThread.start()
             val plugins = PluginLoader.loadPlugin((commandLineArgs.get("plugin_path") as File).path)
-            println("Loaded Plugins:\n${plugins.joinToString("\n")}")
+            if (plugins.isEmpty())
+                println("No plugins loaded.")
+            else
+                println("Loaded Plugins:\t${plugins.joinToString("\t") { it.name }}")
             for (plugin in plugins) {
-                println("Starting plugin: ${plugin.name}")
+                println("Initializing plugin: ${plugin.name}")
                 Thread(plugin::init).start()
             }
         }

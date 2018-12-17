@@ -1,0 +1,46 @@
+import java.nio.file.Files
+import java.nio.file.Paths
+import java.nio.file.StandardCopyOption
+
+group = 'convergence.test'
+version = '1.0-SNAPSHOT'
+
+description = """console plugin for convergence bot"""
+
+sourceCompatibility = 1.5
+targetCompatibility = 1.5
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+sourceSets {
+    main {
+        kotlin {
+            //noinspection GroovyAssignabilityCheck
+            srcDir 'src'
+        }
+        resources {
+            srcDirs 'resources'
+        }
+    }
+}
+
+dependencies {
+    compile rootProject
+}
+
+task copyJar << {
+    for (jar in Paths.get("build/libs/").toFile().listFiles())
+        if (jar.name.contains("Plugin"))
+            Files.copy(jar.toPath(), Paths.get(System.getProperty("user.home"), ".convergence", "plugins", jar.name), StandardCopyOption.REPLACE_EXISTING)
+        else
+            Files.copy(jar.toPath(), Paths.get(System.getProperty("user.home"), ".convergence", jar.name), StandardCopyOption.REPLACE_EXISTING)
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'convergence.testPlugins.basicPlugin.Main'
+    }
+}
+
+jar.finalizedBy(copyJar)
