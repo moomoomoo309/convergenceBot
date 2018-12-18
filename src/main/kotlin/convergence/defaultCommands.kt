@@ -233,6 +233,66 @@ fun aliases(args: List<String>, sender: User): String? {
     return if (aliasList.isNotEmpty()) aliasList.joinToString(", ") else "No aliases found."
 }
 
+fun schedule(args: List<String>, sender: User): String? {
+    val timeList = dateTimeParser.parse(args[0])
+    val command = args[1]
+    val commandData = getCommandData(command, sender)
+    if (commandData != null)
+        for (group in timeList)
+            for (time in group.dates)
+                SchedulerThread.schedule(sender, commandData, dateToLocalDateTime(time))
+    return "Scheduled \"${args[1]}\" to run on ${args[0]}."
+}
+
+fun events(args: List<String>, sender: User): String? {
+    return SchedulerThread.getCommandStrings(sender).joinToString("\n")
+}
+
+fun eventsByUser(args: List<String>, sender: User): String? {
+    val eventsList = SchedulerThread.getCommands(sender)
+    val eventMap = HashMap<User, ArrayList<ScheduledCommand>>()
+    for (event in eventsList) {
+        if (!eventMap.containsKey(event.sender))
+            eventMap[event.sender] = ArrayList()
+        eventMap[event.sender]!!.add(event)
+    }
+    val builder = StringBuilder("Currently scheduled events by user:\n")
+    for ((user, events) in eventMap) {
+        builder.append("${getUserName(user)}:\n")
+        for (event in events)
+            builder.append("\t[${event.id}]@${event.time} \"${event.commandData.command} ${event.commandData.args.joinToString(" ")}\"")
+    }
+    return builder.toString()
+}
+
+fun unschedule(args: List<String>, sender: User): String? {
+    val index = Integer.parseInt(args[0])
+    return if (SchedulerThread.unschedule(sender, index))
+        "Unscheduled command with index $index."
+    else
+        "No command with index $index found."
+}
+
+fun link(args: List<String>, sender: User): String? {
+    TODO("Implement me!" +
+            "Add unique ID for chats, similar to events, which the chats command will print out, which should probably" +
+            "also be serialized")
+}
+
+fun getChatFromID(ID: String): Chat? = TODO("Implement me!")
+
+fun unlink(args: List<String>, sender: User): String? {
+    val chat = getChatFromID(args[0])
+    return if (chat != null) {
+        if (sender.chat in linkedChats) {
+            linkedChats[sender.chat]!!.remove(chat)
+            "Removed ${chat.name} from this chat's links."
+        } else
+            "There are no chats linked to this one!"
+    } else
+        "No chat with ID ${args[0]} found."
+}
+
 fun registerDefaultCommands() {
     registerCommand(UniversalChat, Command("help", ::help,
             "Provides a paginated list of commands and their syntax, or specific help on a single command.",
@@ -261,5 +321,8 @@ fun registerDefaultCommands() {
     registerCommand(UniversalChat, Command("aliases", ::aliases,
             "Lists all of the aliases in this chat.",
             "aliases (Takes no arguments)"))
+    registerCommand(UniversalChat, Command("schedule", ::schedule,
+            "Schedules a command to run later.",
+            "schedule \"time\" \"command (with delimiter and arguments)\""))
 }
 

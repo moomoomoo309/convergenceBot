@@ -57,9 +57,7 @@ fun parseCommand(command: String, commandDelimiter: String, chat: Chat): Command
     val currentContent = StringBuilder()
     val currentEscapeCharacter = StringBuilder()
     var lastCharWasEscape = false // Needed if the last character is not an escape.
-    var i = -1
-    for (c in command) {
-        ++i
+    for ((i, c) in command.withIndex()) {
         // Make sure the command delimiter is on there, or it's not a command.
         if (!hasCommandDelimiter) {
             when {

@@ -162,26 +162,27 @@ fun replaceAliasVars(chat: Chat, message: String?, sender: User): String? {
     return stringBuilder.toString()
 }
 
-/**
- * Run the Command in the given message, or do nothing if none exists.
- */
-fun runCommand(message: String, sender: User) {
-    val commandData: CommandData?
+fun getCommandData(message: String, sender: User): CommandData? {
+    var commandData: CommandData? = null
     val chat = sender.chat
     try {
         commandData = parseCommand(message, commandDelimiters.getOrDefault(chat, defaultCommandDelimiter), chat)
     } catch (e: CommandDoesNotExist) {
         sendMessage(chat, "No command exists with name \"${e.message}\".")
-        return
     } catch (e: InvalidEscapeSequence) {
         sendMessage(chat, "Invalid escape sequence \"${e.message}\" passed. Are your backslashes correct?")
-        return
     }
+    return commandData
+}
+
+/**
+ * Run the Command in the given message, or do nothing if none exists.
+ */
+fun runCommand(message: String, sender: User) {
+    val commandData = getCommandData(message, sender)
     if (commandData != null)
         runCommand(sender, commandData)
-    else {
-        // Not a command, just a message
-    }
+    forwardToLinkedChats(message, sender)
 }
 
 fun runCommand(sender: User, commandData: CommandData) {
@@ -190,10 +191,20 @@ fun runCommand(sender: User, commandData: CommandData) {
     sendMessage(chat, replaceAliasVars(chat, commandData.command.function(args, sender), sender))
 }
 
+val linkedChats = HashMap<Chat, MutableSet<Chat>>()
+fun forwardToLinkedChats(message: String, sender: User) {
+    val chat = sender.chat
+    TODO("Implement me!")
+}
+
 const val allowedTimeDifference = 30
 
+data class ScheduledCommand(val time: LocalDateTime, val sender: User, val commandData: CommandData, val id: Int)
+
 object SchedulerThread: Thread() {
-    private val scheduledCommands = TreeMap<LocalDateTime, ArrayList<Pair<User, CommandData>>>()
+    private val scheduledCommands = TreeMap<LocalDateTime, ArrayList<ScheduledCommand>>()
+    private val commandsList = HashMap<Int, ScheduledCommand>()
+    private var currentId: Int = 0
     override fun run() {
         while (this.isAlive) {
             val now = LocalDateTime.now()
@@ -202,7 +213,7 @@ object SchedulerThread: Thread() {
                 val cmdEntry = commandIter.next()
                 if (cmdEntry.key.until(now, ChronoUnit.SECONDS) in 0..allowedTimeDifference) {
                     for (cmdPair in cmdEntry.value)
-                        runCommand(cmdPair.first, cmdPair.second)
+                        runCommand(cmdPair.sender, cmdPair.commandData)
                     commandIter.remove()
                 } else
                     break
@@ -214,8 +225,28 @@ object SchedulerThread: Thread() {
     fun schedule(sender: User, command: CommandData, time: LocalDateTime): String? {
         if (time !in scheduledCommands)
             scheduledCommands[time] = ArrayList(2)
-        scheduledCommands[time]!!.add(Pair(sender, command))
+        scheduledCommands[time]!!.add(ScheduledCommand(time, sender, command, currentId++))
         return "Scheduled ${getUserName(sender)} to run \"$command\" to run at $time."
+    }
+
+    fun getCommands(sender: User): List<ScheduledCommand> {
+        return commandsList.values.toList()
+    }
+
+    fun getCommandStrings(sender: User): List<String> {
+        val list = ArrayList<String>()
+        for (command in getCommands(sender))
+            list.add("[${command.id}]@${command.time} ${command.sender} - \"${command.commandData.command} ${command.commandData.args.joinToString(" ")}\"")
+        return list
+    }
+
+    fun unschedule(sender: User, index: Int): Boolean {
+        val commandToRemove = commandsList.remove(index)
+        if (commandToRemove != null)
+            scheduledCommands[commandToRemove.time]?.remove(commandToRemove)
+        else
+            return false
+        return true
     }
 }
 
