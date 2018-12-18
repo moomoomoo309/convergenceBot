@@ -115,8 +115,8 @@ fun chats(args: List<String>, sender: User): String? {
     val builder = StringBuilder()
     for (protocol in protocols) {
         builder.append("${protocol.name}\n\t")
-        for (chat in baseInterfaceMap[protocol]!!.getChats())
-            builder.append(chat.name).append(", ")
+        for ((id, chat) in chatMap)
+            builder.append(chat.name).append(" (").append(id).append("), ")
         builder.setLength(builder.length - 2) // Remove the last ", ".
         builder.append('\n')
     }
@@ -248,7 +248,10 @@ fun events(args: List<String>, sender: User): String? {
     return SchedulerThread.getCommandStrings(sender).joinToString("\n")
 }
 
-fun eventsByUser(args: List<String>, sender: User): String? {
+/**
+ * Gets all of the currently scheduled events that were scheduled by [sender].
+ */
+private fun getUserEvents(sender: User): Map<User, ArrayList<ScheduledCommand>> {
     val eventsList = SchedulerThread.getCommands(sender)
     val eventMap = HashMap<User, ArrayList<ScheduledCommand>>()
     for (event in eventsList) {
@@ -256,33 +259,71 @@ fun eventsByUser(args: List<String>, sender: User): String? {
             eventMap[event.sender] = ArrayList()
         eventMap[event.sender]!!.add(event)
     }
+    return eventMap
+}
+
+fun eventsFromUser(args: List<String>, sender: User): String? {
+    val eventMap = getUserEvents(sender)
+    val builder = StringBuilder("Currently scheduled events by user:\n")
+    builder.append("${getUserName(sender)}:\n")
+    if (sender in eventMap) {
+        val events = eventMap[sender]!!
+        events.sortBy { it.time }
+        for (event in events)
+            builder.append("\t[${event.id}]@${formatTime(event.time)} \"${event.commandData.command} ${event.commandData.args.joinToString(" ")}\"")
+    }
+    return builder.toString()
+}
+
+fun eventsByUser(args: List<String>, sender: User): String? {
+    val eventMap = getUserEvents(sender)
     val builder = StringBuilder("Currently scheduled events by user:\n")
     for ((user, events) in eventMap) {
+        events.sortBy { it.time }
         builder.append("${getUserName(user)}:\n")
         for (event in events)
-            builder.append("\t[${event.id}]@${event.time} \"${event.commandData.command} ${event.commandData.args.joinToString(" ")}\"")
+            builder.append("\t[${event.id}]@${formatTime(event.time)} \"${event.commandData.command} ${event.commandData.args.joinToString(" ")}\"")
     }
     return builder.toString()
 }
 
 fun unschedule(args: List<String>, sender: User): String? {
-    val index = Integer.parseInt(args[0])
+    val index: Int = try {
+        Integer.parseInt(args[0])
+    } catch (e: NumberFormatException) {
+        return "${args[0]} is not an event ID!"
+    }
+
     return if (SchedulerThread.unschedule(sender, index))
-        "Unscheduled command with index $index."
+        "Unscheduled event with index $index."
     else
-        "No command with index $index found."
+        "No event with index $index found."
 }
 
 fun link(args: List<String>, sender: User): String? {
-    TODO("Implement me!" +
-            "Add unique ID for chats, similar to events, which the chats command will print out, which should probably" +
-            "also be serialized")
+    val index: Int = try {
+        Integer.parseInt(args[0])
+    } catch (e: NumberFormatException) {
+        return "${args[0]} is not a chat ID!"
+    }
+
+    val chatToLink = chatMap[index]
+    return if (chatToLink != null) {
+        if (sender.chat !in linkedChats)
+            linkedChats[sender.chat] = HashSet()
+        linkedChats[sender.chat]!!.add(chatToLink)
+        "${chatToLink.name} linked to ${sender.chat.name}."
+    } else
+        "No chat with ID $index found."
 }
 
-fun getChatFromID(ID: String): Chat? = TODO("Implement me!")
-
 fun unlink(args: List<String>, sender: User): String? {
-    val chat = getChatFromID(args[0])
+    val index: Int = try {
+        Integer.parseInt(args[0])
+    } catch (e: NumberFormatException) {
+        return "${args[0]} is not a chat ID!"
+    }
+    val chat = chatMap[index]
     return if (chat != null) {
         if (sender.chat in linkedChats) {
             linkedChats[sender.chat]!!.remove(chat)
@@ -290,7 +331,15 @@ fun unlink(args: List<String>, sender: User): String? {
         } else
             "There are no chats linked to this one!"
     } else
-        "No chat with ID ${args[0]} found."
+        "No chat with ID $index found."
+}
+
+fun links(args: List<String>, sender: User): String? {
+    val chat = sender.chat
+    return if (chat in linkedChats)
+        "Linked chats: ${linkedChats[chat]!!.joinToString(", ")}"
+    else
+        "No chats are linked to this one."
 }
 
 fun registerDefaultCommands() {
@@ -324,5 +373,26 @@ fun registerDefaultCommands() {
     registerCommand(UniversalChat, Command("schedule", ::schedule,
             "Schedules a command to run later.",
             "schedule \"time\" \"command (with delimiter and arguments)\""))
+    registerCommand(UniversalChat, Command("unschedule", ::unschedule,
+            "Unschedules a command, so it will not be run later. The ID can be obtained from the events command.",
+            "unschedule (ID)"))
+    registerCommand(UniversalChat, Command("events", ::events,
+            "Lists all of the events you've made.",
+            "events (Takes no arguments)"))
+    registerCommand(UniversalChat, Command("allevents", ::events,
+            "Lists all of the events in chronological order.",
+            "allevents (Takes no arguments)"))
+    registerCommand(UniversalChat, Command("eventsbyuser", ::eventsByUser,
+            "Lists all events by user, then in chronological order.",
+            "eventsbyuser (Takes no arguments)"))
+    registerCommand(UniversalChat, Command("link", ::link,
+            "Links a chat to this one. The ID can be obtained from the chats command.",
+            "link (ID)"))
+    registerCommand(UniversalChat, Command("unlink", ::unlink,
+            "Unlinks a chat from this one. The ID can be obtained from the chats command.",
+            "unlink (ID)"))
+    registerCommand(UniversalChat, Command("links", ::links,
+            "Lists all of the chats linked to this one.",
+            "links (Takes no arguments)"))
 }
 

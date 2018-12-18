@@ -155,7 +155,7 @@ sealed class BonusInterface {
 
         val supportedFormats: Set<Format>
 
-        fun getDelimiters(protocol: Protocol, format: Format): List<String>
+        fun getDelimiters(protocol: Protocol, format: Format): Pair<String, String>
         fun getSupportedFormats(protocol: Protocol): List<Format>
         fun supportsFormat(protocol: Protocol, format: Format): Boolean
     }

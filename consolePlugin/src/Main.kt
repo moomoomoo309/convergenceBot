@@ -52,6 +52,10 @@ class Main: Plugin {
     override val baseInterface: BaseInterface = ConsoleInterface
     override fun init() {
         println("consolePlugin init")
+        println("Registering chat...")
+        val id = currentChatID++
+        chatMap[id] = ConsoleChat
+        reverseChatMap[ConsoleChat] = id
         print("> ")
         System.out.flush()
         val stdin = Scanner(System.`in`)

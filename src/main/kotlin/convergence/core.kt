@@ -14,6 +14,9 @@ class CommandDoesNotExist(cmd: String): Exception(cmd)
 
 val protocols = mutableSetOf<Protocol>()
 val baseInterfaceMap = mutableMapOf<Protocol, BaseInterface>()
+val chatMap = mutableMapOf<Int, Chat>()
+val reverseChatMap = mutableMapOf<Chat, Int>()
+var currentChatID: Int = 0
 /**
  * Adds a protocol to the protocol registry.
  * @return true if a protocol with that name does not already exist in the registry, false otherwise.
@@ -182,25 +185,50 @@ fun runCommand(message: String, sender: User) {
     val commandData = getCommandData(message, sender)
     if (commandData != null)
         runCommand(sender, commandData)
+    // Send the message of the command sent to linked chats.
     forwardToLinkedChats(message, sender)
 }
 
 fun runCommand(sender: User, commandData: CommandData) {
     val chat = sender.chat
     val args = commandData.args
-    sendMessage(chat, replaceAliasVars(chat, commandData.command.function(args, sender), sender))
+    val cmdMsg = replaceAliasVars(chat, commandData.command.function(args, sender), sender)
+    sendMessage(chat, cmdMsg)
+    // Send the result of the command to linked chats.
+    forwardToLinkedChats(cmdMsg, sender)
 }
 
 val linkedChats = HashMap<Chat, MutableSet<Chat>>()
-fun forwardToLinkedChats(message: String, sender: User) {
+fun forwardToLinkedChats(message: String?, sender: User) {
+    if (message == null)
+        return
     val chat = sender.chat
-    TODO("Implement me!")
+    val protocol = chat.protocol
+    var boldOpen: String = ""
+    var boldClose: String = ""
+    val baseInterface = baseInterfaceMap[protocol]
+    // Try to get the delimiters for bold, if possible.
+    if (baseInterface is IFormatting)
+        for (supportedFormat in baseInterface.supportedFormats)
+            if (supportedFormat.name.toLowerCase() == "bold") {
+                val delimiters = baseInterface.getDelimiters(protocol, supportedFormat)
+                boldOpen = delimiters.first
+                boldClose = delimiters.second
+                break
+            }
+
+    // Send the messages out to the linked chats, if there are any. Don't error if there aren't any.
+    if (chat in linkedChats)
+        for (linkedChat in linkedChats[chat]!!)
+            sendMessage(linkedChat, "$boldOpen${getUserName(sender)}:$boldClose $message")
+}
+
+fun formatTime(time: LocalDateTime): String {
+    return time.toString() //TODO: Get natural timedelta
 }
 
 const val allowedTimeDifference = 30
-
 data class ScheduledCommand(val time: LocalDateTime, val sender: User, val commandData: CommandData, val id: Int)
-
 object SchedulerThread: Thread() {
     private val scheduledCommands = TreeMap<LocalDateTime, ArrayList<ScheduledCommand>>()
     private val commandsList = HashMap<Int, ScheduledCommand>()
@@ -234,10 +262,9 @@ object SchedulerThread: Thread() {
     }
 
     fun getCommandStrings(sender: User): List<String> {
-        val list = ArrayList<String>()
-        for (command in getCommands(sender))
-            list.add("[${command.id}]@${command.time} ${command.sender} - \"${command.commandData.command} ${command.commandData.args.joinToString(" ")}\"")
-        return list
+        val commands = getCommands(sender)
+        return commands.sortedBy { it.time }
+                .map { "[${it.id}]@${formatTime(it.time)} ${it.sender} - \"${it.commandData.command} ${it.commandData.args.joinToString(" ")}\"" }
     }
 
     fun unschedule(sender: User, index: Int): Boolean {
