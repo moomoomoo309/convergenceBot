@@ -6,7 +6,7 @@ data class CommandData(var command: Command, var args: List<String>) {
 
 private fun isEscapeCharacter(c: Char, l: Int): Boolean {
     return when (c) {
-        'b', 't', 'n', 'f', 'r', '"', '\'', '\\', 'u' -> l == 1
+        'b', 't', 'n', 'f', 'r', '"', '\'', '\\', 'u' -> l == 0
         in '0'..'9' -> true
         else -> false
     }
@@ -14,12 +14,16 @@ private fun isEscapeCharacter(c: Char, l: Int): Boolean {
 
 private val validUnicodeChars = setOf('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f')
 private fun isEscapeSequence(s: String): Boolean {
+    if (s.isEmpty())
+        return false
     val c = s[0]
     val l = s.length
     return when (c) {
         'u' -> l == 5 && s.subSequence(1, 5).all { it in validUnicodeChars }
         in '0'..'9' -> {
             var i = 0
+            if (s[0] !in '0'..'3')
+                throw InvalidEscapeSequence("\"$s\" (Did not capture entire escape, stopped at first invalid character)")
             s.all {
                 when (i) {
                     0 -> s[i++] in '0'..'3'
@@ -53,7 +57,9 @@ fun parseCommand(command: String, commandDelimiter: String, chat: Chat): Command
     val currentContent = StringBuilder()
     val currentEscapeCharacter = StringBuilder()
     var lastCharWasEscape = false // Needed if the last character is not an escape.
-    command.forEachIndexed { i, c ->
+    var i = -1
+    for (c in command) {
+        ++i
         // Make sure the command delimiter is on there, or it's not a command.
         if (!hasCommandDelimiter) {
             when {
@@ -82,8 +88,6 @@ fun parseCommand(command: String, commandDelimiter: String, chat: Chat): Command
                 if (escapeLength < 2)
                     throw InvalidEscapeSequence(currentEscapeCharacter.toString())
                 else {
-                    if (i < command.length - 1)
-                        currentEscapeCharacter.setLength(currentEscapeCharacter.length - 1)
                     val currentEscapeStr = currentEscapeCharacter.toString()
                     currentContent.append(when (currentEscapeStr) {
                         "b" -> '\b'
@@ -100,11 +104,17 @@ fun parseCommand(command: String, commandDelimiter: String, chat: Chat): Command
                             if (currentEscapeStr.isEmpty()) // For an invalid octal escape starting with a character higher than 3.
                                 throw InvalidEscapeSequence(currentEscapeStr)
                             when (currentEscapeStr[0]) {
-                                'u' -> if (isEscapeSequence(currentEscapeStr))
+                                'u' -> if (currentEscapeStr.length >= 5 && isEscapeSequence(currentEscapeStr.substring(0, 5)))
                                     Integer.parseInt(currentEscapeStr.substring(1, 5), 16).toChar()
                                 else
                                     throw InvalidEscapeSequence(currentEscapeStr) // This will only run if the last character is part of an invalid unicode escape.
-                                in '0'..'9' -> Integer.parseInt(currentEscapeStr, 8).toChar()
+                                in '0'..'9' -> {
+                                    val octalInt = Integer.parseInt(currentEscapeStr.trim(), 8)
+                                    if (octalInt > 255)
+                                        throw InvalidEscapeSequence(currentEscapeStr)
+                                    else
+                                        octalInt.toChar()
+                                }
                                 else -> throw InvalidEscapeSequence(currentEscapeStr)
                             }
                         }
@@ -112,6 +122,7 @@ fun parseCommand(command: String, commandDelimiter: String, chat: Chat): Command
                     lastCharWasEscape = true
                     currentEscapeCharacter.setLength(0)
                     escapeLength = 0
+                    if (c == '\\') continue
                 }
         }
 
@@ -132,14 +143,28 @@ fun parseCommand(command: String, commandDelimiter: String, chat: Chat): Command
                             argList.add(currentContent.toString())
                         }
                         currentContent.setLength(0)
+                    } else {
+                        if (i == command.length - 1) {
+                            if (c != '"')
+                                throw InvalidEscapeSequence("Unmatched \"")
+                            argList.add(currentContent.toString())
+                            currentContent.setLength(0)
+                        } else
+                            currentContent.append(c)
                     }
-                c == '"' -> inQuote = !inQuote
-                else -> currentContent.append(c)
+                c == '"' -> {
+                    inQuote = !inQuote
+                    if (!inQuote) {
+                        argList.add(currentContent.toString())
+                        currentContent.setLength(0)
+                    }
+                }
+                else -> if (!lastCharWasEscape) currentContent.append(c)
             }
         lastCharWasEscape = false
     }
 
-    val cmd = if (commandName != null) getCommand(commandName!!, chat) else return null
+    val cmd = if (commandName != null) getCommand(commandName, chat) else return null
     return if (cmd is Command) CommandData(cmd, argList) else CommandData(cmd as Alias, argList)
 }
 

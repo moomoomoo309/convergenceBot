@@ -25,12 +25,13 @@ class CommandParserTest {
 
     @Test
     fun validEscapes() {
-        val testCommandData = loadCommandData("!test \\f \\\\ \\u0014 \\b")
+        val testCommandData = loadCommandData("!test \\f \\\\ \\u0014 \\tb \\b")
         assertEquals("test", testCommandData?.command?.name, "Did not load test command correctly.")
         assertEquals("\u000c", testCommandData?.args?.get(0), "Did not escape \\f properly.")
         assertEquals("\\", testCommandData?.args?.get(1), "Did not escape \\\\ properly.")
         assertEquals("\u0014", testCommandData?.args?.get(2), "Did not escape \\u0014 properly.")
-        assertEquals("\b", testCommandData?.args?.get(3), "Did not escape \\b properly.")
+        assertEquals("\tb", testCommandData?.args?.get(3), "Did not escape \\tb properly. (a \\t with a letter after it)")
+        assertEquals("\b", testCommandData?.args?.get(4), "Did not escape \\b properly.")
     }
 
     @Test
@@ -97,6 +98,13 @@ class CommandParserTest {
     @Test
     fun validCommand() {
         val testCommandData = loadCommandData("!commands")
-        assertEquals("commands", testCommandData?.command?.name)
+        assertEquals("commands", testCommandData?.command?.name, "Did not parse valid command correctly.")
+    }
+
+    @Test
+    fun doubleQuotedArguments() {
+        val testCommandData = loadCommandData("!echo \"Hi mailman!\"")
+        assertEquals("echo", testCommandData?.command?.name, "Did not parse valid command with double-quoted arguments correctly.")
+        assertEquals("Hi mailman!", testCommandData?.args?.get(0), "Did not parse double-quoted arguments correctly.")
     }
 }

@@ -56,10 +56,7 @@ class Main: Plugin {
         System.out.flush()
         val stdin = Scanner(System.`in`)
         val currentLine = stdin.nextLine()
-        if (currentLine == "commands")
-            println(commands)
-        else
-            ConsoleInterface.receivedMessage(ConsoleChat, currentLine, ConsoleUser)
+        ConsoleInterface.receivedMessage(ConsoleChat, currentLine, ConsoleUser)
         while (true) {
             print("> ")
             System.out.flush()
