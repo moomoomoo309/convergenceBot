@@ -245,7 +245,10 @@ fun schedule(args: List<String>, sender: User): String? {
 }
 
 fun events(args: List<String>, sender: User): String? {
-    return SchedulerThread.getCommandStrings(sender).joinToString("\n")
+    val strs = SchedulerThread.getCommandStrings(sender)
+    if (strs.isEmpty())
+        return "No events are scheduled."
+    return strs.joinToString("\n")
 }
 
 /**
@@ -264,7 +267,9 @@ private fun getUserEvents(sender: User): Map<User, ArrayList<ScheduledCommand>> 
 
 fun eventsFromUser(args: List<String>, sender: User): String? {
     val eventMap = getUserEvents(sender)
-    val builder = StringBuilder("Currently scheduled events by user:\n")
+    if (eventMap.isEmpty())
+        return "No events are currently scheduled."
+    val builder = StringBuilder("Your currently scheduled events:\n")
     builder.append("${getUserName(sender)}:\n")
     if (sender in eventMap) {
         val events = eventMap[sender]!!
@@ -277,7 +282,9 @@ fun eventsFromUser(args: List<String>, sender: User): String? {
 
 fun eventsByUser(args: List<String>, sender: User): String? {
     val eventMap = getUserEvents(sender)
-    val builder = StringBuilder("Currently scheduled events by user:\n")
+    if (eventMap.isEmpty())
+        return "No events are currently scheduled."
+    val builder = StringBuilder("Scheduled events by user:\n")
     for ((user, events) in eventMap) {
         events.sortBy { it.time }
         builder.append("${getUserName(user)}:\n")
@@ -324,13 +331,15 @@ fun unlink(args: List<String>, sender: User): String? {
         return "${args[0]} is not a chat ID!"
     }
     val chat = chatMap[index]
-    return if (chat != null) {
-        if (sender.chat in linkedChats) {
-            linkedChats[sender.chat]!!.remove(chat)
-            "Removed ${chat.name} from this chat's links."
-        } else
+    return if (chat != null)
+        if (sender.chat in linkedChats)
+            if (linkedChats[sender.chat]!!.remove(chat))
+                "Removed ${chat.name} from this chat's links."
+            else
+                "That chat isn't linked to this one!"
+        else
             "There are no chats linked to this one!"
-    } else
+    else
         "No chat with ID $index found."
 }
 
@@ -376,7 +385,7 @@ fun registerDefaultCommands() {
     registerCommand(UniversalChat, Command("unschedule", ::unschedule,
             "Unschedules a command, so it will not be run later. The ID can be obtained from the events command.",
             "unschedule (ID)"))
-    registerCommand(UniversalChat, Command("events", ::events,
+    registerCommand(UniversalChat, Command("events", ::eventsFromUser,
             "Lists all of the events you've made.",
             "events (Takes no arguments)"))
     registerCommand(UniversalChat, Command("allevents", ::events,

@@ -2,11 +2,13 @@
 
 package convergence
 
+import humanize.Humanize
 import net.sourceforge.argparse4j.ArgumentParsers
 import net.sourceforge.argparse4j.inf.ArgumentParserException
 import net.sourceforge.argparse4j.inf.Namespace
 import java.io.File
 import java.time.LocalDateTime
+import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit
 import java.util.*
 
@@ -137,28 +139,34 @@ fun replaceAliasVars(chat: Chat, message: String?, sender: User): String? {
     val stringBuilder = StringBuilder()
     var charIndex = -1
     val bitSet = BitSet(aliasVars.size)
+    for (i in 0..aliasVars.size)
+        bitSet[i] = true
     var anyTrue = false
     for (currentChar in message) {
         stringBuilder.append(currentChar)
-        if (currentChar == '%')
+        if (currentChar == '%') {
             charIndex = 0
+            continue
+        }
         if (charIndex >= 0) {
             var i = -1
-            for (aliasVar in aliasVars) {
-                i++ // I didn't use forEachIndexed here because of the return in this loop.
+            for ((string, aliasVar) in aliasVars) {
+                i++
+                if (currentChar != string[charIndex])
+                    bitSet[i] = false
                 if (bitSet[i]) {
                     anyTrue = true
-                    if (charIndex == aliasVar.key.length) {
+                    if (charIndex == string.length - 1) {
                         val baseInterface = baseInterfaceMap[chat.protocol]!!
-                        stringBuilder.setLength(stringBuilder.length - aliasVar.key.length - 1)
-                        stringBuilder.append(aliasVar.value(baseInterface, chat, sender))
+                        stringBuilder.setLength(stringBuilder.length - string.length - 1)
+                        stringBuilder.append(aliasVar(baseInterface, chat, sender))
                         charIndex = -1
                         break
                     }
-                    if (currentChar != aliasVar.key[charIndex])
-                        bitSet[i] = false
                 }
             }
+            if (!anyTrue)
+                break
         }
         charIndex = if (anyTrue) charIndex + 1 else -1
     }
@@ -223,11 +231,11 @@ fun forwardToLinkedChats(message: String?, sender: User) {
             sendMessage(linkedChat, "$boldOpen${getUserName(sender)}:$boldClose $message")
 }
 
-fun formatTime(time: LocalDateTime): String {
-    return time.toString() //TODO: Get natural timedelta
-}
+fun localDateTimeToDate(time: LocalDateTime): Date = Date.from(time.toInstant(ZoneOffset.UTC))
+fun formatTime(time: LocalDateTime): String = Humanize.naturalTime(localDateTimeToDate(time))
 
 const val allowedTimeDifference = 30
+
 data class ScheduledCommand(val time: LocalDateTime, val sender: User, val commandData: CommandData, val id: Int)
 object SchedulerThread: Thread() {
     private val scheduledCommands = TreeMap<LocalDateTime, ArrayList<ScheduledCommand>>()
@@ -263,6 +271,8 @@ object SchedulerThread: Thread() {
 
     fun getCommandStrings(sender: User): List<String> {
         val commands = getCommands(sender)
+        if (commands.isEmpty())
+            return emptyList()
         return commands.sortedBy { it.time }
                 .map { "[${it.id}]@${formatTime(it.time)} ${it.sender} - \"${it.commandData.command} ${it.commandData.args.joinToString(" ")}\"" }
     }
