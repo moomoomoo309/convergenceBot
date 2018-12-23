@@ -4,12 +4,38 @@ package convergence
 
 import java.time.LocalDateTime
 
+interface StringSerializable {
+    fun serialize(): String
+    fun getDeserializer(): StringDeserializer<out Any>
+}
+
+abstract class StringDeserializer<T> {
+    abstract fun deserialize(str: String): T?
+}
+
 abstract class Protocol(val name: String)
-abstract class User(val chat: Chat) //Intentionally empty, because it might be represented as an int or a string or whatever.
-abstract class Chat(val protocol: Protocol, val name: String) //Same as above.
-private object UniversalUser: User(UniversalChat)
-object UniversalProtocol: Protocol("Universal") // Used to represent the universal chat.
-object UniversalChat: Chat(UniversalProtocol, "Universal")
+//Intentionally empty, because it might be represented as an int or a string or whatever.
+abstract class User(val chat: Chat): StringSerializable {
+    abstract override fun getDeserializer(): StringDeserializer<out User>
+}
+
+abstract class Chat(val protocol: Protocol, val name: String)
+
+private object UniversalUser: User(UniversalChat), StringSerializable {
+    override fun serialize(): String = "UniversalUser"
+    override fun deserialize(serializedVal: String): UniversalUser = deserializeSingleton(serializedVal)
+}
+
+object UniversalProtocol: Protocol("Universal"), StringSerializable { // Used to represent the universal chat.
+    override fun serialize(): String = "UniversalProtocol"
+    override fun deserialize(serializedVal: String): UniversalProtocol = deserializeSingleton(serializedVal)
+}
+
+object UniversalChat: Chat(UniversalProtocol, "Universal"), StringSerializable {
+    override fun serialize(): String = "UniversalChat"
+    override fun deserialize(serializedVal: String): UniversalChat = deserializeSingleton(serializedVal)
+}
+
 object FakeBaseInterface: BaseInterface {
     override val protocol: Protocol = UniversalProtocol
 

@@ -137,9 +137,8 @@ fun parseCommand(command: String, commandDelimiter: String, chat: Chat): Command
                             currentContent.append(c)
                         if (commandName == null)
                             commandName = currentContent.toString()
-                        else {
+                        else if (currentContent.isNotEmpty())
                             argList.add(currentContent.toString())
-                        }
                         currentContent.setLength(0)
                     } else {
                         if (i == command.length - 1) {

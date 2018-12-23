@@ -102,6 +102,14 @@ class CommandParserTest {
     }
 
     @Test
+    fun validCommandWithQuotes() {
+        val testCommandData = loadCommandData("!schedule \"5 seconds\" \"!echo hi\"")
+        assertEquals("schedule", testCommandData?.command?.name, "Did not parse valid command correctly.")
+        assertEquals("5 seconds", testCommandData?.args?.get(0), "Did not parse first valid quoted argument correctly.")
+        assertEquals("!echo hi", testCommandData?.args?.get(1), "Did not parse second valid quoted argument correctly.")
+    }
+
+    @Test
     fun doubleQuotedArguments() {
         val testCommandData = loadCommandData("!echo \"Hi mailman!\"")
         assertEquals("echo", testCommandData?.command?.name, "Did not parse valid command with double-quoted arguments correctly.")

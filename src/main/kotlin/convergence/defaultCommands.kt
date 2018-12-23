@@ -10,7 +10,6 @@ import java.time.Duration
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.*
-import kotlin.math.min
 import kotlin.math.nextUp
 
 class UnregisteredChat: Exception()
@@ -58,8 +57,11 @@ fun help(args: List<String>, sender: User): String? {
     return when (pageOrCommand) {
         is Int -> {
             val helpText = StringBuilder("Help page $pageOrCommand/$numPages:\n")
-            for (i in 0..min(sortedHelpText.size - 1, commandsPerPage)) {
-                val currentCommand = sortedHelpText[i + (pageOrCommand - 1) * commandsPerPage]
+            for (i in 0..commandsPerPage) {
+                val index = i + (pageOrCommand - 1) * (commandsPerPage + 1)
+                if (index >= sortedHelpText.size)
+                    break
+                val currentCommand = sortedHelpText[index]
                 helpText.append("(${if (currentCommand is Command) 'C' else 'A'}) ${currentCommand.name} - ${currentCommand.helpText}\n")
             }
             helpText.toString()
@@ -234,6 +236,8 @@ fun aliases(args: List<String>, sender: User): String? {
 }
 
 fun schedule(args: List<String>, sender: User): String? {
+    if (args.size != 2)
+        return "Expected 2 arguments, got ${args.size}."
     val timeList = dateTimeParser.parse(args[0])
     val command = args[1]
     val commandData = getCommandData(command, sender)
@@ -241,13 +245,16 @@ fun schedule(args: List<String>, sender: User): String? {
         for (group in timeList)
             for (time in group.dates)
                 SchedulerThread.schedule(sender, commandData, dateToLocalDateTime(time))
-    return "Scheduled \"${args[1]}\" to run on ${args[0]}."
+    return "Scheduled \"$command\" to run in ${args[0]}."
 }
 
+/**
+ * Gets all of the currently scheduled events sorted by ID.
+ */
 fun events(args: List<String>, sender: User): String? {
-    val strs = SchedulerThread.getCommandStrings(sender)
+    val strs = SchedulerThread.getCommandStrings(sender, true)
     if (strs.isEmpty())
-        return "No events are scheduled."
+        return "No events are currently scheduled."
     return strs.joinToString("\n")
 }
 
@@ -275,7 +282,7 @@ fun eventsFromUser(args: List<String>, sender: User): String? {
         val events = eventMap[sender]!!
         events.sortBy { it.time }
         for (event in events)
-            builder.append("\t[${event.id}]@${formatTime(event.time)} \"${event.commandData.command} ${event.commandData.args.joinToString(" ")}\"")
+            builder.append("\t[${event.id}] ${formatTime(event.time)}: \"${commandDelimiters[sender.chat]}${event.commandData.command.name} ${event.commandData.args.joinToString(" ")}\"")
     }
     return builder.toString()
 }
@@ -289,7 +296,7 @@ fun eventsByUser(args: List<String>, sender: User): String? {
         events.sortBy { it.time }
         builder.append("${getUserName(user)}:\n")
         for (event in events)
-            builder.append("\t[${event.id}]@${formatTime(event.time)} \"${event.commandData.command} ${event.commandData.args.joinToString(" ")}\"")
+            builder.append("\t[${event.id}] ${formatTime(event.time)}: \"${commandDelimiters[sender.chat]}${event.commandData.command.name} ${event.commandData.args.joinToString(" ")}\"")
     }
     return builder.toString()
 }

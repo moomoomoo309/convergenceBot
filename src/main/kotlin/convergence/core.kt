@@ -6,9 +6,9 @@ import humanize.Humanize
 import net.sourceforge.argparse4j.ArgumentParsers
 import net.sourceforge.argparse4j.inf.ArgumentParserException
 import net.sourceforge.argparse4j.inf.Namespace
+import org.ocpsoft.prettytime.units.JustNow
 import java.io.File
 import java.time.LocalDateTime
-import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit
 import java.util.*
 
@@ -85,7 +85,15 @@ fun registerAlias(chat: Chat, alias: Alias): Boolean {
 }
 
 const val defaultCommandDelimiter = "!"
-val commandDelimiters = mutableMapOf<Chat, String>()
+
+class DefaultMap<K, V>(val defaultValue: V): HashMap<K, V>() {
+    override fun get(key: K): V {
+        return if (key in this) super.get(key) ?: defaultValue else defaultValue
+    }
+}
+
+val commandDelimiters = DefaultMap<Chat, String>("!")
+
 /**
  * Sets the Command delimiter used for the bot's commands. (is it !help, |help, @help, or something else?)
  */
@@ -97,7 +105,15 @@ fun setCommandDelimiter(chat: Chat, commandDelimiter: String): Boolean {
 }
 
 /**
- * Sends the provided message in the given chat.
+ * Sends [message] in the chat [sender] is in, forwarding the message to any linked chats.
+ */
+fun sendMessage(sender: User, message: String?) {
+    sendMessage(sender.chat, message)
+    forwardToLinkedChats(message, sender)
+}
+
+/**
+ * Sends [message] in [chat], not forwarding it to linked chats.
  */
 fun sendMessage(chat: Chat, message: String?) {
     if (message == null)
@@ -128,14 +144,14 @@ val aliasVars = mutableMapOf(
         "botname" to fun(b: BaseInterface, c: Chat, _: User): String { return b.getName(c, b.getBot(c)) },
         "chatname" to fun(b: BaseInterface, c: Chat, _: User): String { return b.getChatName(c) })
 
-fun replaceAliasVars(message: String?, sender: User) = replaceAliasVars(sender.chat, message, sender)
 /**
  * Replaces instances of the keys in [aliasVars] preceded by a percent sign with the result of the functions therein,
  * such as %sender with the name of the user who sent the message.
  */
-fun replaceAliasVars(chat: Chat, message: String?, sender: User): String? {
+fun replaceAliasVars(message: String?, sender: User): String? {
     if (message == null)
         return null
+    val chat = sender.chat
     val stringBuilder = StringBuilder()
     var charIndex = -1
     val bitSet = BitSet(aliasVars.size)
@@ -152,7 +168,7 @@ fun replaceAliasVars(chat: Chat, message: String?, sender: User): String? {
             var i = -1
             for ((string, aliasVar) in aliasVars) {
                 i++
-                if (currentChar != string[charIndex])
+                if (bitSet[i] && currentChar != string[charIndex])
                     bitSet[i] = false
                 if (bitSet[i]) {
                     anyTrue = true
@@ -179,9 +195,9 @@ fun getCommandData(message: String, sender: User): CommandData? {
     try {
         commandData = parseCommand(message, commandDelimiters.getOrDefault(chat, defaultCommandDelimiter), chat)
     } catch (e: CommandDoesNotExist) {
-        sendMessage(chat, "No command exists with name \"${e.message}\".")
+        sendMessage(sender, "No command exists with name \"${e.message}\".")
     } catch (e: InvalidEscapeSequence) {
-        sendMessage(chat, "Invalid escape sequence \"${e.message}\" passed. Are your backslashes correct?")
+        sendMessage(sender, "Invalid escape sequence \"${e.message}\" passed. Are your backslashes correct?")
     }
     return commandData
 }
@@ -193,17 +209,12 @@ fun runCommand(message: String, sender: User) {
     val commandData = getCommandData(message, sender)
     if (commandData != null)
         runCommand(sender, commandData)
-    // Send the message of the command sent to linked chats.
-    forwardToLinkedChats(message, sender)
 }
 
 fun runCommand(sender: User, commandData: CommandData) {
-    val chat = sender.chat
     val args = commandData.args
-    val cmdMsg = replaceAliasVars(chat, commandData.command.function(args, sender), sender)
-    sendMessage(chat, cmdMsg)
-    // Send the result of the command to linked chats.
-    forwardToLinkedChats(cmdMsg, sender)
+    val cmdMsg = replaceAliasVars(commandData.command.function(args, sender), sender)
+    sendMessage(sender, cmdMsg)
 }
 
 val linkedChats = HashMap<Chat, MutableSet<Chat>>()
@@ -212,8 +223,8 @@ fun forwardToLinkedChats(message: String?, sender: User) {
         return
     val chat = sender.chat
     val protocol = chat.protocol
-    var boldOpen: String = ""
-    var boldClose: String = ""
+    var boldOpen = ""
+    var boldClose = ""
     val baseInterface = baseInterfaceMap[protocol]
     // Try to get the delimiters for bold, if possible.
     if (baseInterface is IFormatting)
@@ -231,50 +242,82 @@ fun forwardToLinkedChats(message: String?, sender: User) {
             sendMessage(linkedChat, "$boldOpen${getUserName(sender)}:$boldClose $message")
 }
 
-fun localDateTimeToDate(time: LocalDateTime): Date = Date.from(time.toInstant(ZoneOffset.UTC))
+fun localDateTimeToDate(time: LocalDateTime): Date = Date.from(time.toInstant(TimeZone.getDefault().toZoneId().rules.getOffset(time)))
 fun formatTime(time: LocalDateTime): String = Humanize.naturalTime(localDateTimeToDate(time))
 
 const val allowedTimeDifference = 30
+const val updatesPerSecond = 1
 
-data class ScheduledCommand(val time: LocalDateTime, val sender: User, val commandData: CommandData, val id: Int)
+data class ScheduledCommand(val time: LocalDateTime, val sender: User, val commandData: CommandData, val id: Int): StringSerializable {
+    val sep = '\u0001'
+    val sep2 = '\u0002'
+    override fun serialize(): String = "${this.javaClass.name}:${localDateTimeToDate(time).time}$sep${sender.serialize()}$sep${commandData.command.name}$sep${commandData.args.joinToString("$sep2")}$sep$id"
+
+    class ScheduledCommandDeserializer: StringDeserializer<ScheduledCommand>() {
+        val sep = '\u0001'
+        val sep2 = '\u0002'
+        override fun deserialize(str: String): ScheduledCommand? {
+            val colonIndex = str.indexOf(':')
+            if (colonIndex == -1 || str.subSequence(0, colonIndex) != "ScheduledCommand")
+                return null
+            val fields = str.subSequence(colonIndex + 1, str.length).split(sep)
+            return ScheduledCommand(dateToLocalDateTime(Date(fields[0].toLong())), )
+        }
+    }
+
+    override fun getDeserializer(): StringDeserializer<Any> {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+}
 object SchedulerThread: Thread() {
     private val scheduledCommands = TreeMap<LocalDateTime, ArrayList<ScheduledCommand>>()
-    private val commandsList = HashMap<Int, ScheduledCommand>()
+    private val commandsList = TreeMap<Int, ScheduledCommand>()
     private var currentId: Int = 0
     override fun run() {
         while (this.isAlive) {
             val now = LocalDateTime.now()
-            val commandIter = scheduledCommands.iterator()
-            while (commandIter.hasNext()) {
-                val cmdEntry = commandIter.next()
-                if (cmdEntry.key.until(now, ChronoUnit.SECONDS) in 0..allowedTimeDifference) {
-                    for (cmdPair in cmdEntry.value)
-                        runCommand(cmdPair.sender, cmdPair.commandData)
-                    commandIter.remove()
-                } else
+            for ((cmdTime, cmdList) in scheduledCommands) {
+                if (cmdTime.isBefore(now)) {
+                    if (cmdTime.until(now, ChronoUnit.SECONDS) in 0..allowedTimeDifference)
+                        for (cmd in cmdList) {
+                            runCommand(cmd.sender, cmd.commandData)
+                            scheduledCommands.remove(cmd.time)
+                            commandsList.remove(cmd.id)
+                        }
+                    else
+                        for (cmd in cmdList) {
+                            scheduledCommands.remove(cmd.time)
+                            commandsList.remove(cmd.id)
+                        }
+                } else //TreeMaps are sorted, so it's already sorted chronologically, so anything after this isn't gonna work.
                     break
             }
-            sleep(1000)
+            sleep((1000.0 / updatesPerSecond).toLong())
         }
     }
 
     fun schedule(sender: User, command: CommandData, time: LocalDateTime): String? {
         if (time !in scheduledCommands)
             scheduledCommands[time] = ArrayList(2)
-        scheduledCommands[time]!!.add(ScheduledCommand(time, sender, command, currentId++))
+        val cmd = ScheduledCommand(time, sender, command, currentId++)
+        scheduledCommands[time]!!.add(cmd)
+        if (cmd.id in commandsList)
+            System.err.println("Duplicate IDs in schedulerThread!")
+        commandsList[cmd.id] = cmd
         return "Scheduled ${getUserName(sender)} to run \"$command\" to run at $time."
     }
 
-    fun getCommands(sender: User): List<ScheduledCommand> {
-        return commandsList.values.toList()
-    }
+    fun getCommands(sender: User?): List<ScheduledCommand> = if (sender == null) getCommands() else commandsList.values.filter { it.sender == sender }
 
-    fun getCommandStrings(sender: User): List<String> {
-        val commands = getCommands(sender)
+    fun getCommands(): List<ScheduledCommand> = commandsList.values.toList()
+
+    fun getCommandStrings(sender: User, getAllCommands: Boolean = false): List<String> {
+        val commands = getCommands(if (getAllCommands) null else sender)
         if (commands.isEmpty())
             return emptyList()
         return commands.sortedBy { it.time }
-                .map { "[${it.id}]@${formatTime(it.time)} ${it.sender} - \"${it.commandData.command} ${it.commandData.args.joinToString(" ")}\"" }
+                .map { "[${it.id}] ${formatTime(it.time)}: ${getUserName(it.sender)} - \"${commandDelimiters[sender.chat]}${it.commandData.command.name} ${it.commandData.args.joinToString(" ")}\"" }
     }
 
     fun unschedule(sender: User, index: Int): Boolean {
@@ -301,26 +344,35 @@ class core {
             val argParser = ArgumentParsers.newFor("Convergence Bot").build()
                     .defaultHelp(true)
                     .description("Sets the paths used by the bot.")
+
             val paths = argParser.addArgumentGroup("Paths")
             paths.addArgument("-pp", "--plugin-path")
                     .type(File::class.java).default = File(System.getProperty("user.home"), ".convergence")
             paths.addArgument("-bpp", "--basic-plugin-path")
                     .type(File::class.java).default = File("consolePlugin/build/libs")
+
             try {
                 commandLineArgs = argParser.parseArgs(args)
             } catch (e: ArgumentParserException) {
-                System.err.println(e.message)
+                System.err.println("Failed to parse command line arguments. Printing stack trace.")
+                e.printStackTrace()
                 return
             }
+            // Remove "just now" as an option for time formatting. 5 minutes for "just now" is annoying.
+            Humanize.prettyTimeFormat().prettyTime.removeUnit(JustNow::class.java)
+
             println("Registering default commands...")
             registerDefaultCommands()
+
             println("Starting scheduler thread...")
             SchedulerThread.start()
+
             val plugins = PluginLoader.loadPlugin((commandLineArgs.get("plugin_path") as File).path)
             if (plugins.isEmpty())
                 println("No plugins loaded.")
             else
                 println("Loaded Plugins:\t${plugins.joinToString("\t") { it.name }}")
+
             for (plugin in plugins) {
                 println("Initializing plugin: ${plugin.name}")
                 Thread(plugin::init).start()
