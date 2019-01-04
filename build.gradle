@@ -34,6 +34,7 @@ dependencies {
     compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
     compile group: 'net.sourceforge.argparse4j', name: 'argparse4j', version: '0.8.1'
     compile group: 'com.github.mfornos', name: 'humanize-slim', version: '1.2.2'
+    compile group: 'com.beust', name: 'klaxon', version: '5.0.2'
     //compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.1.7'
 }
 

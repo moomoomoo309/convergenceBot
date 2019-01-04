@@ -16,14 +16,13 @@ interface Plugin {
     fun init()
 }
 
-private val _jcl = JarClassLoader()
+private val jcl = JarClassLoader()
 object PluginLoader {
     init {
-        _jcl.localLoader.order = 100
-        _jcl.addLoader(_jcl.localLoader)
+        jcl.localLoader.order = 100
+        jcl.addLoader(jcl.localLoader)
     }
 
-    private val jcl = _jcl
     private val factory = JclObjectFactory.getInstance()
     private const val classNameFile = "MainClass.txt"
 

@@ -4,38 +4,16 @@ package convergence
 
 import java.time.LocalDateTime
 
-interface StringSerializable {
-    fun serialize(): String
-    fun getDeserializer(): StringDeserializer<out Any>
-}
-
-abstract class StringDeserializer<T> {
-    abstract fun deserialize(str: String): T?
-}
-
 abstract class Protocol(val name: String)
 //Intentionally empty, because it might be represented as an int or a string or whatever.
-abstract class User(val chat: Chat): StringSerializable {
-    abstract override fun getDeserializer(): StringDeserializer<out User>
-}
+abstract class User(val chat: Chat)
 
 abstract class Chat(val protocol: Protocol, val name: String)
 
-private object UniversalUser: User(UniversalChat), StringSerializable {
-    override fun serialize(): String = "UniversalUser"
-    override fun deserialize(serializedVal: String): UniversalUser = deserializeSingleton(serializedVal)
-}
+private object UniversalUser: User(UniversalChat)
 
-object UniversalProtocol: Protocol("Universal"), StringSerializable { // Used to represent the universal chat.
-    override fun serialize(): String = "UniversalProtocol"
-    override fun deserialize(serializedVal: String): UniversalProtocol = deserializeSingleton(serializedVal)
-}
-
-object UniversalChat: Chat(UniversalProtocol, "Universal"), StringSerializable {
-    override fun serialize(): String = "UniversalChat"
-    override fun deserialize(serializedVal: String): UniversalChat = deserializeSingleton(serializedVal)
-}
-
+object UniversalProtocol: Protocol("Universal") // Used to represent the universal chat.
+object UniversalChat: Chat(UniversalProtocol, "Universal")
 object FakeBaseInterface: BaseInterface {
     override val protocol: Protocol = UniversalProtocol
 
@@ -175,15 +153,33 @@ sealed class BonusInterface {
     }
 
     interface IFormatting {
-        // If possible, the name would be an enum instead, but I cannot predict what will be supported, so it's a string.
-        // This is also so if multiple protocols support the same thing, like bolding, they can share the same name.
-        abstract class Format(val name: String)
+        // If possible, the name would be an enum instead, but I want the ability for protocols to add extra formats
+        // beyond the defaults in the companion object, so it's an open class.
+        open class Format(name: String) {
+            val name: String = name.toUpperCase()
+
+            companion object {
+                val bold = Format("BOLD")
+                val italics = Format("ITALICS")
+                val underline = Format("UNDERLINE")
+                val monospace = Format("MONOSPACE")
+                val code = Format("CODE")
+            }
+        }
 
         val supportedFormats: Set<Format>
 
-        fun getDelimiters(protocol: Protocol, format: Format): Pair<String, String>
-        fun getSupportedFormats(protocol: Protocol): List<Format>
-        fun supportsFormat(protocol: Protocol, format: Format): Boolean
+        fun getDelimiters(format: Format): Pair<String, String>
+
+        companion object {
+            val formats = mutableSetOf(
+                    Format.bold,
+                    Format.italics,
+                    Format.underline,
+                    Format.monospace,
+                    Format.code
+            )
+        }
     }
 }
 
@@ -200,3 +196,4 @@ typealias IUserStatus = BonusInterface.IUserStatus
 typealias IUserAvailability = BonusInterface.IUserAvailability
 typealias IReadStatus = BonusInterface.IReadStatus
 typealias IFormatting = BonusInterface.IFormatting
+typealias Format = BonusInterface.IFormatting.Format

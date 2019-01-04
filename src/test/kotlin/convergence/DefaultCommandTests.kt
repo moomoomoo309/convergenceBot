@@ -9,6 +9,7 @@ val dateTimeParser = Parser()
 
 private val testChat = TestChat()
 class TestUser: User(testChat)
+
 private val testUser = TestUser()
 
 class DefaultCommandTests {

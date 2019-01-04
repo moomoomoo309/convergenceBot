@@ -3,23 +3,11 @@ package convergence.testPlugins.consolePlugin
 import convergence.*
 import java.util.*
 
-object ConsoleUser: User(ConsoleChat), StringSerializable<ConsoleUser> {
-    override fun serialize(): String = "ConsoleUser"
-    override fun deserialize(serializedVal: String): ConsoleUser = deserializeSingleton(serializedVal)
-}
-
-object ConsoleChat: Chat(ConsoleProtocol, "Console"), StringSerializable<ConsoleChat> {
-    override fun serialize(): String = "ConsoleChat"
-    override fun deserialize(serializedVal: String): ConsoleChat = deserializeSingleton(serializedVal)
-}
-
-object ConsoleProtocol: Protocol("Console"), StringSerializable<ConsoleProtocol> {
-    override fun serialize(): String = "ConsoleProtocol"
-    override fun deserialize(serializedVal: String): ConsoleProtocol = deserializeSingleton(serializedVal)
-}
-
+object ConsoleUser: User(ConsoleChat)
+object ConsoleChat: Chat(ConsoleProtocol, "Console")
+object ConsoleProtocol: Protocol("Console")
 object ConsoleInterface: BaseInterface {
-    override val name: String = "ConsoleInterface"
+    override val name = "ConsoleInterface"
     override val protocol: Protocol = ConsoleProtocol
 
     init {

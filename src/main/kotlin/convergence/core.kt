@@ -227,14 +227,11 @@ fun forwardToLinkedChats(message: String?, sender: User) {
     var boldClose = ""
     val baseInterface = baseInterfaceMap[protocol]
     // Try to get the delimiters for bold, if possible.
-    if (baseInterface is IFormatting)
-        for (supportedFormat in baseInterface.supportedFormats)
-            if (supportedFormat.name.toLowerCase() == "bold") {
-                val delimiters = baseInterface.getDelimiters(protocol, supportedFormat)
-                boldOpen = delimiters.first
-                boldClose = delimiters.second
-                break
-            }
+    if (baseInterface is IFormatting && Format.bold in baseInterface.supportedFormats) {
+        val delimiters = baseInterface.getDelimiters(Format.bold)
+        boldOpen = delimiters.first
+        boldClose = delimiters.second
+    }
 
     // Send the messages out to the linked chats, if there are any. Don't error if there aren't any.
     if (chat in linkedChats)
@@ -248,28 +245,8 @@ fun formatTime(time: LocalDateTime): String = Humanize.naturalTime(localDateTime
 const val allowedTimeDifference = 30
 const val updatesPerSecond = 1
 
-data class ScheduledCommand(val time: LocalDateTime, val sender: User, val commandData: CommandData, val id: Int): StringSerializable {
-    val sep = '\u0001'
-    val sep2 = '\u0002'
-    override fun serialize(): String = "${this.javaClass.name}:${localDateTimeToDate(time).time}$sep${sender.serialize()}$sep${commandData.command.name}$sep${commandData.args.joinToString("$sep2")}$sep$id"
+data class ScheduledCommand(val time: LocalDateTime, val sender: User, val commandData: CommandData, val id: Int)
 
-    class ScheduledCommandDeserializer: StringDeserializer<ScheduledCommand>() {
-        val sep = '\u0001'
-        val sep2 = '\u0002'
-        override fun deserialize(str: String): ScheduledCommand? {
-            val colonIndex = str.indexOf(':')
-            if (colonIndex == -1 || str.subSequence(0, colonIndex) != "ScheduledCommand")
-                return null
-            val fields = str.subSequence(colonIndex + 1, str.length).split(sep)
-            return ScheduledCommand(dateToLocalDateTime(Date(fields[0].toLong())), )
-        }
-    }
-
-    override fun getDeserializer(): StringDeserializer<Any> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-}
 object SchedulerThread: Thread() {
     private val scheduledCommands = TreeMap<LocalDateTime, ArrayList<ScheduledCommand>>()
     private val commandsList = TreeMap<Int, ScheduledCommand>()
@@ -360,6 +337,8 @@ class core {
             }
             // Remove "just now" as an option for time formatting. 5 minutes for "just now" is annoying.
             Humanize.prettyTimeFormat().prettyTime.removeUnit(JustNow::class.java)
+
+            registerCallbacks()
 
             println("Registering default commands...")
             registerDefaultCommands()
