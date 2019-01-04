@@ -51,7 +51,7 @@ object ConsoleInterface: BaseInterface {
 }
 
 class Main: Plugin {
-    override val name = "basicPlugin"
+    override val name = "consolePlugin"
     override val baseInterface: BaseInterface = ConsoleInterface
     override fun init() {
         print("consolePlugin initialized.\n\n> ")

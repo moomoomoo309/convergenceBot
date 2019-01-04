@@ -17,6 +17,7 @@ interface Plugin {
 }
 
 private val jcl = JarClassLoader()
+
 object PluginLoader {
     init {
         jcl.localLoader.order = 100
@@ -24,7 +25,6 @@ object PluginLoader {
     }
 
     private val factory = JclObjectFactory.getInstance()
-    private const val classNameFile = "MainClass.txt"
 
     private fun nullIfException(result: List<Plugin>): List<Plugin> = try {
         result
@@ -37,17 +37,14 @@ object PluginLoader {
     fun loadPlugin(u: URI): List<Plugin> = nullIfException(loadPlugin(u.toURL()))
     fun loadPlugin(u: URL): List<Plugin> {
         jcl.add(u)
-        var mainClassName: String
         val pluginList: ArrayList<Plugin> = ArrayList()
-        for (entry in jcl.loadedResources)
-            if (entry.key.endsWith(classNameFile)) {
-                mainClassName = String(entry.value).trim()
-                val plugin = JclUtils.deepClone(factory.create(jcl, mainClassName)) as Plugin
-                // Don't register test plugins, since they won't actually be used outside of tests.
-                if (plugin.baseInterface !is FakeBaseInterface)
-                    registerProtocol(plugin.baseInterface.protocol, plugin.baseInterface)
-                pluginList.add(plugin)
-            }
+        for (entry in jcl.loadedResources.filterKeys { it.startsWith("convergence/") && it.endsWith("Main.class") }) {
+            val plugin = JclUtils.deepClone(factory.create(jcl, entry.key.substringBefore(".class").replace('/', '.'))) as Plugin
+            // Don't register test plugins, since they won't actually be used outside of tests.
+            if (plugin.baseInterface !is FakeBaseInterface)
+                registerProtocol(plugin.baseInterface.protocol, plugin.baseInterface)
+            pluginList.add(plugin)
+        }
         return pluginList
     }
 }
