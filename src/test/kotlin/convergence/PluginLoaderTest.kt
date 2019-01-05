@@ -42,7 +42,6 @@ class PluginLoaderTest {
 
     @Test
     fun loadBasicPlugin() {
-        return
         loadPlugin()
 
         pushOut()

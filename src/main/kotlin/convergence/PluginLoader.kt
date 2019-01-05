@@ -17,7 +17,6 @@ interface Plugin {
 }
 
 private val jcl = JarClassLoader()
-
 object PluginLoader {
     init {
         jcl.localLoader.order = 100
@@ -39,11 +38,15 @@ object PluginLoader {
         jcl.add(u)
         val pluginList: ArrayList<Plugin> = ArrayList()
         for (entry in jcl.loadedResources.filterKeys { it.startsWith("convergence/") && it.endsWith("Main.class") }) {
-            val plugin = JclUtils.deepClone(factory.create(jcl, entry.key.substringBefore(".class").replace('/', '.'))) as Plugin
-            // Don't register test plugins, since they won't actually be used outside of tests.
-            if (plugin.baseInterface !is FakeBaseInterface)
-                registerProtocol(plugin.baseInterface.protocol, plugin.baseInterface)
-            pluginList.add(plugin)
+            try {
+                val plugin = JclUtils.deepClone(factory.create(jcl, entry.key.substringBefore(".class").replace('/', '.'))) as Plugin
+                // Don't register test plugins, since they won't actually be used outside of tests.
+                if (plugin.baseInterface !is FakeBaseInterface)
+                    registerProtocol(plugin.baseInterface.protocol, plugin.baseInterface)
+                pluginList.add(plugin)
+            } catch (e: ClassCastException) {
+
+            }
         }
         return pluginList
     }
