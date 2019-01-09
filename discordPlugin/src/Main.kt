@@ -5,101 +5,100 @@ import java.time.LocalDateTime
 
 object DiscordInterface: BaseInterface, IFormatting, INickname, IImages, IMention, IMessageHistory, IOtherMessageEditable, IUserAvailability, ICustomEmoji {
     override val name: String
-        get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
+        get() = TODO()
     override val protocol: Protocol
-        get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
+        get() = TODO()
 
     override fun getUserNickname(chat: Chat, user: User): String? {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO()
     }
 
     override fun getBotNickname(chat: Chat): String? {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO()
     }
 
     override fun nicknameChanged(chat: Chat, user: User, oldName: String): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO()
     }
 
     override fun sendImage(chat: Chat, image: Image) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO()
     }
 
     override fun receivedImage(chat: Chat, image: Image) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO()
     }
 
     override fun editedMessage(oldMessage: String, sender: User, newMessage: String) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO()
     }
 
     override fun editMessage(message: MessageHistory, oldMessage: String, sender: User, newMessage: String) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO()
     }
 
     override fun getMessages(chat: Chat, since: LocalDateTime?): List<MessageHistory> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO()
     }
 
     override fun getUserMessages(chat: Chat, user: User, since: LocalDateTime?): List<MessageHistory> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO()
     }
 
     override fun getMentionText(chat: Chat, user: User): String {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO()
     }
 
     override fun mentionedBot(chat: Chat, message: String, user: User) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO()
     }
 
     override fun setBotAvailability(chat: Chat, availability: Availability) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO()
     }
 
     override fun getUserAvailability(chat: Chat, user: User): Availability {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO()
     }
 
     override val supportedFormats: Set<Format>
-        get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
+        get() = TODO()
 
     override fun getDelimiters(format: Format): Pair<String, String> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO()
     }
 
     override fun getEmojis(chat: Chat): List<Emoji> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO()
     }
 
     override fun getEmojiURL(emoji: Emoji) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO()
     }
 
     override fun sendMessage(chat: Chat, message: String, sender: User): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO()
     }
 
     override fun getBot(chat: Chat): User {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO()
     }
 
     override fun getName(chat: Chat, user: User): String {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO()
     }
 
     override fun getChats(): List<Chat> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO()
     }
 
     override fun getUsers(chat: Chat): List<User> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO()
     }
 
     override fun getChatName(chat: Chat): String {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO()
     }
-
 }
 
 class Main: Plugin {
