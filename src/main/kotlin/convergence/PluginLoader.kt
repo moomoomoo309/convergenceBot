@@ -37,15 +37,15 @@ object PluginLoader {
     fun loadPlugin(u: URL): List<Plugin> {
         jcl.add(u)
         val pluginList: ArrayList<Plugin> = ArrayList()
-        for (entry in jcl.loadedResources.filterKeys { it.startsWith("convergence/") && it.endsWith("Main.class") }) {
+        for ((className, _) in jcl.loadedResources.filterKeys { it.startsWith("convergence/") && it.endsWith("Main.class") }) {
             try {
-                val plugin = JclUtils.deepClone(factory.create(jcl, entry.key.substringBefore(".class").replace('/', '.'))) as Plugin
+                val plugin = JclUtils.deepClone(factory.create(jcl, className.substringBefore(".class").replace('/', '.'))) as Plugin
                 // Don't register test plugins, since they won't actually be used outside of tests.
                 if (plugin.baseInterface !is FakeBaseInterface)
                     registerProtocol(plugin.baseInterface.protocol, plugin.baseInterface)
                 pluginList.add(plugin)
             } catch (e: ClassCastException) {
-
+                logErr("Class \"$className\" in convergence package called \"Main.class\" but is not a plugin! Report this to the plugin author.")
             }
         }
         return pluginList

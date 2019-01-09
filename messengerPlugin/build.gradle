@@ -6,7 +6,7 @@ import java.nio.file.StandardCopyOption
 group = 'convergence.test'
 version = '1.0-SNAPSHOT'
 
-description = """console plugin for convergence bot"""
+description = """Messenger plugin for convergence bot"""
 
 sourceCompatibility = 1.5
 targetCompatibility = 1.5
@@ -46,7 +46,7 @@ task copyJar {
 
 jar {
     manifest {
-        attributes 'Main-Class': 'convergence.testPlugins.consolePlugin.Main'
+        attributes 'Main-Class': 'convergence.testPlugins.messengerPlugin.Main'
     }
 }
 

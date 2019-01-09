@@ -8,11 +8,15 @@ import net.sourceforge.argparse4j.inf.ArgumentParserException
 import net.sourceforge.argparse4j.inf.Namespace
 import org.ocpsoft.prettytime.units.JustNow
 import java.io.File
+import java.nio.file.Paths
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
 
 class CommandDoesNotExist(cmd: String): Exception(cmd)
+
+val log: (Any) -> Unit = { println(it) }
+val logErr: (Any) -> Unit = { System.err.println(it) }
 
 val protocols = mutableSetOf<Protocol>()
 val baseInterfaceMap = mutableMapOf<Protocol, BaseInterface>()
@@ -71,12 +75,11 @@ fun registerAlias(chat: Chat, alias: Alias): Boolean {
         return false
 
     if (sortedHelpText.isNotEmpty())
-        for (i in 0..sortedHelpText.size) {
+        for (i in 0..sortedHelpText.size)
             if (alias.name < sortedHelpText[i].name || i == sortedHelpText.size - 1) {
                 sortedHelpText.add(i, alias)
                 break
             }
-        }
     else
         sortedHelpText[0] = alias
 
@@ -87,9 +90,7 @@ fun registerAlias(chat: Chat, alias: Alias): Boolean {
 const val defaultCommandDelimiter = "!"
 
 class DefaultMap<K, V>(val defaultValue: V): HashMap<K, V>() {
-    override fun get(key: K): V {
-        return if (key in this) super.get(key) ?: defaultValue else defaultValue
-    }
+    override fun get(key: K): V = super.get(key) ?: defaultValue
 }
 
 val commandDelimiters = DefaultMap<Chat, String>("!")
@@ -119,7 +120,7 @@ fun sendMessage(chat: Chat, message: String?) {
     if (message == null)
         return
     if (chat.protocol !in protocols) {
-        System.err.println("Protocol \"${chat.protocol.name}\" not properly registered!")
+        logErr("Protocol \"${chat.protocol.name}\" not properly registered!")
         return
     }
     val baseInterface = baseInterfaceMap[chat.protocol]!!
@@ -189,33 +190,22 @@ fun replaceAliasVars(message: String?, sender: User): String? {
     return stringBuilder.toString()
 }
 
-fun getCommandData(message: String, sender: User): CommandData? {
-    var commandData: CommandData? = null
-    val chat = sender.chat
-    try {
-        commandData = parseCommand(message, commandDelimiters.getOrDefault(chat, defaultCommandDelimiter), chat)
-    } catch (e: CommandDoesNotExist) {
-        sendMessage(sender, "No command exists with name \"${e.message}\".")
-    } catch (e: InvalidEscapeSequence) {
-        sendMessage(sender, "Invalid escape sequence \"${e.message}\" passed. Are your backslashes correct?")
-    }
-    return commandData
+fun getCommandData(message: String, sender: User): CommandData? = try {
+    parseCommand(message, commandDelimiters.getOrDefault(sender.chat, defaultCommandDelimiter), sender.chat)
+} catch (e: CommandDoesNotExist) {
+    sendMessage(sender, "No command exists with name \"${e.message}\".")
+    null
+} catch (e: InvalidEscapeSequence) {
+    sendMessage(sender, "Invalid escape sequence \"${e.message}\" passed. Are your backslashes correct?")
+    null
 }
 
 /**
  * Run the Command in the given message, or do nothing if none exists.
  */
-fun runCommand(message: String, sender: User) {
-    val commandData = getCommandData(message, sender)
-    if (commandData != null)
-        runCommand(sender, commandData)
-}
+fun runCommand(message: String, sender: User) = getCommandData(message, sender)?.let { runCommand(sender, it) }
 
-fun runCommand(sender: User, commandData: CommandData) {
-    val args = commandData.args
-    val cmdMsg = replaceAliasVars(commandData.command.function(args, sender), sender)
-    sendMessage(sender, cmdMsg)
-}
+fun runCommand(sender: User, command: CommandData) = sendMessage(sender, replaceAliasVars(command(sender), sender))
 
 val linkedChats = HashMap<Chat, MutableSet<Chat>>()
 fun forwardToLinkedChats(message: String?, sender: User) {
@@ -267,7 +257,7 @@ object SchedulerThread: Thread() {
                             scheduledCommands.remove(cmd.time)
                             commandsList.remove(cmd.id)
                         }
-                } else //TreeMaps are sorted, so it's already sorted chronologically, so anything after this isn't gonna work.
+                } else //TreeMaps are ordered; it's already sorted chronologically, so all following events are early.
                     break
             }
             sleep((1000.0 / updatesPerSecond).toLong())
@@ -280,7 +270,7 @@ object SchedulerThread: Thread() {
         val cmd = ScheduledCommand(time, sender, command, currentId++)
         scheduledCommands[time]!!.add(cmd)
         if (cmd.id in commandsList)
-            System.err.println("Duplicate IDs in schedulerThread!")
+            logErr("Duplicate IDs in schedulerThread!")
         commandsList[cmd.id] = cmd
         return "Scheduled ${getUserName(sender)} to run \"$command\" to run at $time."
     }
@@ -289,28 +279,18 @@ object SchedulerThread: Thread() {
 
     fun getCommands(): List<ScheduledCommand> = commandsList.values.toList()
 
-    fun getCommandStrings(sender: User, getAllCommands: Boolean = false): List<String> {
-        val commands = getCommands(if (getAllCommands) null else sender)
-        if (commands.isEmpty())
-            return emptyList()
-        return commands.sortedBy { it.time }
-                .map { "[${it.id}] ${formatTime(it.time)}: ${getUserName(it.sender)} - \"${commandDelimiters[sender.chat]}${it.commandData.command.name} ${it.commandData.args.joinToString(" ")}\"" }
-    }
+    fun getCommandStrings(sender: User, getAllCommands: Boolean = false) = getCommands(if (getAllCommands) null else sender)
+            .sortedBy { it.time }
+            .map { "[${it.id}] ${formatTime(it.time)}: ${getUserName(it.sender)} - \"${commandDelimiters[sender.chat]}${it.commandData.command.name} ${it.commandData.args.joinToString(" ")}\"" }
 
-    fun unschedule(sender: User, index: Int): Boolean {
-        val commandToRemove = commandsList.remove(index)
-        if (commandToRemove != null)
-            scheduledCommands[commandToRemove.time]?.remove(commandToRemove)
-        else
-            return false
-        return true
-    }
+    fun unschedule(sender: User, index: Int) = commandsList.remove(index)?.let { scheduledCommands[it.time]?.remove(it) }
+            ?: false
 }
 
 /**
  * Schedules [command] to run at [time] from [sender].
  */
-fun schedule(sender: User, command: CommandData, time: LocalDateTime): String? = SchedulerThread.schedule(sender, command, time)
+fun schedule(sender: User, command: CommandData, time: LocalDateTime) = SchedulerThread.schedule(sender, command, time)
 
 var commandLineArgs: Namespace = Namespace(emptyMap())
 
@@ -324,14 +304,11 @@ class core {
 
             val paths = argParser.addArgumentGroup("Paths")
             paths.addArgument("-pp", "--plugin-path")
-                    .type(File::class.java).default = File(System.getProperty("user.home"), ".convergence")
-            paths.addArgument("-bpp", "--basic-plugin-path")
-                    .type(File::class.java).default = File("consolePlugin/build/libs")
-
+                    .type(File::class.java).default = File(Paths.get(System.getProperty("user.home"), ".convergence", "plugins").toUri())
             try {
                 commandLineArgs = argParser.parseArgs(args)
             } catch (e: ArgumentParserException) {
-                System.err.println("Failed to parse command line arguments. Printing stack trace.")
+                logErr("Failed to parse command line arguments. Printing stack trace:")
                 e.printStackTrace()
                 return
             }
@@ -340,20 +317,20 @@ class core {
 
             registerCallbacks()
 
-            println("Registering default commands...")
+            log("Registering default commands...")
             registerDefaultCommands()
 
-            println("Starting scheduler thread...")
+            log("Starting scheduler thread...")
             SchedulerThread.start()
 
             val plugins = PluginLoader.loadPlugin((commandLineArgs.get("plugin_path") as File).path)
             if (plugins.isEmpty())
-                println("No plugins loaded.")
+                log("No plugins loaded.")
             else
-                println("Loaded Plugins:\t${plugins.joinToString("\t") { it.name }}")
+                log("Loaded Plugins:\t${plugins.joinToString("\t") { it.name }}")
 
             for (plugin in plugins) {
-                println("Initializing plugin: ${plugin.name}")
+                log("Initializing plugin: ${plugin.name}")
                 Thread(plugin::init).start()
             }
         }

@@ -19,33 +19,15 @@ object FakeBaseInterface: BaseInterface {
 
     init {
         if (!registerProtocol(this.protocol, this))
-            System.err.println("Protocol with name \"$this.protocol.name\" registered more than once!")
+            logErr("Protocol with name \"$this.protocol.name\" registered more than once!")
     }
 
-    override fun sendMessage(chat: Chat, message: String, sender: User): Boolean {
-        return false
-    }
-
-    override fun getBot(chat: Chat): User {
-        return UniversalUser
-    }
-
-    override fun getName(chat: Chat, user: User): String {
-        return ""
-    }
-
-    override fun getChats(): List<Chat> {
-        return emptyList()
-    }
-
-    override fun getUsers(chat: Chat): List<User> {
-        return emptyList()
-    }
-
-    override fun getChatName(chat: Chat): String {
-        return ""
-    }
-
+    override fun sendMessage(chat: Chat, message: String, sender: User): Boolean = false
+    override fun getBot(chat: Chat): User = UniversalUser
+    override fun getName(chat: Chat, user: User): String = ""
+    override fun getChats(): List<Chat> = emptyList()
+    override fun getUsers(chat: Chat): List<User> = emptyList()
+    override fun getChatName(chat: Chat): String = ""
     override val name: String = "FakeBaseInterface"
 }
 
@@ -129,7 +111,7 @@ sealed class BonusInterface {
     }
 
     interface IStickers {
-        abstract class Sticker
+        open class Sticker(val name: String, val URL: String?)
 
         fun sendSticker(chat: Chat, sticker: Sticker)
         fun receivedSticker(chat: Chat, sticker: Sticker)
@@ -181,19 +163,32 @@ sealed class BonusInterface {
             )
         }
     }
+
+    interface ICustomEmoji {
+        open class Emoji(val name: String, val URL: String?)
+
+        fun getEmojis(chat: Chat): List<Emoji>
+        fun getEmojiURL(emoji: Emoji)
+    }
 }
 
 // The sealed class is useful, but I'm not going to put BonusInterface in front of everything.
 
 typealias INickname = BonusInterface.INickname
 typealias IImages = BonusInterface.IImages
+typealias Image = BonusInterface.IImages.Image
 typealias IOtherMessageEditable = BonusInterface.IOtherMessageEditable
 typealias IMessageHistory = BonusInterface.IMessageHistory
+typealias MessageHistory = BonusInterface.IMessageHistory.MessageHistory
 typealias IMention = BonusInterface.IMention
 typealias ITypingStatus = BonusInterface.ITypingStatus
 typealias IStickers = BonusInterface.IStickers
+typealias Sticker = BonusInterface.IStickers.Sticker
 typealias IUserStatus = BonusInterface.IUserStatus
 typealias IUserAvailability = BonusInterface.IUserAvailability
+typealias Availability = BonusInterface.IUserAvailability.Availability
 typealias IReadStatus = BonusInterface.IReadStatus
 typealias IFormatting = BonusInterface.IFormatting
 typealias Format = BonusInterface.IFormatting.Format
+typealias ICustomEmoji = BonusInterface.ICustomEmoji
+typealias Emoji = BonusInterface.ICustomEmoji.Emoji

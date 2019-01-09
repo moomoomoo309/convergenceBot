@@ -2,6 +2,9 @@ package convergence
 
 data class CommandData(var command: Command, var args: List<String>) {
     constructor(alias: Alias, args: List<String>): this(alias.command, alias.args + args)
+
+    operator fun invoke(args: List<String>, sender: User): String? = this.command.function(args, sender)
+    operator fun invoke(sender: User): String? = invoke(args, sender)
 }
 
 private fun isEscapeCharacter(c: Char, l: Int): Boolean {

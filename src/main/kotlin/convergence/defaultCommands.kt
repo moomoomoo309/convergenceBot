@@ -213,7 +213,6 @@ fun setLocation(args: List<String>, sender: User): String? {
 }
 
 fun target(args: List<String>, sender: User): String? {
-    //TODO: Check if -1 works for subList
     val chat = sender.chat
     val baseInterface = baseInterfaceMap[chat.protocol]!!
     val user = getUserFromName(chat, args[args.size - 1])

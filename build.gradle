@@ -18,7 +18,7 @@ tasks.withType(JavaCompile) {
 	options.encoding = 'UTF-8'
 }
 
-kotlin_version = '1.3.10'
+kotlin_version = '+'
 
 repositories {
     jcenter()
@@ -106,7 +106,7 @@ jar {
     }
 }
 
-task copyJar << {
+task copyJar {
     for (jar in Paths.get("build/libs/").toFile().listFiles())
         if (jar.name.contains("Plugin"))
             Files.copy(jar.toPath(), Paths.get(System.getProperty("user.home"), ".convergence", "plugins", jar.name), StandardCopyOption.REPLACE_EXISTING)
