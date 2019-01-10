@@ -18,8 +18,8 @@ object ConsoleInterface: BaseInterface {
         reverseChatMap[ConsoleChat] = id
     }
 
-    override fun sendMessage(chat: Chat, message: String, sender: User): Boolean {
-        if (sender is ConsoleUser && chat is ConsoleChat) {
+    override fun sendMessage(chat: Chat, message: String): Boolean {
+        if (chat is ConsoleChat) {
             println(message)
             return true
         }

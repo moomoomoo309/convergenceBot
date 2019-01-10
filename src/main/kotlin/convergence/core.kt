@@ -49,12 +49,11 @@ fun registerCommand(chat: Chat, command: Command): Boolean {
         return false
 
     if (sortedHelpText.isNotEmpty())
-        for (i in 0..sortedHelpText.size) {
+        for (i in 0..sortedHelpText.size)
             if (command.name < sortedHelpText[i].name || i == sortedHelpText.size - 1) {
                 sortedHelpText.add(i, command)
                 break
             }
-        }
     else
         sortedHelpText.add(command)
 
@@ -125,7 +124,7 @@ fun sendMessage(chat: Chat, message: String?) {
     }
     val baseInterface = baseInterfaceMap[chat.protocol]!!
     val bot = baseInterface.getBot(chat)
-    baseInterface.sendMessage(chat, message, bot)
+    baseInterface.sendMessage(chat, message)
 }
 
 /**
@@ -219,8 +218,8 @@ fun forwardToLinkedChats(message: String?, sender: User) {
     // Try to get the delimiters for bold, if possible.
     if (baseInterface is IFormatting && Format.bold in baseInterface.supportedFormats) {
         val delimiters = baseInterface.getDelimiters(Format.bold)
-        boldOpen = delimiters.first
-        boldClose = delimiters.second
+        boldOpen = delimiters?.first ?: boldOpen
+        boldClose = delimiters?.second ?: boldClose
     }
 
     // Send the messages out to the linked chats, if there are any. Don't error if there aren't any.

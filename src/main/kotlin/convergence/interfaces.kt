@@ -22,7 +22,7 @@ object FakeBaseInterface: BaseInterface {
             logErr("Protocol with name \"$this.protocol.name\" registered more than once!")
     }
 
-    override fun sendMessage(chat: Chat, message: String, sender: User): Boolean = false
+    override fun sendMessage(chat: Chat, message: String): Boolean = false
     override fun getBot(chat: Chat): User = UniversalUser
     override fun getName(chat: Chat, user: User): String = ""
     override fun getChats(): List<Chat> = emptyList()
@@ -50,7 +50,7 @@ interface BaseInterface {
     val name: String
     val protocol: Protocol
     fun receivedMessage(chat: Chat, message: String, sender: User) = runCommand(message, sender)
-    fun sendMessage(chat: Chat, message: String, sender: User): Boolean
+    fun sendMessage(chat: Chat, message: String): Boolean
     fun getBot(chat: Chat): User
     fun getName(chat: Chat, user: User): String
     fun getChats(): List<Chat>
@@ -59,7 +59,7 @@ interface BaseInterface {
 }
 
 private val callbacks = HashMap<Class<out BonusInterface>, ArrayList<(Chat, User, String) -> Boolean>>()
-fun registerCallback(self: BonusInterface, fct: (Chat, User, String) -> Boolean) {
+fun registerCallback(self: BonusInterface, fct: (Chat, User, String?) -> Boolean) {
     if (callbacks[self.javaClass] == null)
         callbacks[self.javaClass] = ArrayList()
     callbacks[self.javaClass]?.add(fct)
@@ -81,10 +81,10 @@ sealed class BonusInterface {
     }
 
     interface IImages {
-        abstract class Image
+        open class Image
 
-        fun sendImage(chat: Chat, image: Image)
-        fun receivedImage(chat: Chat, image: Image)
+        fun sendImage(chat: Chat, image: Image, name: String?)
+        fun receivedImage(chat: Chat, image: Image, name: String)
     }
 
     interface IOtherMessageEditable {
@@ -93,7 +93,7 @@ sealed class BonusInterface {
     }
 
     interface IMessageHistory {
-        data class MessageHistory(var message: String, val timestamp: LocalDateTime, val sender: User)
+        open class MessageHistory(var message: String, val timestamp: LocalDateTime, val sender: User)
 
         fun getMessages(chat: Chat, since: LocalDateTime? = null): List<MessageHistory>
         fun getUserMessages(chat: Chat, user: User, since: LocalDateTime? = null): List<MessageHistory>
@@ -123,7 +123,7 @@ sealed class BonusInterface {
     }
 
     interface IUserAvailability {
-        enum class Availability
+        open class Availability
 
         fun setBotAvailability(chat: Chat, availability: Availability)
         fun getUserAvailability(chat: Chat, user: User): Availability
@@ -146,12 +146,13 @@ sealed class BonusInterface {
                 val underline = Format("UNDERLINE")
                 val monospace = Format("MONOSPACE")
                 val code = Format("CODE")
+                val strikethrough = Format("STRIKETHROUGH")
             }
         }
 
         val supportedFormats: Set<Format>
 
-        fun getDelimiters(format: Format): Pair<String, String>
+        fun getDelimiters(format: Format): Pair<String, String>?
 
         companion object {
             val formats = mutableSetOf(
@@ -168,7 +169,6 @@ sealed class BonusInterface {
         open class Emoji(val name: String, val URL: String?)
 
         fun getEmojis(chat: Chat): List<Emoji>
-        fun getEmojiURL(emoji: Emoji)
     }
 }
 

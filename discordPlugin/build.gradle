@@ -28,6 +28,9 @@ sourceSets {
 
 dependencies {
     compile rootProject
+    compile ('net.dv8tion:JDA:+') {
+        exclude module: 'opus-java'
+    }
 }
 
 task copyJar {
