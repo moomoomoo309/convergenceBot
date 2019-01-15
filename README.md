@@ -3,7 +3,7 @@ Convergence bot is a bot written in Kotlin designed to bridge the gap
 between communication in different chat protocols.
 
 Currently implemented protocols:
-- None (console interface is implemented for testing)
+- Discord (Functional, but still needs polish)
 
 Currently planned protocols:
 - Facebook Messenger
