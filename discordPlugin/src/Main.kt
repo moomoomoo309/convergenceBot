@@ -137,7 +137,11 @@ object DiscordInterface: BaseInterface, IFormatting, INickname, IImages, IMentio
     override fun sendMessage(chat: Chat, message: String): Boolean {
         if (chat !is DiscordChat)
             return false
-        chat.channel.sendMessage(message)
+        try {
+            val response = chat.channel.sendMessage(message).complete()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
         return true
     }
 
