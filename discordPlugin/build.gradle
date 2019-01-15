@@ -27,19 +27,24 @@ sourceSets {
 }
 
 dependencies {
-    compile rootProject
-    compile ('net.dv8tion:JDA:+') {
+    compile('net.dv8tion:JDA:+') {
         exclude module: 'opus-java'
     }
 }
 
+def deps = configurations.compile.dependencies.asList()
+deps.removeIf { (it as Dependency).name != "JDA"}
+
+
 task copyJar {
     try {
         Files.createDirectory(Paths.get(System.getProperty("user.home"), ".convergence"))
-    } catch (FileAlreadyExistsException e) {}
+    } catch (FileAlreadyExistsException e) {
+    }
     try {
         Files.createDirectory(Paths.get(System.getProperty("user.home"), ".convergence", "plugins"))
-    } catch (FileAlreadyExistsException e) {}
+    } catch (FileAlreadyExistsException e) {
+    }
     for (jar in Paths.get("build/libs/").toFile().listFiles())
         if (jar.name.contains("Plugin"))
             Files.copy(jar.toPath(), Paths.get(System.getProperty("user.home"), ".convergence", "plugins", jar.name), StandardCopyOption.REPLACE_EXISTING)
@@ -50,6 +55,9 @@ task copyJar {
 jar {
     manifest {
         attributes 'Main-Class': 'convergence.testPlugins.discordPlugin.Main'
+    }
+    from {
+        deps.collect { (configurations.compile.fileCollection(it) as FileCollection).collect { it.isDirectory() ? it: zipTree(it) } }
     }
 }
 

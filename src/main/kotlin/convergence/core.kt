@@ -202,7 +202,10 @@ fun getCommandData(message: String, sender: User): CommandData? = try {
 /**
  * Run the Command in the given message, or do nothing if none exists.
  */
-fun runCommand(message: String, sender: User) = getCommandData(message, sender)?.let { runCommand(sender, it) }
+fun runCommand(message: String, sender: User) {
+    log("[${getUserName(sender)}]: $message")
+    getCommandData(message, sender)?.let { runCommand(sender, it) }
+}
 
 fun runCommand(sender: User, command: CommandData) = sendMessage(sender, replaceAliasVars(command(sender), sender))
 

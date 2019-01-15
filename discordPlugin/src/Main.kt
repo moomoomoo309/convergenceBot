@@ -118,9 +118,7 @@ object DiscordInterface: BaseInterface, IFormatting, INickname, IImages, IMentio
 
     override fun getMentionText(chat: Chat, user: User): String = if (user is DiscordUser) jda!!.retrieveUserById(user.id).complete().asMention else ""
 
-    override fun mentionedBot(chat: Chat, message: String, user: User) {
-
-    }
+    override fun mentionedBot(chat: Chat, message: String, user: User) = TODO()
 
     override fun setBotAvailability(chat: Chat, availability: Availability) {
         if (availability is DiscordAvailability)
@@ -163,6 +161,7 @@ class Main: Plugin {
     override val name = "DiscordPlugin"
     override val baseInterface: BaseInterface = DiscordInterface
     override fun init() {
+        registerProtocol(DiscordProtocol, DiscordInterface)
         println("Discord Plugin initialized.")
         jda = try {
             JDABuilder(String(Files.readAllBytes(Paths.get(System.getProperty("user.home"), ".convergence", "discordToken")))).build()
@@ -170,5 +169,6 @@ class Main: Plugin {
             e.printStackTrace()
             return
         }
+        jda?.addEventListener(MessageListener)
     }
 }
