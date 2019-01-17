@@ -9,7 +9,7 @@ import net.sourceforge.argparse4j.inf.Namespace
 import org.ocpsoft.prettytime.units.JustNow
 import java.io.File
 import java.nio.file.Paths
-import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
 
@@ -108,7 +108,8 @@ fun setCommandDelimiter(chat: Chat, commandDelimiter: String): Boolean {
  * Sends [message] in the chat [sender] is in, forwarding the message to any linked chats.
  */
 fun sendMessage(sender: User, message: String?) {
-    sendMessage(sender.chat, message)
+    if (sender != baseInterfaceMap[sender.chat.protocol]!!.getBot(sender.chat))
+        sendMessage(sender.chat, message)
     forwardToLinkedChats(message, sender)
 }
 
@@ -231,21 +232,21 @@ fun forwardToLinkedChats(message: String?, sender: User) {
             sendMessage(linkedChat, "$boldOpen${getUserName(sender)}:$boldClose $message")
 }
 
-fun localDateTimeToDate(time: LocalDateTime): Date = Date.from(time.toInstant(TimeZone.getDefault().toZoneId().rules.getOffset(time)))
-fun formatTime(time: LocalDateTime): String = Humanize.naturalTime(localDateTimeToDate(time))
+fun offsetDateTimeToDate(time: OffsetDateTime): Date = Date.from(time.toInstant())
+fun formatTime(time: OffsetDateTime): String = Humanize.naturalTime(offsetDateTimeToDate(time))
 
 const val allowedTimeDifference = 30
 const val updatesPerSecond = 1
 
-data class ScheduledCommand(val time: LocalDateTime, val sender: User, val commandData: CommandData, val id: Int)
+data class ScheduledCommand(val time: OffsetDateTime, val sender: User, val commandData: CommandData, val id: Int)
 
 object SchedulerThread: Thread() {
-    private val scheduledCommands = TreeMap<LocalDateTime, ArrayList<ScheduledCommand>>()
+    private val scheduledCommands = TreeMap<OffsetDateTime, ArrayList<ScheduledCommand>>()
     private val commandsList = TreeMap<Int, ScheduledCommand>()
     private var currentId: Int = 0
     override fun run() {
         while (this.isAlive) {
-            val now = LocalDateTime.now()
+            val now = OffsetDateTime.now()
             for ((cmdTime, cmdList) in scheduledCommands) {
                 if (cmdTime.isBefore(now)) {
                     if (cmdTime.until(now, ChronoUnit.SECONDS) in 0..allowedTimeDifference)
@@ -266,7 +267,7 @@ object SchedulerThread: Thread() {
         }
     }
 
-    fun schedule(sender: User, command: CommandData, time: LocalDateTime): String? {
+    fun schedule(sender: User, command: CommandData, time: OffsetDateTime): String? {
         if (time !in scheduledCommands)
             scheduledCommands[time] = ArrayList(2)
         val cmd = ScheduledCommand(time, sender, command, currentId++)
@@ -292,7 +293,7 @@ object SchedulerThread: Thread() {
 /**
  * Schedules [command] to run at [time] from [sender].
  */
-fun schedule(sender: User, command: CommandData, time: LocalDateTime) = SchedulerThread.schedule(sender, command, time)
+fun schedule(sender: User, command: CommandData, time: OffsetDateTime) = SchedulerThread.schedule(sender, command, time)
 
 var commandLineArgs: Namespace = Namespace(emptyMap())
 

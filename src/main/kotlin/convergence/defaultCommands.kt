@@ -7,7 +7,7 @@ import com.joestelmach.natty.Parser
 import java.io.PrintWriter
 import java.io.StringWriter
 import java.time.Duration
-import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.util.*
 import kotlin.math.nextUp
@@ -127,8 +127,8 @@ fun chats(args: List<String>, sender: User): String? {
 
 val dateTimeParser = Parser()
 
-fun dateToLocalDateTime(d: Date, tz: ZoneId? = null): LocalDateTime {
-    return LocalDateTime.ofInstant(d.toInstant(), tz ?: ZoneId.systemDefault())
+fun dateToOffsetDateTime(d: Date, tz: ZoneId? = null): OffsetDateTime {
+    return OffsetDateTime.ofInstant(d.toInstant(), tz ?: ZoneId.systemDefault())
 }
 
 private fun scheduleLoc(groups: List<DateGroup>, sender: User, location: String, durationStr: String,
@@ -144,7 +144,7 @@ private fun scheduleLoc(groups: List<DateGroup>, sender: User, location: String,
                             listOf(location)
                         else
                             listOf(location, "for", durationStr)),
-                        dateToLocalDateTime(it))
+                        dateToOffsetDateTime(it))
             }
         }
     }
@@ -152,7 +152,7 @@ private fun scheduleLoc(groups: List<DateGroup>, sender: User, location: String,
 }
 
 val defaultDuration = Duration.ofMinutes(45)!!
-private val locations = HashMap<User, Pair<LocalDateTime, String>>()
+private val locations = HashMap<User, Pair<OffsetDateTime, String>>()
 fun setLocation(args: List<String>, sender: User): String? {
     val location = StringBuilder(args[0])
     val timeStr = StringBuilder()
@@ -201,7 +201,7 @@ fun setLocation(args: List<String>, sender: User): String? {
                     return "You can't have the duration be more than one time!"
                 else if (groups.size == 0 || groups[0].dates.size == 0)
                     return "You can't just put \"for\" and not put a time after it!"
-                duration = Duration.between(LocalDateTime.now(), dateToLocalDateTime(groups[0].dates[0]))
+                duration = Duration.between(OffsetDateTime.now(), dateToOffsetDateTime(groups[0].dates[0]))
             }
             else -> {
                 location.append(' ').append(args[i])
@@ -243,7 +243,7 @@ fun schedule(args: List<String>, sender: User): String? {
     if (commandData != null)
         for (group in timeList)
             for (time in group.dates)
-                SchedulerThread.schedule(sender, commandData, dateToLocalDateTime(time))
+                SchedulerThread.schedule(sender, commandData, dateToOffsetDateTime(time))
     return "Scheduled \"$command\" to run in ${args[0]}."
 }
 

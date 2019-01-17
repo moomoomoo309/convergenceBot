@@ -1,7 +1,7 @@
 package convergence.testPlugins.messengerPlugin
 
 import convergence.*
-import java.time.LocalDateTime
+import java.time.OffsetDateTime
 
 object MessengerProtocol: Protocol("Messenger")
 object MessengerInterface: BaseInterface, IFormatting, INickname, IImages, IMention, IMessageHistory, IUserAvailability, IStickers {
@@ -16,8 +16,8 @@ object MessengerInterface: BaseInterface, IFormatting, INickname, IImages, IMent
     override fun nicknameChanged(chat: Chat, user: User, oldName: String): Boolean = TODO()
     override fun sendImage(chat: Chat, image: Image, name: String?) = TODO()
     override fun receivedImage(chat: Chat, image: Image, name: String) = TODO()
-    override fun getMessages(chat: Chat, since: LocalDateTime?): List<MessageHistory> = TODO()
-    override fun getUserMessages(chat: Chat, user: User, since: LocalDateTime?): List<MessageHistory> = TODO()
+    override fun getMessages(chat: Chat, since: OffsetDateTime?): List<MessageHistory> = TODO()
+    override fun getUserMessages(chat: Chat, user: User, since: OffsetDateTime?): List<MessageHistory> = TODO()
     override fun getMentionText(chat: Chat, user: User): String = TODO()
     override fun mentionedBot(chat: Chat, message: String, user: User) = TODO()
     override fun setBotAvailability(chat: Chat, availability: Availability) = TODO()

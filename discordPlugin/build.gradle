@@ -32,9 +32,6 @@ dependencies {
     }
 }
 
-def deps = configurations.compile.dependencies.asList()
-deps.removeIf { (it as Dependency).name != "JDA"}
-
 
 task copyJar {
     try {
@@ -57,6 +54,8 @@ jar {
         attributes 'Main-Class': 'convergence.testPlugins.discordPlugin.Main'
     }
     from {
+        def deps = configurations.compile.dependencies.asList()
+        deps.removeIf { (it as Dependency).name != "JDA"}
         deps.collect { (configurations.compile.fileCollection(it) as FileCollection).collect { it.isDirectory() ? it: zipTree(it) } }
     }
 }

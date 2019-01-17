@@ -2,7 +2,7 @@
 
 package convergence
 
-import java.time.LocalDateTime
+import java.time.OffsetDateTime
 
 abstract class Protocol(val name: String)
 //Intentionally empty, because it might be represented as an int or a string or whatever.
@@ -93,10 +93,10 @@ sealed class BonusInterface {
     }
 
     interface IMessageHistory {
-        open class MessageHistory(var message: String, val timestamp: LocalDateTime, val sender: User)
+        open class MessageHistory(var message: String, val timestamp: OffsetDateTime, val sender: User)
 
-        fun getMessages(chat: Chat, since: LocalDateTime? = null): List<MessageHistory>
-        fun getUserMessages(chat: Chat, user: User, since: LocalDateTime? = null): List<MessageHistory>
+        fun getMessages(chat: Chat, since: OffsetDateTime? = null): List<MessageHistory>
+        fun getUserMessages(chat: Chat, user: User, since: OffsetDateTime? = null): List<MessageHistory>
     }
 
     interface IMention {

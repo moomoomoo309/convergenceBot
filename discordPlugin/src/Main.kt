@@ -13,9 +13,7 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter
 import java.net.URL
 import java.nio.file.Files
 import java.nio.file.Paths
-import java.time.LocalDateTime
 import java.time.OffsetDateTime
-import java.util.*
 import javax.security.auth.login.LoginException
 
 var jda: JDA? = null
@@ -26,16 +24,13 @@ interface DiscordObject {
 
 class DiscordAvailability(val status: OnlineStatus): Availability()
 
-fun localDateTimeToOffsetDateTime(ldt: LocalDateTime): OffsetDateTime = OffsetDateTime.of(ldt, TimeZone.getDefault().toZoneId().rules.getOffset(ldt))
-fun offsetDateTimeToLocalDateTime(odt: OffsetDateTime): LocalDateTime = odt.toLocalDateTime()
-
 class DiscordChat(name: String, override val id: Long, val channel: MessageChannel): Chat(DiscordProtocol, name), DiscordObject {
     constructor(channel: MessageChannel): this(channel.name, channel.idLong, channel)
     constructor(message: Message): this(message.channel)
     constructor(msgEvent: MessageReceivedEvent): this(msgEvent.message)
 }
 
-class DiscordMessageHistory(val msg: Message, override val id: Long): MessageHistory(msg.contentRaw, offsetDateTimeToLocalDateTime(msg.timeCreated), DiscordUser(DiscordChat(msg), msg.author)), DiscordObject {
+class DiscordMessageHistory(val msg: Message, override val id: Long): MessageHistory(msg.contentRaw, msg.timeCreated, DiscordUser(DiscordChat(msg), msg.author)), DiscordObject {
     constructor(msg: Message): this(msg, msg.idLong)
 }
 
@@ -91,17 +86,16 @@ object DiscordInterface: BaseInterface, IFormatting, INickname, IImages, IMentio
             message.msg.editMessage(newMessage)
     }
 
-    override fun getMessages(chat: Chat, since: LocalDateTime?): List<MessageHistory> {
-        if (chat !is DiscordChat || (since != null && since.isAfter(LocalDateTime.now())))
+    override fun getMessages(chat: Chat, since: OffsetDateTime?): List<MessageHistory> {
+        if (chat !is DiscordChat || (since != null && since.isAfter(OffsetDateTime.now())))
             return emptyList()
         val history = chat.channel.history
         if (history != null) {
-            val sinceOffset = if (since != null) localDateTimeToOffsetDateTime(since) else null
             for (i in 0..9) {
                 history.retrievePast(10)
-                if (sinceOffset != null && history.retrievedHistory.last().timeCreated.isBefore(sinceOffset)) {
+                if (since != null && history.retrievedHistory.last().timeCreated.isBefore(since)) {
                     for ((i2, msg) in history.retrievedHistory.withIndex())
-                        if (msg.timeCreated.isAfter(sinceOffset))
+                        if (msg.timeCreated.isAfter(since))
                             return history.retrievedHistory.subList(i2, history.size() - 1).map { DiscordMessageHistory(it) }
                 }
             }
@@ -110,7 +104,7 @@ object DiscordInterface: BaseInterface, IFormatting, INickname, IImages, IMentio
             return emptyList()
     }
 
-    override fun getUserMessages(chat: Chat, user: User, since: LocalDateTime?): List<MessageHistory> {
+    override fun getUserMessages(chat: Chat, user: User, since: OffsetDateTime?): List<MessageHistory> {
         if (user !is DiscordUser)
             return emptyList()
         return getMessages(chat, since).filter { it.sender == user }

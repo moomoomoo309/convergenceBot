@@ -1,11 +1,8 @@
 package convergence
 
-import com.joestelmach.natty.Parser
 import org.junit.Test
 import kotlin.test.assertEquals
 
-
-val dateTimeParser = Parser()
 
 private val testChat = TestChat()
 class TestUser: User(testChat)
