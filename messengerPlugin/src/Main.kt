@@ -19,7 +19,7 @@ object MessengerInterface: BaseInterface, IFormatting, INickname, IImages, IMent
     override fun getMessages(chat: Chat, since: OffsetDateTime?): List<MessageHistory> = TODO()
     override fun getUserMessages(chat: Chat, user: User, since: OffsetDateTime?): List<MessageHistory> = TODO()
     override fun getMentionText(chat: Chat, user: User): String = TODO()
-    override fun mentionedBot(chat: Chat, message: String, user: User) = TODO()
+    override fun mentionedUser(chat: Chat, message: String, user: User) = TODO()
     override fun setBotAvailability(chat: Chat, availability: Availability) = TODO()
     override fun getUserAvailability(chat: Chat, user: User): Availability = TODO()
     override fun getDelimiters(format: Format): Pair<String, String> = TODO()

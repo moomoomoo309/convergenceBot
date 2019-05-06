@@ -3,6 +3,8 @@
 package convergence
 
 import humanize.Humanize
+import kotlinx.serialization.Polymorphic
+import kotlinx.serialization.Serializable
 import net.sourceforge.argparse4j.ArgumentParsers
 import net.sourceforge.argparse4j.inf.ArgumentParserException
 import net.sourceforge.argparse4j.inf.Namespace
@@ -41,7 +43,8 @@ val commands = mutableMapOf<Chat, MutableMap<String, Command>>()
  * Adds a command to the command registry.
  * @return true if a command with that name does not already exist in the registry, false otherwise.
  */
-fun registerCommand(chat: Chat, command: Command): Boolean {
+fun registerCommand(command: Command): Boolean {
+    val chat = command.chat
     if (chat !in commands || commands[chat] !is MutableMap)
         commands[chat] = mutableMapOf(command.name to command)
 
@@ -53,9 +56,8 @@ fun registerCommand(chat: Chat, command: Command): Boolean {
             if (command.name < sortedHelpText[i].name || i == sortedHelpText.size - 1) {
                 sortedHelpText.add(i, command)
                 break
-            }
-    else
-        sortedHelpText.add(command)
+            } else
+                sortedHelpText.add(command)
 
     commands[chat]!![command.name] = command
     return true
@@ -66,7 +68,8 @@ val aliases = mutableMapOf<Chat, MutableMap<String, Alias>>()
  * Adds an alias to the alias registry.
  * @return true if an alias with that name does not already exist in the registry, false otherwise.
  */
-fun registerAlias(chat: Chat, alias: Alias): Boolean {
+fun registerAlias(alias: Alias): Boolean {
+    val chat = alias.chat
     if (chat !in aliases || aliases[chat] !is MutableMap<String, Alias>)
         aliases[chat] = mutableMapOf(alias.name to alias)
 
@@ -78,9 +81,8 @@ fun registerAlias(chat: Chat, alias: Alias): Boolean {
             if (alias.name < sortedHelpText[i].name || i == sortedHelpText.size - 1) {
                 sortedHelpText.add(i, alias)
                 break
-            }
-    else
-        sortedHelpText[0] = alias
+            } else
+                sortedHelpText[0] = alias
 
     aliases[chat]!![alias.name] = alias
     return true
@@ -124,7 +126,6 @@ fun sendMessage(chat: Chat, message: String?) {
         return
     }
     val baseInterface = baseInterfaceMap[chat.protocol]!!
-    val bot = baseInterface.getBot(chat)
     baseInterface.sendMessage(chat, message)
 }
 
@@ -238,8 +239,12 @@ fun formatTime(time: OffsetDateTime): String = Humanize.naturalTime(offsetDateTi
 const val allowedTimeDifference = 30
 const val updatesPerSecond = 1
 
-data class ScheduledCommand(val time: OffsetDateTime, val sender: User, val commandData: CommandData, val id: Int)
+@Serializable
+data class ScheduledCommand(val time: OffsetDateTime, @Polymorphic val sender: User, val commandData: CommandData, val id: Int)
 
+/**
+ * Checks if commands scheduled for later are ready to be run yet. Can give information on the commands in its queue.
+ */
 object SchedulerThread: Thread() {
     private val scheduledCommands = TreeMap<OffsetDateTime, ArrayList<ScheduledCommand>>()
     private val commandsList = TreeMap<Int, ScheduledCommand>()
@@ -267,6 +272,10 @@ object SchedulerThread: Thread() {
         }
     }
 
+    /**
+     * Schedules [command] sent by [sender] to run at [time].
+     * @return The response the user will get from the command.
+     */
     fun schedule(sender: User, command: CommandData, time: OffsetDateTime): String? {
         if (time !in scheduledCommands)
             scheduledCommands[time] = ArrayList(2)
@@ -278,14 +287,26 @@ object SchedulerThread: Thread() {
         return "Scheduled ${getUserName(sender)} to run \"$command\" to run at $time."
     }
 
+    /**
+     * Gets all of the commands scheduled by [sender].
+     */
     fun getCommands(sender: User?): List<ScheduledCommand> = if (sender == null) getCommands() else commandsList.values.filter { it.sender == sender }
 
+    /**
+     * Gets all of the commands scheduled.
+     */
     fun getCommands(): List<ScheduledCommand> = commandsList.values.toList()
 
+    /**
+     * Writes out all of the commands in a human-readable format.
+     */
     fun getCommandStrings(sender: User, getAllCommands: Boolean = false) = getCommands(if (getAllCommands) null else sender)
             .sortedBy { it.time }
             .map { "[${it.id}] ${formatTime(it.time)}: ${getUserName(it.sender)} - \"${commandDelimiters[sender.chat]}${it.commandData.command.name} ${it.commandData.args.joinToString(" ")}\"" }
 
+    /**
+     * Removes a command from the queue.
+     */
     fun unschedule(sender: User, index: Int) = commandsList.remove(index)?.let { scheduledCommands[it.time]?.remove(it) }
             ?: false
 }
@@ -301,6 +322,7 @@ class core {
     companion object {
         @JvmStatic
         fun main(args: Array<String>) {
+            // Parse command line arguments.
             val argParser = ArgumentParsers.newFor("Convergence Bot").build()
                     .defaultHelp(true)
                     .description("Sets the paths used by the bot.")
@@ -315,16 +337,14 @@ class core {
                 e.printStackTrace()
                 return
             }
+
             // Remove "just now" as an option for time formatting. 5 minutes for "just now" is annoying.
             Humanize.prettyTimeFormat().prettyTime.removeUnit(JustNow::class.java)
 
-            registerCallbacks()
+            initCallbacks()
 
             log("Registering default commands...")
             registerDefaultCommands()
-
-            log("Starting scheduler thread...")
-            SchedulerThread.start()
 
             val plugins = PluginLoader.loadPlugin((commandLineArgs.get("plugin_path") as File).path)
             if (plugins.isEmpty())
@@ -336,6 +356,13 @@ class core {
                 log("Initializing plugin: ${plugin.name}")
                 Thread(plugin::init).start()
             }
+
+            // Deserialize stuff here
+
+
+            log("Starting scheduler thread...")
+            SchedulerThread.start()
+
         }
     }
 }

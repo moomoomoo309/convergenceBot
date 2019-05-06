@@ -1,5 +1,8 @@
 package convergence
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class CommandData(var command: Command, var args: List<String>) {
     constructor(alias: Alias, args: List<String>): this(alias.command, alias.args + args)
 

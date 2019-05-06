@@ -59,12 +59,12 @@ class Main: Plugin {
         try {
             val stdin = Scanner(System.`in`)
             val currentLine = stdin.nextLine()
-            ConsoleInterface.receivedMessage(ConsoleChat, currentLine, ConsoleUser)
+            ConsoleInterface.receivedMessage(currentLine, ConsoleUser)
             while (true) {
                 print("> ")
                 System.out.flush()
                 while (!stdin.hasNextLine()) stdin.next()
-                ConsoleInterface.receivedMessage(ConsoleChat, stdin.nextLine(), ConsoleUser)
+                ConsoleInterface.receivedMessage(stdin.nextLine(), ConsoleUser)
             }
         } catch (e: NoSuchElementException) {
             // Catch Ctrl-D (EOF). Normally, I wouldn't do this in a plugin, but it's the local console of the bot,
