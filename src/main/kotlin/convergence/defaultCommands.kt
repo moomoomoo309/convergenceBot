@@ -22,7 +22,7 @@ inline fun unregisteredChat(chat: Chat) {
         val writer = StringWriter()
         e.printStackTrace(PrintWriter(writer))
         sendMessage(chat, "Bot error: Chat either is missing a protocol, or its BaseInterface is not" +
-                "registered to that protocol.\nStack Trace:\n$writer")
+                " registered to that protocol.\nStack Trace:\n$writer")
         writer.close()
     }
 }

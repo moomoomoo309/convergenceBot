@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="Gradle: org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.11.0-1.3.30-eap-125">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlinx/kotlinx-serialization-runtime/0.11.0-1.3.30-eap-125/ccd309c6b57de97af7dbf0d4641445ab7548defd/kotlinx-serialization-runtime-0.11.0-1.3.30-eap-125.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlinx/kotlinx-serialization-runtime/0.11.0-1.3.30-eap-125/f8ccfdbdccf0d5faa8090382e0fb0d61b3dc07d5/kotlinx-serialization-runtime-0.11.0-1.3.30-eap-125-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

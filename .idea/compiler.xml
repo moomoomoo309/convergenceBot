@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <bytecodeTargetLevel>
+      <module name="basicPlugin_main" target="1.5" />
+      <module name="basicPlugin_test" target="1.5" />
+      <module name="convergence.bot.basicPlugin.main" target="1.5" />
+      <module name="convergence.bot.basicPlugin.test" target="1.5" />
+      <module name="convergence.bot.consolePlugin.main" target="1.5" />
+      <module name="convergence.bot.consolePlugin.test" target="1.5" />
+      <module name="convergence.bot.discordPlugin.main" target="1.5" />
+      <module name="convergence.bot.discordPlugin.test" target="1.5" />
+      <module name="convergence.bot.main" target="1.5" />
+      <module name="convergence.bot.messengerPlugin.main" target="1.5" />
+      <module name="convergence.bot.messengerPlugin.test" target="1.5" />
+      <module name="convergence.bot.test" target="1.5" />
+      <module name="convergence.bot_main" target="1.5" />
+      <module name="convergence.bot_test" target="1.5" />
+      <module name="convergence.convergence.bot.main" target="1.5" />
+      <module name="convergence.convergence.bot.test" target="1.5" />
+      <module name="convergence.test.basicPlugin.main" target="1.5" />
+      <module name="convergence.test.basicPlugin.test" target="1.5" />
+      <module name="convergence.test.consolePlugin.main" target="1.5" />
+      <module name="convergence.test.consolePlugin.test" target="1.5" />
+      <module name="convergence.test.discordPlugin.main" target="1.5" />
+      <module name="convergence.test.discordPlugin.test" target="1.5" />
+      <module name="convergence.test.messengerPlugin.main" target="1.5" />
+      <module name="convergence.test.messengerPlugin.test" target="1.5" />
+    </bytecodeTargetLevel>
+  </component>
+</project>

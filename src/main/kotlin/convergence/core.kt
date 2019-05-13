@@ -280,6 +280,7 @@ object SchedulerThread: Thread() {
         if (time !in scheduledCommands)
             scheduledCommands[time] = ArrayList(2)
         val cmd = ScheduledCommand(time, sender, command, currentId++)
+        //TODO: Serialize ScheduledCommand here
         scheduledCommands[time]!!.add(cmd)
         if (cmd.id in commandsList)
             logErr("Duplicate IDs in schedulerThread!")
@@ -309,6 +310,7 @@ object SchedulerThread: Thread() {
      */
     fun unschedule(sender: User, index: Int) = commandsList.remove(index)?.let { scheduledCommands[it.time]?.remove(it) }
             ?: false
+    //TODO: Remove serialized ScheduledCommand here
 }
 
 /**

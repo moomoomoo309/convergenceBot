@@ -77,7 +77,7 @@ data class Command(@Polymorphic override val chat: Chat,
                 when (val i = input.decodeElementIndex(descriptor)) {
                     CompositeDecoder.READ_DONE -> break@loop
                     0 -> chatClassName = input.decodeStringElement(descriptor, i)
-                    1 -> chat = input.decodeSerializableElement(descriptor, 1,
+                    1 -> chat = input.decodeSerializableElement(descriptor, i,
                             Class.forName(chatClassName).getMethod("deserializer")(null) as PolymorphicSerializer<out Chat>) as Chat
                     2 -> name = input.decodeStringElement(descriptor, i)
                     else -> throw SerializationException("Unknown index $i")
@@ -109,7 +109,7 @@ interface BaseInterface {
 }
 
 abstract class Callback<T>(fct: Any) {
-    abstract fun invoke(vararg args: Any): Boolean
+    abstract operator fun invoke(vararg args: Any): Boolean
 }
 
 private val callbacks = HashMap<Class<out Callback<out BonusInterface>>, ArrayList<Callback<out BonusInterface>>>()
@@ -128,9 +128,12 @@ fun initCallbacks() {
 }
 
 fun runCallbacks(callbackClass: Class<*>, vararg args: Any): Boolean {
-    return (callbacks[callbackClass as Class<out Callback<out BonusInterface>>]?.sumBy {
-        if (it.invoke(args)) 1 else 0
-    } ?: 0) > 0
+    var success = false
+    if (callbackClass as Class<out Callback<out BonusInterface>> in callbacks)
+        for (callback in callbacks[callbackClass]!!)
+            if (callback(args))
+                success = true
+    return success
 }
 
 
