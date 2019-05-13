@@ -150,7 +150,7 @@ object DiscordInterface: BaseInterface, IFormatting, INickname, IImages, IMentio
 
     override fun getDelimiters(format: Format): Pair<String, String>? = formatMap[format]
     override fun getEmojis(chat: Chat): List<Emoji> = jda!!.emotes.map { DiscordEmoji(it) }
-    fun getCachedEmojis(chat: Chat) = jda!!.emoteCache.map { DiscordEmoji(it) }
+    fun getCachedEmojis() = jda!!.emoteCache.map { DiscordEmoji(it) }
     override fun sendMessage(chat: Chat, message: String): Boolean {
         if (chat !is DiscordChat)
             return false

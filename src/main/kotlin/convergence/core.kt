@@ -4,6 +4,7 @@ package convergence
 
 import humanize.Humanize
 import kotlinx.serialization.Polymorphic
+import kotlinx.serialization.PolymorphicSerializer
 import kotlinx.serialization.Serializable
 import net.sourceforge.argparse4j.ArgumentParsers
 import net.sourceforge.argparse4j.inf.ArgumentParserException
@@ -239,7 +240,7 @@ fun formatTime(time: OffsetDateTime): String = Humanize.naturalTime(offsetDateTi
 const val allowedTimeDifference = 30
 const val updatesPerSecond = 1
 
-@Serializable
+@Serializable(PolymorphicSerializer::class)
 data class ScheduledCommand(val time: OffsetDateTime, @Polymorphic val sender: User, val commandData: CommandData, val id: Int)
 
 /**

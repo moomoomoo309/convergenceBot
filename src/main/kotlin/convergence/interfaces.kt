@@ -40,7 +40,9 @@ object FakeBaseInterface: BaseInterface {
 abstract class CommandLike(open val chat: Chat,
                            open val name: String,
                            open val helpText: String,
-                           open val syntaxText: String)
+                           open val syntaxText: String) {
+    constructor(): this(UniversalChat, "Default", "Default", "Default")
+}
 
 @Serializable
 data class Command(@Polymorphic override val chat: Chat,
