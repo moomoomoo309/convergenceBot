@@ -1,12 +1,67 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="29d84833-fb05-450b-b63e-091fc3136e36" name="Default Changelist" comment="">
+    <list default="true" id="29d84833-fb05-450b-b63e-091fc3136e36" name="Default Changelist" comment="Fixed build system for Windows">
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Gradle__aopalliance_aopalliance_1_0.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Gradle__ch_qos_logback_logback_classic_1_0_13.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Gradle__ch_qos_logback_logback_core_1_0_13.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Gradle__co_aurasphere_botmill_botmill_core_1_0_2.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Gradle__co_aurasphere_botmill_fb_botmill_2_0_0_RC3.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Gradle__com_fasterxml_classmate_1_1_0.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Gradle__com_google_code_findbugs_annotations_2_0_1.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Gradle__com_google_code_gson_gson_2_7.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Gradle__commons_codec_commons_codec_1_9.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Gradle__commons_logging_commons_logging_1_2.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Gradle__javax_el_javax_el_api_2_2_4.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Gradle__javax_validation_validation_api_1_1_0_Final.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Gradle__net_dv8tion_JDA_4_ALPHA_0_86.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Gradle__org_apache_httpcomponents_httpclient_4_5_2.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Gradle__org_apache_httpcomponents_httpcore_4_4_4.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Gradle__org_apache_httpcomponents_httpmime_4_5_2.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Gradle__org_glassfish_web_javax_el_2_2_4.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Gradle__org_hibernate_hibernate_validator_5_2_4_Final.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Gradle__org_hsqldb_hsqldb_2_3_1.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Gradle__org_jasypt_jasypt_1_9_2.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Gradle__org_javassist_javassist_3_18_2_GA.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Gradle__org_jboss_logging_jboss_logging_3_2_1_Final.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Gradle__org_mongodb_mongo_java_driver_3_4_0.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Gradle__org_reflections_reflections_0_9_10.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Gradle__org_slf4j_jcl_over_slf4j_1_7_1.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Gradle__org_springframework_data_spring_data_commons_1_5_0_RELEASE.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Gradle__org_springframework_data_spring_data_mongodb_1_2_0_RELEASE.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Gradle__org_springframework_spring_aop_3_1_4_RELEASE.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Gradle__org_springframework_spring_asm_3_1_4_RELEASE.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Gradle__org_springframework_spring_beans_3_1_4_RELEASE.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Gradle__org_springframework_spring_context_3_1_4_RELEASE.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Gradle__org_springframework_spring_core_3_1_4_RELEASE.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Gradle__org_springframework_spring_expression_3_1_4_RELEASE.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/Gradle__org_springframework_spring_tx_3_1_4_RELEASE.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules/basicPlugin/convergence.test.basicPlugin.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules/basicPlugin/convergence.test.basicPlugin.main.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules/basicPlugin/convergence.test.basicPlugin.test.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules/consolePlugin/convergence.test.consolePlugin.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules/consolePlugin/convergence.test.consolePlugin.main.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules/consolePlugin/convergence.test.consolePlugin.test.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules/convergence.convergence.bot.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules/convergence.convergence.bot.main.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules/convergence.convergence.bot.test.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules/discordPlugin/convergence.test.discordPlugin.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules/discordPlugin/convergence.test.discordPlugin.main.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules/discordPlugin/convergence.test.discordPlugin.test.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules/messengerPlugin/convergence.test.messengerPlugin.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules/messengerPlugin/convergence.test.messengerPlugin.main.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules/messengerPlugin/convergence.test.messengerPlugin.test.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__net_dv8tion_JDA_4_ALPHA_0_82.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/markdown-navigator/profiles_settings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/markdown-navigator/profiles_settings.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/basicPlugin/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/basicPlugin/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/consolePlugin/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/consolePlugin/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/discordPlugin/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/discordPlugin/build.gradle" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/discordPlugin/src/Main.kt" beforeDir="false" afterPath="$PROJECT_DIR$/discordPlugin/src/Main.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/core.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/core.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/interfaces.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/interfaces.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/kotlin/convergence/CommandParserTest.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/kotlin/convergence/CommandParserTest.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/messengerPlugin/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/messengerPlugin/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/kotlin/convergence/PluginLoaderTest.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/kotlin/convergence/PluginLoaderTest.kt" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <ignored path="$PROJECT_DIR$/target/" />
@@ -81,18 +136,73 @@
               <path>
                 <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
                 <item name="convergence.bot" type="f1a62948:ProjectNode" />
+                <item name=":basicPlugin" type="2d1252cf:ModuleNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="convergence.bot" type="f1a62948:ProjectNode" />
+                <item name=":basicPlugin" type="2d1252cf:ModuleNode" />
                 <item name="Tasks" type="e4a08cd1:TasksNode" />
               </path>
               <path>
                 <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
                 <item name="convergence.bot" type="f1a62948:ProjectNode" />
+                <item name=":basicPlugin" type="2d1252cf:ModuleNode" />
                 <item name="Tasks" type="e4a08cd1:TasksNode" />
                 <item name="build" type="c8890929:TasksNode$1" />
               </path>
               <path>
                 <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
                 <item name="convergence.bot" type="f1a62948:ProjectNode" />
-                <item name="Run Configurations" type="7b0102dc:RunConfigurationsNode" />
+                <item name=":discordPlugin" type="2d1252cf:ModuleNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="convergence.bot" type="f1a62948:ProjectNode" />
+                <item name=":discordPlugin" type="2d1252cf:ModuleNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="convergence.bot" type="f1a62948:ProjectNode" />
+                <item name=":discordPlugin" type="2d1252cf:ModuleNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+                <item name="build" type="c8890929:TasksNode$1" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="convergence.bot" type="f1a62948:ProjectNode" />
+                <item name=":messengerPlugin" type="2d1252cf:ModuleNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="convergence.bot" type="f1a62948:ProjectNode" />
+                <item name=":messengerPlugin" type="2d1252cf:ModuleNode" />
+                <item name="Source Sets" type="e897c970:GradleViewContributor$SourceSetsNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="convergence.bot" type="f1a62948:ProjectNode" />
+                <item name=":messengerPlugin" type="2d1252cf:ModuleNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="convergence.bot" type="f1a62948:ProjectNode" />
+                <item name=":messengerPlugin" type="2d1252cf:ModuleNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+                <item name="build" type="c8890929:TasksNode$1" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="convergence.bot" type="f1a62948:ProjectNode" />
+                <item name="convergence.bot" type="2d1252cf:ModuleNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="convergence.bot" type="f1a62948:ProjectNode" />
+                <item name="convergence.bot" type="2d1252cf:ModuleNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
               </path>
             </expand>
             <select />
@@ -103,35 +213,63 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/discordPlugin/src/Main.kt">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="174">
-              <caret line="158" column="16" selection-start-line="158" selection-start-column="16" selection-end-line="158" selection-end-column="16" />
+            <state relative-caret-position="48">
+              <caret line="3" column="33" lean-forward="true" selection-start-line="3" selection-start-column="33" selection-end-line="3" selection-end-column="33" />
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/src/test/kotlin/convergence/CommandParserTest.kt">
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/build/reports/tests/test/index.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="110">
-              <caret line="80" column="44" selection-start-line="80" selection-start-column="44" selection-end-line="80" selection-end-column="44" />
+            <state relative-caret-position="-825" />
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/test/kotlin/convergence/PluginLoaderTest.kt">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="431">
+              <caret line="54" column="76" selection-start-line="54" selection-start-column="76" selection-end-line="54" selection-end-column="76" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/basicPlugin/build.gradle">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="420">
+              <caret line="55" lean-forward="true" selection-start-line="55" selection-end-line="55" />
               <folding>
-                <element signature="e#21#139#0" expanded="true" />
+                <element signature="e#0#47#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/TODO.md">
-          <provider selected="true" editor-type-id="split-provider[text-editor;MarkdownPreviewEditor]">
-            <state split_layout="SPLIT">
-              <first_editor />
-              <second_editor>
-                <markdownNavigatorState />
-              </second_editor>
+        <entry file="file://$PROJECT_DIR$/build.gradle">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="924">
+              <caret line="122" column="46" selection-start-line="122" selection-start-column="46" selection-end-line="122" selection-end-column="46" />
+              <folding>
+                <element signature="e#0#26#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/messengerPlugin/build.gradle">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="180">
+              <caret line="40" column="40" selection-start-line="40" selection-start-column="40" selection-end-line="40" selection-end-column="40" />
+              <folding>
+                <element signature="e#0#47#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -139,37 +277,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/kotlin/convergence/core.kt">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="326">
-              <caret line="242" selection-start-line="242" selection-end-line="242" />
-              <folding>
-                <element signature="e#67#608#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/.idea/modules.xml">
-          <provider selected="true" editor-type-id="text-editor" />
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/kotlin/convergence/serializers.kt">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="418">
-              <caret line="19" column="1" selection-start-line="19" selection-start-column="1" selection-end-line="19" selection-end-column="1" />
-              <folding>
-                <element signature="e#21#187#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/.gitignore">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="539">
-              <caret line="25" selection-start-line="25" selection-end-line="25" />
+            <state relative-caret-position="-7">
+              <caret line="244" selection-start-line="244" selection-end-line="244" />
             </state>
           </provider>
         </entry>
@@ -177,31 +286,10 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/messengerPlugin/src/Main.kt">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="682">
+            <state>
               <caret line="31" column="68" selection-start-line="31" selection-start-column="68" selection-end-line="31" selection-end-column="68" />
               <folding>
                 <element signature="e#49#101#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/kotlin/convergence/interfaces.kt">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="293">
-              <caret line="44" selection-start-line="44" selection-end-line="44" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/kotlin/convergence/PluginLoader.kt">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="155">
-              <caret line="30" column="19" selection-start-line="30" selection-start-column="19" selection-end-line="30" selection-end-column="19" />
-              <folding>
-                <element signature="e#21#269#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -221,7 +309,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>Ne_</find>
       <find>&lt;/color&gt;</find>
       <find>object</find>
       <find>baseI</find>
@@ -251,6 +338,7 @@
       <find>UniversalChat, Command(</find>
       <find>inline</find>
       <find>CommandL</find>
+      <find>Paths.get(&quot;build/libs/&quot;)</find>
     </findStrings>
     <replaceStrings>
       <replace>&quot;-&gt;&quot;</replace>
@@ -263,6 +351,7 @@
       <replace>baseInterfaceMap[chat.protocol]!!</replace>
       <replace>baseInterfaceMap[protocol]!!</replace>
       <replace>formatTime(event.time)</replace>
+      <replace>projectDir.toPath().resolve(&quot;./build/libs/&quot;)</replace>
     </replaceStrings>
   </component>
   <component name="Git.Settings">
@@ -273,9 +362,6 @@
         <entry key="$PROJECT_DIR$" value="classLoading" />
       </map>
     </option>
-  </component>
-  <component name="GithubDefaultAccount">
-    <option name="defaultAccountId" value="39f80656-d015-4b39-9d07-31879c6f40d2" />
   </component>
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/src/main/kotlin/convergence/commandParser.kt" root0="FORCE_HIGHLIGHTING" />
@@ -302,17 +388,13 @@
         <option value="$PROJECT_DIR$/basicPlugin/src/Main.kt" />
         <option value="$PROJECT_DIR$/gradlew" />
         <option value="$PROJECT_DIR$/basicPlugin/resources/basicPlugin.properties" />
-        <option value="$PROJECT_DIR$/basicPlugin/build.gradle" />
         <option value="$PROJECT_DIR$/src/main/kotlin/convergence/classLoader.kt" />
         <option value="$PROJECT_DIR$/src/main/kotlin/convergence/pluginLoader.kt" />
         <option value="$PROJECT_DIR$/src/test/kotlin/convergence/ClassLoaderTest.kt" />
         <option value="$PROJECT_DIR$/src/test/kotlin/convergence/DefaultCommandTests.kt" />
         <option value="$PROJECT_DIR$/consolePlugin/resources/ClassName.txt" />
-        <option value="$PROJECT_DIR$/src/test/kotlin/convergence/PluginLoaderTest.kt" />
-        <option value="$PROJECT_DIR$/consolePlugin/build.gradle" />
         <option value="$PROJECT_DIR$/src/main/kotlin/convergence/PluginLoader.kt" />
         <option value="$PROJECT_DIR$/consolePlugin/src/Main.kt" />
-        <option value="$PROJECT_DIR$/build.gradle" />
         <option value="$PROJECT_DIR$/src/main/kotlin/convergence/commandParser.kt" />
         <option value="$PROJECT_DIR$/src/main/kotlin/convergence/serializers.kt" />
         <option value="$PROJECT_DIR$/src/main/kotlin/convergence/defaultCommands.kt" />
@@ -320,8 +402,14 @@
         <option value="$PROJECT_DIR$/.gitignore" />
         <option value="$PROJECT_DIR$/src/main/kotlin/convergence/core.kt" />
         <option value="$PROJECT_DIR$/src/main/kotlin/convergence/interfaces.kt" />
-        <option value="$PROJECT_DIR$/discordPlugin/src/Main.kt" />
         <option value="$PROJECT_DIR$/src/test/kotlin/convergence/CommandParserTest.kt" />
+        <option value="$PROJECT_DIR$/build.gradle" />
+        <option value="$PROJECT_DIR$/consolePlugin/build.gradle" />
+        <option value="$PROJECT_DIR$/discordPlugin/build.gradle" />
+        <option value="$PROJECT_DIR$/messengerPlugin/build.gradle" />
+        <option value="$PROJECT_DIR$/basicPlugin/build.gradle" />
+        <option value="$PROJECT_DIR$/src/test/kotlin/convergence/PluginLoaderTest.kt" />
+        <option value="$PROJECT_DIR$/discordPlugin/src/Main.kt" />
       </list>
     </option>
   </component>
@@ -375,59 +463,101 @@
     </navigator>
     <panes>
       <pane id="PackagesPane" />
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
             <path>
               <item name="convergence.bot" type="b2602c69:ProjectViewProjectNode" />
-              <item name="convergenceBot" type="8a07ba80:GradleTreeStructureProvider$GradleModuleDirectoryNode" />
+              <item name="convergenceBot" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="convergence.bot" type="b2602c69:ProjectViewProjectNode" />
-              <item name="convergenceBot" type="8a07ba80:GradleTreeStructureProvider$GradleModuleDirectoryNode" />
+              <item name="convergenceBot" type="462c0819:PsiDirectoryNode" />
               <item name=".idea" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="convergence.bot" type="b2602c69:ProjectViewProjectNode" />
-              <item name="convergenceBot" type="8a07ba80:GradleTreeStructureProvider$GradleModuleDirectoryNode" />
-              <item name=".idea" type="462c0819:PsiDirectoryNode" />
-              <item name="modules" type="462c0819:PsiDirectoryNode" />
+              <item name="convergenceBot" type="462c0819:PsiDirectoryNode" />
+              <item name="basicPlugin" type="8a07ba80:GradleTreeStructureProvider$GradleModuleDirectoryNode" />
             </path>
             <path>
               <item name="convergence.bot" type="b2602c69:ProjectViewProjectNode" />
-              <item name="convergenceBot" type="8a07ba80:GradleTreeStructureProvider$GradleModuleDirectoryNode" />
+              <item name="convergenceBot" type="462c0819:PsiDirectoryNode" />
+              <item name="basicPlugin" type="8a07ba80:GradleTreeStructureProvider$GradleModuleDirectoryNode" />
+              <item name="build" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="convergence.bot" type="b2602c69:ProjectViewProjectNode" />
+              <item name="convergenceBot" type="462c0819:PsiDirectoryNode" />
+              <item name="basicPlugin" type="8a07ba80:GradleTreeStructureProvider$GradleModuleDirectoryNode" />
+              <item name="build" type="462c0819:PsiDirectoryNode" />
+              <item name="libs" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="convergence.bot" type="b2602c69:ProjectViewProjectNode" />
+              <item name="convergenceBot" type="462c0819:PsiDirectoryNode" />
+              <item name="consolePlugin" type="8a07ba80:GradleTreeStructureProvider$GradleModuleDirectoryNode" />
+            </path>
+            <path>
+              <item name="convergence.bot" type="b2602c69:ProjectViewProjectNode" />
+              <item name="convergenceBot" type="462c0819:PsiDirectoryNode" />
+              <item name="discordPlugin" type="8a07ba80:GradleTreeStructureProvider$GradleModuleDirectoryNode" />
+            </path>
+            <path>
+              <item name="convergence.bot" type="b2602c69:ProjectViewProjectNode" />
+              <item name="convergenceBot" type="462c0819:PsiDirectoryNode" />
               <item name="messengerPlugin" type="8a07ba80:GradleTreeStructureProvider$GradleModuleDirectoryNode" />
             </path>
             <path>
               <item name="convergence.bot" type="b2602c69:ProjectViewProjectNode" />
-              <item name="convergenceBot" type="8a07ba80:GradleTreeStructureProvider$GradleModuleDirectoryNode" />
+              <item name="convergenceBot" type="462c0819:PsiDirectoryNode" />
               <item name="messengerPlugin" type="8a07ba80:GradleTreeStructureProvider$GradleModuleDirectoryNode" />
               <item name="src" type="8a07ba80:GradleTreeStructureProvider$GradleModuleDirectoryNode" />
             </path>
             <path>
               <item name="convergence.bot" type="b2602c69:ProjectViewProjectNode" />
-              <item name="convergenceBot" type="8a07ba80:GradleTreeStructureProvider$GradleModuleDirectoryNode" />
+              <item name="convergenceBot" type="462c0819:PsiDirectoryNode" />
               <item name="src" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="convergence.bot" type="b2602c69:ProjectViewProjectNode" />
-              <item name="convergenceBot" type="8a07ba80:GradleTreeStructureProvider$GradleModuleDirectoryNode" />
+              <item name="convergenceBot" type="462c0819:PsiDirectoryNode" />
               <item name="src" type="462c0819:PsiDirectoryNode" />
               <item name="main" type="8a07ba80:GradleTreeStructureProvider$GradleModuleDirectoryNode" />
             </path>
             <path>
               <item name="convergence.bot" type="b2602c69:ProjectViewProjectNode" />
-              <item name="convergenceBot" type="8a07ba80:GradleTreeStructureProvider$GradleModuleDirectoryNode" />
+              <item name="convergenceBot" type="462c0819:PsiDirectoryNode" />
               <item name="src" type="462c0819:PsiDirectoryNode" />
               <item name="main" type="8a07ba80:GradleTreeStructureProvider$GradleModuleDirectoryNode" />
               <item name="kotlin" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="convergence.bot" type="b2602c69:ProjectViewProjectNode" />
-              <item name="convergenceBot" type="8a07ba80:GradleTreeStructureProvider$GradleModuleDirectoryNode" />
+              <item name="convergenceBot" type="462c0819:PsiDirectoryNode" />
               <item name="src" type="462c0819:PsiDirectoryNode" />
               <item name="main" type="8a07ba80:GradleTreeStructureProvider$GradleModuleDirectoryNode" />
+              <item name="kotlin" type="462c0819:PsiDirectoryNode" />
+              <item name="convergence" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="convergence.bot" type="b2602c69:ProjectViewProjectNode" />
+              <item name="convergenceBot" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="test" type="8a07ba80:GradleTreeStructureProvider$GradleModuleDirectoryNode" />
+            </path>
+            <path>
+              <item name="convergence.bot" type="b2602c69:ProjectViewProjectNode" />
+              <item name="convergenceBot" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="test" type="8a07ba80:GradleTreeStructureProvider$GradleModuleDirectoryNode" />
+              <item name="kotlin" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="convergence.bot" type="b2602c69:ProjectViewProjectNode" />
+              <item name="convergenceBot" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="test" type="8a07ba80:GradleTreeStructureProvider$GradleModuleDirectoryNode" />
               <item name="kotlin" type="462c0819:PsiDirectoryNode" />
               <item name="convergence" type="462c0819:PsiDirectoryNode" />
             </path>
@@ -435,16 +565,17 @@
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="add_unversioned_files" value="$PROJECT_DIR$/.gitignore&#10;/home/nicholasdelello/IntelliJIDEAProjects/convergenceBot/consolePlugin/build/resources/main/ClassName.txt&#10;/home/nicholasdelello/IntelliJIDEAProjects/convergenceBot/bot.iml" />
-    <property name="android.sdk.path" value="$USER_HOME$/Android/Sdk" />
+    <property name="android.sdk.path" value="$PROJECT_DIR$/../Android/Sdk" />
     <property name="aspect.path.notification.shown" value="true" />
-    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1545515868908" />
-    <property name="last_opened_file_path" value="$USER_HOME$/AersysPublicAPI" />
+    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1557782488179" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../AersysPublicAPI" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
     <property name="nodejs_package_manager_path" value="npm" />
@@ -452,7 +583,7 @@
     <property name="project.structure.last.edited" value="Modules" />
     <property name="project.structure.proportion" value="0.15" />
     <property name="project.structure.side.proportion" value="0.2" />
-    <property name="settings.editor.selected.configurable" value="reference.settingsdialog.IDE.editor.colors" />
+    <property name="settings.editor.selected.configurable" value="reference.settingsdialog.IDE.editor.colors.Groovy" />
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
@@ -472,11 +603,30 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Gradle.convergenceBot [build]">
-    <configuration name="convergenceBot [build]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+  <component name="RunManager" selected="Gradle.convergenceBot:discordPlugin [build]">
+    <configuration name="convergenceBot:basicPlugin [buildDependents]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$/basicPlugin" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="buildDependents" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <GradleScriptDebugEnabled>true</GradleScriptDebugEnabled>
+      <method v="2" />
+    </configuration>
+    <configuration name="convergenceBot:basicPlugin [build]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$/basicPlugin" />
         <option name="externalSystemIdString" value="GRADLE" />
         <option name="scriptParameters" />
         <option name="taskDescriptions">
@@ -492,29 +642,10 @@
       <GradleScriptDebugEnabled>true</GradleScriptDebugEnabled>
       <method v="2" />
     </configuration>
-    <configuration name="convergenceBot [clean]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+    <configuration name="convergenceBot:basicPlugin [jar]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$" />
-        <option name="externalSystemIdString" value="GRADLE" />
-        <option name="scriptParameters" />
-        <option name="taskDescriptions">
-          <list />
-        </option>
-        <option name="taskNames">
-          <list>
-            <option value="clean" />
-          </list>
-        </option>
-        <option name="vmOptions" />
-      </ExternalSystemSettings>
-      <GradleScriptDebugEnabled>true</GradleScriptDebugEnabled>
-      <method v="2" />
-    </configuration>
-    <configuration name="convergenceBot [jar]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
-      <ExternalSystemSettings>
-        <option name="executionName" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$/basicPlugin" />
         <option name="externalSystemIdString" value="GRADLE" />
         <option name="scriptParameters" />
         <option name="taskDescriptions">
@@ -530,26 +661,7 @@
       <GradleScriptDebugEnabled>true</GradleScriptDebugEnabled>
       <method v="2" />
     </configuration>
-    <configuration name="convergenceBot [run]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
-      <ExternalSystemSettings>
-        <option name="executionName" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$" />
-        <option name="externalSystemIdString" value="GRADLE" />
-        <option name="scriptParameters" />
-        <option name="taskDescriptions">
-          <list />
-        </option>
-        <option name="taskNames">
-          <list>
-            <option value="run" />
-          </list>
-        </option>
-        <option name="vmOptions" />
-      </ExternalSystemSettings>
-      <GradleScriptDebugEnabled>true</GradleScriptDebugEnabled>
-      <method v="2" />
-    </configuration>
-    <configuration name="convergenceBot:discordPlugin [jar]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+    <configuration name="convergenceBot:discordPlugin [build]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$/discordPlugin" />
@@ -560,7 +672,26 @@
         </option>
         <option name="taskNames">
           <list>
-            <option value="jar" />
+            <option value="build" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <GradleScriptDebugEnabled>true</GradleScriptDebugEnabled>
+      <method v="2" />
+    </configuration>
+    <configuration name="convergenceBot:messengerPlugin [build]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$/messengerPlugin" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="build" />
           </list>
         </option>
         <option name="vmOptions" />
@@ -569,19 +700,19 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Gradle.convergenceBot [jar]" />
-      <item itemvalue="Gradle.convergenceBot [run]" />
-      <item itemvalue="Gradle.convergenceBot [build]" />
-      <item itemvalue="Gradle.convergenceBot [clean]" />
-      <item itemvalue="Gradle.convergenceBot:discordPlugin [jar]" />
+      <item itemvalue="Gradle.convergenceBot:messengerPlugin [build]" />
+      <item itemvalue="Gradle.convergenceBot:discordPlugin [build]" />
+      <item itemvalue="Gradle.convergenceBot:basicPlugin [build]" />
+      <item itemvalue="Gradle.convergenceBot:basicPlugin [buildDependents]" />
+      <item itemvalue="Gradle.convergenceBot:basicPlugin [jar]" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Gradle.convergenceBot [build]" />
-        <item itemvalue="Gradle.convergenceBot [jar]" />
-        <item itemvalue="Gradle.convergenceBot [run]" />
-        <item itemvalue="Gradle.convergenceBot:discordPlugin [jar]" />
-        <item itemvalue="Gradle.convergenceBot [clean]" />
+        <item itemvalue="Gradle.convergenceBot:basicPlugin [jar]" />
+        <item itemvalue="Gradle.convergenceBot:basicPlugin [buildDependents]" />
+        <item itemvalue="Gradle.convergenceBot:basicPlugin [build]" />
+        <item itemvalue="Gradle.convergenceBot:discordPlugin [build]" />
+        <item itemvalue="Gradle.convergenceBot:messengerPlugin [build]" />
       </list>
     </recent_temporary>
   </component>
@@ -951,22 +1082,23 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="434115000" />
+    <option name="totallyTimeSpent" value="436295000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="1676" y="0" width="1688" height="1018" extended-state="6" />
+    <frame x="-8" y="-8" width="1936" height="1096" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.12729499" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.12953092" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Designer" order="2" />
       <window_info id="UI Designer" order="3" />
       <window_info id="Favorites" order="4" side_tool="true" />
       <window_info id="Image Layers" order="5" />
       <window_info id="Capture Tool" order="6" />
+      <window_info anchor="bottom" id="Spring" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32915717" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.4994664" visible="true" weight="0.32454127" />
+      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.4989339" weight="0.41865286" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.37041286" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -974,12 +1106,13 @@
       <window_info anchor="bottom" id="Floobits" order="7" />
       <window_info anchor="bottom" id="Database Changes" order="8" show_stripe_button="false" />
       <window_info anchor="bottom" id="Terminal" order="9" weight="0.7150776" />
-      <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.501224" side_tool="true" weight="0.3233945" />
+      <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.50053304" side_tool="true" weight="0.32435232" />
       <window_info anchor="bottom" id="Version Control" order="11" weight="0.3295325" />
-      <window_info anchor="bottom" id="Messages" order="12" weight="0.32454127" />
+      <window_info anchor="bottom" id="Messages" order="12" sideWeight="0.49946696" visible="true" weight="0.32435232" />
       <window_info anchor="bottom" id="LuaCheck" order="13" />
       <window_info anchor="bottom" id="Build" order="14" sideWeight="0.49877" weight="0.32798165" />
       <window_info anchor="bottom" id="Docker" order="15" show_stripe_button="false" />
+      <window_info anchor="right" id="Bean Validation" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.2497332" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
@@ -991,7 +1124,7 @@
       <window_info anchor="right" id="Maven" order="8" weight="0.32924226" />
       <window_info anchor="right" id="Capture Analysis" order="9" />
       <window_info anchor="right" id="Theme Preview" order="10" />
-      <window_info anchor="right" id="Gradle" order="11" visible="true" weight="0.21664627" />
+      <window_info anchor="right" id="Gradle" order="11" visible="true" weight="0.21641791" />
       <window_info anchor="right" x="1680" y="29" width="1920" height="1015" id="PlantUML" maximized="true" order="12" weight="0.5490928" />
       <window_info anchor="right" id="Cargo" order="13" weight="0.32986537" />
     </layout>
@@ -1041,7 +1174,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
-    <MESSAGE value="Implement insertion of escaped chars into command string, add test." />
     <MESSAGE value="Make command parser tests pass." />
     <MESSAGE value="Implement aliases, switch to universalChat." />
     <MESSAGE value="Remove unnecessary exceptions, optimize parsing non-commands." />
@@ -1066,7 +1198,8 @@
     <MESSAGE value="Implement Callback API and do more work for serialization." />
     <MESSAGE value="Add .idea folder so the modules can be imported correctly." />
     <MESSAGE value="Unignore iml files." />
-    <option name="LAST_COMMIT_MESSAGE" value="Unignore iml files." />
+    <MESSAGE value="Fixed build system for Windows" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed build system for Windows" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REARRANGE_BEFORE_PROJECT_COMMIT" value="true" />
@@ -1075,13 +1208,13 @@
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="java-line">
-          <url>jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.ocpsoft.prettytime/prettytime/3.2.5.Final/e6a2bcd094f7ac739ddd11e9ea4a83fa8ff1ec59/prettytime-3.2.5.Final-sources.jar!/org/ocpsoft/prettytime/PrettyTime.java</url>
+          <url>jar://$PROJECT_DIR$/../.gradle/caches/modules-2/files-2.1/org.ocpsoft.prettytime/prettytime/3.2.5.Final/e6a2bcd094f7ac739ddd11e9ea4a83fa8ff1ec59/prettytime-3.2.5.Final-sources.jar!/org/ocpsoft/prettytime/PrettyTime.java</url>
           <line>293</line>
           <properties />
           <option name="timeStamp" value="130" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-          <url>jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.github.mfornos/humanize-slim/1.2.2/e391c8296db28716ced9d119444f9bfed49d86da/humanize-slim-1.2.2-sources.jar!/humanize/time/DurationHelper.java</url>
+          <url>jar://$PROJECT_DIR$/../.gradle/caches/modules-2/files-2.1/com.github.mfornos/humanize-slim/1.2.2/e391c8296db28716ced9d119444f9bfed49d86da/humanize-slim-1.2.2-sources.jar!/humanize/time/DurationHelper.java</url>
           <line>31</line>
           <properties />
           <option name="timeStamp" value="131" />
@@ -1150,12 +1283,9 @@
     </expressions>
   </component>
   <component name="editorHistoryManager">
-    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.kamranzafar.commons/object-cloner/0.1/de294f8b9d577008f31596b04cdabff127f1ed75/object-cloner-0.1-sources.jar!/org/kamranzafar/commons/cloner/CloningStrategy.java" />
-    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.kamranzafar.commons/object-cloner/0.1/de294f8b9d577008f31596b04cdabff127f1ed75/object-cloner-0.1-sources.jar!/org/kamranzafar/commons/cloner/ReflectionCloningStrategy.java" />
-    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.kamranzafar.commons/object-cloner/0.1/de294f8b9d577008f31596b04cdabff127f1ed75/object-cloner-0.1-sources.jar!/org/kamranzafar/commons/cloner/ObjectCloner.java" />
-    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.xeustechnologies/jcl-core/2.8/2853eb784a18d8ed129b61dc1e7bf42cc6b34b37/jcl-core-2.8-sources.jar!/org/xeustechnologies/jcl/JclUtils.java" />
-    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.xeustechnologies/jcl-core/2.8/2853eb784a18d8ed129b61dc1e7bf42cc6b34b37/jcl-core-2.8-sources.jar!/org/xeustechnologies/jcl/ProxyClassLoader.java" />
-    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.xeustechnologies/jcl-core/2.8/2853eb784a18d8ed129b61dc1e7bf42cc6b34b37/jcl-core-2.8-sources.jar!/org/xeustechnologies/jcl/AbstractClassLoader.java" />
+    <entry file="jar://$PROJECT_DIR$/../.gradle/caches/modules-2/files-2.1/org.xeustechnologies/jcl-core/2.8/2853eb784a18d8ed129b61dc1e7bf42cc6b34b37/jcl-core-2.8-sources.jar!/org/xeustechnologies/jcl/JclUtils.java" />
+    <entry file="jar://$PROJECT_DIR$/../.gradle/caches/modules-2/files-2.1/org.xeustechnologies/jcl-core/2.8/2853eb784a18d8ed129b61dc1e7bf42cc6b34b37/jcl-core-2.8-sources.jar!/org/xeustechnologies/jcl/ProxyClassLoader.java" />
+    <entry file="jar://$PROJECT_DIR$/../.gradle/caches/modules-2/files-2.1/org.xeustechnologies/jcl-core/2.8/2853eb784a18d8ed129b61dc1e7bf42cc6b34b37/jcl-core-2.8-sources.jar!/org/xeustechnologies/jcl/AbstractClassLoader.java" />
     <entry file="file://$PROJECT_DIR$/src/test/kotlin/convergence/DefaultCommandTests.kt">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="238">
@@ -1163,56 +1293,24 @@
         </state>
       </provider>
     </entry>
-    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-common/1.3.10/27e50db5c984a3ee710c5556c877728a4e735971/kotlin-stdlib-common-1.3.10-sources.jar!/kotlin/util/Standard.kt" />
-    <entry file="file://$PROJECT_DIR$/consolePlugin/build.gradle">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="167">
-          <caret line="31" column="17" selection-start-line="31" selection-start-column="17" selection-end-line="31" selection-end-column="17" />
-          <folding>
-            <element signature="e#0#26#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar:///usr/lib/jvm/java-8-openjdk-amd64/jre/lib/rt.jar!/java/util/BitSet.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-9099">
-          <caret line="59" column="11" selection-start-line="59" selection-start-column="11" selection-end-line="59" selection-end-column="11" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar:///usr/lib/jvm/java-8-openjdk-amd64/jre/lib/rt.jar!/java/time/ZoneId.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="170">
-          <caret line="34" column="25" selection-start-line="34" selection-start-column="25" selection-end-line="34" selection-end-column="25" />
-          <folding>
-            <element signature="e#1109#1110#0" expanded="true" />
-            <element signature="e#1164#1165#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.github.mfornos/humanize-slim/1.2.2/e391c8296db28716ced9d119444f9bfed49d86da/humanize-slim-1.2.2-sources.jar!/humanize/Humanize.java" />
-    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.github.mfornos/humanize-slim/1.2.2/e391c8296db28716ced9d119444f9bfed49d86da/humanize-slim-1.2.2-sources.jar!/humanize/spi/context/DefaultContext.java" />
-    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.github.mfornos/humanize-slim/1.2.2/e391c8296db28716ced9d119444f9bfed49d86da/humanize-slim-1.2.2-sources.jar!/humanize/time/DurationHelper.java" />
-    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.github.mfornos/humanize-slim/1.2.2/e391c8296db28716ced9d119444f9bfed49d86da/humanize-slim-1.2.2-sources.jar!/humanize/time/PrettyTimeFormat.java" />
-    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.ocpsoft.prettytime/prettytime/3.2.5.Final/e6a2bcd094f7ac739ddd11e9ea4a83fa8ff1ec59/prettytime-3.2.5.Final-sources.jar!/org/ocpsoft/prettytime/units/JustNow.java" />
-    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.ocpsoft.prettytime/prettytime/3.2.5.Final/e6a2bcd094f7ac739ddd11e9ea4a83fa8ff1ec59/prettytime-3.2.5.Final-sources.jar!/org/ocpsoft/prettytime/PrettyTime.java" />
-    <entry file="jar:///usr/lib/jvm/java-8-openjdk-amd64/jre/lib/rt.jar!/java/io/Serializable.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="68">
-          <caret line="7" column="17" selection-start-line="7" selection-start-column="17" selection-end-line="7" selection-end-column="17" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib/1.3.31/d16c788b755be19bf8a7eace113755519a1d7182/kotlin-stdlib-1.3.31-sources.jar!/kotlin/Boolean.kt">
+    <entry file="jar://$PROJECT_DIR$/../.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-common/1.3.10/27e50db5c984a3ee710c5556c877728a4e735971/kotlin-stdlib-common-1.3.10-sources.jar!/kotlin/util/Standard.kt" />
+    <entry file="jar:///usr/lib/jvm/java-8-openjdk-amd64/jre/lib/rt.jar!/java/util/BitSet.class" />
+    <entry file="jar:///usr/lib/jvm/java-8-openjdk-amd64/jre/lib/rt.jar!/java/time/ZoneId.class" />
+    <entry file="jar://$PROJECT_DIR$/../.gradle/caches/modules-2/files-2.1/com.github.mfornos/humanize-slim/1.2.2/e391c8296db28716ced9d119444f9bfed49d86da/humanize-slim-1.2.2-sources.jar!/humanize/Humanize.java" />
+    <entry file="jar://$PROJECT_DIR$/../.gradle/caches/modules-2/files-2.1/com.github.mfornos/humanize-slim/1.2.2/e391c8296db28716ced9d119444f9bfed49d86da/humanize-slim-1.2.2-sources.jar!/humanize/spi/context/DefaultContext.java" />
+    <entry file="jar://$PROJECT_DIR$/../.gradle/caches/modules-2/files-2.1/com.github.mfornos/humanize-slim/1.2.2/e391c8296db28716ced9d119444f9bfed49d86da/humanize-slim-1.2.2-sources.jar!/humanize/time/DurationHelper.java" />
+    <entry file="jar://$PROJECT_DIR$/../.gradle/caches/modules-2/files-2.1/com.github.mfornos/humanize-slim/1.2.2/e391c8296db28716ced9d119444f9bfed49d86da/humanize-slim-1.2.2-sources.jar!/humanize/time/PrettyTimeFormat.java" />
+    <entry file="jar://$PROJECT_DIR$/../.gradle/caches/modules-2/files-2.1/org.ocpsoft.prettytime/prettytime/3.2.5.Final/e6a2bcd094f7ac739ddd11e9ea4a83fa8ff1ec59/prettytime-3.2.5.Final-sources.jar!/org/ocpsoft/prettytime/units/JustNow.java" />
+    <entry file="jar://$PROJECT_DIR$/../.gradle/caches/modules-2/files-2.1/org.ocpsoft.prettytime/prettytime/3.2.5.Final/e6a2bcd094f7ac739ddd11e9ea4a83fa8ff1ec59/prettytime-3.2.5.Final-sources.jar!/org/ocpsoft/prettytime/PrettyTime.java" />
+    <entry file="jar:///usr/lib/jvm/java-8-openjdk-amd64/jre/lib/rt.jar!/java/io/Serializable.class" />
+    <entry file="jar://$PROJECT_DIR$/../.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib/1.3.31/d16c788b755be19bf8a7eace113755519a1d7182/kotlin-stdlib-1.3.31-sources.jar!/kotlin/Boolean.kt">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="176">
           <caret line="22" column="13" selection-start-line="22" selection-start-column="13" selection-end-line="22" selection-end-column="13" />
         </state>
       </provider>
     </entry>
-    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib/1.3.31/d16c788b755be19bf8a7eace113755519a1d7182/kotlin-stdlib-1.3.31-sources.jar!/kotlin/Any.kt">
+    <entry file="jar://$PROJECT_DIR$/../.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib/1.3.31/d16c788b755be19bf8a7eace113755519a1d7182/kotlin-stdlib-1.3.31-sources.jar!/kotlin/Any.kt">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="356">
           <caret line="34" column="29" selection-start-line="34" selection-start-column="29" selection-end-line="34" selection-end-column="29" />
@@ -1229,7 +1327,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlinx/kotlinx-serialization-runtime/0.11.0-1.3.30-eap-125/f8ccfdbdccf0d5faa8090382e0fb0d61b3dc07d5/kotlinx-serialization-runtime-0.11.0-1.3.30-eap-125-sources.jar!/kotlinx/serialization/Coders.kt">
+    <entry file="jar://$PROJECT_DIR$/../.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlinx/kotlinx-serialization-runtime/0.11.0-1.3.30-eap-125/f8ccfdbdccf0d5faa8090382e0fb0d61b3dc07d5/kotlinx-serialization-runtime-0.11.0-1.3.30-eap-125-sources.jar!/kotlinx/serialization/Coders.kt">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="497">
           <caret line="78" lean-forward="true" selection-start-line="78" selection-end-line="78" />
@@ -1253,18 +1351,9 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/discordPlugin/build.gradle">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-792">
-          <folding>
-            <element signature="e#0#47#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/kotlin/convergence/defaultCommands.kt">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="286">
+        <state>
           <caret line="24" column="18" selection-start-line="24" selection-start-column="18" selection-end-line="24" selection-end-column="18" />
         </state>
       </provider>
@@ -1276,20 +1365,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-common/1.3.31/958c401b129f64de74af4b11a0894693edfa168d/kotlin-stdlib-common-1.3.31-sources.jar!/kotlin/util/Standard.kt">
+    <entry file="jar://$PROJECT_DIR$/../.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-common/1.3.31/958c401b129f64de74af4b11a0894693edfa168d/kotlin-stdlib-common-1.3.31-sources.jar!/kotlin/util/Standard.kt">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="277">
           <caret line="21" column="18" selection-start-line="21" selection-start-column="18" selection-end-line="21" selection-end-column="18" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/build.gradle">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1809">
-          <caret line="116" column="78" selection-start-line="116" selection-start-column="78" selection-end-line="116" selection-end-column="78" />
-          <folding>
-            <element signature="e#0#26#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -1322,20 +1401,10 @@
         <state relative-caret-position="-25542" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/messengerPlugin/build.gradle">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="506">
-          <caret line="23" column="24" selection-start-line="23" selection-start-column="24" selection-end-line="23" selection-end-column="24" />
-          <folding>
-            <element signature="e#0#47#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/kotlin/convergence/PluginLoader.kt">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="155">
-          <caret line="30" column="19" selection-start-line="30" selection-start-column="19" selection-end-line="30" selection-end-column="19" />
+        <state>
+          <caret line="42" selection-start-line="42" selection-end-line="42" />
           <folding>
             <element signature="e#21#269#0" expanded="true" />
           </folding>
@@ -1358,16 +1427,10 @@
     <entry file="file://$PROJECT_DIR$/.idea/modules.xml">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/.gitignore">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="539">
-          <caret line="25" selection-start-line="25" selection-end-line="25" />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/.gitignore" />
     <entry file="file://$PROJECT_DIR$/src/main/kotlin/convergence/serializers.kt">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="418">
+        <state>
           <caret line="19" column="1" selection-start-line="19" selection-start-column="1" selection-end-line="19" selection-end-column="1" />
           <folding>
             <element signature="e#21#187#0" expanded="true" />
@@ -1377,7 +1440,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/messengerPlugin/src/Main.kt">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="682">
+        <state>
           <caret line="31" column="68" selection-start-line="31" selection-start-column="68" selection-end-line="31" selection-end-column="68" />
           <folding>
             <element signature="e#49#101#0" expanded="true" />
@@ -1385,20 +1448,11 @@
         </state>
       </provider>
     </entry>
-    <entry file="jar:///usr/lib/jvm/java-8-openjdk-amd64/jre/lib/rt.jar!/java/lang/Thread.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="183">
-          <caret line="213" selection-start-line="213" selection-end-line="213" />
-        </state>
-      </provider>
-    </entry>
+    <entry file="jar:///usr/lib/jvm/java-8-openjdk-amd64/jre/lib/rt.jar!/java/lang/Thread.class" />
     <entry file="file://$PROJECT_DIR$/src/main/kotlin/convergence/core.kt">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="326">
-          <caret line="242" selection-start-line="242" selection-end-line="242" />
-          <folding>
-            <element signature="e#67#608#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="-7">
+          <caret line="244" selection-start-line="244" selection-end-line="244" />
         </state>
       </provider>
     </entry>
@@ -1409,13 +1463,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/discordPlugin/src/Main.kt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="174">
-          <caret line="158" column="16" selection-start-line="158" selection-start-column="16" selection-end-line="158" selection-end-column="16" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/test/kotlin/convergence/CommandParserTest.kt">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="110">
@@ -1423,6 +1470,75 @@
           <folding>
             <element signature="e#21#139#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/messengerPlugin/build.gradle">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="180">
+          <caret line="40" column="40" selection-start-line="40" selection-start-column="40" selection-end-line="40" selection-end-column="40" />
+          <folding>
+            <element signature="e#0#47#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/build/reports/tests/test/index.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-825" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/consolePlugin/build.gradle">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="212">
+          <caret line="41" selection-start-line="41" selection-end-line="41" />
+          <folding>
+            <element signature="e#0#47#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/discordPlugin/build.gradle">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="128">
+          <caret line="35" selection-start-line="35" selection-end-line="49" selection-end-column="1" />
+          <folding>
+            <element signature="e#0#47#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/build.gradle">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="924">
+          <caret line="122" column="46" selection-start-line="122" selection-start-column="46" selection-end-line="122" selection-end-column="46" />
+          <folding>
+            <element signature="e#0#26#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/basicPlugin/build.gradle">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="420">
+          <caret line="55" lean-forward="true" selection-start-line="55" selection-end-line="55" />
+          <folding>
+            <element signature="e#0#47#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/test/kotlin/convergence/PluginLoaderTest.kt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="431">
+          <caret line="54" column="76" selection-start-line="54" selection-start-column="76" selection-end-line="54" selection-end-column="76" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/discordPlugin/src/Main.kt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="48">
+          <caret line="3" column="33" lean-forward="true" selection-start-line="3" selection-start-column="33" selection-end-line="3" selection-end-column="33" />
         </state>
       </provider>
     </entry>

@@ -1,6 +1,7 @@
 package convergence.testPlugins.discordPlugin
 
 import convergence.*
+import convergence.MessageHistory
 import convergence.User
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder

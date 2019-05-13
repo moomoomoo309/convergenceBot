@@ -119,7 +119,8 @@ jar {
 }
 
 task copyJar {
-    for (jar in Paths.get("build/libs/").toFile().listFiles())
+    Files.createDirectories(Paths.get(System.getProperty("user.home"), ".convergence", "plugins"))
+    for (jar in projectDir.toPath().resolve("./build/libs/").toFile().listFiles())
         if (jar.name.contains("Plugin"))
             Files.copy(jar.toPath(), Paths.get(System.getProperty("user.home"), ".convergence", "plugins", jar.name), StandardCopyOption.REPLACE_EXISTING)
         else

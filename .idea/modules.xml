@@ -17,6 +17,22 @@
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/messengerPlugin/convergence.bot.messengerPlugin.main.iml" filepath="$PROJECT_DIR$/.idea/modules/messengerPlugin/convergence.bot.messengerPlugin.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/messengerPlugin/convergence.bot.messengerPlugin.test.iml" filepath="$PROJECT_DIR$/.idea/modules/messengerPlugin/convergence.bot.messengerPlugin.test.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/convergence.bot.test.iml" filepath="$PROJECT_DIR$/.idea/modules/convergence.bot.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/convergence.convergence.bot.iml" filepath="$PROJECT_DIR$/.idea/modules/convergence.convergence.bot.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/convergence.convergence.bot.main.iml" filepath="$PROJECT_DIR$/.idea/modules/convergence.convergence.bot.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/convergence.convergence.bot.test.iml" filepath="$PROJECT_DIR$/.idea/modules/convergence.convergence.bot.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/basicPlugin/convergence.test.basicPlugin.iml" filepath="$PROJECT_DIR$/.idea/modules/basicPlugin/convergence.test.basicPlugin.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/basicPlugin/convergence.test.basicPlugin.main.iml" filepath="$PROJECT_DIR$/.idea/modules/basicPlugin/convergence.test.basicPlugin.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/basicPlugin/convergence.test.basicPlugin.test.iml" filepath="$PROJECT_DIR$/.idea/modules/basicPlugin/convergence.test.basicPlugin.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/consolePlugin/convergence.test.consolePlugin.iml" filepath="$PROJECT_DIR$/.idea/modules/consolePlugin/convergence.test.consolePlugin.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/consolePlugin/convergence.test.consolePlugin.main.iml" filepath="$PROJECT_DIR$/.idea/modules/consolePlugin/convergence.test.consolePlugin.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/consolePlugin/convergence.test.consolePlugin.test.iml" filepath="$PROJECT_DIR$/.idea/modules/consolePlugin/convergence.test.consolePlugin.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/discordPlugin/convergence.test.discordPlugin.iml" filepath="$PROJECT_DIR$/.idea/modules/discordPlugin/convergence.test.discordPlugin.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/discordPlugin/convergence.test.discordPlugin.main.iml" filepath="$PROJECT_DIR$/.idea/modules/discordPlugin/convergence.test.discordPlugin.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/discordPlugin/convergence.test.discordPlugin.test.iml" filepath="$PROJECT_DIR$/.idea/modules/discordPlugin/convergence.test.discordPlugin.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/messengerPlugin/convergence.test.messengerPlugin.iml" filepath="$PROJECT_DIR$/.idea/modules/messengerPlugin/convergence.test.messengerPlugin.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/messengerPlugin/convergence.test.messengerPlugin.main.iml" filepath="$PROJECT_DIR$/.idea/modules/messengerPlugin/convergence.test.messengerPlugin.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/messengerPlugin/convergence.test.messengerPlugin.test.iml" filepath="$PROJECT_DIR$/.idea/modules/messengerPlugin/convergence.test.messengerPlugin.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/convergenceBot.iml" filepath="$PROJECT_DIR$/.idea/convergenceBot.iml" />
     </modules>
   </component>
 </project>

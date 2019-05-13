@@ -52,7 +52,7 @@ class PluginLoaderTest {
         }
         val pluginPrintVal = popOut()
 
-        assertEquals("basicPlugin init\n", pluginPrintVal, "basicPlugin did not print expected output.")
+        assertEquals("basicPlugin init" + System.getProperty("line.separator"), pluginPrintVal, "basicPlugin did not print expected output.")
 
     }
 }
