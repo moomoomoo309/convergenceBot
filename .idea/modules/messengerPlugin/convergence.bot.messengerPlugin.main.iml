@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module external.linked.project.id=":messengerPlugin:main" external.linked.project.path="$MODULE_DIR$/../../../messengerPlugin" external.root.project.path="$MODULE_DIR$/../../.." external.system.id="GRADLE" external.system.module.group="convergence.test" external.system.module.type="sourceSet" external.system.module.version="1.0-SNAPSHOT" type="JAVA_MODULE" version="4">
+  <component name="FacetManager">
+    <facet type="kotlin-language" name="Kotlin">
+      <configuration version="3" platform="JVM 1.8" useProjectSettings="false">
+        <compilerSettings>
+          <option name="additionalArguments" value="-Xallow-no-source-files" />
+        </compilerSettings>
+        <compilerArguments>
+          <option name="destination" value="$MODULE_DIR$/../../../messengerPlugin/build/classes/kotlin/main" />
+          <option name="classpath" value="$MODULE_DIR$/../../../build/libs/convergence.bot-1.0-SNAPSHOT.jar:/home/nicholasdelello/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-jdk8/1.3.40/2d1d0a2f27fd060787075c69113846803fc27734/kotlin-stdlib-jdk8-1.3.40.jar:/home/nicholasdelello/.gradle/caches/modules-2/files-2.1/com.beust/klaxon/5.0.2/8bc580cee0f4bcc9d55cf4420b8c9e370f2c131e/klaxon-5.0.2.jar:/home/nicholasdelello/.gradle/caches/modules-2/files-2.1/org.jetbrains.exposed/exposed/0.16.1/17d23212ceca5d29c3f72855036538d79275a506/exposed-0.16.1.jar:/home/nicholasdelello/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-reflect/1.3.40/f2f8357e000fd80d8d799110f012b86fd4637386/kotlin-reflect-1.3.40.jar:/home/nicholasdelello/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlinx/kotlinx-serialization-runtime/0.11.1-1.3.40-eap-107/6027b5d130ab674dfd56265c5f80911fff021eb2/kotlinx-serialization-runtime-0.11.1-1.3.40-eap-107.jar:/home/nicholasdelello/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-jdk7/1.3.40/2995de8f68444ad47f29e7b59962ac31e6301d7e/kotlin-stdlib-jdk7-1.3.40.jar:/home/nicholasdelello/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlinx/kotlinx-coroutines-core/1.3.0-M1/a89c1a47eb68d6795e2737d84ba1bd81e146ac03/kotlinx-coroutines-core-1.3.0-M1.jar:/home/nicholasdelello/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib/1.3.40/b8a521c687329303778548e2f09b0ba5b2665236/kotlin-stdlib-1.3.40.jar:/home/nicholasdelello/.gradle/caches/modules-2/files-2.1/co.aurasphere.botmill/fb-botmill/2.0.0-RC3/d263605c1f36dffbc86d7f31e695f71fd17fbae5/fb-botmill-2.0.0-RC3.jar:/home/nicholasdelello/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-common/1.3.40/ff8f3da514fc2877d1303d55e22d6da8156c29fb/kotlin-stdlib-common-1.3.40.jar:/home/nicholasdelello/.gradle/caches/modules-2/files-2.1/org.jetbrains/annotations/13.0/919f0dfe192fb4e063e7dacadee7f8bb9a2672a9/annotations-13.0.jar:/home/nicholasdelello/.gradle/caches/modules-2/files-2.1/com.joestelmach/natty/0.11/e28606efb5a3a7badf4f3457632adafc45c7def/natty-0.11.jar:/home/nicholasdelello/.gradle/caches/modules-2/files-2.1/org.xeustechnologies/jcl-core/2.8/dd5f33f5f152320e6b6e231f8be8717e8b5e5b93/jcl-core-2.8.jar:/home/nicholasdelello/.gradle/caches/modules-2/files-2.1/net.sourceforge.argparse4j/argparse4j/0.8.1/2c8241f84acf6c924bd75be0dbd68e8d74fbcd70/argparse4j-0.8.1.jar:/home/nicholasdelello/.gradle/caches/modules-2/files-2.1/com.github.mfornos/humanize-slim/1.2.2/3bb3a02df5d4ff6fae0990129fee05b220a9a06/humanize-slim-1.2.2.jar:/home/nicholasdelello/.gradle/caches/modules-2/files-2.1/co.aurasphere.botmill/botmill-core/1.0.2/3c57065e55815c524f627ca5e6debbcaca4f62a2/botmill-core-1.0.2.jar:/home/nicholasdelello/.gradle/caches/modules-2/files-2.1/com.google.code.gson/gson/2.7/751f548c85fa49f330cecbb1875893f971b33c4e/gson-2.7.jar:/home/nicholasdelello/.gradle/caches/modules-2/files-2.1/org.apache.httpcomponents/httpmime/4.5.2/22b4c53dd9b6761024258de8f9240c3dce6ea368/httpmime-4.5.2.jar:/home/nicholasdelello/.gradle/caches/modules-2/files-2.1/org.apache.httpcomponents/httpclient/4.5.2/733db77aa8d9b2d68015189df76ab06304406e50/httpclient-4.5.2.jar:/home/nicholasdelello/.gradle/caches/modules-2/files-2.1/ch.qos.logback/logback-classic/1.0.13/6b56ec752b42ccfa1415c0361fb54b1ed7ca3db6/logback-classic-1.0.13.jar:/home/nicholasdelello/.gradle/caches/modules-2/files-2.1/org.springframework.data/spring-data-mongodb/1.2.0.RELEASE/401a040d8be40d249b5d3264e1ab08036b528c34/spring-data-mongodb-1.2.0.RELEASE.jar:/home/nicholasdelello/.gradle/caches/modules-2/files-2.1/org.springframework.data/spring-data-commons/1.5.0.RELEASE/ef28d3ad8b1eadab15ddfc4b7a0eacfe3cc0206c/spring-data-commons-1.5.0.RELEASE.jar:/home/nicholasdelello/.gradle/caches/modules-2/files-2.1/org.slf4j/jcl-over-slf4j/1.7.1/a11c000cf26e42ba30b7fb5bd60630a57783fe2d/jcl-over-slf4j-1.7.1.jar:/home/nicholasdelello/.gradle/caches/modules-2/files-2.1/org.slf4j/slf4j-api/1.7.25/da76ca59f6a57ee3102f8f9bd9cee742973efa8a/slf4j-api-1.7.25.jar:/home/nicholasdelello/.gradle/caches/modules-2/files-2.1/org.hibernate/hibernate-validator/5.2.4.Final/fb18766b576aa6632bcfe9a20a023cbd52bf9769/hibernate-validator-5.2.4.Final.jar:/home/nicholasdelello/.gradle/caches/modules-2/files-2.1/org.glassfish.web/javax.el/2.2.4/a50914ff519682e185bca4385b4313b8c8a81775/javax.el-2.2.4.jar:/home/nicholasdelello/.gradle/caches/modules-2/files-2.1/org.antlr/antlr-runtime/3.5.2/cd9cd41361c155f3af0f653009dcecb08d8b4afd/antlr-runtime-3.5.2.jar:/home/nicholasdelello/.gradle/caches/modules-2/files-2.1/org.mnode.ical4j/ical4j/1.0.2/3690b6d480ed15b64be7a687dd4f2869075c555/ical4j-1.0.2.jar:/home/nicholasdelello/.gradle/caches/modules-2/files-2.1/org.kamranzafar.commons/object-cloner/0.1/9dffbea98728fd610923c21a6bc43448b3f8ce86/object-cloner-0.1.jar:/home/nicholasdelello/.gradle/caches/modules-2/files-2.1/org.objenesis/objenesis/2.1/87c0ea803b69252868d09308b4618f766f135a96/objenesis-2.1.jar:/home/nicholasdelello/.gradle/caches/modules-2/files-2.1/cglib/cglib-nodep/2.2/59afed7ab65e7ec6585d5bc60556c3cbd203532b/cglib-nodep-2.2.jar:/home/nicholasdelello/.gradle/caches/modules-2/files-2.1/org.reflections/reflections/0.9.10/c7f4ea230aedc757ca1499ebcfb2953c81cf8b67/reflections-0.9.10.jar:/home/nicholasdelello/.gradle/caches/modules-2/files-2.1/com.google.guava/guava/18.0/cce0823396aa693798f8882e64213b1772032b09/guava-18.0.jar:/home/nicholasdelello/.gradle/caches/modules-2/files-2.1/org.ocpsoft.prettytime/prettytime/3.2.5.Final/84f05b7911e736cd6913301e90bab3fbaa2f40da/prettytime-3.2.5.Final.jar:/home/nicholasdelello/.gradle/caches/modules-2/files-2.1/me.xuender/unidecode/0.0.7/ca1b2dcd173a6ae6967dac03e47b6801317ca443/unidecode-0.0.7.jar:/home/nicholasdelello/.gradle/caches/modules-2/files-2.1/com.google.code.findbugs/jsr305/1.3.9/40719ea6961c0cb6afaeb6a921eaa1f6afd4cfdf/jsr305-1.3.9.jar:/home/nicholasdelello/.gradle/caches/modules-2/files-2.1/joda-time/joda-time/2.10.2/a079fc39ccc3de02acdeb7117443e5d9bd431687/joda-time-2.10.2.jar:/home/nicholasdelello/.gradle/caches/modules-2/files-2.1/com.h2database/h2/1.4.199/7bf08152984ed8859740ae3f97fae6c72771ae45/h2-1.4.199.jar:/home/nicholasdelello/.gradle/caches/modules-2/files-2.1/org.apache.httpcomponents/httpcore/4.4.4/b31526a230871fbe285fbcbe2813f9c0839ae9b0/httpcore-4.4.4.jar:/home/nicholasdelello/.gradle/caches/modules-2/files-2.1/org.springframework/spring-tx/3.1.4.RELEASE/e7cd40e53940e26f24f5500a084b45f57fabaa01/spring-tx-3.1.4.RELEASE.jar:/home/nicholasdelello/.gradle/caches/modules-2/files-2.1/org.springframework/spring-context/3.1.4.RELEASE/ea5a227269a74dfd0d840ca91e647bc5212072b8/spring-context-3.1.4.RELEASE.jar:/home/nicholasdelello/.gradle/caches/modules-2/files-2.1/org.springframework/spring-aop/3.1.4.RELEASE/987dce710d76973e6f4f96a05463086afdf489d3/spring-aop-3.1.4.RELEASE.jar:/home/nicholasdelello/.gradle/caches/modules-2/files-2.1/org.springframework/spring-beans/3.1.4.RELEASE/ce0173be2202cb7a7a9162463fd6c2907aa558c2/spring-beans-3.1.4.RELEASE.jar:/home/nicholasdelello/.gradle/caches/modules-2/files-2.1/org.springframework/spring-expression/3.1.4.RELEASE/452515fc1fc013f05f3271fa7c95a43b671e4ffa/spring-expression-3.1.4.RELEASE.jar:/home/nicholasdelello/.gradle/caches/modules-2/files-2.1/org.springframework/spring-core/3.1.4.RELEASE/6c9c2b5cc405b437d4089c51a10f7581f980497b/spring-core-3.1.4.RELEASE.jar:/home/nicholasdelello/.gradle/caches/modules-2/files-2.1/commons-logging/commons-logging/1.2/4bfc12adfe4842bf07b657f0369c4cb522955686/commons-logging-1.2.jar:/home/nicholasdelello/.gradle/caches/modules-2/files-2.1/commons-codec/commons-codec/1.9/9ce04e34240f674bc72680f8b843b1457383161a/commons-codec-1.9.jar:/home/nicholasdelello/.gradle/caches/modules-2/files-2.1/ch.qos.logback/logback-core/1.0.13/dc6e6ce937347bd4d990fc89f4ceb469db53e45e/logback-core-1.0.13.jar:/home/nicholasdelello/.gradle/caches/modules-2/files-2.1/javax.validation/validation-api/1.1.0.Final/8613ae82954779d518631e05daa73a6a954817d5/validation-api-1.1.0.Final.jar:/home/nicholasdelello/.gradle/caches/modules-2/files-2.1/org.jboss.logging/jboss-logging/3.2.1.Final/fedf11b3d4665a434b554a5891fe7f208f029f45/jboss-logging-3.2.1.Final.jar:/home/nicholasdelello/.gradle/caches/modules-2/files-2.1/com.fasterxml/classmate/1.1.0/dbbd699a1486ad0f2ed6f5af6cfed66acacb9056/classmate-1.1.0.jar:/home/nicholasdelello/.gradle/caches/modules-2/files-2.1/javax.el/javax.el-api/2.2.4/1287562cc3f0ff5439ded6f2949e73ce1c0edaab/javax.el-api-2.2.4.jar:/home/nicholasdelello/.gradle/caches/modules-2/files-2.1/org.mongodb/mongo-java-driver/3.4.0/2f6bb252e67ad9a0a42d8809a077d790337dabbb/mongo-java-driver-3.4.0.jar:/home/nicholasdelello/.gradle/caches/modules-2/files-2.1/org.hsqldb/hsqldb/2.3.1/bd7153caa30958e1c64a3dd38b93e5a7442d9a0e/hsqldb-2.3.1.jar:/home/nicholasdelello/.gradle/caches/modules-2/files-2.1/org.jasypt/jasypt/1.9.2/91eee489a389faba9fc57bfee75c87c615c19cd7/jasypt-1.9.2.jar:/home/nicholasdelello/.gradle/caches/modules-2/files-2.1/commons-lang/commons-lang/2.6/ce1edb914c94ebc388f086c6827e8bdeec71ac2/commons-lang-2.6.jar:/home/nicholasdelello/.gradle/caches/modules-2/files-2.1/backport-util-concurrent/backport-util-concurrent/3.1/682f7ac17fed79e92f8e87d8455192b63376347b/backport-util-concurrent-3.1.jar:/home/nicholasdelello/.gradle/caches/modules-2/files-2.1/org.javassist/javassist/3.18.2-GA/1180a90fbad732b60fb728a6bbe8fcb3151423d7/javassist-3.18.2-GA.jar:/home/nicholasdelello/.gradle/caches/modules-2/files-2.1/com.google.code.findbugs/annotations/2.0.1/9ef6656259841cebfb9fb0697bb122ada4485498/annotations-2.0.1.jar:/home/nicholasdelello/.gradle/caches/modules-2/files-2.1/aopalliance/aopalliance/1.0/235ba8b489512805ac13a8f9ea77a1ca5ebe3e8/aopalliance-1.0.jar:/home/nicholasdelello/.gradle/caches/modules-2/files-2.1/org.springframework/spring-asm/3.1.4.RELEASE/a60440760f350b80ff612e9f49a41c3ef26935e3/spring-asm-3.1.4.RELEASE.jar" />
+          <option name="noStdlib" value="true" />
+          <option name="noReflect" value="true" />
+          <option name="moduleName" value="messengerPlugin" />
+          <option name="jvmTarget" value="1.8" />
+          <option name="languageVersion" value="1.3" />
+          <option name="apiVersion" value="1.3" />
+          <option name="pluginOptions">
+            <array />
+          </option>
+          <option name="pluginClasspaths">
+            <array>
+              <option value="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-reflect/1.3.40/f2f8357e000fd80d8d799110f012b86fd4637386/kotlin-reflect-1.3.40.jar" />
+              <option value="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-script-runtime/1.3.40/3cc25515a8d5e4a59ef85e94625b8bf73bff47b2/kotlin-script-runtime-1.3.40.jar" />
+              <option value="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-scripting-common/1.3.40/3de443ac4dc46a7606544fad207143dad1aaeeaf/kotlin-scripting-common-1.3.40.jar" />
+              <option value="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-scripting-jvm/1.3.40/ebc58e35ce401c3550d11e4424e3f63331d9ff2d/kotlin-scripting-jvm-1.3.40.jar" />
+              <option value="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-common/1.3.40/ff8f3da514fc2877d1303d55e22d6da8156c29fb/kotlin-stdlib-common-1.3.40.jar" />
+              <option value="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib/1.3.40/b8a521c687329303778548e2f09b0ba5b2665236/kotlin-stdlib-1.3.40.jar" />
+              <option value="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlinx/kotlinx-coroutines-core/1.1.1/3d2b7321cdef9ebf9cb7729ea4f75a6f6457df86/kotlinx-coroutines-core-1.1.1.jar" />
+              <option value="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.jetbrains/annotations/13.0/919f0dfe192fb4e063e7dacadee7f8bb9a2672a9/annotations-13.0.jar" />
+            </array>
+          </option>
+          <option name="errors">
+            <ArgumentParseErrors />
+          </option>
+        </compilerArguments>
+      </configuration>
+    </facet>
+    <facet type="Spring" name="Spring">
+      <configuration />
+    </facet>
+  </component>
+  <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_5">
+    <output url="file://$MODULE_DIR$/../../../messengerPlugin/out/production/classes" />
+    <exclude-output />
+    <content url="file://$MODULE_DIR$/../../../messengerPlugin/resources">
+      <sourceFolder url="file://$MODULE_DIR$/../../../messengerPlugin/resources" type="java-resource" />
+    </content>
+    <content url="file://$MODULE_DIR$/../../../messengerPlugin/src">
+      <sourceFolder url="file://$MODULE_DIR$/../../../messengerPlugin/src" isTestSource="false" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module" module-name="convergence.bot.main" />
+    <orderEntry type="library" name="Gradle: org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.3.40" level="project" />
+    <orderEntry type="library" name="Gradle: com.beust:klaxon:5.0.2" level="project" />
+    <orderEntry type="library" name="Gradle: org.jetbrains.exposed:exposed:0.16.1" level="project" />
+    <orderEntry type="library" name="Gradle: org.jetbrains.kotlin:kotlin-reflect:1.3.40" level="project" />
+    <orderEntry type="library" name="Gradle: org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.11.1-1.3.40-eap-107" level="project" />
+    <orderEntry type="library" name="Gradle: org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.3.40" level="project" />
+    <orderEntry type="library" name="Gradle: org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.0-M1" level="project" />
+    <orderEntry type="library" name="Gradle: org.jetbrains.kotlin:kotlin-stdlib:1.3.40" level="project" />
+    <orderEntry type="library" name="Gradle: co.aurasphere.botmill:fb-botmill:2.0.0-RC3" level="project" />
+    <orderEntry type="library" name="Gradle: org.jetbrains.kotlin:kotlin-stdlib-common:1.3.40" level="project" />
+    <orderEntry type="library" name="Gradle: org.jetbrains:annotations:13.0" level="project" />
+    <orderEntry type="library" name="Gradle: com.joestelmach:natty:0.11" level="project" />
+    <orderEntry type="library" name="Gradle: org.xeustechnologies:jcl-core:2.8" level="project" />
+    <orderEntry type="library" name="Gradle: net.sourceforge.argparse4j:argparse4j:0.8.1" level="project" />
+    <orderEntry type="library" name="Gradle: com.github.mfornos:humanize-slim:1.2.2" level="project" />
+    <orderEntry type="library" name="Gradle: co.aurasphere.botmill:botmill-core:1.0.2" level="project" />
+    <orderEntry type="library" name="Gradle: com.google.code.gson:gson:2.7" level="project" />
+    <orderEntry type="library" name="Gradle: org.apache.httpcomponents:httpmime:4.5.2" level="project" />
+    <orderEntry type="library" name="Gradle: org.apache.httpcomponents:httpclient:4.5.2" level="project" />
+    <orderEntry type="library" name="Gradle: ch.qos.logback:logback-classic:1.0.13" level="project" />
+    <orderEntry type="library" name="Gradle: org.springframework.data:spring-data-mongodb:1.2.0.RELEASE" level="project" />
+    <orderEntry type="library" name="Gradle: org.springframework.data:spring-data-commons:1.5.0.RELEASE" level="project" />
+    <orderEntry type="library" name="Gradle: org.slf4j:jcl-over-slf4j:1.7.1" level="project" />
+    <orderEntry type="library" name="Gradle: org.slf4j:slf4j-api:1.7.25" level="project" />
+    <orderEntry type="library" name="Gradle: org.hibernate:hibernate-validator:5.2.4.Final" level="project" />
+    <orderEntry type="library" name="Gradle: org.glassfish.web:javax.el:2.2.4" level="project" />
+    <orderEntry type="library" name="Gradle: org.antlr:antlr-runtime:3.5.2" level="project" />
+    <orderEntry type="library" name="Gradle: org.mnode.ical4j:ical4j:1.0.2" level="project" />
+    <orderEntry type="library" name="Gradle: org.kamranzafar.commons:object-cloner:0.1" level="project" />
+    <orderEntry type="library" name="Gradle: org.objenesis:objenesis:2.1" level="project" />
+    <orderEntry type="library" name="Gradle: cglib:cglib-nodep:2.2" level="project" />
+    <orderEntry type="library" name="Gradle: org.reflections:reflections:0.9.10" level="project" />
+    <orderEntry type="library" name="Gradle: com.google.guava:guava:18.0" level="project" />
+    <orderEntry type="library" name="Gradle: org.ocpsoft.prettytime:prettytime:3.2.5.Final" level="project" />
+    <orderEntry type="library" name="Gradle: me.xuender:unidecode:0.0.7" level="project" />
+    <orderEntry type="library" name="Gradle: com.google.code.findbugs:jsr305:1.3.9" level="project" />
+    <orderEntry type="library" name="Gradle: joda-time:joda-time:2.10.2" level="project" />
+    <orderEntry type="library" name="Gradle: com.h2database:h2:1.4.199" level="project" />
+    <orderEntry type="library" name="Gradle: org.apache.httpcomponents:httpcore:4.4.4" level="project" />
+    <orderEntry type="library" name="Gradle: org.springframework:spring-tx:3.1.4.RELEASE" level="project" />
+    <orderEntry type="library" name="Gradle: org.springframework:spring-context:3.1.4.RELEASE" level="project" />
+    <orderEntry type="library" name="Gradle: org.springframework:spring-aop:3.1.4.RELEASE" level="project" />
+    <orderEntry type="library" name="Gradle: org.springframework:spring-beans:3.1.4.RELEASE" level="project" />
+    <orderEntry type="library" name="Gradle: org.springframework:spring-expression:3.1.4.RELEASE" level="project" />
+    <orderEntry type="library" name="Gradle: org.springframework:spring-core:3.1.4.RELEASE" level="project" />
+    <orderEntry type="library" name="Gradle: commons-logging:commons-logging:1.2" level="project" />
+    <orderEntry type="library" name="Gradle: commons-codec:commons-codec:1.9" level="project" />
+    <orderEntry type="library" name="Gradle: ch.qos.logback:logback-core:1.0.13" level="project" />
+    <orderEntry type="library" name="Gradle: javax.validation:validation-api:1.1.0.Final" level="project" />
+    <orderEntry type="library" name="Gradle: org.jboss.logging:jboss-logging:3.2.1.Final" level="project" />
+    <orderEntry type="library" name="Gradle: com.fasterxml:classmate:1.1.0" level="project" />
+    <orderEntry type="library" name="Gradle: javax.el:javax.el-api:2.2.4" level="project" />
+    <orderEntry type="library" name="Gradle: org.mongodb:mongo-java-driver:3.4.0" level="project" />
+    <orderEntry type="library" name="Gradle: org.hsqldb:hsqldb:2.3.1" level="project" />
+    <orderEntry type="library" name="Gradle: org.jasypt:jasypt:1.9.2" level="project" />
+    <orderEntry type="library" name="Gradle: commons-lang:commons-lang:2.6" level="project" />
+    <orderEntry type="library" name="Gradle: backport-util-concurrent:backport-util-concurrent:3.1" level="project" />
+    <orderEntry type="library" name="Gradle: org.javassist:javassist:3.18.2-GA" level="project" />
+    <orderEntry type="library" name="Gradle: com.google.code.findbugs:annotations:2.0.1" level="project" />
+    <orderEntry type="library" name="Gradle: aopalliance:aopalliance:1.0" level="project" />
+    <orderEntry type="library" name="Gradle: org.springframework:spring-asm:3.1.4.RELEASE" level="project" />
+  </component>
+</module>
