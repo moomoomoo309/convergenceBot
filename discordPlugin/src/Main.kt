@@ -1,15 +1,15 @@
 package convergence.testPlugins.discordPlugin
 
 import convergence.*
+import convergence.MessageHistory
+import convergence.User
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.OnlineStatus
-import net.dv8tion.jda.api.entities.Emote
-import net.dv8tion.jda.api.entities.Message
-import net.dv8tion.jda.api.entities.MessageChannel
-import net.dv8tion.jda.api.entities.TextChannel
+import net.dv8tion.jda.api.entities.*
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
+import java.io.FileNotFoundException
 import java.net.URL
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -28,6 +28,13 @@ class DiscordChat(name: String, override val id: Long, val channel: MessageChann
     constructor(channel: MessageChannel): this(channel.name, channel.idLong, channel)
     constructor(message: Message): this(message.channel)
     constructor(msgEvent: MessageReceivedEvent): this(msgEvent.message)
+
+    override fun hashCode() = id.hashCode()
+    override fun equals(other: Any?) = when {
+        this === other -> true
+        javaClass != other?.javaClass || id != (other as DiscordChat).id -> false
+        else -> true
+    }
 }
 
 class DiscordMessageHistory(val msg: Message, override val id: Long): MessageHistory(msg.contentRaw, msg.timeCreated, DiscordUser(DiscordChat(msg), msg.author)), DiscordObject {
@@ -38,6 +45,7 @@ class DiscordUser(chat: Chat, val name: String, override val id: Long, val autho
     constructor(msgEvent: MessageReceivedEvent): this(DiscordChat(msgEvent), msgEvent)
     constructor(chat: Chat, msgEvent: MessageReceivedEvent): this(chat, msgEvent.author)
     constructor(chat: Chat, author: net.dv8tion.jda.api.entities.User): this(chat, author.name, author.idLong, author)
+    constructor(chat: Chat, author: Member): this(chat, author.user)
 }
 
 class DiscordEmoji(url: String, name: String, val emoji: Emote, override val id: Long): Emoji(url, name), DiscordObject {
@@ -49,7 +57,8 @@ val formatMap = mapOf(Format.code to Pair("```", "```"),
         Format.underline to Pair("__", "__"),
         Format.bold to Pair("**", "**"),
         Format.italics to Pair("*", "*"),
-        Format.strikethrough to Pair("~~", "~~"))
+        Format.strikethrough to Pair("~~", "~~"),
+        Format.spoiler to Pair("||", "||"))
 
 class DiscordImage(var URL: String? = null, var data: ByteArray? = null): Image()
 
@@ -67,14 +76,16 @@ object DiscordInterface: BaseInterface, IFormatting, INickname, IImages, IMentio
 
     override fun getBotNickname(chat: Chat): String? = getUserNickname(chat, getBot(chat))
 
-    override fun nicknameChanged(chat: Chat, user: User, oldName: String): Boolean = TODO()
 
     override fun sendImage(chat: Chat, image: Image, name: String?) {
         if (chat is DiscordChat && image is DiscordImage)
             if (image.URL != null)
                 chat.channel.sendFile(URL(image.URL).openStream(), name ?: "untitled")
-            else if (image.data != null)
-                chat.channel.sendFile(image.data!!, name ?: "untitled")
+            else {
+                val data = image.data
+                if (data != null)
+                    chat.channel.sendFile(data, name ?: "untitled")
+            }
     }
 
     override fun receivedImage(chat: Chat, image: Image, name: String) = TODO()
@@ -86,17 +97,30 @@ object DiscordInterface: BaseInterface, IFormatting, INickname, IImages, IMentio
             message.msg.editMessage(newMessage)
     }
 
-    override fun getMessages(chat: Chat, since: OffsetDateTime?): List<MessageHistory> {
-        if (chat !is DiscordChat || (since != null && since.isAfter(OffsetDateTime.now())))
+    override fun getMessages(chat: Chat, since: OffsetDateTime?, until: OffsetDateTime?): List<MessageHistory> {
+        if (chat !is DiscordChat || (since != null && (since.isAfter(OffsetDateTime.now()) || since.isBefore(until))))
             return emptyList()
         val history = chat.channel.history
         if (history != null) {
             for (i in 0..9) {
-                history.retrievePast(10)
+                history.retrievePast(100)
                 if (since != null && history.retrievedHistory.last().timeCreated.isBefore(since)) {
-                    for ((i2, msg) in history.retrievedHistory.withIndex())
-                        if (msg.timeCreated.isAfter(since))
-                            return history.retrievedHistory.subList(i2, history.size() - 1).map { DiscordMessageHistory(it) }
+                    if (until == null) {
+                        for ((i2, msg) in history.retrievedHistory.withIndex())
+                            if (msg.timeCreated.isAfter(since))
+                                return history.retrievedHistory.subList(i2, history.size() - 1).map { DiscordMessageHistory(it) }
+                    } else {
+                        var startIndex = 0
+                        for ((i2, msg) in history.retrievedHistory.withIndex()) {
+                            if (msg.timeCreated.isAfter(since))
+                                startIndex = i2
+                            if (msg.timeCreated.isAfter(until))
+                                return history.retrievedHistory.subList(startIndex, i2).map { DiscordMessageHistory(it) }
+                        }
+                        if (history.retrievedHistory.first().timeCreated.isAfter(since))
+                            return history.retrievedHistory.map { DiscordMessageHistory(it) }
+                        return emptyList()
+                    }
                 }
             }
             return history.retrievedHistory.map { DiscordMessageHistory(it) }
@@ -104,7 +128,7 @@ object DiscordInterface: BaseInterface, IFormatting, INickname, IImages, IMentio
             return emptyList()
     }
 
-    override fun getUserMessages(chat: Chat, user: User, since: OffsetDateTime?): List<MessageHistory> {
+    override fun getUserMessages(chat: Chat, user: User, since: OffsetDateTime?, until: OffsetDateTime?): List<MessageHistory> {
         if (user !is DiscordUser)
             return emptyList()
         return getMessages(chat, since).filter { it.sender == user }
@@ -112,22 +136,22 @@ object DiscordInterface: BaseInterface, IFormatting, INickname, IImages, IMentio
 
     override fun getMentionText(chat: Chat, user: User): String = if (user is DiscordUser) jda!!.retrieveUserById(user.id).complete().asMention else ""
 
-    override fun mentionedBot(chat: Chat, message: String, user: User) = TODO()
-
     override fun setBotAvailability(chat: Chat, availability: Availability) {
         if (availability is DiscordAvailability)
             jda?.presence?.setPresence(availability.status, true)
     }
 
     override fun getUserAvailability(chat: Chat, user: User): Availability {
-        if (user is DiscordUser && chat is DiscordChat && chat.channel is TextChannel)
-            return DiscordAvailability(chat.channel.guild.getMember(user.author)?.onlineStatus ?: OnlineStatus.UNKNOWN)
+        if (user is DiscordUser && chat is DiscordChat && chat.channel is TextChannel) {
+            val member = chat.channel.guild.getMember(user.author) ?: return DiscordAvailability(OnlineStatus.UNKNOWN)
+            return DiscordAvailability(member.onlineStatus)
+        }
         return DiscordAvailability(OnlineStatus.UNKNOWN)
     }
 
     override fun getDelimiters(format: Format): Pair<String, String>? = formatMap[format]
     override fun getEmojis(chat: Chat): List<Emoji> = jda!!.emotes.map { DiscordEmoji(it) }
-    fun getCachedEmojis(chat: Chat) = jda!!.emoteCache.map { DiscordEmoji(it) }
+    fun getCachedEmojis() = jda!!.emoteCache.map { DiscordEmoji(it) }
     override fun sendMessage(chat: Chat, message: String): Boolean {
         if (chat !is DiscordChat)
             return false
@@ -151,7 +175,10 @@ object DiscordInterface: BaseInterface, IFormatting, INickname, IImages, IMentio
 object MessageListener: ListenerAdapter() {
     override fun onMessageReceived(event: MessageReceivedEvent) {
         val chat = DiscordChat(event)
-        DiscordInterface.receivedMessage(chat, event.message.contentDisplay, DiscordUser(event))
+        DiscordInterface.receivedMessage(event.message.contentDisplay, DiscordUser(event))
+        val mentionedMembers = event.message.mentionedMembers
+        if (mentionedMembers.isNotEmpty())
+            DiscordInterface.mentionedUsers(chat, event.message.contentDisplay, mentionedMembers.map { DiscordUser(chat, it) }.toSet())
     }
 }
 
@@ -162,7 +189,10 @@ class Main: Plugin {
         registerProtocol(DiscordProtocol, DiscordInterface)
         println("Discord Plugin initialized.")
         jda = try {
-            JDABuilder(String(Files.readAllBytes(Paths.get(System.getProperty("user.home"), ".convergence", "discordToken")))).build()
+            JDABuilder(String(Files.readAllBytes(Paths.get(System.getProperty("user.home"), ".convergence", "discordToken"))).trim()).build()
+        } catch (e: FileNotFoundException) {
+            logErr("You need to put your discord token in .convergence/discordToken!")
+            return
         } catch (e: LoginException) {
             e.printStackTrace()
             return

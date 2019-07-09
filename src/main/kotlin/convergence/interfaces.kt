@@ -76,18 +76,32 @@ interface BaseInterface {
     fun getChatName(chat: Chat): String
 }
 
-private val callbacks = HashMap<Class<out BonusInterface>, ArrayList<(Chat, User, String) -> Boolean>>()
-fun registerCallback(self: BonusInterface, fct: (Chat, User, String?) -> Boolean) {
-    if (callbacks[self.javaClass] == null)
-        callbacks[self.javaClass] = ArrayList()
-    callbacks[self.javaClass]?.add(fct)
+abstract class Callback<T>(fct: Any) {
+    abstract operator fun invoke(vararg args: Any): Boolean
+}
+
+private val callbacks = HashMap<Class<out Callback<out BonusInterface>>, ArrayList<Callback<out BonusInterface>>>()
+
+fun registerCallback(fct: Callback<out BonusInterface>) {
+    if (callbacks[fct.javaClass] == null)
+        callbacks[fct.javaClass] = ArrayList()
+    callbacks[fct.javaClass]?.add(fct)
 }
 
 fun registerCallbacks() {
-    for (bonusInterface in BonusInterface::class.sealedSubclasses) {
-        if (callbacks[bonusInterface.java] == null)
-            callbacks[bonusInterface.java] = ArrayList()
-    }
+    for (bonusInterface in BonusInterface::class.sealedSubclasses)
+        for (callbackClass in bonusInterface::class.nestedClasses.filter { it is Callback<*> })
+            if (callbacks[callbackClass.java] == null)
+                callbacks[callbackClass.java as Class<out Callback<out BonusInterface>>] = ArrayList()
+}
+
+fun runCallbacks(callbackClass: Class<*>, vararg args: Any): Boolean {
+    var success = false
+    if (callbackClass as Class<out Callback<out BonusInterface>> in callbacks)
+        for (callback in callbacks[callbackClass]!!)
+            if (callback(args))
+                success = true
+    return success
 }
 
 
@@ -95,44 +109,79 @@ sealed class BonusInterface {
     interface INickname {
         fun getUserNickname(chat: Chat, user: User): String?
         fun getBotNickname(chat: Chat): String?
-        fun nicknameChanged(chat: Chat, user: User, oldName: String): Boolean
+
+        class ChangedNickname(private val fct: (Chat, User, String) -> Boolean): Callback<INickname>(fct) {
+            override fun invoke(vararg args: Any) = fct(args[0] as Chat, args[1] as User, args[2] as String)
+        }
+
+        fun changedNickname(chat: Chat, user: User, oldName: String): Boolean = runCallbacks(ChangedNickname::class.java, chat, user, oldName)
     }
 
     interface IImages {
         open class Image
 
         fun sendImage(chat: Chat, image: Image, name: String?)
-        fun receivedImage(chat: Chat, image: Image, name: String)
+
+        class ReceivedImage(private val fct: (Chat, Image, String) -> Boolean): Callback<IImages>(fct) {
+            override fun invoke(vararg args: Any): Boolean = fct(args[0] as Chat, args[1] as Image, args[2] as String)
+        }
+
+        fun receivedImage(chat: Chat, image: Image, name: String): Boolean = runCallbacks(ReceivedImage::class.java, chat, image, name)
     }
 
     interface IOtherMessageEditable {
-        fun editedMessage(oldMessage: String, sender: User, newMessage: String)
         fun editMessage(message: IMessageHistory.MessageHistory, oldMessage: String, sender: User, newMessage: String)
+
+        class EditMessage(private val fct: (String, User, String) -> Boolean): Callback<IOtherMessageEditable>(fct) {
+            override fun invoke(vararg args: Any): Boolean = fct(args[0] as String, args[1] as User, args[2] as String)
+        }
+
+        fun editedMessage(oldMessage: String, sender: User, newMessage: String) = runCallbacks(EditMessage::class.java, oldMessage, sender, newMessage)
     }
 
     interface IMessageHistory {
         open class MessageHistory(var message: String, val timestamp: OffsetDateTime, val sender: User)
 
-        fun getMessages(chat: Chat, since: OffsetDateTime? = null): List<MessageHistory>
-        fun getUserMessages(chat: Chat, user: User, since: OffsetDateTime? = null): List<MessageHistory>
+        fun getMessages(chat: Chat, since: OffsetDateTime? = null, until: OffsetDateTime? = null): List<MessageHistory>
+        fun getUserMessages(chat: Chat, user: User, since: OffsetDateTime? = null, until: OffsetDateTime? = null): List<MessageHistory>
     }
 
     interface IMention {
         fun getMentionText(chat: Chat, user: User): String
-        fun mentionedBot(chat: Chat, message: String, user: User)
+
+        class MentionedUser(private val fct: (Chat, String, Set<User>) -> Boolean): Callback<IMention>(fct) {
+            override fun invoke(vararg args: Any): Boolean = fct(args[0] as Chat, args[1] as String, args[2] as Set<User>)
+        }
+
+        fun mentionedUsers(chat: Chat, message: String, users: Set<User>) = runCallbacks(MentionedUser::class.java, chat, message, users)
     }
 
     interface ITypingStatus {
-        fun startedTyping(chat: Chat, user: User)
-        fun stoppedTyping(chat: Chat, user: User)
         fun setBotTypingStatus(chat: Chat, status: Boolean)
+
+        class StartedTyping(val fct: (Chat, User) -> Boolean): Callback<ITypingStatus>(fct) {
+            override fun invoke(vararg args: Any): Boolean = fct(args[0] as Chat, args[1] as User)
+        }
+
+        fun startedTyping(chat: Chat, user: User) = runCallbacks(StartedTyping::class.java, chat, user)
+
+        class StoppedTyping(val fct: (Chat, User) -> Boolean): Callback<ITypingStatus>(fct) {
+            override fun invoke(vararg args: Any): Boolean = fct(args[0] as Chat, args[1] as User)
+        }
+
+        fun stoppedTyping(chat: Chat, user: User) = runCallbacks(StoppedTyping::class.java, chat, user)
     }
 
     interface IStickers {
         open class Sticker(val name: String, val URL: String?)
 
         fun sendSticker(chat: Chat, sticker: Sticker)
-        fun receivedSticker(chat: Chat, sticker: Sticker)
+
+        class ReceivedSticker(val fct: (Chat, Sticker) -> Boolean): Callback<IStickers>(fct) {
+            override fun invoke(vararg args: Any): Boolean = fct(args[0] as Chat, args[1] as Sticker)
+        }
+
+        fun receivedSticker(chat: Chat, sticker: Sticker) = runCallbacks(ReceivedSticker::class.java, chat, sticker)
     }
 
     interface IUserStatus { // Like your status on Skype.
@@ -145,11 +194,23 @@ sealed class BonusInterface {
 
         fun setBotAvailability(chat: Chat, availability: Availability)
         fun getUserAvailability(chat: Chat, user: User): Availability
+
+        class ChangedAvailability(val fct: (Chat, User, Availability) -> Boolean): Callback<IUserAvailability>(fct) {
+            override fun invoke(vararg args: Any): Boolean = fct(args[0] as Chat, args[1] as User, args[2] as Availability)
+        }
+
+        fun changedAvailability(chat: Chat, user: User, availability: Availability) = runCallbacks(ChangedAvailability::class.java, chat, user, availability)
     }
 
     interface IReadStatus {
-        fun getReadStatus(chat: Chat, message: IMessageHistory.MessageHistory): Boolean
-        fun setReadStatus(chat: Chat, message: IMessageHistory.MessageHistory, status: Boolean)
+        fun getReadStatus(chat: Chat, message: MessageHistory): Set<User>
+        fun setRead(chat: Chat, message: MessageHistory, user: User)
+
+        class ReadByUser(val fct: (Chat, MessageHistory, User) -> Boolean): Callback<IReadStatus>(fct) {
+            override fun invoke(vararg args: Any): Boolean = fct(args[0] as Chat, args[1] as MessageHistory, args[2] as User)
+        }
+
+        fun readByUser(chat: Chat, message: MessageHistory, user: User) = runCallbacks(ReadByUser::class.java, chat, message, user)
     }
 
     interface IFormatting {
@@ -165,6 +226,7 @@ sealed class BonusInterface {
                 val monospace = Format("MONOSPACE")
                 val code = Format("CODE")
                 val strikethrough = Format("STRIKETHROUGH")
+                val spoiler = Format("SPOILER")
             }
         }
 
@@ -179,7 +241,8 @@ sealed class BonusInterface {
                     Format.underline,
                     Format.monospace,
                     Format.code,
-                    Format.strikethrough
+                    Format.strikethrough,
+                    Format.spoiler
             )
         }
     }

@@ -11,8 +11,6 @@
       <module name="convergence.bot.discordPlugin.main" target="1.5" />
       <module name="convergence.bot.discordPlugin.test" target="1.5" />
       <module name="convergence.bot.main" target="1.5" />
-      <module name="convergence.bot.mess.main" target="1.8" />
-      <module name="convergence.bot.mess.test" target="1.8" />
       <module name="convergence.bot.messengerPlugin.main" target="1.5" />
       <module name="convergence.bot.messengerPlugin.test" target="1.5" />
       <module name="convergence.bot.test" target="1.5" />

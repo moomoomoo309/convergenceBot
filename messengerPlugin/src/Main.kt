@@ -9,6 +9,7 @@ import java.time.OffsetDateTime
 
 object MessengerProtocol: Protocol("Messenger")
 object MessengerInterface: BaseInterface, IFormatting, INickname, IImages, IMention, IMessageHistory, IUserAvailability, IStickers {
+
     override val name: String
         get() = TODO()
     override val protocol: Protocol = MessengerProtocol
@@ -17,13 +18,11 @@ object MessengerInterface: BaseInterface, IFormatting, INickname, IImages, IMent
 
     override fun getUserNickname(chat: Chat, user: User): String? = TODO()
     override fun getBotNickname(chat: Chat): String? = TODO()
-    override fun nicknameChanged(chat: Chat, user: User, oldName: String): Boolean = TODO()
     override fun sendImage(chat: Chat, image: Image, name: String?) = TODO()
     override fun receivedImage(chat: Chat, image: Image, name: String) = TODO()
-    override fun getMessages(chat: Chat, since: OffsetDateTime?): List<MessageHistory> = TODO()
-    override fun getUserMessages(chat: Chat, user: User, since: OffsetDateTime?): List<MessageHistory> = TODO()
     override fun getMentionText(chat: Chat, user: User): String = TODO()
-    override fun mentionedBot(chat: Chat, message: String, user: User) = TODO()
+    override fun getMessages(chat: Chat, since: OffsetDateTime?, until: OffsetDateTime?): List<BonusInterface.IMessageHistory.MessageHistory> = TODO()
+    override fun getUserMessages(chat: Chat, user: User, since: OffsetDateTime?, until: OffsetDateTime?): List<BonusInterface.IMessageHistory.MessageHistory> = TODO()
     override fun setBotAvailability(chat: Chat, availability: Availability) = TODO()
     override fun getUserAvailability(chat: Chat, user: User): Availability = TODO()
     override fun getDelimiters(format: Format): Pair<String, String> = TODO()
