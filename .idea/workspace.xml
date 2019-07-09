@@ -1,0 +1,756 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="29d84833-fb05-450b-b63e-091fc3136e36" name="Default Changelist" comment="Set up serializers for necessary classes." />
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="DatabaseView">
+    <option name="SHOW_INTERMEDIATE" value="true" />
+    <option name="GROUP_DATA_SOURCES" value="true" />
+    <option name="GROUP_SCHEMA" value="true" />
+    <option name="GROUP_CONTENTS" value="false" />
+    <option name="SORT_POSITIONED" value="false" />
+    <option name="SHOW_EMPTY_GROUPS" value="false" />
+    <option name="AUTO_SCROLL_FROM_SOURCE" value="false" />
+    <option name="HIDDEN_KINDS">
+      <set />
+    </option>
+    <expand />
+    <select />
+  </component>
+  <component name="ExternalProjectsData">
+    <projectState path="$PROJECT_DIR$">
+      <ProjectState />
+    </projectState>
+  </component>
+  <component name="ExternalProjectsManager">
+    <system id="GRADLE">
+      <state>
+        <task path="$PROJECT_DIR$">
+          <activation />
+        </task>
+        <task path="$PROJECT_DIR$/basicPlugin">
+          <activation />
+        </task>
+        <task path="$PROJECT_DIR$/consolePlugin">
+          <activation />
+        </task>
+        <task path="$PROJECT_DIR$/discordPlugin">
+          <activation />
+        </task>
+        <task path="$PROJECT_DIR$/messengerPlugin">
+          <activation />
+        </task>
+        <projects_view>
+          <tree_state>
+            <expand>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="convergence.bot" type="f1a62948:ProjectNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="convergence.bot" type="f1a62948:ProjectNode" />
+                <item name="Source Sets" type="e897c970:GradleViewContributor$SourceSetsNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="convergence.bot" type="f1a62948:ProjectNode" />
+                <item name="Source Sets" type="e897c970:GradleViewContributor$SourceSetsNode" />
+                <item name="main" type="396b929e:GradleViewContributor$SourceSetNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="convergence.bot" type="f1a62948:ProjectNode" />
+                <item name="Source Sets" type="e897c970:GradleViewContributor$SourceSetsNode" />
+                <item name="main" type="396b929e:GradleViewContributor$SourceSetNode" />
+                <item name="Dependencies" type="6de06a37:ExternalSystemViewDefaultContributor$MyDependenciesNode" />
+              </path>
+            </expand>
+            <select />
+          </tree_state>
+        </projects_view>
+      </state>
+    </system>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="UML State" />
+        <option value="Class" />
+        <option value="Kotlin Class" />
+        <option value="Kotlin File" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="PUSH_AUTO_UPDATE" value="true" />
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="classLoading" />
+      </map>
+    </option>
+  </component>
+  <component name="GithubDefaultAccount">
+    <option name="defaultAccountId" value="fa6126a3-2c80-4175-9019-61a453f97a99" />
+  </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/src/main/kotlin/convergence/commandParser.kt" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/messengerPlugin/src/Main.kt" root0="FORCE_HIGHLIGHTING" />
+  </component>
+  <component name="MavenImportPreferences">
+    <option name="importingSettings">
+      <MavenImportingSettings>
+        <option name="importAutomatically" value="true" />
+      </MavenImportingSettings>
+    </option>
+  </component>
+  <component name="ProjectFrameBounds" extendedState="6">
+    <option name="x" value="2" />
+    <option name="width" value="1916" />
+    <option name="height" value="1038" />
+  </component>
+  <component name="ProjectId" id="1Ngzt17DMMTKWSdUJEz3ILdPPvV" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="add_unversioned_files" value="$PROJECT_DIR$/.gitignore&#10;true" />
+    <property name="android.sdk.path" value="$USER_HOME$/Android/Sdk" />
+    <property name="aspect.path.notification.shown" value="true" />
+    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1548263320171" />
+    <property name="full.screen.before.presentation.mode" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../AersysAPI" />
+    <property name="node.js.detected.package.eslint" value="true" />
+    <property name="node.js.detected.package.tslint" value="true" />
+    <property name="node.js.path.for.package.eslint" value="project" />
+    <property name="node.js.path.for.package.tslint" value="project" />
+    <property name="node.js.selected.package.eslint" value="(autodetect)" />
+    <property name="node.js.selected.package.tslint" value="(autodetect)" />
+    <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
+    <property name="nodejs_npm_path_reset_for_default_project" value="true" />
+    <property name="nodejs_package_manager_path" value="npm" />
+    <property name="org.rust.cargo.project.model.PROJECT_DISCOVERY" value="true" />
+    <property name="project.structure.last.edited" value="Modules" />
+    <property name="project.structure.proportion" value="0.15" />
+    <property name="project.structure.side.proportion" value="0.2" />
+    <property name="run.code.analysis.last.selected.profile" value="pProject Default" />
+    <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
+      <recent name="$PROJECT_DIR$/basicPlugin/src" />
+    </key>
+  </component>
+  <component name="RunDashboard">
+    <option name="ruleStates">
+      <list>
+        <RuleState>
+          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
+        </RuleState>
+        <RuleState>
+          <option name="name" value="StatusDashboardGroupingRule" />
+        </RuleState>
+      </list>
+    </option>
+  </component>
+  <component name="RunManager" selected="Gradle.convergenceBot [jar]">
+    <configuration name="convergenceBot [jar]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="jar" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <GradleScriptDebugEnabled>true</GradleScriptDebugEnabled>
+      <method v="2" />
+    </configuration>
+    <configuration name="convergenceBot [run]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" value="--debug" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="run" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <GradleScriptDebugEnabled>true</GradleScriptDebugEnabled>
+      <method v="2" />
+    </configuration>
+    <configuration name="convergenceBot:consolePlugin [jar]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$/consolePlugin" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="jar" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <GradleScriptDebugEnabled>true</GradleScriptDebugEnabled>
+      <method v="2" />
+    </configuration>
+    <configuration name="convergenceBot:discordPlugin [jar]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$/discordPlugin" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="jar" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <GradleScriptDebugEnabled>true</GradleScriptDebugEnabled>
+      <method v="2" />
+    </configuration>
+    <configuration name="PluginLoaderTest.loadBasicPlugin" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="convergence.convergence.bot.test" />
+      <option name="PACKAGE_NAME" value="convergence" />
+      <option name="MAIN_CLASS_NAME" value="PluginLoaderTest" />
+      <option name="METHOD_NAME" value="loadBasicPlugin" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <list>
+      <item itemvalue="Gradle.convergenceBot [run]" />
+      <item itemvalue="Gradle.convergenceBot:consolePlugin [jar]" />
+      <item itemvalue="Gradle.convergenceBot [jar]" />
+      <item itemvalue="Gradle.convergenceBot:discordPlugin [jar]" />
+      <item itemvalue="JUnit.PluginLoaderTest.loadBasicPlugin" />
+    </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Gradle.convergenceBot [jar]" />
+        <item itemvalue="Gradle.convergenceBot [run]" />
+        <item itemvalue="Gradle.convergenceBot:discordPlugin [jar]" />
+        <item itemvalue="JUnit.PluginLoaderTest.loadBasicPlugin" />
+        <item itemvalue="Gradle.convergenceBot:consolePlugin [jar]" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="29d84833-fb05-450b-b63e-091fc3136e36" name="Default Changelist" comment="" />
+      <created>1533401376282</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1533401376282</updated>
+      <workItem from="1533401381733" duration="7095000" />
+      <workItem from="1533483166420" duration="17000" />
+      <workItem from="1533483440197" duration="6724000" />
+      <workItem from="1533565320607" duration="577000" />
+      <workItem from="1533586650308" duration="2976000" />
+      <workItem from="1535754611451" duration="29000" />
+      <workItem from="1535754661545" duration="26428000" />
+      <workItem from="1536257259397" duration="107000" />
+      <workItem from="1536513136272" duration="45000" />
+      <workItem from="1536513433699" duration="2613000" />
+      <workItem from="1536525328960" duration="18949000" />
+      <workItem from="1536606484170" duration="175000" />
+      <workItem from="1536617262362" duration="3819000" />
+      <workItem from="1536682036666" duration="1468000" />
+      <workItem from="1536686252726" duration="605000" />
+      <workItem from="1536723925019" duration="555000" />
+      <workItem from="1537065413475" duration="209000" />
+      <workItem from="1537152654043" duration="2189000" />
+      <workItem from="1537544896040" duration="241000" />
+      <workItem from="1537545164701" duration="7814000" />
+      <workItem from="1537651579935" duration="659000" />
+      <workItem from="1537800082732" duration="5137000" />
+      <workItem from="1537918574896" duration="5946000" />
+      <workItem from="1538062466757" duration="22636000" />
+      <workItem from="1538498197324" duration="882000" />
+      <workItem from="1538667565281" duration="4882000" />
+      <workItem from="1539096371006" duration="668000" />
+      <workItem from="1539097272453" duration="32000" />
+      <workItem from="1539097333510" duration="344000" />
+      <workItem from="1539295394093" duration="7709000" />
+      <workItem from="1539368981332" duration="9546000" />
+      <workItem from="1539629408206" duration="1928000" />
+      <workItem from="1539635471998" duration="5440000" />
+      <workItem from="1539706709759" duration="5781000" />
+      <workItem from="1539881232588" duration="5770000" />
+      <workItem from="1540243642807" duration="19000" />
+      <workItem from="1540243706410" duration="10989000" />
+      <workItem from="1540497988872" duration="92000" />
+      <workItem from="1540498105924" duration="1713000" />
+      <workItem from="1540500146072" duration="7499000" />
+      <workItem from="1540773684661" duration="3087000" />
+      <workItem from="1540964046689" duration="3291000" />
+      <workItem from="1541002006172" duration="2056000" />
+      <workItem from="1541268333966" duration="3547000" />
+      <workItem from="1541276632098" duration="8200000" />
+      <workItem from="1541626673005" duration="20452000" />
+      <workItem from="1542137870948" duration="826000" />
+      <workItem from="1542138854475" duration="2635000" />
+      <workItem from="1542325567402" duration="1192000" />
+      <workItem from="1542394299632" duration="134000" />
+      <workItem from="1542394503653" duration="925000" />
+      <workItem from="1542395513855" duration="3041000" />
+      <workItem from="1542732035932" duration="4022000" />
+      <workItem from="1542748426208" duration="6853000" />
+      <workItem from="1542844324640" duration="19915000" />
+      <workItem from="1543027238152" duration="656000" />
+      <workItem from="1543084025985" duration="10875000" />
+      <workItem from="1543337815930" duration="8044000" />
+      <workItem from="1543426220832" duration="5226000" />
+      <workItem from="1543774405572" duration="3171000" />
+      <workItem from="1544048712353" duration="7613000" />
+      <workItem from="1544114395288" duration="2451000" />
+      <workItem from="1544142642881" duration="2899000" />
+      <workItem from="1545800129513" duration="20294000" />
+      <workItem from="1546632019171" duration="46025000" />
+      <workItem from="1547481949340" duration="9621000" />
+      <workItem from="1547518673136" duration="11909000" />
+      <workItem from="1548175620846" duration="34000" />
+      <workItem from="1548175678195" duration="1449000" />
+      <workItem from="1548200814419" duration="6174000" />
+      <workItem from="1548292637133" duration="816000" />
+      <workItem from="1548709721929" duration="929000" />
+      <workItem from="1548711463629" duration="612000" />
+      <workItem from="1548712141562" duration="676000" />
+      <workItem from="1548890614890" duration="86000" />
+      <workItem from="1548890733436" duration="577000" />
+      <workItem from="1548894163669" duration="1495000" />
+      <workItem from="1549412737385" duration="11000" />
+      <workItem from="1549412842763" duration="345000" />
+      <workItem from="1555006787642" duration="1148000" />
+      <workItem from="1555226548061" duration="500000" />
+      <workItem from="1556909104739" duration="130000" />
+      <workItem from="1556909274842" duration="87000" />
+      <workItem from="1556909402533" duration="9393000" />
+      <workItem from="1558542785761" duration="41000" />
+      <workItem from="1558542856770" duration="380000" />
+      <workItem from="1562517742294" duration="392000" />
+      <workItem from="1562518170775" duration="8457000" />
+      <workItem from="1562540039822" duration="1488000" />
+      <workItem from="1562677692706" duration="443000" />
+    </task>
+    <task id="LOCAL-00001" summary="Add more stages to research.">
+      <created>1533403104037</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1533403104038</updated>
+    </task>
+    <task id="LOCAL-00002" summary="Add notes on how to implement stage 1.">
+      <created>1533482292925</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1533482292925</updated>
+    </task>
+    <task id="LOCAL-00003" summary="Finish notes on stage 1, add notes for stage 2.">
+      <created>1533484897511</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1533484897511</updated>
+    </task>
+    <task id="LOCAL-00004" summary="Update research status.">
+      <created>1533495398993</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1533495398993</updated>
+    </task>
+    <task id="LOCAL-00005" summary="Add read status to stage 1.">
+      <created>1533496126117</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1533496126117</updated>
+    </task>
+    <task id="LOCAL-00006" summary="Specify what I'm talking about in stage 1.">
+      <created>1533498788311</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1533498788311</updated>
+    </task>
+    <task id="LOCAL-00007" summary="Write interfaces from stage1Research.md, write method headers for functions from stage2Research.md.">
+      <created>1533589384054</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1533589384054</updated>
+    </task>
+    <task id="LOCAL-00008" summary="Switch open classes to abstract, since that makes more sense.">
+      <created>1536015592043</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1536015592043</updated>
+    </task>
+    <task id="LOCAL-00009" summary="Initially implement command parser, command registration, remove protocol from interfaces where it can be inferred from User or Chat.">
+      <created>1536078887919</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1536078887919</updated>
+    </task>
+    <task id="LOCAL-00010" summary="Implement insertion of escaped chars into command string, add test.">
+      <created>1536556231067</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1536556231067</updated>
+    </task>
+    <task id="LOCAL-00011" summary="Make command parser tests pass.">
+      <created>1536603153533</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1536603153533</updated>
+    </task>
+    <task id="LOCAL-00012" summary="Implement aliases, switch to universalChat.">
+      <created>1537925428830</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1537925428830</updated>
+    </task>
+    <task id="LOCAL-00013" summary="Remove unnecessary exceptions, optimize parsing non-commands, update research.">
+      <created>1538064355504</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1538064355504</updated>
+    </task>
+    <task id="LOCAL-00014" summary="Merge with master.">
+      <created>1538065514875</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1538065514875</updated>
+    </task>
+    <task id="LOCAL-00015" summary="Implement runCommand.">
+      <created>1538090010258</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1538090010258</updated>
+    </task>
+    <task id="LOCAL-00016" summary="Start implementing default commands.">
+      <created>1538169620214</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1538169620214</updated>
+    </task>
+    <task id="LOCAL-00017" summary="Refactor Protocol class, add replaceAliasVars.">
+      <created>1540335102968</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1540335102968</updated>
+    </task>
+    <task id="LOCAL-00018" summary="HackNJIT!">
+      <created>1541276537704</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1541276537704</updated>
+    </task>
+    <task id="LOCAL-00019" summary="Fix up gradle dependencies, implement JCL correctly, set up test to load a plugin.">
+      <created>1541711352068</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1541711352068</updated>
+    </task>
+    <task id="LOCAL-00020" summary="Make working classLoader implementation, adjust test accordingly.">
+      <created>1542846168539</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1542846168539</updated>
+    </task>
+    <task id="LOCAL-00021" summary="Create main, rename classLoader to PluginLoader, refactor its test.">
+      <created>1543026496261</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1543026496261</updated>
+    </task>
+    <task id="LOCAL-00022" summary="Remove files that shouldn't be tracked by git, add interface callbacks.">
+      <created>1543091186175</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1543091186175</updated>
+    </task>
+    <task id="LOCAL-00023" summary="Implement Scheduler for the schedule command.">
+      <created>1543384584315</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1543384584315</updated>
+    </task>
+    <task id="LOCAL-00024" summary="Implemented SchedulerThread, made bot runnable from gradle.">
+      <created>1544053882871</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1544053882871</updated>
+    </task>
+    <task id="LOCAL-00025" summary="Remove serialization stuff, add Klaxon as a library.">
+      <created>1546632529382</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1546632529382</updated>
+    </task>
+    <task id="LOCAL-00026" summary="Replace serialization with Klaxon, add build instructions.">
+      <created>1546632795050</created>
+      <option name="number" value="00026" />
+      <option name="presentableId" value="LOCAL-00026" />
+      <option name="project" value="LOCAL" />
+      <updated>1546632795050</updated>
+    </task>
+    <task id="LOCAL-00027" summary="Allow pluginLoader to load more than one plugin.">
+      <created>1546646067084</created>
+      <option name="number" value="00027" />
+      <option name="presentableId" value="LOCAL-00027" />
+      <option name="project" value="LOCAL" />
+      <updated>1546646067084</updated>
+    </task>
+    <task id="LOCAL-00028" summary="Update documentation to reflect classloader change.">
+      <created>1546646129715</created>
+      <option name="number" value="00028" />
+      <option name="presentableId" value="LOCAL-00028" />
+      <option name="project" value="LOCAL" />
+      <updated>1546646129715</updated>
+    </task>
+    <task id="LOCAL-00029" summary="Make sure the class loaded is actually a plugin.">
+      <created>1546646943470</created>
+      <option name="number" value="00029" />
+      <option name="presentableId" value="LOCAL-00029" />
+      <option name="project" value="LOCAL" />
+      <updated>1546646943470</updated>
+    </task>
+    <task id="LOCAL-00030" summary="Set up skeleton code for discord and messenger plugins.">
+      <created>1547054903574</created>
+      <option name="number" value="00030" />
+      <option name="presentableId" value="LOCAL-00030" />
+      <option name="project" value="LOCAL" />
+      <updated>1547054903574</updated>
+    </task>
+    <task id="LOCAL-00031" summary="Clean up default generated comments in discord and messenger plugins.">
+      <created>1547055535811</created>
+      <option name="number" value="00031" />
+      <option name="presentableId" value="LOCAL-00031" />
+      <option name="project" value="LOCAL" />
+      <updated>1547055535812</updated>
+    </task>
+    <task id="LOCAL-00032" summary="Write initial implementation for Discord plugin. Untested.">
+      <created>1547152864659</created>
+      <option name="number" value="00032" />
+      <option name="presentableId" value="LOCAL-00032" />
+      <option name="project" value="LOCAL" />
+      <updated>1547152864659</updated>
+    </task>
+    <task id="LOCAL-00033" summary="Update build script for discordPlugin so it builds correctly.">
+      <created>1547520978332</created>
+      <option name="number" value="00033" />
+      <option name="presentableId" value="LOCAL-00033" />
+      <option name="project" value="LOCAL" />
+      <updated>1547520978332</updated>
+    </task>
+    <task id="LOCAL-00034" summary="Add try around Discord's sendMessage so it sends correctly.">
+      <created>1547523665901</created>
+      <option name="number" value="00034" />
+      <option name="presentableId" value="LOCAL-00034" />
+      <option name="project" value="LOCAL" />
+      <updated>1547523665901</updated>
+    </task>
+    <task id="LOCAL-00035" summary="Update documentation.">
+      <created>1547525173128</created>
+      <option name="number" value="00035" />
+      <option name="presentableId" value="LOCAL-00035" />
+      <option name="project" value="LOCAL" />
+      <updated>1547525173128</updated>
+    </task>
+    <task id="LOCAL-00036" summary="Replace all usages of LocalDateTime with OffsetDateTime.">
+      <created>1547692511105</created>
+      <option name="number" value="00036" />
+      <option name="presentableId" value="LOCAL-00036" />
+      <option name="project" value="LOCAL" />
+      <updated>1547692511105</updated>
+    </task>
+    <task id="LOCAL-00037" summary="Set up serializers for necessary classes.">
+      <created>1562677976724</created>
+      <option name="number" value="00037" />
+      <option name="presentableId" value="LOCAL-00037" />
+      <option name="project" value="LOCAL" />
+      <updated>1562677976724</updated>
+    </task>
+    <option name="localTasksCounter" value="38" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="1" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="COLUMN_ORDER" />
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="RECENT_FILTERS">
+      <map>
+        <entry key="Branch">
+          <value>
+            <list />
+          </value>
+        </entry>
+        <entry key="User">
+          <value>
+            <list />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
+    <MESSAGE value="Remove unnecessary exceptions, optimize parsing non-commands, update research." />
+    <MESSAGE value="Merge with master." />
+    <MESSAGE value="Implement runCommand." />
+    <MESSAGE value="Start implementing default commands." />
+    <MESSAGE value="Refactor Protocol class, add replaceAliasVars." />
+    <MESSAGE value="HackNJIT!" />
+    <MESSAGE value="Fix up gradle dependencies, implement JCL correctly, set up test to load a plugin." />
+    <MESSAGE value="Make working classLoader implementation, adjust test accordingly." />
+    <MESSAGE value="Create main, rename classLoader to PluginLoader, refactor its test." />
+    <MESSAGE value="Remove files that shouldn't be tracked by git, add interface callbacks." />
+    <MESSAGE value="Implement Scheduler for the schedule command." />
+    <MESSAGE value="Implemented SchedulerThread, made bot runnable from gradle." />
+    <MESSAGE value="Remove serialization stuff, add Klaxon as a library." />
+    <MESSAGE value="Replace serialization with Klaxon, add build instructions." />
+    <MESSAGE value="Allow pluginLoader to load more than one plugin." />
+    <MESSAGE value="Update documentation to reflect classloader change." />
+    <MESSAGE value="Make sure the class loaded is actually a plugin." />
+    <MESSAGE value="Set up skeleton code for discord and messenger plugins." />
+    <MESSAGE value="Clean up default generated comments in discord and messenger plugins." />
+    <MESSAGE value="Write initial implementation for Discord plugin. Untested." />
+    <MESSAGE value="Update build script for discordPlugin so it builds correctly." />
+    <MESSAGE value="Add try around Discord's sendMessage so it sends correctly." />
+    <MESSAGE value="Update documentation." />
+    <MESSAGE value="Replace all usages of LocalDateTime with OffsetDateTime." />
+    <MESSAGE value="Set up serializers for necessary classes." />
+    <option name="LAST_COMMIT_MESSAGE" value="Set up serializers for necessary classes." />
+    <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
+    <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="true" />
+    <option name="REARRANGE_BEFORE_PROJECT_COMMIT" value="true" />
+  </component>
+  <component name="antWorkspaceConfiguration">
+    <option name="IS_AUTOSCROLL_TO_SOURCE" value="false" />
+    <option name="FILTER_TARGETS" value="false" />
+  </component>
+  <component name="debuggerHistoryManager">
+    <expressions id="watch">
+      <expression>
+        <expression-string>response</expression-string>
+        <language-id>kotlin</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>chat.channel</expression-string>
+        <language-id>kotlin</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>chat.channel.canTalk()</expression-string>
+        <language-id>kotlin</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>chat.channel.</expression-string>
+        <language-id>kotlin</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>chat.channel.sendMessage(&quot;test&quot;)</expression-string>
+        <language-id>kotlin</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>baseInterface.sendMessage</expression-string>
+        <language-id>kotlin</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>String(entry.value)</expression-string>
+        <language-id>kotlin</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>jcl.loadClass(mainClassName) as Plugin</expression-string>
+        <language-id>kotlin</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>jcl.loadClass(mainClassName)</expression-string>
+        <language-id>kotlin</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+    </expressions>
+  </component>
+  <component name="gradleExecuteTaskHistory">
+    <option value="" />
+  </component>
+  <component name="mavenExecuteGoalHistory">
+    <option value="" />
+  </component>
+</project>

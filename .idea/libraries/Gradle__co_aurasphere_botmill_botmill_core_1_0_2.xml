@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="Gradle: co.aurasphere.botmill:botmill-core:1.0.2">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/co.aurasphere.botmill/botmill-core/1.0.2/3c57065e55815c524f627ca5e6debbcaca4f62a2/botmill-core-1.0.2.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/co.aurasphere.botmill/botmill-core/1.0.2/1d9415f4e91de112f344aa6552c5ab44f61d4293/botmill-core-1.0.2-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

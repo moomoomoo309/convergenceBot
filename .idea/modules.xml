@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/convergence.bot.iml" filepath="$PROJECT_DIR$/.idea/modules/convergence.bot.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/basicPlugin/convergence.bot.basicPlugin.iml" filepath="$PROJECT_DIR$/.idea/modules/basicPlugin/convergence.bot.basicPlugin.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/basicPlugin/convergence.bot.basicPlugin.main.iml" filepath="$PROJECT_DIR$/.idea/modules/basicPlugin/convergence.bot.basicPlugin.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/basicPlugin/convergence.bot.basicPlugin.test.iml" filepath="$PROJECT_DIR$/.idea/modules/basicPlugin/convergence.bot.basicPlugin.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/consolePlugin/convergence.bot.consolePlugin.iml" filepath="$PROJECT_DIR$/.idea/modules/consolePlugin/convergence.bot.consolePlugin.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/consolePlugin/convergence.bot.consolePlugin.main.iml" filepath="$PROJECT_DIR$/.idea/modules/consolePlugin/convergence.bot.consolePlugin.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/consolePlugin/convergence.bot.consolePlugin.test.iml" filepath="$PROJECT_DIR$/.idea/modules/consolePlugin/convergence.bot.consolePlugin.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/discordPlugin/convergence.bot.discordPlugin.iml" filepath="$PROJECT_DIR$/.idea/modules/discordPlugin/convergence.bot.discordPlugin.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/discordPlugin/convergence.bot.discordPlugin.main.iml" filepath="$PROJECT_DIR$/.idea/modules/discordPlugin/convergence.bot.discordPlugin.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/discordPlugin/convergence.bot.discordPlugin.test.iml" filepath="$PROJECT_DIR$/.idea/modules/discordPlugin/convergence.bot.discordPlugin.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/convergence.bot.main.iml" filepath="$PROJECT_DIR$/.idea/modules/convergence.bot.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/messengerPlugin/convergence.bot.messengerPlugin.iml" filepath="$PROJECT_DIR$/.idea/modules/messengerPlugin/convergence.bot.messengerPlugin.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/messengerPlugin/convergence.bot.messengerPlugin.main.iml" filepath="$PROJECT_DIR$/.idea/modules/messengerPlugin/convergence.bot.messengerPlugin.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/messengerPlugin/convergence.bot.messengerPlugin.test.iml" filepath="$PROJECT_DIR$/.idea/modules/messengerPlugin/convergence.bot.messengerPlugin.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/convergence.bot.test.iml" filepath="$PROJECT_DIR$/.idea/modules/convergence.bot.test.iml" />
+    </modules>
+  </component>
+</project>
