@@ -2,12 +2,25 @@
 
 package convergence
 
+import kotlinx.serialization.Polymorphic
+import kotlinx.serialization.Serializable
 import java.time.OffsetDateTime
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
+import kotlin.collections.List
+import kotlin.collections.Set
+import kotlin.collections.emptyList
+import kotlin.collections.mutableSetOf
+import kotlin.collections.set
 
+@Polymorphic
 abstract class Protocol(val name: String)
+
 //Intentionally empty, because it might be represented as an int or a string or whatever.
+@Polymorphic
 abstract class User(val chat: Chat)
 
+@Polymorphic
 abstract class Chat(val protocol: Protocol, val name: String)
 
 private object UniversalUser: User(UniversalChat)
@@ -31,15 +44,20 @@ object FakeBaseInterface: BaseInterface {
     override val name: String = "FakeBaseInterface"
 }
 
+@Polymorphic
 abstract class CommandLike(open val name: String,
                            open val helpText: String,
-                           open val syntaxText: String)
+                           open val syntaxText: String) {
+    constructor() : this("default", "default", "default")
+}
 
+@Serializable
 data class Command(override val name: String,
                    val function: (List<String>, User) -> String?,
                    override val helpText: String,
                    override val syntaxText: String): CommandLike(name, helpText, syntaxText)
 
+@Serializable
 data class Alias(override val name: String,
                  val command: Command,
                  val args: List<String>,
@@ -160,7 +178,8 @@ sealed class BonusInterface {
                     Format.italics,
                     Format.underline,
                     Format.monospace,
-                    Format.code
+                    Format.code,
+                    Format.strikethrough
             )
         }
     }

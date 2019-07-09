@@ -1,6 +1,10 @@
 package convergence.testPlugins.messengerPlugin
 
+import co.aurasphere.botmill.core.annotation.BotEncryption
+import co.aurasphere.botmill.core.internal.util.ConfigurationUtils
 import convergence.*
+import org.jasypt.encryption.pbe.StandardPBEStringEncryptor
+import java.nio.file.Paths
 import java.time.OffsetDateTime
 
 object MessengerProtocol: Protocol("Messenger")
@@ -33,10 +37,21 @@ object MessengerInterface: BaseInterface, IFormatting, INickname, IImages, IMent
     override fun receivedSticker(chat: Chat, sticker: Sticker) = TODO()
 }
 
+@BotEncryption
+class DefaultEncryption {
+    init {
+        val enc = StandardPBEStringEncryptor()
+        enc.setPassword(Paths.get(System.getProperty("user.home"), ".convergence", "password").toString())
+        ConfigurationUtils.loadEncryptedConfigurationFile(enc, "config.properties")
+    }
+}
+
+
 class Main: Plugin {
     override val name = "MessengerPlugin"
     override val baseInterface: BaseInterface = MessengerInterface
     override fun init() {
         println("Messenger Plugin initialized.")
+
     }
 }

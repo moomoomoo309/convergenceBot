@@ -61,7 +61,7 @@ object DiscordInterface: BaseInterface, IFormatting, INickname, IImages, IMentio
 
     override fun getUserNickname(chat: Chat, user: User): String? {
         if (user is DiscordUser && chat is DiscordChat && chat.channel is TextChannel)
-            return chat.channel.guild.getMember(user.author).nickname
+            return chat.channel.guild.getMember(user.author)?.nickname
         return null
     }
 
@@ -74,7 +74,7 @@ object DiscordInterface: BaseInterface, IFormatting, INickname, IImages, IMentio
             if (image.URL != null)
                 chat.channel.sendFile(URL(image.URL).openStream(), name ?: "untitled")
             else if (image.data != null)
-                chat.channel.sendFile(image.data, name ?: "untitled")
+                chat.channel.sendFile(image.data!!, name ?: "untitled")
     }
 
     override fun receivedImage(chat: Chat, image: Image, name: String) = TODO()
@@ -121,7 +121,7 @@ object DiscordInterface: BaseInterface, IFormatting, INickname, IImages, IMentio
 
     override fun getUserAvailability(chat: Chat, user: User): Availability {
         if (user is DiscordUser && chat is DiscordChat && chat.channel is TextChannel)
-            return DiscordAvailability(chat.channel.guild.getMember(user.author).onlineStatus)
+            return DiscordAvailability(chat.channel.guild.getMember(user.author)?.onlineStatus ?: OnlineStatus.UNKNOWN)
         return DiscordAvailability(OnlineStatus.UNKNOWN)
     }
 

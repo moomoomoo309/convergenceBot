@@ -3,17 +3,37 @@
 package convergence
 
 import humanize.Humanize
+import kotlinx.serialization.Serializable
 import net.sourceforge.argparse4j.ArgumentParsers
 import net.sourceforge.argparse4j.inf.ArgumentParserException
 import net.sourceforge.argparse4j.inf.Namespace
 import org.ocpsoft.prettytime.units.JustNow
-import java.io.File
 import java.nio.file.Paths
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
+import kotlin.collections.List
+import kotlin.collections.MutableMap
+import kotlin.collections.MutableSet
+import kotlin.collections.arrayListOf
+import kotlin.collections.component1
+import kotlin.collections.component2
+import kotlin.collections.contains
+import kotlin.collections.emptyMap
+import kotlin.collections.filter
+import kotlin.collections.isNotEmpty
+import kotlin.collections.iterator
+import kotlin.collections.joinToString
+import kotlin.collections.map
+import kotlin.collections.mutableMapOf
+import kotlin.collections.mutableSetOf
+import kotlin.collections.plusAssign
+import kotlin.collections.set
+import kotlin.collections.sortedBy
+import kotlin.collections.toList
+import kotlin.ranges.contains
 
-class CommandDoesNotExist(cmd: String): Exception(cmd)
+class CommandDoesNotExist(cmd: String) : Exception(cmd)
 
 val log: (Any) -> Unit = { println(it) }
 val logErr: (Any) -> Unit = { System.err.println(it) }
@@ -53,9 +73,8 @@ fun registerCommand(chat: Chat, command: Command): Boolean {
             if (command.name < sortedHelpText[i].name || i == sortedHelpText.size - 1) {
                 sortedHelpText.add(i, command)
                 break
-            }
-    else
-        sortedHelpText.add(command)
+            } else
+                sortedHelpText.add(command)
 
     commands[chat]!![command.name] = command
     return true
@@ -78,9 +97,8 @@ fun registerAlias(chat: Chat, alias: Alias): Boolean {
             if (alias.name < sortedHelpText[i].name || i == sortedHelpText.size - 1) {
                 sortedHelpText.add(i, alias)
                 break
-            }
-    else
-        sortedHelpText[0] = alias
+            } else
+                sortedHelpText[0] = alias
 
     aliases[chat]!![alias.name] = alias
     return true
@@ -88,11 +106,11 @@ fun registerAlias(chat: Chat, alias: Alias): Boolean {
 
 const val defaultCommandDelimiter = "!"
 
-class DefaultMap<K, V>(val defaultValue: V): HashMap<K, V>() {
+class DefaultMap<K, V>(val defaultValue: V) : HashMap<K, V>() {
     override fun get(key: K): V = super.get(key) ?: defaultValue
 }
 
-val commandDelimiters = DefaultMap<Chat, String>("!")
+val commandDelimiters = DefaultMap<Chat, String>(defaultCommandDelimiter)
 
 /**
  * Sets the Command delimiter used for the bot's commands. (is it !help, |help, @help, or something else?)
@@ -124,7 +142,6 @@ fun sendMessage(chat: Chat, message: String?) {
         return
     }
     val baseInterface = baseInterfaceMap[chat.protocol]!!
-    val bot = baseInterface.getBot(chat)
     baseInterface.sendMessage(chat, message)
 }
 
@@ -141,9 +158,9 @@ fun getUserName(sender: User): String {
 }
 
 val aliasVars = mutableMapOf(
-        "sender" to fun(b: BaseInterface, c: Chat, s: User): String { return b.getName(c, s) },
-        "botname" to fun(b: BaseInterface, c: Chat, _: User): String { return b.getName(c, b.getBot(c)) },
-        "chatname" to fun(b: BaseInterface, c: Chat, _: User): String { return b.getChatName(c) })
+        "sender" to { b: BaseInterface, c: Chat, s: User -> b.getName(c, s) },
+        "botname" to { b: BaseInterface, c: Chat, _: User -> b.getName(c, b.getBot(c)) },
+        "chatname" to { b: BaseInterface, c: Chat, _: User -> b.getChatName(c) })
 
 /**
  * Replaces instances of the keys in [aliasVars] preceded by a percent sign with the result of the functions therein,
@@ -153,11 +170,14 @@ fun replaceAliasVars(message: String?, sender: User): String? {
     if (message == null)
         return null
     val chat = sender.chat
-    val stringBuilder = StringBuilder()
+    // Used as a mutable string, since this function does a lot of string appending.
+    val stringBuilder = StringBuilder((message.length * 1.5).toInt())
+
     var charIndex = -1
+    // Bitsets are faster than boolean arrays.
     val bitSet = BitSet(aliasVars.size)
-    for (i in 0..aliasVars.size)
-        bitSet[i] = true
+    bitSet.set(0, aliasVars.size)
+
     var anyTrue = false
     for (currentChar in message) {
         stringBuilder.append(currentChar)
@@ -191,7 +211,7 @@ fun replaceAliasVars(message: String?, sender: User): String? {
 }
 
 fun getCommandData(message: String, sender: User): CommandData? = try {
-    parseCommand(message, commandDelimiters.getOrDefault(sender.chat, defaultCommandDelimiter), sender.chat)
+    parseCommand(message, sender.chat)
 } catch (e: CommandDoesNotExist) {
     sendMessage(sender, "No command exists with name \"${e.message}\".")
     null
@@ -238,12 +258,18 @@ fun formatTime(time: OffsetDateTime): String = Humanize.naturalTime(offsetDateTi
 const val allowedTimeDifference = 30
 const val updatesPerSecond = 1
 
-data class ScheduledCommand(val time: OffsetDateTime, val sender: User, val commandData: CommandData, val id: Int)
+@Serializable
+data class ScheduledCommand(@Serializable(OffsetDateTimeSerializer::class) val time: OffsetDateTime,
+                            val sender: User, val commandData: CommandData, val id: Int)
 
-object SchedulerThread: Thread() {
+object SchedulerThread : Thread() {
     private val scheduledCommands = TreeMap<OffsetDateTime, ArrayList<ScheduledCommand>>()
     private val commandsList = TreeMap<Int, ScheduledCommand>()
     private var currentId: Int = 0
+    fun loadFromFile(filePath: String) {
+
+    }
+
     override fun run() {
         while (this.isAlive) {
             val now = OffsetDateTime.now()
@@ -279,9 +305,7 @@ object SchedulerThread: Thread() {
     }
 
     fun getCommands(sender: User?): List<ScheduledCommand> = if (sender == null) getCommands() else commandsList.values.filter { it.sender == sender }
-
     fun getCommands(): List<ScheduledCommand> = commandsList.values.toList()
-
     fun getCommandStrings(sender: User, getAllCommands: Boolean = false) = getCommands(if (getAllCommands) null else sender)
             .sortedBy { it.time }
             .map { "[${it.id}] ${formatTime(it.time)}: ${getUserName(it.sender)} - \"${commandDelimiters[sender.chat]}${it.commandData.command.name} ${it.commandData.args.joinToString(" ")}\"" }
@@ -307,7 +331,7 @@ class core {
 
             val paths = argParser.addArgumentGroup("Paths")
             paths.addArgument("-pp", "--plugin-path")
-                    .type(File::class.java).default = File(Paths.get(System.getProperty("user.home"), ".convergence", "plugins").toUri())
+                    .type(String::class.java).default = Paths.get(System.getProperty("user.home"), ".convergence", "plugins").toString()
             try {
                 commandLineArgs = argParser.parseArgs(args)
             } catch (e: ArgumentParserException) {
@@ -324,9 +348,10 @@ class core {
             registerDefaultCommands()
 
             log("Starting scheduler thread...")
+
             SchedulerThread.start()
 
-            val plugins = PluginLoader.loadPlugin((commandLineArgs.get("plugin_path") as File).path)
+            val plugins = PluginLoader.loadPlugin(Paths.get(commandLineArgs.get<String>("plugin_path")))
             if (plugins.isEmpty())
                 log("No plugins loaded.")
             else

@@ -1,5 +1,8 @@
 package convergence
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class CommandData(var command: Command, var args: List<String>) {
     constructor(alias: Alias, args: List<String>): this(alias.command, alias.args + args)
 
@@ -50,6 +53,7 @@ fun getCommand(command: String, chat: Chat): CommandLike {
     }
 }
 
+fun parseCommand(command: String, chat: Chat): CommandData? = parseCommand(command, commandDelimiters[chat], chat)
 fun parseCommand(command: String, commandDelimiter: String, chat: Chat): CommandData? {
     var commandName: String? = null
     val argList = ArrayList<String>()

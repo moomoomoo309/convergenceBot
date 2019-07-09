@@ -20,7 +20,7 @@ class CommandParserTest {
         val testCommandStr = command.substring(1, if (testIndex == -1) command.length else testIndex)
         val testCommand = Command(testCommandStr, ::doNothing, "test", "test")
         commands[testChat] = mutableMapOf(testCommandStr to testCommand)
-        return parseCommand(command, "!", testChat)
+        return parseCommand(command, testChat)
     }
 
     @Test
@@ -82,7 +82,7 @@ class CommandParserTest {
         val testAlias = Alias(testAliasStr, testCommand, listOf("testArg1", "testArg2"), "testAlias", "testAlias")
         commands[testChat] = mutableMapOf("test" to testCommand)
         aliases[testChat] = mutableMapOf(testAliasStr to testAlias)
-        return parseCommand(command, "!", testChat)
+        return parseCommand(command, testChat)
     }
 
     @Test

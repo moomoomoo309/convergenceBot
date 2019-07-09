@@ -10,7 +10,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class PluginLoaderTest {
-    var pluginList: List<Plugin> = emptyList()
+    private var pluginList: List<Plugin> = emptyList()
     private var strOut: ByteArrayOutputStream? = null
     private var oldOut: PrintStream? = null
     private var printStreamOut: PrintStream? = null
@@ -31,8 +31,8 @@ class PluginLoaderTest {
     }
 
     private fun popOut(): String {
-        assertNotNull(oldOut, "popOut called without pushOut!")
-        assertEquals(printStreamOut, System.out, "popOut called without pushOut following a previous correct usage of push and popOut.")
+        assertNotNull(oldOut, "popOut called before pushOut was called at all!")
+        assertEquals(printStreamOut, System.out, "popOut called twice before a pushOut.")
         System.out.close()
         System.setOut(oldOut)
         val outStr = strOut.toString()
@@ -45,14 +45,12 @@ class PluginLoaderTest {
         loadPlugin()
 
         pushOut()
-        try {
-            pluginList.first { it.name == "basicPlugin" }.init()
-        } catch (e: NoSuchElementException) {
-            assertTrue(false, "basicPlugin was not loaded. Loaded Plugins: $pluginList")
-        }
-        val pluginPrintVal = popOut()
+        val basicPlugin = pluginList.first { it.name == "basicPlugin" }
+        assertNotNull(basicPlugin, "basicPlugin was not loaded. Loaded Plugins: $pluginList")
+        basicPlugin.init()
+        val pluginPrintOutput = popOut()
 
-        assertEquals("basicPlugin init\n", pluginPrintVal, "basicPlugin did not print expected output.")
+        assertEquals("basicPlugin init\n", pluginPrintOutput, "basicPlugin did not print expected output.")
 
     }
 }
