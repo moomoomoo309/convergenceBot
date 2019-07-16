@@ -3,38 +3,18 @@
 package convergence
 
 import humanize.Humanize
-import kotlinx.serialization.Polymorphic
-import kotlinx.serialization.PolymorphicSerializer
 import kotlinx.serialization.Serializable
 import net.sourceforge.argparse4j.ArgumentParsers
 import net.sourceforge.argparse4j.inf.ArgumentParserException
 import net.sourceforge.argparse4j.inf.Namespace
 import org.ocpsoft.prettytime.units.JustNow
-import java.io.File
 import java.nio.file.Paths
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
-import kotlin.collections.List
-import kotlin.collections.MutableMap
-import kotlin.collections.MutableSet
-import kotlin.collections.arrayListOf
 import kotlin.collections.component1
 import kotlin.collections.component2
-import kotlin.collections.contains
-import kotlin.collections.emptyMap
-import kotlin.collections.filter
-import kotlin.collections.isNotEmpty
-import kotlin.collections.iterator
-import kotlin.collections.joinToString
-import kotlin.collections.map
-import kotlin.collections.mutableMapOf
-import kotlin.collections.mutableSetOf
-import kotlin.collections.plusAssign
 import kotlin.collections.set
-import kotlin.collections.sortedBy
-import kotlin.collections.toList
-import kotlin.ranges.contains
 
 class CommandDoesNotExist(cmd: String) : Exception(cmd)
 
@@ -347,7 +327,7 @@ object SchedulerThread: Thread() {
  */
 fun schedule(sender: User, command: CommandData, time: OffsetDateTime) = SchedulerThread.schedule(sender, command, time)
 
-var commandLineArgs: Namespace = Namespace(emptyMap())
+lateinit var commandLineArgs: Namespace
 
 class core {
     companion object {
@@ -380,7 +360,7 @@ class core {
             log("Starting scheduler thread...")
             SchedulerThread.start()
 
-            val plugins = PluginLoader.loadPlugin((commandLineArgs.get("plugin_path") as File).path)
+            val plugins = PluginLoader.load(Paths.get(commandLineArgs.getString("plugin_path")))
             if (plugins.isEmpty())
                 log("No plugins loaded.")
             else

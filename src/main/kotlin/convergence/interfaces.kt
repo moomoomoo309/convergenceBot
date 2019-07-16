@@ -5,12 +5,6 @@ package convergence
 import kotlinx.serialization.Polymorphic
 import kotlinx.serialization.Serializable
 import java.time.OffsetDateTime
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
-import kotlin.collections.List
-import kotlin.collections.Set
-import kotlin.collections.emptyList
-import kotlin.collections.mutableSetOf
 import kotlin.collections.set
 
 @Polymorphic
@@ -45,24 +39,27 @@ object FakeBaseInterface: BaseInterface {
 }
 
 @Polymorphic
-abstract class CommandLike(open val name: String,
+abstract class CommandLike(@Polymorphic open val chat: Chat,
+                           open val name: String,
                            open val helpText: String,
                            open val syntaxText: String) {
-    constructor() : this("default", "default", "default")
+    constructor() : this(UniversalChat, "default", "default", "default")
 }
 
 @Serializable
-data class Command(override val name: String,
+data class Command(@Polymorphic override val chat: Chat,
+                   override val name: String,
                    val function: (List<String>, User) -> String?,
                    override val helpText: String,
-                   override val syntaxText: String): CommandLike(name, helpText, syntaxText)
+                   override val syntaxText: String) : CommandLike(chat, name, helpText, syntaxText)
 
 @Serializable
-data class Alias(override val name: String,
+data class Alias(@Polymorphic override val chat: Chat,
+                 override val name: String,
                  val command: Command,
                  val args: List<String>,
                  override val helpText: String,
-                 override val syntaxText: String): CommandLike(name, helpText, syntaxText)
+                 override val syntaxText: String) : CommandLike(chat, name, helpText, syntaxText)
 
 interface BaseInterface {
     val name: String
@@ -83,16 +80,16 @@ abstract class Callback<T>(fct: Any) {
 private val callbacks = HashMap<Class<out Callback<out BonusInterface>>, ArrayList<Callback<out BonusInterface>>>()
 
 fun registerCallback(fct: Callback<out BonusInterface>) {
-    if (callbacks[fct.javaClass] == null)
-        callbacks[fct.javaClass] = ArrayList()
-    callbacks[fct.javaClass]?.add(fct)
+    if (callbacks[fct::class.java] == null)
+        callbacks[fct::class.java] = ArrayList()
+    callbacks[fct::class.java]!!.add(fct)
 }
 
 fun registerCallbacks() {
     for (bonusInterface in BonusInterface::class.sealedSubclasses)
-        for (callbackClass in bonusInterface::class.nestedClasses.filter { it is Callback<*> })
-            if (callbacks[callbackClass.java] == null)
-                callbacks[callbackClass.java as Class<out Callback<out BonusInterface>>] = ArrayList()
+        for (callbackClass in bonusInterface::class.nestedClasses.filterIsInstance<Callback<*>>())
+            if (callbacks[callbackClass::class.java] == null)
+                callbacks[callbackClass::class.java as Class<out Callback<out BonusInterface>>] = ArrayList()
 }
 
 fun runCallbacks(callbackClass: Class<*>, vararg args: Any): Boolean {

@@ -19,7 +19,7 @@ class PluginLoaderTest {
         assertTrue(Files.exists(basicPluginPath), "basicPluginDir is not a file or folder.")
         assertTrue(Files.isDirectory(basicPluginPath), "basicPluginDir is not a folder.")
         assertTrue(Files.list(basicPluginPath).count() > 0, "No files exist in basicPluginDir.")
-        pluginList = PluginLoader.loadPlugin(basicPluginPath)
+        pluginList = PluginLoader.load(basicPluginPath)
         assertNotNull(pluginList, "Could not load plugin!")
     }
 

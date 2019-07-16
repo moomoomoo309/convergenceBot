@@ -31,10 +31,10 @@ object PluginLoader {
         emptyList()
     }
 
-    fun loadPlugin(s: String): List<Plugin> = nullIfException(loadPlugin(Paths.get(s)))
-    fun loadPlugin(p: Path): List<Plugin> = nullIfException(loadPlugin(p.toUri()))
-    fun loadPlugin(u: URI): List<Plugin> = nullIfException(loadPlugin(u.toURL()))
-    fun loadPlugin(u: URL): List<Plugin> {
+    fun load(s: String): List<Plugin> = nullIfException(load(Paths.get(s)))
+    fun load(p: Path): List<Plugin> = nullIfException(load(p.toUri()))
+    fun load(u: URI): List<Plugin> = nullIfException(load(u.toURL()))
+    fun load(u: URL): List<Plugin> {
         jcl.add(u)
         val pluginList: ArrayList<Plugin> = ArrayList()
         for ((className, _) in jcl.loadedResources.filterKeys { it.startsWith("convergence/") && it.endsWith("Main.class") }) {

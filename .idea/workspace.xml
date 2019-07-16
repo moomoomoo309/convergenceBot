@@ -1,7 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="29d84833-fb05-450b-b63e-091fc3136e36" name="Default Changelist" comment="" />
+    <list default="true" id="29d84833-fb05-450b-b63e-091fc3136e36" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_h2database_h2_1_4_199.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__joda_time_joda_time_2_10_2.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__net_dv8tion_JDA_4_ALPHA_0_86.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__net_dv8tion_JDA_4_BETA_0_20.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_jetbrains_exposed_exposed_0_16_1.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_jetbrains_kotlin_kotlin_reflect_1_3_31.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_jetbrains_kotlin_kotlin_stdlib_1_3_31.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_jetbrains_kotlin_kotlin_stdlib_common_1_3_31.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_jetbrains_kotlin_kotlin_stdlib_jdk7_1_3_31.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_jetbrains_kotlin_kotlin_stdlib_jdk8_1_3_31.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_jetbrains_kotlin_kotlin_test_1_3_31.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_jetbrains_kotlin_kotlin_test_annotations_common_1_3_31.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_jetbrains_kotlin_kotlin_test_common_1_3_31.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_jetbrains_kotlin_kotlin_test_junit_1_3_31.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_jetbrains_kotlinx_kotlinx_coroutines_core_1_3_0_M1.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_jetbrains_kotlinx_kotlinx_serialization_runtime_0_11_0_1_3_30_eap_125.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_jetbrains_kotlinx_kotlinx_serialization_runtime_common_0_11_0_1_3_30_eap_125.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules/basicPlugin/convergence.bot.basicPlugin.main.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules/basicPlugin/convergence.bot.basicPlugin.main.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules/basicPlugin/convergence.bot.basicPlugin.test.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules/basicPlugin/convergence.bot.basicPlugin.test.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules/consolePlugin/convergence.bot.consolePlugin.main.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules/consolePlugin/convergence.bot.consolePlugin.main.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules/consolePlugin/convergence.bot.consolePlugin.test.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules/consolePlugin/convergence.bot.consolePlugin.test.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules/convergence.bot.main.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules/convergence.bot.main.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules/convergence.bot.test.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules/convergence.bot.test.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules/discordPlugin/convergence.bot.discordPlugin.main.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules/discordPlugin/convergence.bot.discordPlugin.main.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules/discordPlugin/convergence.bot.discordPlugin.test.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules/discordPlugin/convergence.bot.discordPlugin.test.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules/messengerPlugin/convergence.bot.messengerPlugin.main.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules/messengerPlugin/convergence.bot.messengerPlugin.main.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules/messengerPlugin/convergence.bot.messengerPlugin.test.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules/messengerPlugin/convergence.bot.messengerPlugin.test.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/PluginLoader.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/PluginLoader.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/core.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/core.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/interfaces.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/interfaces.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/kotlin/convergence/PluginLoaderTest.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/kotlin/convergence/PluginLoaderTest.kt" afterDir="false" />
+    </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -138,11 +173,11 @@
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
     <property name="nodejs_package_manager_path" value="npm" />
     <property name="org.rust.cargo.project.model.PROJECT_DISCOVERY" value="true" />
-    <property name="project.structure.last.edited" value="Modules" />
+    <property name="project.structure.last.edited" value="Problems" />
     <property name="project.structure.proportion" value="0.15" />
     <property name="project.structure.side.proportion" value="0.2" />
     <property name="run.code.analysis.last.selected.profile" value="pProject Default" />
-    <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
+    <property name="settings.editor.selected.configurable" value="reference.settingsdialog.IDE.editor.colors" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
@@ -368,7 +403,8 @@
       <workItem from="1562517742294" duration="392000" />
       <workItem from="1562518170775" duration="8457000" />
       <workItem from="1562540039822" duration="1488000" />
-      <workItem from="1562677692706" duration="531000" />
+      <workItem from="1562677692706" duration="1260000" />
+      <workItem from="1563139369345" duration="5984000" />
     </task>
     <task id="LOCAL-00001" summary="Add more stages to research.">
       <created>1533403104037</created>
@@ -636,7 +672,21 @@
       <option name="project" value="LOCAL" />
       <updated>1562678195388</updated>
     </task>
-    <option name="localTasksCounter" value="39" />
+    <task id="LOCAL-00039" summary="Set up serializers for necessary classes.">
+      <created>1562678273736</created>
+      <option name="number" value="00039" />
+      <option name="presentableId" value="LOCAL-00039" />
+      <option name="project" value="LOCAL" />
+      <updated>1562678273736</updated>
+    </task>
+    <task id="LOCAL-00040" summary="Set up serializers for necessary classes.">
+      <created>1562678304018</created>
+      <option name="number" value="00040" />
+      <option name="presentableId" value="LOCAL-00040" />
+      <option name="project" value="LOCAL" />
+      <updated>1562678304018</updated>
+    </task>
+    <option name="localTasksCounter" value="41" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
