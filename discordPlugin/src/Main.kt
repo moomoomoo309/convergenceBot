@@ -1,7 +1,6 @@
 package convergence.testPlugins.discordPlugin
 
 import convergence.*
-import convergence.MessageHistory
 import convergence.User
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
@@ -175,7 +174,7 @@ object DiscordInterface: BaseInterface, IFormatting, INickname, IImages, IMentio
 object MessageListener: ListenerAdapter() {
     override fun onMessageReceived(event: MessageReceivedEvent) {
         val chat = DiscordChat(event)
-        DiscordInterface.receivedMessage(event.message.contentDisplay, DiscordUser(event))
+        DiscordInterface.receivedMessage(chat, event.message.contentDisplay, DiscordUser(event))
         val mentionedMembers = event.message.mentionedMembers
         if (mentionedMembers.isNotEmpty())
             DiscordInterface.mentionedUsers(chat, event.message.contentDisplay, mentionedMembers.map { DiscordUser(chat, it) }.toSet())
@@ -184,7 +183,7 @@ object MessageListener: ListenerAdapter() {
 
 class Main: Plugin {
     override val name = "DiscordPlugin"
-    override val baseInterface: BaseInterface = DiscordInterface
+    override val baseInterface = DiscordInterface
     override fun init() {
         registerProtocol(DiscordProtocol, DiscordInterface)
         println("Discord Plugin initialized.")

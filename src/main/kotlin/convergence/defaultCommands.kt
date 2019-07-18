@@ -74,13 +74,9 @@ fun help(args: List<String>, sender: User): String? {
     }
 }
 
-fun echo(args: List<String>, sender: User): String? {
-    return args.joinToString(" ")
-}
+fun echo(args: List<String>, sender: User): String? = args.joinToString(" ")
 
-fun ping(args: List<String>, sender: User): String? {
-    return "Pong!"
-}
+fun ping(args: List<String>, sender: User): String? = "Pong!"
 
 fun addAlias(args: List<String>, sender: User): String? {
     val chat = sender.chat

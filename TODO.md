@@ -8,15 +8,14 @@
 ## Some kind of logging system?
 - Should probably say the thread it came from.
 - log and logErr methods exist for ease of switching the logging system.
-## JSON serialization of Users, Chats, ScheduledCommands
-- Look at Klaxon to figure out how to do it, I haven't implemented it, I only added Klaxon.
-- If you want to use a different library, Klaxon isn't the only one, it's just natively Kotlin, so it makes stuff easier.
+## Serialization of Users, Chats, ScheduledCommands
+- In progress using kotlinx.serialization and H2.
 ## Discord Bot rich integration
 - Make help command embed its contents?
 - Make it actually handle emojis and formatted text correctly (might need some kind of parser?)
 ## Messenger Bot
 - Implement all of the methods with a TODO. See Discord plugin for an example.
-- https://github.com/BotMill/fb-botmill is a good looking library for FB Messenger bots
+- <https://github.com/BotMill/fb-botmill> is a good looking library for FB Messenger bots
 ## Testing and bug fixing of existing commands
 - Help definitely has a bug in it
 ## New commands to be implemented

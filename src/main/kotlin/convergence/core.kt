@@ -3,23 +3,32 @@
 package convergence
 
 import humanize.Humanize
+import kotlinx.serialization.ImplicitReflectionSerializer
+import kotlinx.serialization.Polymorphic
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.cbor.Cbor
+import kotlinx.serialization.load
 import net.sourceforge.argparse4j.ArgumentParsers
 import net.sourceforge.argparse4j.inf.ArgumentParserException
 import net.sourceforge.argparse4j.inf.Namespace
+import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.transactions.transaction
 import org.ocpsoft.prettytime.units.JustNow
 import java.nio.file.Paths
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
+import java.util.Date
+import javax.sql.rowset.serial.SerialBlob
 import kotlin.collections.component1
 import kotlin.collections.component2
 import kotlin.collections.set
 
-class CommandDoesNotExist(cmd: String) : Exception(cmd)
+class CommandDoesNotExist(cmd: String): Exception(cmd)
 
-val log: (Any) -> Unit = { println(it) }
-val logErr: (Any) -> Unit = { System.err.println(it) }
+fun log(it: Any) = println(it)
+fun logErr(it: Any) = System.err.println(it)
+fun logErr(it: Throwable) = it.printStackTrace()
 
 val protocols = mutableSetOf<Protocol>()
 val baseInterfaceMap = mutableMapOf<Protocol, BaseInterface>()
@@ -91,7 +100,7 @@ fun registerAlias(alias: Alias): Boolean {
 
 const val defaultCommandDelimiter = "!"
 
-class DefaultMap<K, V>(val defaultValue: V) : HashMap<K, V>() {
+class DefaultMap<K, V>(var defaultValue: V): HashMap<K, V>() {
     override fun get(key: K): V = super.get(key) ?: defaultValue
 }
 
@@ -240,22 +249,39 @@ fun forwardToLinkedChats(message: String?, sender: User) {
 fun offsetDateTimeToDate(time: OffsetDateTime): Date = Date.from(time.toInstant())
 fun formatTime(time: OffsetDateTime): String = Humanize.naturalTime(offsetDateTimeToDate(time))
 
-const val allowedTimeDifference = 30
-const val updatesPerSecond = 1
-
 @Serializable
 data class ScheduledCommand(@Serializable(OffsetDateTimeSerializer::class) val time: OffsetDateTime,
-                            val sender: User, val commandData: CommandData, val id: Int)
+                            @Polymorphic val sender: User, val commandData: CommandData, val id: Int)
+
+val connection: Database by lazy {
+    Database.connect("jdbc:h2:~/.convergence/database", driver = "org.h2.Driver")
+}
 
 /**
  * Checks if commands scheduled for later are ready to be run yet. Can give information on the commands in its queue.
  */
+@ImplicitReflectionSerializer
 object SchedulerThread: Thread() {
+    private const val allowedTimeDifference = 30
+    private const val updatesPerSecond = 1
+
     private val scheduledCommands = TreeMap<OffsetDateTime, ArrayList<ScheduledCommand>>()
     private val commandsList = TreeMap<Int, ScheduledCommand>()
     private var currentId: Int = 0
-    fun loadFromFile(filePath: String) {
 
+    init {
+        loadFromDatabase(connection)
+    }
+
+    private fun loadFromDatabase(connection: Database = convergence.connection) {
+        transaction(connection) {
+            SchemaUtils.create(SerializedScheduledCommand)
+            SerializedScheduledCommand.selectAll().forEach { row ->
+                row.getOrNull(SerializedScheduledCommand.scheduledCommand)?.let {
+                    schedule(Cbor.load(it.getBytes(1, it.length().toInt())))
+                }
+            }
+        }
     }
 
     override fun run() {
@@ -288,14 +314,23 @@ object SchedulerThread: Thread() {
     fun schedule(sender: User, command: CommandData, time: OffsetDateTime): String? {
         if (time !in scheduledCommands)
             scheduledCommands[time] = ArrayList(2)
-        val cmd = ScheduledCommand(time, sender, command, currentId++)
-        //TODO: Serialize ScheduledCommand here
+        val cmd = ScheduledCommand(time, sender, command, currentId)
+        while (commandsList.containsKey(++currentId));
         scheduledCommands[time]!!.add(cmd)
         if (cmd.id in commandsList)
             logErr("Duplicate IDs in schedulerThread!")
         commandsList[cmd.id] = cmd
+        transaction(connection) {
+            SchemaUtils.create(SerializedScheduledCommand)
+            SerializedScheduledCommand.insert {
+                it[id] = cmd.id
+                it[scheduledCommand] = SerialBlob(Cbor.dump(ScheduledCommand.serializer(), cmd))
+            }
+        }
         return "Scheduled ${getUserName(sender)} to run \"$command\" to run at $time."
     }
+
+    fun schedule(scheduled: ScheduledCommand) = schedule(scheduled.sender, scheduled.commandData, scheduled.time)
 
     /**
      * Gets all of the commands scheduled by [sender].
@@ -317,20 +352,25 @@ object SchedulerThread: Thread() {
     /**
      * Removes a command from the queue.
      */
-    fun unschedule(sender: User, index: Int) = commandsList.remove(index)?.let { scheduledCommands[it.time]?.remove(it) }
-            ?: false
-    //TODO: Remove serialized ScheduledCommand here
+    fun unschedule(sender: User, index: Int) = commandsList.remove(index)?.let {
+        scheduledCommands[it.time]?.remove(it)
+        transaction(connection) {
+            SerializedScheduledCommand.deleteWhere { SerializedScheduledCommand.id eq index }
+        }
+    } ?: false
 }
 
 /**
  * Schedules [command] to run at [time] from [sender].
  */
+@ImplicitReflectionSerializer
 fun schedule(sender: User, command: CommandData, time: OffsetDateTime) = SchedulerThread.schedule(sender, command, time)
 
 lateinit var commandLineArgs: Namespace
 
 class core {
     companion object {
+        @ImplicitReflectionSerializer
         @JvmStatic
         fun main(args: Array<String>) {
             // Parse command line arguments.
@@ -345,7 +385,7 @@ class core {
                 commandLineArgs = argParser.parseArgs(args)
             } catch (e: ArgumentParserException) {
                 logErr("Failed to parse command line arguments. Printing stack trace:")
-                e.printStackTrace()
+                logErr(e)
                 return
             }
 
@@ -371,7 +411,7 @@ class core {
                 Thread(plugin::init).start()
             }
 
-            // Deserialize stuff here
+            //TODO: Deserialize stuff here
 
 
             log("Starting scheduler thread...")

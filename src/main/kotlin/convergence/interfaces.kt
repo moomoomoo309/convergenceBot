@@ -6,6 +6,7 @@ import kotlinx.serialization.Polymorphic
 import kotlinx.serialization.Serializable
 import java.time.OffsetDateTime
 import kotlin.collections.set
+import kotlin.reflect.KClass
 
 @Polymorphic
 abstract class Protocol(val name: String)
@@ -42,10 +43,11 @@ object FakeBaseInterface: BaseInterface {
 abstract class CommandLike(@Polymorphic open val chat: Chat,
                            open val name: String,
                            open val helpText: String,
-                           open val syntaxText: String) {
-    constructor() : this(UniversalChat, "default", "default", "default")
-}
+                           open val syntaxText: String)
 
+/**
+ * TODO: Write custom serializer for Command because of [Command.function].
+ */
 @Serializable
 data class Command(@Polymorphic override val chat: Chat,
                    override val name: String,
@@ -73,45 +75,50 @@ interface BaseInterface {
     fun getChatName(chat: Chat): String
 }
 
-abstract class Callback<T>(fct: Any) {
-    abstract operator fun invoke(vararg args: Any): Boolean
+private val callbacks = HashMap<KClass<out OptionalFunctionality>, ArrayList<OptionalFunctionality>>()
+
+fun registerCallback(fct: OptionalFunctionality) {
+    if (callbacks[fct::class] == null)
+        callbacks[fct::class] = ArrayList()
+    callbacks[fct::class]!!.add(fct)
 }
 
-private val callbacks = HashMap<Class<out Callback<out BonusInterface>>, ArrayList<Callback<out BonusInterface>>>()
-
-fun registerCallback(fct: Callback<out BonusInterface>) {
-    if (callbacks[fct::class.java] == null)
-        callbacks[fct::class.java] = ArrayList()
-    callbacks[fct::class.java]!!.add(fct)
-}
-
+val optionalFunctionalitySet = OptionalFunctionality::class.sealedSubclasses.toSet()
 fun registerCallbacks() {
-    for (bonusInterface in BonusInterface::class.sealedSubclasses)
-        for (callbackClass in bonusInterface::class.nestedClasses.filterIsInstance<Callback<*>>())
-            if (callbacks[callbackClass::class.java] == null)
-                callbacks[callbackClass::class.java as Class<out Callback<out BonusInterface>>] = ArrayList()
+    for (optionalFunctionality in optionalFunctionalitySet)
+        for (callbackClass in optionalFunctionality::class.nestedClasses.filterIsInstance<KClass<out OptionalFunctionality>>())
+            if (callbacks[callbackClass] == null)
+                callbacks[callbackClass] = ArrayList()
 }
 
-fun runCallbacks(callbackClass: Class<*>, vararg args: Any): Boolean {
+fun runCallbacks(callbackClass: KClass<out OptionalFunctionality>, vararg args: Any): Boolean {
     var success = false
-    if (callbackClass as Class<out Callback<out BonusInterface>> in callbacks)
+    if (callbackClass in callbacks)
         for (callback in callbacks[callbackClass]!!)
             if (callback(args))
                 success = true
     return success
 }
 
+/**
+ * The set of classes that protocols can implement for additional functionality.
+ * Each interface also may contain classes which extend this in order to act as callbacks.
+ */
+sealed class OptionalFunctionality {
+    /**
+     * Callback functionality
+     */
+    abstract operator fun invoke(vararg args: Any): Boolean
 
-sealed class BonusInterface {
     interface INickname {
         fun getUserNickname(chat: Chat, user: User): String?
         fun getBotNickname(chat: Chat): String?
 
-        class ChangedNickname(private val fct: (Chat, User, String) -> Boolean): Callback<INickname>(fct) {
+        class ChangedNickname(private val fct: (Chat, User, String) -> Boolean): OptionalFunctionality() {
             override fun invoke(vararg args: Any) = fct(args[0] as Chat, args[1] as User, args[2] as String)
         }
 
-        fun changedNickname(chat: Chat, user: User, oldName: String): Boolean = runCallbacks(ChangedNickname::class.java, chat, user, oldName)
+        fun changedNickname(chat: Chat, user: User, oldName: String): Boolean = runCallbacks(ChangedNickname::class, chat, user, oldName)
     }
 
     interface IImages {
@@ -119,21 +126,21 @@ sealed class BonusInterface {
 
         fun sendImage(chat: Chat, image: Image, name: String?)
 
-        class ReceivedImage(private val fct: (Chat, Image, String) -> Boolean): Callback<IImages>(fct) {
+        class ReceivedImage(private val fct: (Chat, Image, String) -> Boolean): OptionalFunctionality() {
             override fun invoke(vararg args: Any): Boolean = fct(args[0] as Chat, args[1] as Image, args[2] as String)
         }
 
-        fun receivedImage(chat: Chat, image: Image, name: String): Boolean = runCallbacks(ReceivedImage::class.java, chat, image, name)
+        fun receivedImage(chat: Chat, image: Image, name: String): Boolean = runCallbacks(ReceivedImage::class, chat, image, name)
     }
 
     interface IOtherMessageEditable {
         fun editMessage(message: IMessageHistory.MessageHistory, oldMessage: String, sender: User, newMessage: String)
 
-        class EditMessage(private val fct: (String, User, String) -> Boolean): Callback<IOtherMessageEditable>(fct) {
+        class EditMessage(private val fct: (String, User, String) -> Boolean): OptionalFunctionality() {
             override fun invoke(vararg args: Any): Boolean = fct(args[0] as String, args[1] as User, args[2] as String)
         }
 
-        fun editedMessage(oldMessage: String, sender: User, newMessage: String) = runCallbacks(EditMessage::class.java, oldMessage, sender, newMessage)
+        fun editedMessage(oldMessage: String, sender: User, newMessage: String) = runCallbacks(EditMessage::class, oldMessage, sender, newMessage)
     }
 
     interface IMessageHistory {
@@ -146,27 +153,27 @@ sealed class BonusInterface {
     interface IMention {
         fun getMentionText(chat: Chat, user: User): String
 
-        class MentionedUser(private val fct: (Chat, String, Set<User>) -> Boolean): Callback<IMention>(fct) {
-            override fun invoke(vararg args: Any): Boolean = fct(args[0] as Chat, args[1] as String, args[2] as Set<User>)
+        class MentionedUser(private val fct: (Chat, String, Set<User>) -> Boolean): OptionalFunctionality() {
+            override fun invoke(vararg args: Any) = fct(args[0] as Chat, args[1] as String, args[2] as Set<User>)
         }
 
-        fun mentionedUsers(chat: Chat, message: String, users: Set<User>) = runCallbacks(MentionedUser::class.java, chat, message, users)
+        fun mentionedUsers(chat: Chat, message: String, users: Set<User>) = runCallbacks(MentionedUser::class, chat, message, users)
     }
 
     interface ITypingStatus {
         fun setBotTypingStatus(chat: Chat, status: Boolean)
 
-        class StartedTyping(val fct: (Chat, User) -> Boolean): Callback<ITypingStatus>(fct) {
+        class StartedTyping(val fct: (Chat, User) -> Boolean): OptionalFunctionality() {
             override fun invoke(vararg args: Any): Boolean = fct(args[0] as Chat, args[1] as User)
         }
 
-        fun startedTyping(chat: Chat, user: User) = runCallbacks(StartedTyping::class.java, chat, user)
+        fun startedTyping(chat: Chat, user: User) = runCallbacks(StartedTyping::class, chat, user)
 
-        class StoppedTyping(val fct: (Chat, User) -> Boolean): Callback<ITypingStatus>(fct) {
+        class StoppedTyping(val fct: (Chat, User) -> Boolean): OptionalFunctionality() {
             override fun invoke(vararg args: Any): Boolean = fct(args[0] as Chat, args[1] as User)
         }
 
-        fun stoppedTyping(chat: Chat, user: User) = runCallbacks(StoppedTyping::class.java, chat, user)
+        fun stoppedTyping(chat: Chat, user: User) = runCallbacks(StoppedTyping::class, chat, user)
     }
 
     interface IStickers {
@@ -174,11 +181,11 @@ sealed class BonusInterface {
 
         fun sendSticker(chat: Chat, sticker: Sticker)
 
-        class ReceivedSticker(val fct: (Chat, Sticker) -> Boolean): Callback<IStickers>(fct) {
+        class ReceivedSticker(val fct: (Chat, Sticker) -> Boolean): OptionalFunctionality() {
             override fun invoke(vararg args: Any): Boolean = fct(args[0] as Chat, args[1] as Sticker)
         }
 
-        fun receivedSticker(chat: Chat, sticker: Sticker) = runCallbacks(ReceivedSticker::class.java, chat, sticker)
+        fun receivedSticker(chat: Chat, sticker: Sticker) = runCallbacks(ReceivedSticker::class, chat, sticker)
     }
 
     interface IUserStatus { // Like your status on Skype.
@@ -192,22 +199,22 @@ sealed class BonusInterface {
         fun setBotAvailability(chat: Chat, availability: Availability)
         fun getUserAvailability(chat: Chat, user: User): Availability
 
-        class ChangedAvailability(val fct: (Chat, User, Availability) -> Boolean): Callback<IUserAvailability>(fct) {
+        class ChangedAvailability(val fct: (Chat, User, Availability) -> Boolean): OptionalFunctionality() {
             override fun invoke(vararg args: Any): Boolean = fct(args[0] as Chat, args[1] as User, args[2] as Availability)
         }
 
-        fun changedAvailability(chat: Chat, user: User, availability: Availability) = runCallbacks(ChangedAvailability::class.java, chat, user, availability)
+        fun changedAvailability(chat: Chat, user: User, availability: Availability) = runCallbacks(ChangedAvailability::class, chat, user, availability)
     }
 
     interface IReadStatus {
         fun getReadStatus(chat: Chat, message: MessageHistory): Set<User>
         fun setRead(chat: Chat, message: MessageHistory, user: User)
 
-        class ReadByUser(val fct: (Chat, MessageHistory, User) -> Boolean): Callback<IReadStatus>(fct) {
+        class ReadByUser(val fct: (Chat, MessageHistory, User) -> Boolean): OptionalFunctionality() {
             override fun invoke(vararg args: Any): Boolean = fct(args[0] as Chat, args[1] as MessageHistory, args[2] as User)
         }
 
-        fun readByUser(chat: Chat, message: MessageHistory, user: User) = runCallbacks(ReadByUser::class.java, chat, message, user)
+        fun readByUser(chat: Chat, message: MessageHistory, user: User) = runCallbacks(ReadByUser::class, chat, message, user)
     }
 
     interface IFormatting {
@@ -253,21 +260,21 @@ sealed class BonusInterface {
 
 // The sealed class is useful, but I'm not going to put BonusInterface in front of everything.
 
-typealias INickname = BonusInterface.INickname
-typealias IImages = BonusInterface.IImages
-typealias Image = BonusInterface.IImages.Image
-typealias IOtherMessageEditable = BonusInterface.IOtherMessageEditable
-typealias IMessageHistory = BonusInterface.IMessageHistory
-typealias MessageHistory = BonusInterface.IMessageHistory.MessageHistory
-typealias IMention = BonusInterface.IMention
-typealias ITypingStatus = BonusInterface.ITypingStatus
-typealias IStickers = BonusInterface.IStickers
-typealias Sticker = BonusInterface.IStickers.Sticker
-typealias IUserStatus = BonusInterface.IUserStatus
-typealias IUserAvailability = BonusInterface.IUserAvailability
-typealias Availability = BonusInterface.IUserAvailability.Availability
-typealias IReadStatus = BonusInterface.IReadStatus
-typealias IFormatting = BonusInterface.IFormatting
-typealias Format = BonusInterface.IFormatting.Format
-typealias ICustomEmoji = BonusInterface.ICustomEmoji
-typealias Emoji = BonusInterface.ICustomEmoji.Emoji
+typealias INickname = OptionalFunctionality.INickname
+typealias IImages = OptionalFunctionality.IImages
+typealias Image = OptionalFunctionality.IImages.Image
+typealias IOtherMessageEditable = OptionalFunctionality.IOtherMessageEditable
+typealias IMessageHistory = OptionalFunctionality.IMessageHistory
+typealias MessageHistory = OptionalFunctionality.IMessageHistory.MessageHistory
+typealias IMention = OptionalFunctionality.IMention
+typealias ITypingStatus = OptionalFunctionality.ITypingStatus
+typealias IStickers = OptionalFunctionality.IStickers
+typealias Sticker = OptionalFunctionality.IStickers.Sticker
+typealias IUserStatus = OptionalFunctionality.IUserStatus
+typealias IUserAvailability = OptionalFunctionality.IUserAvailability
+typealias Availability = OptionalFunctionality.IUserAvailability.Availability
+typealias IReadStatus = OptionalFunctionality.IReadStatus
+typealias IFormatting = OptionalFunctionality.IFormatting
+typealias Format = OptionalFunctionality.IFormatting.Format
+typealias ICustomEmoji = OptionalFunctionality.ICustomEmoji
+typealias Emoji = OptionalFunctionality.ICustomEmoji.Emoji

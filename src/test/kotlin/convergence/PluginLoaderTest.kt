@@ -1,20 +1,13 @@
 import convergence.Plugin
-import convergence.PluginLoader
 import java.io.ByteArrayOutputStream
-import java.io.File
 import java.io.PrintStream
-import java.nio.file.Files
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
 
 class PluginLoaderTest {
     private var pluginList: List<Plugin> = emptyList()
     private var strOut: ByteArrayOutputStream? = null
     private var oldOut: PrintStream? = null
     private var printStreamOut: PrintStream? = null
-    private fun loadPlugin() {
+/*    private fun loadPlugin() {
         val basicPluginPath = File("basicPlugin/build/libs").absoluteFile.toPath()
         assertTrue(Files.exists(basicPluginPath), "basicPluginDir is not a file or folder.")
         assertTrue(Files.isDirectory(basicPluginPath), "basicPluginDir is not a folder.")
@@ -52,5 +45,5 @@ class PluginLoaderTest {
 
         assertEquals("basicPlugin init\n", pluginPrintOutput, "basicPlugin did not print expected output.")
 
-    }
+    }*/
 }

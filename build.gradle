@@ -18,7 +18,7 @@ tasks.withType(JavaCompile) {
 	options.encoding = 'UTF-8'
 }
 
-ext.kotlin_version = '1.3.40'
+ext.kotlin_version = '1.3.41'
 
 repositories {
     jcenter()
@@ -38,6 +38,8 @@ dependencies {
     compile group: 'com.github.mfornos', name: 'humanize-slim', version: '1.2.2'
     compile group: 'com.beust', name: 'klaxon', version: '5.0.2'
     //compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.1.7'
+    compile 'org.jetbrains.exposed:exposed:+ompile group: \'com.h2database\', name: \'h2\', version: \'1.4.199\''
+    compile group: 'com.h2database', name: 'h2', version: '+'
 }
 
 subprojects {
