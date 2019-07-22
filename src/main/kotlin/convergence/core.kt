@@ -357,7 +357,7 @@ object SchedulerThread: Thread() {
         transaction(connection) {
             SerializedScheduledCommand.deleteWhere { SerializedScheduledCommand.id eq index }
         }
-    } ?: false
+    } != null
 }
 
 /**
@@ -392,8 +392,6 @@ class core {
             // Remove "just now" as an option for time formatting. 5 minutes for "just now" is annoying.
             Humanize.prettyTimeFormat().prettyTime.removeUnit(JustNow::class.java)
 
-            registerCallbacks()
-
             log("Registering default commands...")
             registerDefaultCommands()
 
@@ -410,9 +408,6 @@ class core {
                 log("Initializing plugin: ${plugin.name}")
                 Thread(plugin::init).start()
             }
-
-            //TODO: Deserialize stuff here
-
 
             log("Starting scheduler thread...")
             SchedulerThread.start()

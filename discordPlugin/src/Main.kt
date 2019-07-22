@@ -1,7 +1,9 @@
 package convergence.testPlugins.discordPlugin
 
 import convergence.*
+import convergence.MessageHistory
 import convergence.User
+import kotlinx.serialization.Serializable
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.OnlineStatus
@@ -15,14 +17,15 @@ import java.nio.file.Paths
 import java.time.OffsetDateTime
 import javax.security.auth.login.LoginException
 
-var jda: JDA? = null
+lateinit var jda: JDA
 
 interface DiscordObject {
     val id: Long
 }
 
-class DiscordAvailability(val status: OnlineStatus): Availability()
+class DiscordAvailability(val status: OnlineStatus): Availability(status.name)
 
+@Serializable(DiscordChatSerializer::class)
 class DiscordChat(name: String, override val id: Long, val channel: MessageChannel): Chat(DiscordProtocol, name), DiscordObject {
     constructor(channel: MessageChannel): this(channel.name, channel.idLong, channel)
     constructor(message: Message): this(message.channel)
@@ -40,6 +43,7 @@ class DiscordMessageHistory(val msg: Message, override val id: Long): MessageHis
     constructor(msg: Message): this(msg, msg.idLong)
 }
 
+@Serializable(DiscordUserSerializer::class)
 class DiscordUser(chat: Chat, val name: String, override val id: Long, val author: net.dv8tion.jda.api.entities.User): User(chat), DiscordObject {
     constructor(msgEvent: MessageReceivedEvent): this(DiscordChat(msgEvent), msgEvent)
     constructor(chat: Chat, msgEvent: MessageReceivedEvent): this(chat, msgEvent.author)
@@ -133,11 +137,11 @@ object DiscordInterface: BaseInterface, IFormatting, INickname, IImages, IMentio
         return getMessages(chat, since).filter { it.sender == user }
     }
 
-    override fun getMentionText(chat: Chat, user: User): String = if (user is DiscordUser) jda!!.retrieveUserById(user.id).complete().asMention else ""
+    override fun getMentionText(chat: Chat, user: User): String = if (user is DiscordUser) jda.retrieveUserById(user.id).complete().asMention else ""
 
     override fun setBotAvailability(chat: Chat, availability: Availability) {
         if (availability is DiscordAvailability)
-            jda?.presence?.setPresence(availability.status, true)
+            jda.presence.setPresence(availability.status, true)
     }
 
     override fun getUserAvailability(chat: Chat, user: User): Availability {
@@ -149,8 +153,8 @@ object DiscordInterface: BaseInterface, IFormatting, INickname, IImages, IMentio
     }
 
     override fun getDelimiters(format: Format): Pair<String, String>? = formatMap[format]
-    override fun getEmojis(chat: Chat): List<Emoji> = jda!!.emotes.map { DiscordEmoji(it) }
-    fun getCachedEmojis() = jda!!.emoteCache.map { DiscordEmoji(it) }
+    override fun getEmojis(chat: Chat): List<Emoji> = jda.emotes.map { DiscordEmoji(it) }
+    fun getCachedEmojis() = jda.emoteCache.map { DiscordEmoji(it) }
     override fun sendMessage(chat: Chat, message: String): Boolean {
         if (chat !is DiscordChat)
             return false
@@ -162,12 +166,12 @@ object DiscordInterface: BaseInterface, IFormatting, INickname, IImages, IMentio
         return true
     }
 
-    override fun getBot(chat: Chat): User = DiscordUser(chat, jda!!.selfUser)
+    override fun getBot(chat: Chat): User = DiscordUser(chat, jda.selfUser)
     override fun getName(chat: Chat, user: User): String = if (user is DiscordUser) user.name else ""
-    override fun getChats(): List<Chat> = jda?.textChannels?.map { DiscordChat(it) } ?: emptyList()
-    fun getCachedChats(): List<Chat> = jda?.textChannelCache?.map { DiscordChat(it) } ?: emptyList()
-    override fun getUsers(chat: Chat): List<User> = jda?.users?.map { DiscordUser(chat, it) } ?: emptyList()
-    fun getCachedUsers(chat: Chat): List<User> = jda?.userCache?.map { DiscordUser(chat, it) } ?: emptyList()
+    override fun getChats(): List<Chat> = jda.textChannels.map { DiscordChat(it) }
+    fun getCachedChats(): List<Chat> = jda.textChannelCache.map { DiscordChat(it) }
+    override fun getUsers(chat: Chat): List<User> = jda.users.map { DiscordUser(chat, it) }
+    fun getCachedUsers(chat: Chat): List<User> = jda.userCache.map { DiscordUser(chat, it) }
     override fun getChatName(chat: Chat): String = if (chat is DiscordChat) chat.name else ""
 }
 
@@ -196,6 +200,6 @@ class Main: Plugin {
             e.printStackTrace()
             return
         }
-        jda?.addEventListener(MessageListener)
+        jda.addEventListener(MessageListener)
     }
 }

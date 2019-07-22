@@ -1,73 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="29d84833-fb05-450b-b63e-091fc3136e36" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Gradle__com_h2database_h2_1_4_199.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Gradle__joda_time_joda_time_2_10_2.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Gradle__net_dv8tion_JDA_4_BETA_0_23.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Gradle__org_jetbrains_exposed_exposed_0_16_2.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Gradle__org_jetbrains_kotlin_kotlin_test_1_3_41.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Gradle__org_jetbrains_kotlin_kotlin_test_annotations_common_1_3_41.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Gradle__org_jetbrains_kotlinx_kotlinx_coroutines_core_1_3_0_M1.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules/basicPlugin/basicPlugin_main.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules/basicPlugin/basicPlugin_test.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules/consolePlugin/consolePlugin_main.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules/consolePlugin/consolePlugin_test.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules/convergence.bot_main.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules/convergence.bot_test.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules/discordPlugin/discordPlugin_main.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules/discordPlugin/discordPlugin_test.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules/messengerPlugin/messengerPlugin_main.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules/messengerPlugin/messengerPlugin_test.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/DatabaseAccessObjects.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_jetbrains_kotlin_kotlin_reflect_1_3_40.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Gradle__org_jetbrains_kotlin_kotlin_reflect_1_3_41.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_jetbrains_kotlin_kotlin_stdlib_1_3_40.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Gradle__org_jetbrains_kotlin_kotlin_stdlib_1_3_41.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_jetbrains_kotlin_kotlin_stdlib_common_1_3_40.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Gradle__org_jetbrains_kotlin_kotlin_stdlib_common_1_3_41.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_jetbrains_kotlin_kotlin_stdlib_jdk7_1_3_40.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Gradle__org_jetbrains_kotlin_kotlin_stdlib_jdk7_1_3_41.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_jetbrains_kotlin_kotlin_stdlib_jdk8_1_3_40.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Gradle__org_jetbrains_kotlin_kotlin_stdlib_jdk8_1_3_41.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_jetbrains_kotlin_kotlin_test_1_3_40.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_jetbrains_kotlin_kotlin_test_annotations_common_1_3_40.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_jetbrains_kotlin_kotlin_test_common_1_3_40.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Gradle__org_jetbrains_kotlin_kotlin_test_common_1_3_41.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_jetbrains_kotlin_kotlin_test_junit_1_3_40.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Gradle__org_jetbrains_kotlin_kotlin_test_junit_1_3_41.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_slf4j_slf4j_api_1_7_21.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules/basicPlugin/convergence.bot.basicPlugin.main.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules/basicPlugin/convergence.bot.basicPlugin.main.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules/basicPlugin/convergence.bot.basicPlugin.test.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules/basicPlugin/convergence.bot.basicPlugin.test.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules/basicPlugin/convergence.test.basicPlugin.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules/basicPlugin/basicPlugin.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules/basicPlugin/convergence.test.basicPlugin.main.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules/basicPlugin/convergence.test.basicPlugin.test.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules/consolePlugin/convergence.bot.consolePlugin.main.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules/consolePlugin/convergence.bot.consolePlugin.main.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules/consolePlugin/convergence.bot.consolePlugin.test.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules/consolePlugin/convergence.bot.consolePlugin.test.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules/consolePlugin/convergence.test.consolePlugin.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules/consolePlugin/consolePlugin.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules/consolePlugin/convergence.test.consolePlugin.main.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules/consolePlugin/convergence.test.consolePlugin.test.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules/convergence.bot.main.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules/convergence.bot.main.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules/convergence.bot.test.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules/convergence.bot.test.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules/convergence.convergence.bot.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules/convergence.convergence.bot.main.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules/convergence.convergence.bot.test.iml" beforeDir="false" />
+    <list default="true" id="29d84833-fb05-450b-b63e-091fc3136e36" name="Default Changelist" comment="Start setting up serializers for discord plugin.">
+      <change afterPath="$PROJECT_DIR$/discordPlugin/src/Serializers.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__net_dv8tion_JDA_4_BETA_0_23.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/modules/discordPlugin/convergence.bot.discordPlugin.main.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules/discordPlugin/convergence.bot.discordPlugin.main.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/modules/discordPlugin/convergence.bot.discordPlugin.test.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules/discordPlugin/convergence.bot.discordPlugin.test.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules/discordPlugin/convergence.test.discordPlugin.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules/discordPlugin/discordPlugin.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules/discordPlugin/convergence.test.discordPlugin.main.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules/discordPlugin/convergence.test.discordPlugin.test.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules/messengerPlugin/convergence.bot.messengerPlugin.main.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules/messengerPlugin/convergence.bot.messengerPlugin.main.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/modules/messengerPlugin/convergence.bot.messengerPlugin.test.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules/messengerPlugin/convergence.bot.messengerPlugin.test.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules/messengerPlugin/convergence.test.messengerPlugin.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules/messengerPlugin/messengerPlugin.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules/messengerPlugin/convergence.test.messengerPlugin.main.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules/messengerPlugin/convergence.test.messengerPlugin.test.iml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/TODO.md" beforeDir="false" afterPath="$PROJECT_DIR$/TODO.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/consolePlugin/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/consolePlugin/build.gradle" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/discordPlugin/src/Main.kt" beforeDir="false" afterPath="$PROJECT_DIR$/discordPlugin/src/Main.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/messengerPlugin/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/messengerPlugin/build.gradle" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/messengerPlugin/src/Main.kt" beforeDir="false" afterPath="$PROJECT_DIR$/messengerPlugin/src/Main.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/core.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/core.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/defaultCommands.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/defaultCommands.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/interfaces.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/interfaces.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/serializers.kt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/kotlin/convergence/PluginLoaderTest.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/kotlin/convergence/PluginLoaderTest.kt" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -208,11 +153,11 @@
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
     <property name="nodejs_package_manager_path" value="npm" />
     <property name="org.rust.cargo.project.model.PROJECT_DISCOVERY" value="true" />
-    <property name="project.structure.last.edited" value="Problems" />
+    <property name="project.structure.last.edited" value="Libraries" />
     <property name="project.structure.proportion" value="0.15" />
-    <property name="project.structure.side.proportion" value="0.2" />
+    <property name="project.structure.side.proportion" value="0.5264706" />
     <property name="run.code.analysis.last.selected.profile" value="pProject Default" />
-    <property name="settings.editor.selected.configurable" value="reference.settingsdialog.IDE.editor.colors" />
+    <property name="settings.editor.selected.configurable" value="preferences.sourceCode.Kotlin" />
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
@@ -756,7 +701,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
-    <MESSAGE value="Remove unnecessary exceptions, optimize parsing non-commands, update research." />
     <MESSAGE value="Merge with master." />
     <MESSAGE value="Implement runCommand." />
     <MESSAGE value="Start implementing default commands." />
@@ -781,7 +725,8 @@
     <MESSAGE value="Update documentation." />
     <MESSAGE value="Replace all usages of LocalDateTime with OffsetDateTime." />
     <MESSAGE value="Set up serializers for necessary classes." />
-    <option name="LAST_COMMIT_MESSAGE" value="Set up serializers for necessary classes." />
+    <MESSAGE value="Start setting up serializers for discord plugin." />
+    <option name="LAST_COMMIT_MESSAGE" value="Start setting up serializers for discord plugin." />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REARRANGE_BEFORE_PROJECT_COMMIT" value="true" />

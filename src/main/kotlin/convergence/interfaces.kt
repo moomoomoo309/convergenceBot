@@ -53,7 +53,7 @@ data class Command(@Polymorphic override val chat: Chat,
                    override val name: String,
                    val function: (List<String>, User) -> String?,
                    override val helpText: String,
-                   override val syntaxText: String) : CommandLike(chat, name, helpText, syntaxText)
+                   override val syntaxText: String): CommandLike(chat, name, helpText, syntaxText)
 
 @Serializable
 data class Alias(@Polymorphic override val chat: Chat,
@@ -61,7 +61,7 @@ data class Alias(@Polymorphic override val chat: Chat,
                  val command: Command,
                  val args: List<String>,
                  override val helpText: String,
-                 override val syntaxText: String) : CommandLike(chat, name, helpText, syntaxText)
+                 override val syntaxText: String): CommandLike(chat, name, helpText, syntaxText)
 
 interface BaseInterface {
     val name: String
@@ -83,14 +83,6 @@ fun registerCallback(fct: OptionalFunctionality) {
     callbacks[fct::class]!!.add(fct)
 }
 
-val optionalFunctionalitySet = OptionalFunctionality::class.sealedSubclasses.toSet()
-fun registerCallbacks() {
-    for (optionalFunctionality in optionalFunctionalitySet)
-        for (callbackClass in optionalFunctionality::class.nestedClasses.filterIsInstance<KClass<out OptionalFunctionality>>())
-            if (callbacks[callbackClass] == null)
-                callbacks[callbackClass] = ArrayList()
-}
-
 fun runCallbacks(callbackClass: KClass<out OptionalFunctionality>, vararg args: Any): Boolean {
     var success = false
     if (callbackClass in callbacks)
@@ -99,6 +91,8 @@ fun runCallbacks(callbackClass: KClass<out OptionalFunctionality>, vararg args: 
                 success = true
     return success
 }
+
+inline fun <reified T: OptionalFunctionality> runCallbacks(vararg args: Any) = runCallbacks(T::class, *args)
 
 /**
  * The set of classes that protocols can implement for additional functionality.
@@ -194,7 +188,7 @@ sealed class OptionalFunctionality {
     }
 
     interface IUserAvailability {
-        open class Availability
+        open class Availability(val description: String)
 
         fun setBotAvailability(chat: Chat, availability: Availability)
         fun getUserAvailability(chat: Chat, user: User): Availability
