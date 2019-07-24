@@ -12,3 +12,20 @@ object OffsetDateTimeSerializer : KSerializer<OffsetDateTime> {
     override fun deserialize(decoder: Decoder): OffsetDateTime = OffsetDateTime.parse(decoder.decodeString())
 }
 
+@Serializer(Command::class)
+object CommandSerializer: KSerializer<Command> {
+    override val descriptor = StringDescriptor.withName("Command")
+
+    @ImplicitReflectionSerializer
+    override fun serialize(encoder: Encoder, obj: Command) {
+        encoder.encode(obj.chat)
+        encoder.encodeString(obj.name)
+    }
+
+    @ImplicitReflectionSerializer
+    override fun deserialize(decoder: Decoder): Command {
+        val chat = decoder.decode(Chat::class.serializer())
+        return commands[chat]!![decoder.decodeString()]!!
+    }
+}
+

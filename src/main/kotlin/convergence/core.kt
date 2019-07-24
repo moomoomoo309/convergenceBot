@@ -26,6 +26,7 @@ import kotlin.collections.set
 
 class CommandDoesNotExist(cmd: String): Exception(cmd)
 
+// TODO: Replace this with an actual logging system
 fun log(it: Any) = println(it)
 fun logErr(it: Any) = System.err.println(it)
 fun logErr(it: Throwable) = it.printStackTrace()

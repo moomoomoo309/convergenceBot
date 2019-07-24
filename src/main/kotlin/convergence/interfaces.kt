@@ -40,28 +40,29 @@ object FakeBaseInterface: BaseInterface {
 }
 
 @Polymorphic
-abstract class CommandLike(@Polymorphic open val chat: Chat,
-                           open val name: String,
-                           open val helpText: String,
-                           open val syntaxText: String)
+sealed class CommandLike(@Polymorphic open val chat: Chat,
+                         open val name: String,
+                         open val helpText: String,
+                         open val syntaxText: String) {
 
-/**
- * TODO: Write custom serializer for Command because of [Command.function].
- */
-@Serializable
-data class Command(@Polymorphic override val chat: Chat,
-                   override val name: String,
-                   val function: (List<String>, User) -> String?,
-                   override val helpText: String,
-                   override val syntaxText: String): CommandLike(chat, name, helpText, syntaxText)
+    @Polymorphic
+    @Serializable(CommandSerializer::class)
+    data class Command(@Polymorphic override val chat: Chat,
+                       override val name: String,
+                       val function: (List<String>, User) -> String?,
+                       override val helpText: String,
+                       override val syntaxText: String): CommandLike(chat, name, helpText, syntaxText)
 
-@Serializable
-data class Alias(@Polymorphic override val chat: Chat,
-                 override val name: String,
-                 val command: Command,
-                 val args: List<String>,
-                 override val helpText: String,
-                 override val syntaxText: String): CommandLike(chat, name, helpText, syntaxText)
+    @Serializable
+    data class Alias(@Polymorphic override val chat: Chat,
+                     override val name: String,
+                     val command: Command,
+                     val args: List<String>,
+                     override val helpText: String,
+                     override val syntaxText: String): CommandLike(chat, name, helpText, syntaxText)
+}
+typealias Command = CommandLike.Command
+typealias Alias = CommandLike.Alias
 
 interface BaseInterface {
     val name: String
