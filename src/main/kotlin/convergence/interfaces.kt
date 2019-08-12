@@ -119,13 +119,14 @@ sealed class OptionalFunctionality {
     interface IImages {
         open class Image
 
-        fun sendImage(chat: Chat, image: Image, name: String?)
+        fun sendImage(chat: Chat, image: Image, sender: User, message: String)
 
-        class ReceivedImage(private val fct: (Chat, Image, String) -> Boolean): OptionalFunctionality() {
-            override fun invoke(vararg args: Any): Boolean = fct(args[0] as Chat, args[1] as Image, args[2] as String)
+        class ReceivedImage(private val fct: (Chat, Image, User, String?) -> Boolean): OptionalFunctionality() {
+            override fun invoke(vararg args: Any): Boolean = fct(args[0] as Chat, args[1] as Image, args[2] as User, args[3] as String?
+                    ?: "")
         }
 
-        fun receivedImage(chat: Chat, image: Image, name: String): Boolean = runCallbacks(ReceivedImage::class, chat, image, name)
+        fun receivedImage(chat: Chat, image: Image, sender: User, message: String): Boolean = runCallbacks(ReceivedImage::class, chat, image, sender, message)
     }
 
     interface IOtherMessageEditable {

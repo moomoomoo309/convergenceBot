@@ -67,7 +67,7 @@ class DiscordImage(var URL: String? = null, var data: ByteArray? = null): Image(
 
 object DiscordProtocol: Protocol("Discord")
 object DiscordInterface: BaseInterface, IFormatting, INickname, IImages, IMention, IMessageHistory, IOtherMessageEditable, IUserAvailability, ICustomEmoji {
-    override val name: String = "DiscordInterface"
+    override val name: String = Main.name
     override val protocol: Protocol = DiscordProtocol
     override val supportedFormats: Set<Format> = formatMap.keys
 
@@ -90,10 +90,6 @@ object DiscordInterface: BaseInterface, IFormatting, INickname, IImages, IMentio
                     chat.channel.sendFile(data, name ?: "untitled")
             }
     }
-
-    override fun receivedImage(chat: Chat, image: Image, name: String) = TODO()
-
-    override fun editedMessage(oldMessage: String, sender: User, newMessage: String) = TODO()
 
     override fun editMessage(message: MessageHistory, oldMessage: String, sender: User, newMessage: String) {
         if (message is DiscordMessageHistory)
@@ -185,7 +181,7 @@ object MessageListener: ListenerAdapter() {
     }
 }
 
-class Main: Plugin {
+object Main: Plugin {
     override val name = "DiscordPlugin"
     override val baseInterface = DiscordInterface
     override fun init() {

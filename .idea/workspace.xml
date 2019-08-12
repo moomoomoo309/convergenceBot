@@ -4,12 +4,11 @@
     <option name="SCOPE_TYPE" value="3" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="29d84833-fb05-450b-b63e-091fc3136e36" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/markdown-navigator.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/markdown-navigator.xml" afterDir="false" />
+    <list default="true" id="29d84833-fb05-450b-b63e-091fc3136e36" name="Default Changelist" comment="Updated TODO.md, added CommandSerializer.">
+      <change beforePath="$PROJECT_DIR$/.idea/markdown-navigator/profiles_settings.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/TODO.md" beforeDir="false" afterPath="$PROJECT_DIR$/TODO.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/Serializers.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/Serializers.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/core.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/core.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/discordPlugin/src/Main.kt" beforeDir="false" afterPath="$PROJECT_DIR$/discordPlugin/src/Main.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/messengerPlugin/src/Main.kt" beforeDir="false" afterPath="$PROJECT_DIR$/messengerPlugin/src/Main.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/interfaces.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/interfaces.kt" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -122,11 +121,6 @@
         <option name="importAutomatically" value="true" />
       </MavenImportingSettings>
     </option>
-  </component>
-  <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="2" />
-    <option name="width" value="1916" />
-    <option name="height" value="1038" />
   </component>
   <component name="ProjectId" id="1Ngzt17DMMTKWSdUJEz3ILdPPvV" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true">
@@ -383,6 +377,9 @@
       <workItem from="1562540039822" duration="1488000" />
       <workItem from="1562677692706" duration="1260000" />
       <workItem from="1563139369345" duration="5984000" />
+      <workItem from="1564624479771" duration="7056000" />
+      <workItem from="1565480920444" duration="717000" />
+      <workItem from="1565534484480" duration="14953000" />
     </task>
     <task id="LOCAL-00001" summary="Add more stages to research.">
       <created>1533403104037</created>
@@ -671,7 +668,14 @@
       <option name="project" value="LOCAL" />
       <updated>1563800966949</updated>
     </task>
-    <option name="localTasksCounter" value="42" />
+    <task id="LOCAL-00042" summary="Updated TODO.md, added CommandSerializer.">
+      <created>1563975017274</created>
+      <option name="number" value="00042" />
+      <option name="presentableId" value="LOCAL-00042" />
+      <option name="project" value="LOCAL" />
+      <updated>1563975017274</updated>
+    </task>
+    <option name="localTasksCounter" value="43" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -706,7 +710,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
-    <MESSAGE value="Merge with master." />
     <MESSAGE value="Implement runCommand." />
     <MESSAGE value="Start implementing default commands." />
     <MESSAGE value="Refactor Protocol class, add replaceAliasVars." />
@@ -731,9 +734,20 @@
     <MESSAGE value="Replace all usages of LocalDateTime with OffsetDateTime." />
     <MESSAGE value="Set up serializers for necessary classes." />
     <MESSAGE value="Start setting up serializers for discord plugin." />
-    <option name="LAST_COMMIT_MESSAGE" value="Start setting up serializers for discord plugin." />
+    <MESSAGE value="Updated TODO.md, added CommandSerializer." />
+    <option name="LAST_COMMIT_MESSAGE" value="Updated TODO.md, added CommandSerializer." />
     <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REARRANGE_BEFORE_PROJECT_COMMIT" value="true" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="747" y="238" key="#com.intellij.ide.util.MemberChooser" />
+    <state x="747" y="238" key="#com.intellij.ide.util.MemberChooser/1920.1080" />
+    <state x="646" y="255" key="#com.intellij.openapi.updateSettings.impl.PluginUpdateInfoDialog" />
+    <state x="646" y="255" key="#com.intellij.openapi.updateSettings.impl.PluginUpdateInfoDialog/1920.1080" />
+    <state x="509" y="27" key="CommitChangelistDialog2" />
+    <state x="509" y="27" key="CommitChangelistDialog2/1920.1080" />
+    <state x="608" y="341" key="com.intellij.ide.util.TipDialog" />
+    <state x="608" y="341" key="com.intellij.ide.util.TipDialog/1920.1080" />
   </component>
   <component name="antWorkspaceConfiguration">
     <option name="IS_AUTOSCROLL_TO_SOURCE" value="false" />
