@@ -40,6 +40,7 @@ object FakeBaseInterface: BaseInterface {
 }
 
 @Polymorphic
+@Serializable
 sealed class CommandLike(@Polymorphic open val chat: Chat,
                          open val name: String,
                          open val helpText: String,
@@ -53,7 +54,8 @@ sealed class CommandLike(@Polymorphic open val chat: Chat,
                        override val helpText: String,
                        override val syntaxText: String): CommandLike(chat, name, helpText, syntaxText)
 
-    @Serializable
+    @Polymorphic
+    @Serializable(AliasSerializer::class)
     data class Alias(@Polymorphic override val chat: Chat,
                      override val name: String,
                      val command: Command,
@@ -227,6 +229,7 @@ sealed class OptionalFunctionality {
                 val code = Format("CODE")
                 val strikethrough = Format("STRIKETHROUGH")
                 val spoiler = Format("SPOILER")
+                val greentext = Format("GREENTEXT")
             }
         }
 
@@ -242,7 +245,8 @@ sealed class OptionalFunctionality {
                     Format.monospace,
                     Format.code,
                     Format.strikethrough,
-                    Format.spoiler
+                    Format.spoiler,
+                    Format.greentext
             )
         }
     }
@@ -255,7 +259,6 @@ sealed class OptionalFunctionality {
 }
 
 // The sealed class is useful, but I'm not going to put BonusInterface in front of everything.
-
 typealias INickname = OptionalFunctionality.INickname
 typealias IImages = OptionalFunctionality.IImages
 typealias Image = OptionalFunctionality.IImages.Image

@@ -29,3 +29,21 @@ object CommandSerializer: KSerializer<Command> {
     }
 }
 
+@Serializer(Alias::class)
+object AliasSerializer: KSerializer<Alias> {
+    override val descriptor = StringDescriptor.withName("Alias")
+
+    @ImplicitReflectionSerializer
+    override fun serialize(encoder: Encoder, obj: Alias) {
+        encoder.encode(obj.chat)
+        encoder.encode(obj.name)
+    }
+
+    @ImplicitReflectionSerializer
+    override fun deserialize(decoder: Decoder): Alias {
+        val chat = decoder.decode(Chat::class.serializer())
+        return aliases[chat]!![decoder.decodeString()]!!
+    }
+}
+
+

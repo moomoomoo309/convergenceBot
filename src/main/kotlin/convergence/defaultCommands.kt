@@ -368,6 +368,7 @@ fun setDelimiter(args: List<String>, sender: User): String? = when {
     else -> "\"${args[0]}\" is not a valid command delimiter!"
 }
 
+@ImplicitReflectionSerializer
 fun registerDefaultCommands() {
     registerCommand(Command(UniversalChat, "help", ::help,
             "Provides a paginated list of commands and their syntax, or specific help on a single command.",

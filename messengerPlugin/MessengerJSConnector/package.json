@@ -1,0 +1,20 @@
+{
+  "name": "messengerjsconnector",
+  "version": "1.0.0",
+  "description": "Connects the unofficial Messenger JS API to the Kotlin/JVM-based Convergence Bot.",
+  "main": "index.js",
+  "dependencies": {
+    "facebook-chat-api": "^1.6.1"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "moomoomoo309",
+  "license": "MIT",
+  "devDependencies": {
+    "@babel/cli": "^7.7.0",
+    "@babel/core": "^7.7.2",
+    "@babel/node": "^7.7.0",
+    "@babel/preset-env": "^7.7.1"
+  }
+}

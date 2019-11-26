@@ -5,17 +5,173 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="29d84833-fb05-450b-b63e-091fc3136e36" name="Default Changelist" comment="Updated TODO.md, added CommandSerializer.">
-      <change beforePath="$PROJECT_DIR$/.idea/markdown-navigator/profiles_settings.xml" beforeDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/caches/build_file_checksums.ser" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/discord.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/jarRepositories.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules/MessengerJSConnector/convergence.bot.MessengerJSConnector.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules/MessengerJSConnector/convergence.bot.MessengerJSConnector.main.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules/MessengerJSConnector/convergence.bot.MessengerJSConnector.test.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules/convergence.bot/basicPlugin/convergence.bot.convergence.bot.basicPlugin.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules/convergence.bot/basicPlugin/convergence.bot.convergence.bot.basicPlugin.main.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules/convergence.bot/basicPlugin/convergence.bot.convergence.bot.basicPlugin.test.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules/convergence.bot/consolePlugin/convergence.bot.convergence.bot.consolePlugin.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules/convergence.bot/consolePlugin/convergence.bot.convergence.bot.consolePlugin.main.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules/convergence.bot/consolePlugin/convergence.bot.convergence.bot.consolePlugin.test.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules/convergence.bot/convergence.bot.convergence.bot.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules/convergence.bot/convergence.bot.convergence.bot.main.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules/convergence.bot/convergence.bot.convergence.bot.test.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules/convergence.bot/discordPlugin/convergence.bot.convergence.bot.discordPlugin.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules/convergence.bot/discordPlugin/convergence.bot.convergence.bot.discordPlugin.main.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules/convergence.bot/discordPlugin/convergence.bot.convergence.bot.discordPlugin.test.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules/convergence.bot/messengerPlugin/convergence.bot.convergence.bot.messengerPlugin.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules/convergence.bot/messengerPlugin/convergence.bot.convergence.bot.messengerPlugin.main.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules/convergence.bot/messengerPlugin/convergence.bot.convergence.bot.messengerPlugin.test.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules/messengerPlugin.MessengerJSConnector/convergence.bot.messengerPlugin.MessengerJSConnector.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules/messengerPlugin.MessengerJSConnector/convergence.bot.messengerPlugin.MessengerJSConnector.main.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules/messengerPlugin.MessengerJSConnector/convergence.bot.messengerPlugin.MessengerJSConnector.test.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules/messengerPlugin/Messenge/convergence.bot.messengerPlugin_Messenge.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules/messengerPlugin/Messenge/convergence.bot.messengerPlugin_Messenge.main.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules/messengerPlugin/Messenge/convergence.bot.messengerPlugin_Messenge.test.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules/messengerPlugin/MessengerJSConnector/MessengerJSConnector.convergence.bot.messengerPlugin.MessengerJSConnector.main.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules/messengerPlugin/MessengerJSConnector/MessengerJSConnector.convergence.bot.messengerPlugin.MessengerJSConnector.test.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules/messengerPlugin/MessengerJSConnector/convergence.bot.messengerPlugin.MessengerJSConnector.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules/messengerPlugin/MessengerJSConnector/convergence.bot.messengerPlugin.MessengerJSConnector.main.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules/messengerPlugin/MessengerJSConnector/convergence.bot.messengerPlugin.MessengerJSConnector.test.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules/messengerPlugin/MessengerJSConnector/convergence.bot.messengerPlugin_MessengerJSConnector.main.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules/messengerPlugin/MessengerJSConnector/convergence.bot.messengerPlugin_MessengerJSConnector.test.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules/messengerPlugin/MessengerJSConnector/convergenceBot.convergence.bot.messengerPlugin.MessengerJSConnector.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/messengerPlugin/MessengerJSConnector/.babelrc" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/messengerPlugin/MessengerJSConnector/MessengerJSConnector.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/messengerPlugin/MessengerJSConnector/build.gradle" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/messengerPlugin/MessengerJSConnector/package-lock.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/messengerPlugin/MessengerJSConnector/package.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/messengerPlugin/MessengerJSConnector/src/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__aopalliance_aopalliance_1_0.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__backport_util_concurrent_backport_util_concurrent_3_1.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__cglib_cglib_nodep_2_2.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__ch_qos_logback_logback_classic_1_0_13.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__ch_qos_logback_logback_classic_1_1_7.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__ch_qos_logback_logback_core_1_0_13.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__ch_qos_logback_logback_core_1_1_7.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__co_aurasphere_botmill_botmill_core_1_0_2.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__co_aurasphere_botmill_fb_botmill_2_0_0_RC3.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_beust_klaxon_5_0_2.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_fasterxml_classmate_1_1_0.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_fasterxml_jackson_core_jackson_annotations_2_9_0.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_fasterxml_jackson_core_jackson_core_2_9_8.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_fasterxml_jackson_core_jackson_databind_2_9_8.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_github_mfornos_humanize_slim_1_2_2.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_google_code_findbugs_annotations_2_0_1.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_google_code_findbugs_jsr305_1_3_9.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_google_code_findbugs_jsr305_3_0_2.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_google_code_gson_gson_2_7.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_google_guava_guava_18_0.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_h2database_h2_1_4_199.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_joestelmach_natty_0_11.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_neovisionaries_nv_websocket_client_2_5.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_squareup_okhttp3_okhttp_3_13_0.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_squareup_okio_okio_1_17_2.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__commons_codec_commons_codec_1_5.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__commons_codec_commons_codec_1_9.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__commons_lang_commons_lang_2_6.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__commons_logging_commons_logging_1_1_1.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__commons_logging_commons_logging_1_2.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__javax_el_javax_el_api_2_2_4.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__javax_validation_validation_api_1_1_0_Final.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__joda_time_joda_time_2_10_2.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__junit_junit_4_12.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__me_xuender_unidecode_0_0_7.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__net_sf_trove4j_trove4j_3_0_3.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__net_sourceforge_argparse4j_argparse4j_0_8_1.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_antlr_antlr_runtime_3_5_2.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_apache_commons_commons_collections4_4_1.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_apache_httpcomponents_httpclient_4_5_2.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_apache_httpcomponents_httpcore_4_4_4.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_apache_httpcomponents_httpmime_4_5_2.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_glassfish_web_javax_el_2_2_4.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_hamcrest_hamcrest_core_1_3.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_hibernate_hibernate_validator_5_2_4_Final.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_hsqldb_hsqldb_2_3_1.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_jasypt_jasypt_1_9_2.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_javassist_javassist_3_18_2_GA.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_jboss_logging_jboss_logging_3_2_1_Final.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_jetbrains_annotations_13_0.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_jetbrains_annotations_16_0_1.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_jetbrains_exposed_exposed_0_16_2.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_jetbrains_kotlin_kotlin_reflect_1_3_41.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_jetbrains_kotlin_kotlin_stdlib_1_3_41.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_jetbrains_kotlin_kotlin_stdlib_common_1_3_41.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_jetbrains_kotlin_kotlin_stdlib_jdk7_1_3_41.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_jetbrains_kotlin_kotlin_stdlib_jdk8_1_3_41.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_jetbrains_kotlin_kotlin_test_1_3_41.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_jetbrains_kotlin_kotlin_test_annotations_common_1_3_41.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_jetbrains_kotlin_kotlin_test_common_1_3_41.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_jetbrains_kotlin_kotlin_test_junit_1_3_41.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_jetbrains_kotlinx_kotlinx_coroutines_core_1_3_0_M1.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_jetbrains_kotlinx_kotlinx_serialization_runtime_0_11_1_1_3_40_eap_107.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_kamranzafar_commons_object_cloner_0_1.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_mnode_ical4j_ical4j_1_0_2.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_mongodb_mongo_java_driver_3_4_0.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_objenesis_objenesis_2_1.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_ocpsoft_prettytime_prettytime_3_2_5_Final.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_reflections_reflections_0_9_10.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_slf4j_jcl_over_slf4j_1_7_1.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_slf4j_slf4j_api_1_7_25.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_springframework_data_spring_data_commons_1_5_0_RELEASE.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_springframework_data_spring_data_mongodb_1_2_0_RELEASE.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_springframework_spring_aop_3_1_4_RELEASE.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_springframework_spring_asm_3_1_4_RELEASE.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_springframework_spring_beans_3_1_4_RELEASE.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_springframework_spring_context_3_1_4_RELEASE.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_springframework_spring_core_3_1_4_RELEASE.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_springframework_spring_expression_3_1_4_RELEASE.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_springframework_spring_tx_3_1_4_RELEASE.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_xeustechnologies_jcl_core_2_8.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/markdown-navigator.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/markdown-navigator.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules/basicPlugin/convergence.bot.basicPlugin.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules/basicPlugin/convergence.bot.basicPlugin.main.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules/basicPlugin/convergence.bot.basicPlugin.test.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules/consolePlugin/convergence.bot.consolePlugin.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules/consolePlugin/convergence.bot.consolePlugin.main.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules/consolePlugin/convergence.bot.consolePlugin.test.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules/convergence.bot.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules/convergence.bot.main.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules/convergence.bot.test.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules/discordPlugin/convergence.bot.discordPlugin.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules/discordPlugin/convergence.bot.discordPlugin.main.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules/discordPlugin/convergence.bot.discordPlugin.test.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules/messengerPlugin/convergence.bot.messengerPlugin.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules/messengerPlugin/convergence.bot.messengerPlugin.main.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules/messengerPlugin/convergence.bot.messengerPlugin.test.iml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/config.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/consolePlugin/src/Main.kt" beforeDir="false" afterPath="$PROJECT_DIR$/consolePlugin/src/Main.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/discordPlugin/src/Main.kt" beforeDir="false" afterPath="$PROJECT_DIR$/discordPlugin/src/Main.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gradlew" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gradlew.bat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/messengerPlugin/resources/web.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/messengerPlugin/src/Main.kt" beforeDir="false" afterPath="$PROJECT_DIR$/messengerPlugin/src/Main.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/settings.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/settings.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/PluginLoader.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/PluginLoader.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/Serializers.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/Serializers.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/core.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/core.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/defaultCommands.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/defaultCommands.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/interfaces.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/interfaces.kt" afterDir="false" />
     </list>
-    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ComposerSettings">
+    <execution>
+      <executable />
+    </execution>
   </component>
   <component name="DatabaseView">
     <option name="SHOW_INTERMEDIATE" value="true" />
@@ -54,6 +210,9 @@
         <task path="$PROJECT_DIR$/messengerPlugin">
           <activation />
         </task>
+        <task path="$PROJECT_DIR$/messengerPlugin/MessengerJSConnector">
+          <activation />
+        </task>
         <projects_view>
           <tree_state>
             <expand>
@@ -64,20 +223,66 @@
               <path>
                 <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
                 <item name="convergence.bot" type="f1a62948:ProjectNode" />
-                <item name="Source Sets" type="e897c970:GradleViewContributor$SourceSetsNode" />
+                <item name="convergence.bot" type="2d1252cf:ModuleNode" />
               </path>
               <path>
                 <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
                 <item name="convergence.bot" type="f1a62948:ProjectNode" />
-                <item name="Source Sets" type="e897c970:GradleViewContributor$SourceSetsNode" />
-                <item name="main" type="396b929e:GradleViewContributor$SourceSetNode" />
+                <item name="convergence.bot" type="2d1252cf:ModuleNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
               </path>
               <path>
                 <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
                 <item name="convergence.bot" type="f1a62948:ProjectNode" />
-                <item name="Source Sets" type="e897c970:GradleViewContributor$SourceSetsNode" />
-                <item name="main" type="396b929e:GradleViewContributor$SourceSetNode" />
-                <item name="Dependencies" type="6de06a37:ExternalSystemViewDefaultContributor$MyDependenciesNode" />
+                <item name="convergence.bot" type="2d1252cf:ModuleNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+                <item name="application" type="c8890929:TasksNode$1" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="convergence.bot" type="f1a62948:ProjectNode" />
+                <item name="convergence.bot" type="2d1252cf:ModuleNode" />
+                <item name="messengerPlugin" type="2d1252cf:ModuleNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="convergence.bot" type="f1a62948:ProjectNode" />
+                <item name="convergence.bot" type="2d1252cf:ModuleNode" />
+                <item name="messengerPlugin" type="2d1252cf:ModuleNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="convergence.bot" type="f1a62948:ProjectNode" />
+                <item name="convergence.bot" type="2d1252cf:ModuleNode" />
+                <item name="messengerPlugin" type="2d1252cf:ModuleNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+                <item name="build" type="c8890929:TasksNode$1" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="convergence.bot" type="f1a62948:ProjectNode" />
+                <item name="messengerPlugin/MessengerJSConnector" type="2d1252cf:ModuleNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="convergence.bot" type="f1a62948:ProjectNode" />
+                <item name="messengerPlugin/MessengerJSConnector" type="2d1252cf:ModuleNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="convergence.bot" type="f1a62948:ProjectNode" />
+                <item name="messengerPlugin/MessengerJSConnector" type="2d1252cf:ModuleNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+                <item name="node" type="c8890929:TasksNode$1" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="convergence.bot" type="f1a62948:ProjectNode" />
+                <item name="messengerPlugin/MessengerJSConnector" type="2d1252cf:ModuleNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+                <item name="other" type="c8890929:TasksNode$1" />
               </path>
             </expand>
             <select />
@@ -93,24 +298,27 @@
         <option value="Class" />
         <option value="Kotlin Class" />
         <option value="Kotlin File" />
+        <option value="Kotlin Script" />
+        <option value="JavaScript File" />
       </list>
     </option>
   </component>
   <component name="Git.Settings">
     <option name="PUSH_AUTO_UPDATE" value="true" />
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="classLoading" />
+        <entry key="$PROJECT_DIR$" value="Testing" />
       </map>
     </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="UPDATE_TYPE" value="MERGE" />
   </component>
   <component name="GithubDefaultAccount">
-    <option name="defaultAccountId" value="fa6126a3-2c80-4175-9019-61a453f97a99" />
+    <option name="defaultAccountId" value="39f80656-d015-4b39-9d07-31879c6f40d2" />
   </component>
   <component name="HighlightingSettingsPerFile">
-    <setting file="file://$PROJECT_DIR$/src/main/kotlin/convergence/commandParser.kt" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/messengerPlugin/src/Main.kt" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/main/kotlin/convergence/commandParser.kt" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="MacroExpansionManager">
     <option name="directoryName" value="ESZRssKT" />
@@ -126,7 +334,14 @@
   <component name="ProjectLevelVcsManager" settingsEditedManually="true">
     <ConfirmationsSetting value="2" id="Add" />
   </component>
+  <component name="ProjectViewState">
+    <option name="flattenPackages" value="true" />
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showExcludedFiles" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
   <component name="PropertiesComponent">
+    <property name="JavaClassFindUsagesOptions.isDerivedClasses" value="true" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="add_unversioned_files" value="$PROJECT_DIR$/.gitignore&#10;true" />
@@ -134,7 +349,8 @@
     <property name="aspect.path.notification.shown" value="true" />
     <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1548263320171" />
     <property name="full.screen.before.presentation.mode" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../AersysAPI" />
+    <property name="jdk.selected.JAVA_MODULE" value="Kotlin SDK" />
+    <property name="last_opened_file_path" value="$USER_HOME$/PhpstormProjects/CS490" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.tslint" value="true" />
     <property name="node.js.path.for.package.eslint" value="project" />
@@ -145,51 +361,60 @@
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
     <property name="nodejs_package_manager_path" value="npm" />
     <property name="org.rust.cargo.project.model.PROJECT_DISCOVERY" value="true" />
-    <property name="project.structure.last.edited" value="Libraries" />
+    <property name="project.structure.last.edited" value="Modules" />
     <property name="project.structure.proportion" value="0.15" />
-    <property name="project.structure.side.proportion" value="0.5264706" />
+    <property name="project.structure.side.proportion" value="0.23337679" />
     <property name="run.code.analysis.last.selected.profile" value="pProject Default" />
-    <property name="settings.editor.selected.configurable" value="preferences.sourceCode.Kotlin" />
+    <property name="settings.editor.selected.configurable" value="reference.settingsdialog.IDE.editor.colors" />
   </component>
   <component name="RecentsManager">
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$" />
-      <recent name="$PROJECT_DIR$/basicPlugin/src" />
-    </key>
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$" />
     </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/messengerPlugin/MessengerJSConnector" />
+      <recent name="$PROJECT_DIR$" />
+      <recent name="$PROJECT_DIR$/basicPlugin/src" />
+    </key>
   </component>
-  <component name="RunDashboard">
-    <option name="ruleStates">
-      <list>
-        <RuleState>
-          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
-        </RuleState>
-        <RuleState>
-          <option name="name" value="StatusDashboardGroupingRule" />
-        </RuleState>
-      </list>
+  <component name="RunAnythingCache">
+    <option name="myCommands">
+      <command value="gradle npm_init" />
+      <command value="gradle :messengerPlugin:npmInstall facebook-chat-api" />
+      <command value="gradle -q projects" />
+      <command value="gradle :MessengerJSConnector clean" />
+      <command value="gradle clean" />
+      <command value="gradle build" />
+      <command value="gradle version" />
+      <command value="gradle --version" />
     </option>
   </component>
-  <component name="RunManager" selected="Gradle.convergenceBot [jar]">
-    <configuration name="convergenceBot [jar]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
-      <ExternalSystemSettings>
-        <option name="executionName" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$" />
-        <option name="externalSystemIdString" value="GRADLE" />
-        <option name="scriptParameters" />
-        <option name="taskDescriptions">
-          <list />
-        </option>
-        <option name="taskNames">
-          <list>
-            <option value="jar" />
-          </list>
-        </option>
-        <option name="vmOptions" />
-      </ExternalSystemSettings>
-      <GradleScriptDebugEnabled>true</GradleScriptDebugEnabled>
+  <component name="RunManager" selected="Gradle.convergenceBot [run]">
+    <configuration default="true" type="AndroidJUnit">
+      <option name="TEST_OBJECT" value="class" />
+      <option name="WORKING_DIRECTORY" value="$MODULE_DIR$" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="DjangoTestsConfigurationType">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="TARGET" value="" />
+      <option name="SETTINGS_FILE" value="" />
+      <option name="CUSTOM_SETTINGS" value="false" />
+      <option name="USE_OPTIONS" value="false" />
+      <option name="OPTIONS" value="" />
       <method v="2" />
     </configuration>
     <configuration name="convergenceBot [run]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
@@ -197,7 +422,7 @@
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
         <option name="externalSystemIdString" value="GRADLE" />
-        <option name="scriptParameters" value="--debug" />
+        <option name="scriptParameters" />
         <option name="taskDescriptions">
           <list />
         </option>
@@ -211,10 +436,29 @@
       <GradleScriptDebugEnabled>true</GradleScriptDebugEnabled>
       <method v="2" />
     </configuration>
-    <configuration name="convergenceBot:consolePlugin [jar]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+    <configuration name="convergenceBot:messengerPlugin [clean]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$/consolePlugin" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$/messengerPlugin" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="clean" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <GradleScriptDebugEnabled>true</GradleScriptDebugEnabled>
+      <method v="2" />
+    </configuration>
+    <configuration name="convergenceBot:messengerPlugin [jar]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$/messengerPlugin" />
         <option name="externalSystemIdString" value="GRADLE" />
         <option name="scriptParameters" />
         <option name="taskDescriptions">
@@ -230,10 +474,10 @@
       <GradleScriptDebugEnabled>true</GradleScriptDebugEnabled>
       <method v="2" />
     </configuration>
-    <configuration name="convergenceBot:discordPlugin [jar]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+    <configuration name="convergenceBot:messengerPlugin:MessengerJSConnector [babelify]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$/discordPlugin" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$/messengerPlugin/MessengerJSConnector" />
         <option name="externalSystemIdString" value="GRADLE" />
         <option name="scriptParameters" />
         <option name="taskDescriptions">
@@ -241,7 +485,7 @@
         </option>
         <option name="taskNames">
           <list>
-            <option value="jar" />
+            <option value="babelify" />
           </list>
         </option>
         <option name="vmOptions" />
@@ -249,32 +493,191 @@
       <GradleScriptDebugEnabled>true</GradleScriptDebugEnabled>
       <method v="2" />
     </configuration>
-    <configuration name="PluginLoaderTest.loadBasicPlugin" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
-      <module name="convergence.convergence.bot.test" />
-      <option name="PACKAGE_NAME" value="convergence" />
-      <option name="MAIN_CLASS_NAME" value="PluginLoaderTest" />
-      <option name="METHOD_NAME" value="loadBasicPlugin" />
-      <option name="TEST_OBJECT" value="method" />
+    <configuration name="convergenceBot:messengerPlugin:MessengerJSConnector [putIntoOneFile]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$/messengerPlugin/MessengerJSConnector" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="putIntoOneFile" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <GradleScriptDebugEnabled>true</GradleScriptDebugEnabled>
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="JetRunConfigurationType" factoryName="Kotlin">
+      <option name="VM_PARAMETERS" />
+      <option name="PROGRAM_PARAMETERS" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <option name="MAIN_CLASS_NAME" />
+      <option name="WORKING_DIRECTORY" />
+      <module name="" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType" factoryName="Kotlin script">
+      <option name="filePath" />
+      <option name="vmParameters" />
+      <option name="alternativeJrePath" />
+      <option name="programParameters" />
+      <option name="passParentEnvs" value="true" />
+      <option name="workingDirectory" />
+      <option name="isAlternativeJrePathEnabled" value="false" />
+      <option name="VM_PARAMETERS" />
+      <option name="PROGRAM_PARAMETERS" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <option name="MAIN_CLASS_NAME" />
+      <option name="WORKING_DIRECTORY" />
+      <module name="" />
+      <option name="filePath" />
+      <option name="vmParameters" />
+      <option name="alternativeJrePath" />
+      <option name="programParameters" />
+      <option name="passParentEnvs" value="true" />
+      <option name="workingDirectory" />
+      <option name="isAlternativeJrePathEnabled" value="false" />
+      <option name="VM_PARAMETERS" />
+      <option name="PROGRAM_PARAMETERS" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <option name="MAIN_CLASS_NAME" />
+      <option name="WORKING_DIRECTORY" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="PyBehaveRunConfigurationType" factoryName="Behave">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="ADDITIONAL_ARGS" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="PyLettuceRunConfigurationType" factoryName="Lettuce">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="ADDITIONAL_ARGS" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="PythonConfigurationType" factoryName="Python">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="Python.FlaskServer">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="launchJavascriptDebuger" value="false" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="Tox" factoryName="Tox">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="tests" factoryName="Doctests">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="CLASS_NAME" value="" />
+      <option name="METHOD_NAME" value="" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_SCRIPT" />
+      <option name="PATTERN" value="" />
+      <option name="USE_PATTERN" value="false" />
+      <method v="2" />
+    </configuration>
     <list>
+      <item itemvalue="Gradle.convergenceBot:messengerPlugin:MessengerJSConnector [putIntoOneFile]" />
+      <item itemvalue="Gradle.convergenceBot:messengerPlugin:MessengerJSConnector [babelify]" />
+      <item itemvalue="Gradle.convergenceBot:messengerPlugin [jar]" />
       <item itemvalue="Gradle.convergenceBot [run]" />
-      <item itemvalue="Gradle.convergenceBot:consolePlugin [jar]" />
-      <item itemvalue="Gradle.convergenceBot [jar]" />
-      <item itemvalue="Gradle.convergenceBot:discordPlugin [jar]" />
-      <item itemvalue="JUnit.PluginLoaderTest.loadBasicPlugin" />
+      <item itemvalue="Gradle.convergenceBot:messengerPlugin [clean]" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Gradle.convergenceBot [jar]" />
         <item itemvalue="Gradle.convergenceBot [run]" />
-        <item itemvalue="Gradle.convergenceBot:discordPlugin [jar]" />
-        <item itemvalue="JUnit.PluginLoaderTest.loadBasicPlugin" />
-        <item itemvalue="Gradle.convergenceBot:consolePlugin [jar]" />
+        <item itemvalue="Gradle.convergenceBot:messengerPlugin [clean]" />
+        <item itemvalue="Gradle.convergenceBot:messengerPlugin [jar]" />
+        <item itemvalue="Gradle.convergenceBot:messengerPlugin:MessengerJSConnector [babelify]" />
+        <item itemvalue="Gradle.convergenceBot:messengerPlugin:MessengerJSConnector [putIntoOneFile]" />
       </list>
     </recent_temporary>
+  </component>
+  <component name="ServiceViewManager">
+    <option name="viewStates">
+      <list>
+        <serviceView>
+          <treeState>
+            <expand />
+            <select />
+          </treeState>
+        </serviceView>
+      </list>
+    </option>
   </component>
   <component name="SvnConfiguration">
     <configuration />
@@ -380,6 +783,35 @@
       <workItem from="1564624479771" duration="7056000" />
       <workItem from="1565480920444" duration="717000" />
       <workItem from="1565534484480" duration="14953000" />
+      <workItem from="1567353604426" duration="16675000" />
+      <workItem from="1567799449810" duration="20157000" />
+      <workItem from="1568049182509" duration="8712000" />
+      <workItem from="1568402438085" duration="1201000" />
+      <workItem from="1568685022998" duration="13000" />
+      <workItem from="1568685060093" duration="3644000" />
+      <workItem from="1569012240423" duration="9000" />
+      <workItem from="1569211855591" duration="618000" />
+      <workItem from="1569219150200" duration="607000" />
+      <workItem from="1570427106536" duration="2645000" />
+      <workItem from="1570902345142" duration="69000" />
+      <workItem from="1570902489368" duration="1133000" />
+      <workItem from="1570914354352" duration="5033000" />
+      <workItem from="1571027409406" duration="3690000" />
+      <workItem from="1571244831725" duration="31000" />
+      <workItem from="1571245227066" duration="16000" />
+      <workItem from="1572468566205" duration="163000" />
+      <workItem from="1572468750900" duration="107000" />
+      <workItem from="1572468875018" duration="427000" />
+      <workItem from="1572469387915" duration="842000" />
+      <workItem from="1572470248591" duration="1577000" />
+      <workItem from="1572573288380" duration="11525000" />
+      <workItem from="1573010396338" duration="11153000" />
+      <workItem from="1573337633590" duration="14971000" />
+      <workItem from="1573763658501" duration="5822000" />
+      <workItem from="1573852304698" duration="2112000" />
+      <workItem from="1574190269757" duration="1512000" />
+      <workItem from="1574367102155" duration="3270000" />
+      <workItem from="1574666631772" duration="1529000" />
     </task>
     <task id="LOCAL-00001" summary="Add more stages to research.">
       <created>1533403104037</created>
@@ -681,6 +1113,16 @@
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="1" />
   </component>
+  <component name="Vcs.Log.History.Properties">
+    <option name="COLUMN_ORDER">
+      <list>
+        <option value="0" />
+        <option value="2" />
+        <option value="3" />
+        <option value="1" />
+      </list>
+    </option>
+  </component>
   <component name="Vcs.Log.Tabs.Properties">
     <option name="TAB_STATES">
       <map>
@@ -740,67 +1182,141 @@
     <option name="REARRANGE_BEFORE_PROJECT_COMMIT" value="true" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="747" y="238" key="#com.intellij.ide.util.MemberChooser" />
-    <state x="747" y="238" key="#com.intellij.ide.util.MemberChooser/1920.1080" />
-    <state x="646" y="255" key="#com.intellij.openapi.updateSettings.impl.PluginUpdateInfoDialog" />
-    <state x="646" y="255" key="#com.intellij.openapi.updateSettings.impl.PluginUpdateInfoDialog/1920.1080" />
-    <state x="509" y="27" key="CommitChangelistDialog2" />
-    <state x="509" y="27" key="CommitChangelistDialog2/1920.1080" />
-    <state x="608" y="341" key="com.intellij.ide.util.TipDialog" />
-    <state x="608" y="341" key="com.intellij.ide.util.TipDialog/1920.1080" />
+    <state x="440" y="166" key="#Plugins" timestamp="1572471176088">
+      <screen x="0" y="0" width="1680" height="1008" />
+    </state>
+    <state x="440" y="166" key="#Plugins/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1572471176088" />
+    <state x="440" y="166" key="#Project_Structure" timestamp="1572838019836">
+      <screen x="0" y="0" width="1680" height="1008" />
+    </state>
+    <state x="440" y="166" key="#Project_Structure/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1572838019836" />
+    <state x="541" y="118" key="#Tests_in_'convergence.bot'" timestamp="1572470182393">
+      <screen x="0" y="0" width="1680" height="1008" />
+    </state>
+    <state x="541" y="118" key="#Tests_in_'convergence.bot'/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1572470182393" />
+    <state x="747" y="238" key="#com.intellij.ide.util.MemberChooser" timestamp="1569211853552" />
+    <state x="747" y="238" key="#com.intellij.ide.util.MemberChooser/1920.1080" timestamp="1569211853553" />
+    <state x="646" y="255" key="#com.intellij.openapi.updateSettings.impl.PluginUpdateInfoDialog" timestamp="1573808971322">
+      <screen x="0" y="0" width="1680" height="1008" />
+    </state>
+    <state x="646" y="255" key="#com.intellij.openapi.updateSettings.impl.PluginUpdateInfoDialog/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1573808971322" />
+    <state x="646" y="255" key="#com.intellij.openapi.updateSettings.impl.PluginUpdateInfoDialog/1680.1050/1680.1050" timestamp="1569211853553" />
+    <state x="646" y="255" key="#com.intellij.openapi.updateSettings.impl.PluginUpdateInfoDialog/1920.1080" timestamp="1569211853553" />
+    <state x="578" y="253" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog" timestamp="1573764154482">
+      <screen x="0" y="0" width="1680" height="1008" />
+    </state>
+    <state x="578" y="253" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1573764154482" />
+    <state x="509" y="27" key="CommitChangelistDialog2" timestamp="1569211853553" />
+    <state x="509" y="27" key="CommitChangelistDialog2/1920.1080" timestamp="1569211853553" />
+    <state x="628" y="252" key="FileChooserDialogImpl" timestamp="1574461792528">
+      <screen x="0" y="0" width="1680" height="1008" />
+    </state>
+    <state x="628" y="252" key="FileChooserDialogImpl/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1574461792528" />
+    <state x="2308" y="262" key="FileChooserDialogImpl/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1571244861433" />
+    <state width="1634" height="315" key="GridCell.Tab.0.bottom" timestamp="1573852283800">
+      <screen x="0" y="0" width="1680" height="1008" />
+    </state>
+    <state width="1634" height="315" key="GridCell.Tab.0.bottom/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1573852283800" />
+    <state width="1634" height="315" key="GridCell.Tab.0.center" timestamp="1573852283800">
+      <screen x="0" y="0" width="1680" height="1008" />
+    </state>
+    <state width="1634" height="315" key="GridCell.Tab.0.center/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1573852283800" />
+    <state width="1634" height="315" key="GridCell.Tab.0.left" timestamp="1573852283800">
+      <screen x="0" y="0" width="1680" height="1008" />
+    </state>
+    <state width="1634" height="315" key="GridCell.Tab.0.left/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1573852283800" />
+    <state width="1634" height="315" key="GridCell.Tab.0.right" timestamp="1573852283800">
+      <screen x="0" y="0" width="1680" height="1008" />
+    </state>
+    <state width="1634" height="315" key="GridCell.Tab.0.right/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1573852283800" />
+    <state width="1634" height="315" key="GridCell.Tab.1.bottom" timestamp="1573852283800">
+      <screen x="0" y="0" width="1680" height="1008" />
+    </state>
+    <state width="1634" height="315" key="GridCell.Tab.1.bottom/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1573852283800" />
+    <state width="1634" height="315" key="GridCell.Tab.1.center" timestamp="1573852283800">
+      <screen x="0" y="0" width="1680" height="1008" />
+    </state>
+    <state width="1634" height="315" key="GridCell.Tab.1.center/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1573852283800" />
+    <state width="1634" height="315" key="GridCell.Tab.1.left" timestamp="1573852283800">
+      <screen x="0" y="0" width="1680" height="1008" />
+    </state>
+    <state width="1634" height="315" key="GridCell.Tab.1.left/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1573852283800" />
+    <state width="1634" height="315" key="GridCell.Tab.1.right" timestamp="1573852283800">
+      <screen x="0" y="0" width="1680" height="1008" />
+    </state>
+    <state width="1634" height="315" key="GridCell.Tab.1.right/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1573852283800" />
+    <state x="344" y="133" key="RollbackChangesDialog" timestamp="1573012255454">
+      <screen x="0" y="0" width="1680" height="1008" />
+    </state>
+    <state x="344" y="133" key="RollbackChangesDialog/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1573012255454" />
+    <state x="472" y="130" key="SettingsEditor" timestamp="1573337651344">
+      <screen x="0" y="0" width="1680" height="1008" />
+    </state>
+    <state x="472" y="130" key="SettingsEditor/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1573337651344" />
+    <state x="329" y="142" key="SettingsEditor/0.0.1680.1014/1680.0.1680.1050@0.0.1680.1014" timestamp="1569218651446" />
+    <state x="577" y="129" key="VCS.ChangeListViewerDialog" timestamp="1572838061346">
+      <screen x="0" y="0" width="1680" height="1008" />
+    </state>
+    <state x="577" y="129" key="VCS.ChangeListViewerDialog/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1572838061346" />
+    <state x="100" y="100" width="1480" height="808" key="com.intellij.dvcs.ui.CompareBranchesDialog" timestamp="1572837815450">
+      <screen x="0" y="0" width="1680" height="1008" />
+    </state>
+    <state x="100" y="100" width="1480" height="808" key="com.intellij.dvcs.ui.CompareBranchesDialog/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1572837815450" />
+    <state x="100" y="100" width="1480" height="808" key="com.intellij.history.integration.ui.views.FileHistoryDialog" timestamp="1573342273814">
+      <screen x="0" y="0" width="1680" height="1008" />
+    </state>
+    <state x="100" y="100" width="1480" height="808" key="com.intellij.history.integration.ui.views.FileHistoryDialog/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1573342273814" />
+    <state x="608" y="339" key="com.intellij.ide.util.TipDialog" timestamp="1574368620574">
+      <screen x="0" y="0" width="1680" height="1008" />
+    </state>
+    <state x="608" y="338" key="com.intellij.ide.util.TipDialog/0.0.1680.1006/1680.0.1680.1050@0.0.1680.1006" timestamp="1570427107057" />
+    <state x="608" y="339" key="com.intellij.ide.util.TipDialog/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1574368620574" />
+    <state x="2288" y="353" key="com.intellij.ide.util.TipDialog/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1571244831598" />
+    <state x="608" y="341" key="com.intellij.ide.util.TipDialog/0.0.1680.1014/1680.0.1680.1050@0.0.1680.1014" timestamp="1569219149727" />
+    <state x="608" y="341" key="com.intellij.ide.util.TipDialog/1680.1050/1680.1050" timestamp="1569211853553" />
+    <state x="608" y="341" key="com.intellij.ide.util.TipDialog/1920.1080" timestamp="1569211853553" />
+    <state x="635" y="419" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1572838022963">
+      <screen x="0" y="0" width="1680" height="1008" />
+    </state>
+    <state x="635" y="419" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1572838022963" />
+    <state x="577" y="406" key="git4idea.ui.GitStashDialog" timestamp="1572838072561">
+      <screen x="0" y="0" width="1680" height="1008" />
+    </state>
+    <state x="577" y="406" key="git4idea.ui.GitStashDialog/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1572838072561" />
+    <state x="487" y="353" key="git4idea.ui.GitUnstashDialog" timestamp="1572838063156">
+      <screen x="0" y="0" width="1680" height="1008" />
+    </state>
+    <state x="487" y="353" key="git4idea.ui.GitUnstashDialog/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1572838063156" />
+    <state x="329" y="157" key="new project wizard" timestamp="1572471030943">
+      <screen x="0" y="0" width="1680" height="1008" />
+    </state>
+    <state x="329" y="157" key="new project wizard/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1572471030943" />
+    <state x="2336" y="109" key="new project wizard/2560.1080/1680.1050/1680.1050" timestamp="1569211853553" />
+    <state x="504" y="229" width="672" height="677" key="run.anything.popup" timestamp="1572469997623">
+      <screen x="0" y="0" width="1680" height="1008" />
+    </state>
+    <state x="504" y="229" width="672" height="677" key="run.anything.popup/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1572469997623" />
+    <state x="503" y="221" width="672" height="678" key="search.everywhere.popup" timestamp="1572837787709">
+      <screen x="0" y="0" width="1680" height="1008" />
+    </state>
+    <state x="503" y="221" width="672" height="678" key="search.everywhere.popup/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1572837787709" />
+    <state x="570" y="394" key="vcs.readOnlyHandler.ReadOnlyStatusDialog" timestamp="1573343414096">
+      <screen x="0" y="0" width="1680" height="1008" />
+    </state>
+    <state x="570" y="394" key="vcs.readOnlyHandler.ReadOnlyStatusDialog/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1573343414096" />
+  </component>
+  <component name="XDebuggerManager">
+    <watches-manager>
+      <configuration name="Remote">
+        <watch expression="constructors[0].isAccessible" language="kotlin" />
+        <watch expression="jcl.loadedResources.filterKeys { it.contains(&quot;index&quot;) }" language="kotlin" />
+        <watch expression="String(jcl.loadedResources[&quot;index.js&quot;]!!)" language="kotlin" />
+      </configuration>
+    </watches-manager>
   </component>
   <component name="antWorkspaceConfiguration">
     <option name="IS_AUTOSCROLL_TO_SOURCE" value="false" />
     <option name="FILTER_TARGETS" value="false" />
-  </component>
-  <component name="debuggerHistoryManager">
-    <expressions id="watch">
-      <expression>
-        <expression-string>response</expression-string>
-        <language-id>kotlin</language-id>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>chat.channel</expression-string>
-        <language-id>kotlin</language-id>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>chat.channel.canTalk()</expression-string>
-        <language-id>kotlin</language-id>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>chat.channel.</expression-string>
-        <language-id>kotlin</language-id>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>chat.channel.sendMessage(&quot;test&quot;)</expression-string>
-        <language-id>kotlin</language-id>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>baseInterface.sendMessage</expression-string>
-        <language-id>kotlin</language-id>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>String(entry.value)</expression-string>
-        <language-id>kotlin</language-id>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>jcl.loadClass(mainClassName) as Plugin</expression-string>
-        <language-id>kotlin</language-id>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>jcl.loadClass(mainClassName)</expression-string>
-        <language-id>kotlin</language-id>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-    </expressions>
   </component>
   <component name="gradleExecuteTaskHistory">
     <option value="" />

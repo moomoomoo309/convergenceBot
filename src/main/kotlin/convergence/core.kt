@@ -14,6 +14,7 @@ import net.sourceforge.argparse4j.inf.Namespace
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.ocpsoft.prettytime.units.JustNow
+import java.nio.file.Files
 import java.nio.file.Paths
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
@@ -399,7 +400,10 @@ class core {
             log("Starting scheduler thread...")
             SchedulerThread.start()
 
-            val plugins = PluginLoader.load(Paths.get(commandLineArgs.getString("plugin_path")))
+            val plugins = mutableListOf<Plugin>()
+            Files.list(Paths.get(commandLineArgs.getString("plugin_path"))).forEach {
+                plugins.addAll(PluginLoader.load(it))
+            }
             if (plugins.isEmpty())
                 log("No plugins loaded.")
             else
