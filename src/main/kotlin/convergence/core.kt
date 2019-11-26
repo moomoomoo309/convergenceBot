@@ -316,6 +316,7 @@ object SchedulerThread: Thread() {
         if (time !in scheduledCommands)
             scheduledCommands[time] = ArrayList(2)
         val cmd = ScheduledCommand(time, sender, command, currentId)
+        @Suppress("ControlFlowWithEmptyBody")
         while (commandsList.containsKey(++currentId));
         scheduledCommands[time]!!.add(cmd)
         if (cmd.id in commandsList)
@@ -399,7 +400,8 @@ class core {
             log("Starting scheduler thread...")
             SchedulerThread.start()
 
-            val plugins = PluginLoader.load(Paths.get(commandLineArgs.getString("plugin_path")))
+            PluginLoader.add(Paths.get(commandLineArgs.getString("plugin_path")))
+            val plugins = PluginLoader.load()
             if (plugins.isEmpty())
                 log("No plugins loaded.")
             else

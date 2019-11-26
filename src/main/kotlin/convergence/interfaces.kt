@@ -9,7 +9,20 @@ import kotlin.collections.set
 import kotlin.reflect.KClass
 
 @Polymorphic
-abstract class Protocol(val name: String)
+abstract class Protocol(val name: String) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Protocol) return false
+
+        if (name != other.name) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return name.hashCode()
+    }
+}
 
 //Intentionally empty, because it might be represented as an int or a string or whatever.
 @Polymorphic
@@ -18,17 +31,16 @@ abstract class User(val chat: Chat)
 @Polymorphic
 abstract class Chat(val protocol: Protocol, val name: String)
 
-private object UniversalUser: User(UniversalChat)
+@Serializable(UniversalUserSerializer::class)
+object UniversalUser: User(UniversalChat)
 
 object UniversalProtocol: Protocol("Universal") // Used to represent the universal chat.
+
+@Serializable(UniversalChatSerializer::class)
 object UniversalChat: Chat(UniversalProtocol, "Universal")
+
 object FakeBaseInterface: BaseInterface {
     override val protocol: Protocol = UniversalProtocol
-
-    init {
-        if (!registerProtocol(this.protocol, this))
-            logErr("Protocol with name \"$this.protocol.name\" registered more than once!")
-    }
 
     override fun sendMessage(chat: Chat, message: String): Boolean = false
     override fun getBot(chat: Chat): User = UniversalUser
@@ -40,6 +52,7 @@ object FakeBaseInterface: BaseInterface {
 }
 
 @Polymorphic
+@Serializable
 sealed class CommandLike(@Polymorphic open val chat: Chat,
                          open val name: String,
                          open val helpText: String,
@@ -53,7 +66,8 @@ sealed class CommandLike(@Polymorphic open val chat: Chat,
                        override val helpText: String,
                        override val syntaxText: String): CommandLike(chat, name, helpText, syntaxText)
 
-    @Serializable
+    @Polymorphic
+    @Serializable(AliasSerializer::class)
     data class Alias(@Polymorphic override val chat: Chat,
                      override val name: String,
                      val command: Command,
@@ -150,6 +164,7 @@ sealed class OptionalFunctionality {
         fun getMentionText(chat: Chat, user: User): String
 
         class MentionedUser(private val fct: (Chat, String, Set<User>) -> Boolean): OptionalFunctionality() {
+            @Suppress("UNCHECKED_CAST")
             override fun invoke(vararg args: Any) = fct(args[0] as Chat, args[1] as String, args[2] as Set<User>)
         }
 
@@ -227,6 +242,7 @@ sealed class OptionalFunctionality {
                 val code = Format("CODE")
                 val strikethrough = Format("STRIKETHROUGH")
                 val spoiler = Format("SPOILER")
+                val greentext = Format("GREENTEXT")
             }
         }
 
@@ -242,7 +258,8 @@ sealed class OptionalFunctionality {
                     Format.monospace,
                     Format.code,
                     Format.strikethrough,
-                    Format.spoiler
+                    Format.spoiler,
+                    Format.greentext
             )
         }
     }
@@ -255,8 +272,8 @@ sealed class OptionalFunctionality {
 }
 
 // The sealed class is useful, but I'm not going to put BonusInterface in front of everything.
-
 typealias INickname = OptionalFunctionality.INickname
+
 typealias IImages = OptionalFunctionality.IImages
 typealias Image = OptionalFunctionality.IImages.Image
 typealias IOtherMessageEditable = OptionalFunctionality.IOtherMessageEditable

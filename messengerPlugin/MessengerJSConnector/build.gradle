@@ -1,0 +1,55 @@
+apply plugin: 'com.moowork.node'
+
+repositories {
+    jcenter()
+    mavenCentral()
+}
+dependencies {
+
+}
+
+node {
+    version = '8.10.0'
+    npmVersion = '6.10.3'
+    download = true
+}
+
+task copySrc(type: Copy) {
+    from("${projectDir.toPath().resolve("./src")}")
+    into("${projectDir.toPath().resolve("../resources")}")
+    include("*.js")
+}
+
+task removeUnminifiedFile(type: Delete) {
+    delete '../resources/rawFacebookApi.js'
+    finalizedBy(copySrc)
+}
+
+task babelify(type: Exec) {
+    workingDir projectDir
+    commandLine './node_modules/.bin/npx', 'babel', '--presets', '@babel/preset-env', '../resources/rawFacebookApi.js', '--minified', '--no-comments', '-o', '../resources/facebookApi.js'
+    finalizedBy(removeUnminifiedFile)
+}
+
+task putIntoOneFile(type: Exec, dependsOn: 'npmInstall') {
+    workingDir projectDir
+    commandLine './node_modules/.bin/browserify', 'node_modules/facebook-chat-api/index.js', '--bare'
+    standardOutput(new FileOutputStream(getProjectDir().toPath().resolve("../resources/rawFacebookApi.js").toFile()))
+    finalizedBy(babelify)
+}
+
+
+
+buildscript {
+    repositories {
+        mavenCentral()
+        mavenLocal()
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath "com.moowork.gradle:gradle-node-plugin:1.3.1"
+    }
+}
+

@@ -1,8 +1,5 @@
-import java.nio.file.Files
 import java.nio.file.Paths
-import java.nio.file.StandardCopyOption
 
-apply plugin: 'java'
 apply plugin: 'kotlin'
 apply plugin: 'maven'
 apply plugin: 'application'
@@ -10,7 +7,7 @@ apply plugin: 'application'
 group = 'convergence'
 version = '1.0-SNAPSHOT'
 
-description = """convergence bot"""
+description = """Convergence bot"""
 
 sourceCompatibility = 1.5
 targetCompatibility = 1.5
@@ -18,7 +15,6 @@ tasks.withType(JavaCompile) {
 	options.encoding = 'UTF-8'
 }
 
-ext.kotlin_version = '1.3.41'
 
 repositories {
     jcenter()
@@ -33,7 +29,7 @@ dependencies {
     compile "com.joestelmach:natty:0.11"
     compile "org.xeustechnologies:jcl-core:2.8"
     compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
-    compile "org.jetbrains.kotlinx:kotlinx-serialization-runtime:+"
+    compile "org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.11.1-1.3.40-eap-67"
     compile group: 'net.sourceforge.argparse4j', name: 'argparse4j', version: '0.8.1'
     compile group: 'com.github.mfornos', name: 'humanize-slim', version: '1.2.2'
     compile group: 'com.beust', name: 'klaxon', version: '5.0.2'
@@ -42,23 +38,23 @@ dependencies {
     compile group: 'com.h2database', name: 'h2', version: '+'
 }
 
-subprojects {
-    apply plugin: 'java'
-    apply plugin: 'kotlin'
-    apply plugin: 'maven'
-    dependencies {
-        compile group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib', version:"$kotlin_version"
-        testCompile group: 'org.jetbrains.kotlin', name: 'kotlin-test-junit', version:"$kotlin_version"
-        compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-        compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
-        compile "org.jetbrains.kotlinx:kotlinx-serialization-runtime:+"
-        compile rootProject
-    }
-    repositories {
-        jcenter()
-        maven { url "http://repo.maven.apache.org/maven2" }
-        maven { url "https://kotlin.bintray.com/kotlinx" }
-        mavenCentral()
+subprojects { project ->
+    if (!(project.toString().contains("JS"))) {
+        apply plugin: 'kotlin'
+        dependencies {
+            compile group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib', version: "$kotlin_version"
+            testCompile group: 'org.jetbrains.kotlin', name: 'kotlin-test-junit', version: "$kotlin_version"
+            compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
+            compile "org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.11.1-1.3.40-eap-67"
+            compile 'org.jetbrains.exposed:exposed:+'
+            compile rootProject
+        }
+        repositories {
+            jcenter()
+            maven { url "http://repo.maven.apache.org/maven2" }
+            maven { url "https://kotlin.bintray.com/kotlinx" }
+            mavenCentral()
+        }
     }
     buildscript {
         repositories {
@@ -69,6 +65,7 @@ subprojects {
             classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
             classpath "org.jetbrains.kotlin:kotlin-serialization:$kotlin_version"
         }
+        ext.kotlin_version = '1.3.50'
     }
 
     compileKotlin {
@@ -84,7 +81,7 @@ subprojects {
 }
 
 buildscript {
-    ext.kotlin_version = '1.3.40'
+    ext.kotlin_version = '1.3.50'
 
     repositories {
         mavenCentral()
@@ -120,22 +117,21 @@ jar {
     }
 }
 
-task copyJar {
-    Files.createDirectories(Paths.get(System.getProperty("user.home"), ".convergence", "plugins"))
-    for (jar in projectDir.toPath().resolve("./build/libs/").toFile().listFiles())
-        if (jar.name.contains("Plugin"))
-            Files.copy(jar.toPath(), Paths.get(System.getProperty("user.home"), ".convergence", "plugins", jar.name), StandardCopyOption.REPLACE_EXISTING)
-        else
-            Files.copy(jar.toPath(), Paths.get(System.getProperty("user.home"), ".convergence", jar.name), StandardCopyOption.REPLACE_EXISTING)
+task copyPlugins(type: Copy) {
+    from("${projectDir.toPath().resolve("./build/libs/")}")
+    into(Paths.get(System.getProperty("user.home"), ".convergence", "plugins"))
+    include("*Plugin*")
 }
 
-
+task copyBot(type: Copy) {
+    from("${projectDir.toPath().resolve("./build/libs/")}")
+    into(Paths.get(System.getProperty("user.home"), ".convergence"))
+    exclude("*Plugin*")
+    dependsOn(copyPlugins)
+}
 
 run {
     standardInput = System.in
 }
-run.dependsOn(buildDependents)
 run.dependsOn(jar)
-jar.finalizedBy(buildDependents)
-buildDependents.finalizedBy(copyJar)
-run.dependsOn(copyJar)
+jar.finalizedBy(copyBot)

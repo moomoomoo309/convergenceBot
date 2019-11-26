@@ -1,8 +1,0 @@
-<servlet>
-    <servlet-name>ConvergenceBot</servlet-name>
-    <servlet-class>co.aurasphere.botmill.fb.FbBotMillServlet</servlet-class>
-</servlet>
-<servlet-mapping>
-<servlet-name>ConvergenceBot</servlet-name>
-<url-pattern>/ConvergenceBot</url-pattern>
-</servlet-mapping>

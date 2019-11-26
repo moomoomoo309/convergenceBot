@@ -2,6 +2,7 @@ package convergence.testPlugins.consolePlugin
 
 import convergence.*
 import java.util.*
+import kotlin.system.exitProcess
 
 object ConsoleUser: User(ConsoleChat)
 object ConsoleChat: Chat(ConsoleProtocol, "Console")
@@ -11,8 +12,6 @@ object ConsoleInterface: BaseInterface {
     override val protocol: Protocol = ConsoleProtocol
 
     init {
-        if (!registerProtocol(this.protocol, this))
-            System.err.println("Protocol with name \"$this.protocol.name\" registered more than once!")
         val id = currentChatID++ // Only one chat, so we can register it right away.
         chatMap[id] = ConsoleChat
         reverseChatMap[ConsoleChat] = id
@@ -50,7 +49,7 @@ object ConsoleInterface: BaseInterface {
 
 }
 
-class Main: Plugin {
+object Main: Plugin {
     override val name = "consolePlugin"
     override val baseInterface: BaseInterface = ConsoleInterface
     override fun init() {
@@ -59,18 +58,18 @@ class Main: Plugin {
         try {
             val stdin = Scanner(System.`in`)
             val currentLine = stdin.nextLine()
-            ConsoleInterface.receivedMessage(currentLine, ConsoleUser)
+            ConsoleInterface.receivedMessage(ConsoleChat, currentLine, ConsoleUser)
             while (true) {
                 print("> ")
                 System.out.flush()
                 while (!stdin.hasNextLine()) stdin.next()
-                ConsoleInterface.receivedMessage(stdin.nextLine(), ConsoleUser)
+                ConsoleInterface.receivedMessage(ConsoleChat, stdin.nextLine(), ConsoleUser)
             }
         } catch (e: NoSuchElementException) {
             // Catch Ctrl-D (EOF). Normally, I wouldn't do this in a plugin, but it's the local console of the bot,
             // and if the user puts in a Ctrl-D, they probably want to close the bot, just like a SIGTERM.
             println() // The newline is just to make the output cleaner.
-            System.exit(0)
+            exitProcess(0)
         }
     }
 }

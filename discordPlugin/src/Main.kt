@@ -32,11 +32,7 @@ class DiscordChat(name: String, override val id: Long, val channel: MessageChann
     constructor(msgEvent: MessageReceivedEvent): this(msgEvent.message)
 
     override fun hashCode() = id.hashCode()
-    override fun equals(other: Any?) = when {
-        this === other -> true
-        javaClass != other?.javaClass || id != (other as DiscordChat).id -> false
-        else -> true
-    }
+    override fun equals(other: Any?) = this === other || (javaClass == other?.javaClass && id == (other as DiscordChat).id)
 }
 
 class DiscordMessageHistory(val msg: Message, override val id: Long): MessageHistory(msg.contentRaw, msg.timeCreated, DiscordUser(DiscordChat(msg), msg.author)), DiscordObject {
@@ -80,14 +76,14 @@ object DiscordInterface: BaseInterface, IFormatting, INickname, IImages, IMentio
     override fun getBotNickname(chat: Chat): String? = getUserNickname(chat, getBot(chat))
 
 
-    override fun sendImage(chat: Chat, image: Image, name: String?) {
+    override fun sendImage(chat: Chat, image: Image, sender: User, message: String) {
         if (chat is DiscordChat && image is DiscordImage)
             if (image.URL != null)
-                chat.channel.sendFile(URL(image.URL).openStream(), name ?: "untitled")
+                chat.channel.sendFile(URL(image.URL).openStream(), name)
             else {
                 val data = image.data
                 if (data != null)
-                    chat.channel.sendFile(data, name ?: "untitled")
+                    chat.channel.sendFile(data, name)
             }
     }
 
