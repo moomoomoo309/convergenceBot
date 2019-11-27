@@ -1,12 +1,11 @@
 import login from "facebook-chat-api";
 
-let api = null;
-
-function getApi(email, password) {
-    login({email: email, password: password}, function (error, _api) {
+function init(outParam) {
+    login({email: email, password: password}, function (error, api) {
         if (error)
             return console.error(error);
-        api = _api
+        outParam.setApi(api);
     });
-    while (api === null)
-        }
+}
+
+

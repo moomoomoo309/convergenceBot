@@ -1,14 +1,9 @@
 package convergence.testPlugins.messengerPlugin
 
 import convergence.*
-import org.jasypt.encryption.pbe.StandardPBEStringEncryptor
-import java.io.FileReader
-import java.nio.file.Files
-import java.nio.file.Paths
 import java.time.OffsetDateTime
 import javax.script.Invocable
 import javax.script.ScriptEngineManager
-import kotlin.reflect.jvm.jvmName
 
 object MessengerProtocol: Protocol("Messenger")
 
@@ -52,6 +47,138 @@ object MessengerInterface: BaseInterface, IFormatting, INickname, IImages, IMent
     override fun receivedSticker(chat: Chat, sticker: Sticker) = TODO()
 }
 
+lateinit var rawApi: Any
+typealias FBCallback = ((Throwable?) -> Unit)?
+
+enum class emojiSize(val size: Int) { small(32), medium(64), large(128) }
+enum class emojiPixelRatio(val ratio: String) { low("1.0"), high("1.5") }
+enum class messageReaction(val stringValue: String) {
+    love("\uD83D\uDE0D"),
+    haha("\uD83D\uDE06"),
+    wow("\uD83D\uDE2E"),
+    sad("\uD83D\uDE22"),
+    angry("\uD83D\uDE20"),
+    like("\uD83D\uDC4D"),
+    dislike("\uD83D\uDC4E")
+}
+
+object api {
+    fun addUserToGroup(userId: String, threadId: String, callback: FBCallback) =
+            invocable.invokeMethod(rawApi, "addUserToGroup", userId, threadId, callback)
+
+    fun changeAdminStatus(threadId: String, adminIds: Array<String>, adminStatus: Boolean, callback: FBCallback) =
+            invocable.invokeMethod(rawApi, "changeAdminStatus", threadId, adminIds, adminStatus, callback)
+
+    fun changeArchivedStatus(threads: Array<Int>, archive: Boolean, callback: FBCallback) =
+            invocable.invokeMethod(rawApi, "changeArchivedStatus", threads, archive, callback)
+
+    fun changeBlockedStatus(userId: String, block: Boolean, callback: FBCallback) =
+            invocable.invokeMethod(rawApi, "changedBlockedStatus", userId, block, callback)
+
+    fun changeGroupImage(image: Any, threadId: String, callback: FBCallback) =
+            invocable.invokeMethod(rawApi, "changeGroupImage", image, threadId, callback)
+
+    fun changeNickname(nickname: String, threadId: String, participantId: String, callback: FBCallback) =
+            invocable.invokeMethod(rawApi, "changeNickname", nickname, threadId, participantId, callback)
+
+    fun changeThreadColor(color: String, threadId: String, callback: FBCallback) =
+            invocable.invokeMethod(rawApi, "changeThreadColor", color, threadId, callback)
+
+    fun changeThreadEmoji(emoji: String, threadId: String, callback: FBCallback) =
+            invocable.invokeMethod(rawApi, "changeThreadEmoji", emoji, threadId, callback)
+
+    fun createPoll(title: String, threadId: String, options: Map<String, Boolean>, callback: FBCallback) =
+            invocable.invokeMethod(rawApi, "crearePoll", title, threadId, options, callback)
+
+    fun deleteMessage(messages: Array<String>, callback: FBCallback) =
+            invocable.invokeMethod(rawApi, "deleteMessage", messages, callback)
+
+    fun deleteThread(threads: Array<String>, callback: FBCallback) =
+            invocable.invokeMethod(rawApi, "deleteThread", threads, callback)
+
+    fun forwardAttachment(attachmentId: String, users: Array<String>, callback: FBCallback) =
+            invocable.invokeMethod(rawApi, "forwardAttachment", attachmentId, users, callback)
+
+    fun getAppState() = invocable.invokeMethod(rawApi, "getAppState") as Map<Any, Any>
+    fun getCurrentUserId() = invocable.invokeMethod(rawApi, "getCurrentUserId") as String
+    fun getEmojiUrl(c: String, size: emojiSize, pixelRatio: emojiPixelRatio = emojiPixelRatio.low) =
+            invocable.invokeMethod(rawApi, "getEmojiUrl", size.size, pixelRatio.ratio) as String
+
+    fun getFriendsList(callback: (Any) -> Unit) = invocable.invokeMethod(rawApi, "getFriendsList", callback)
+    fun getThreadHistory(threadId: String, amount: Int, timestamp: Long?, callback: (Any) -> Unit) =
+            invocable.invokeMethod(rawApi, "getThreadHistory", threadId, amount, timestamp, callback)
+
+    fun getThreadInfo(threadId: String, callback: (Any) -> Unit) =
+            invocable.invokeMethod(rawApi, "getThreadInfo", threadId, callback)
+
+    fun getThreadList(limit: Int, timestamp: Long, tags: Array<String>, callback: (Any) -> Unit) =
+            invocable.invokeMethod(rawApi, "getThreadList", limit, timestamp, tags, callback)
+
+    fun getThreadPictures(threadId: String, offset: Int, limit: Int, callback: (Any) -> Unit) =
+            invocable.invokeMethod(rawApi, "getThreadPictures", threadId, offset, limit, callback)
+
+    fun getUserId(name: String, callback: (Any) -> Unit) =
+            invocable.invokeMethod(rawApi, "getUserId", name, callback)
+
+    fun getUserInfo(ids: Array<String>, callback: (Any) -> Unit) =
+            invocable.invokeMethod(rawApi, "getUserInfo", ids, callback)
+
+    val threadColors = mapOf(
+            "MessengerBlue" to null,
+            "GoldenPoppy" to "#ffc300",
+            "RadicalRed" to "#fa3c4c",
+            "Shocking" to "#d696bb",
+            "PictonBlue" to "#6699cc",
+            "FreeSpeechGreen" to "#13cf13",
+            "Pumpkin" to "#ff7e29",
+            "LightCoral" to "#e68585",
+            "MediumSlateBlue" to "#7646ff",
+            "DeepSkyBlue" to "#20cef5",
+            "Fern" to "#67b868",
+            "Cameo" to "#d4a88c",
+            "BrilliantRose" to "#ff5ca1",
+            "BilobaFlower" to "#a695c7"
+    )
+
+    fun handleMessageRequest(threadId: String, accept: Boolean, callback: FBCallback) =
+            invocable.invokeMethod(rawApi, "handleMessageRequest", threadId, accept, callback)
+
+    fun listen(callback: (Any) -> Unit) = invocable.invokeMethod(rawApi, "listen", callback)
+    fun logout(callback: FBCallback) = invocable.invokeMethod(rawApi, "logout", callback)
+    fun markAsRead(threadId: String, read: Boolean = true, callback: FBCallback) =
+            invocable.invokeMethod(rawApi, "markAsRead", threadId, read, callback)
+
+    fun markAsReadAll(callback: FBCallback) =
+            invocable.invokeMethod(rawApi, "markAsReadAll", callback)
+
+    fun muteThread(threadId: String, muteSeconds: Int, callback: FBCallback) =
+            invocable.invokeMethod(rawApi, "muteThread", threadId, muteSeconds, callback)
+
+    fun removeUserFromGroup(userId: String, threadId: String, callback: FBCallback) =
+            invocable.invokeMethod(rawApi, "removeUserFromGroup", userId, threadId, callback)
+
+    fun resolvePhotoUrl(photoId: String, callback: (Any) -> Unit) =
+            invocable.invokeMethod(rawApi, "resolvePhotoUrl", photoId, callback)
+
+    fun sendMessage(message: String, threadId: String, callback: (Any) -> Unit, messageId: String? = null) =
+            invocable.invokeMethod(rawApi, "sendMessage", message, threadId, callback, messageId)
+
+    fun sendTypingIndicator(threadId: String, callback: FBCallback) =
+            invocable.invokeMethod(rawApi, "sendTypingIndicator", threadId, callback)
+
+    fun setMessageReaction(reaction: messageReaction, messageId: String, callback: FBCallback) =
+            invocable.invokeMethod(rawApi, "setMessageReaction", reaction, messageId, callback)
+
+    fun setOptions(options: Map<String, Any>) = invocable.invokeMethod(rawApi, "setOptions", options)
+    fun setTitle(newTitle: String, threadId: String, callback: (Any) -> Unit) =
+            invocable.invokeMethod(rawApi, "setTitle", newTitle, threadId, callback)
+
+    fun unsendMessage(messageId: String, callback: FBCallback) =
+            invocable.invokeMethod(rawApi, "unsendMessage", messageId, callback)
+}
+
+
+lateinit var invocable: Invocable
 
 object Main: Plugin {
     override val name = "MessengerPlugin"
@@ -59,7 +186,6 @@ object Main: Plugin {
     val engine = ScriptEngineManager().getEngineByName("nashorn")
     override fun init() {
         println("Messenger Plugin initialized.")
-
         val context = engine.context
         println(context.scopes)
         println(jcl.loadedResources)
@@ -67,7 +193,11 @@ object Main: Plugin {
         context.setAttribute("username", "", 200)
         context.setAttribute("password", "", 200)
         engine.eval(String(jcl.loadedResources["index.js"]!!))
-        val invocable = engine as Invocable
-
+        invocable = engine as Invocable
+        invocable.invokeFunction("init", object: Any() {
+            fun setApi(_rawApi: Any) {
+                rawApi = _rawApi
+            }
+        })
     }
 }
