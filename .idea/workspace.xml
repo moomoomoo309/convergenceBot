@@ -5,9 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="29d84833-fb05-450b-b63e-091fc3136e36" name="Default Changelist" comment="Updated TODO.md, added CommandSerializer.">
-      <change afterPath="$PROJECT_DIR$/messengerPlugin/MessengerJSConnector/package-lock.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/messengerPlugin/MessengerJSConnector/src/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/messengerPlugin/MessengerJSConnector/src/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/messengerPlugin/MessengerJSConnector/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/messengerPlugin/MessengerJSConnector/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/messengerPlugin/MessengerJSConnector/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/messengerPlugin/MessengerJSConnector/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/messengerPlugin/MessengerJSConnector/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/messengerPlugin/MessengerJSConnector/package.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/messengerPlugin/src/Main.kt" beforeDir="false" afterPath="$PROJECT_DIR$/messengerPlugin/src/Main.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -66,45 +67,6 @@
               <path>
                 <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
                 <item name="convergence.bot" type="f1a62948:ProjectNode" />
-              </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="convergence.bot" type="f1a62948:ProjectNode" />
-                <item name="convergence.bot" type="2d1252cf:ModuleNode" />
-              </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="convergence.bot" type="f1a62948:ProjectNode" />
-                <item name="convergence.bot" type="2d1252cf:ModuleNode" />
-                <item name="Tasks" type="e4a08cd1:TasksNode" />
-              </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="convergence.bot" type="f1a62948:ProjectNode" />
-                <item name="convergence.bot" type="2d1252cf:ModuleNode" />
-                <item name="Tasks" type="e4a08cd1:TasksNode" />
-                <item name="application" type="c8890929:TasksNode$1" />
-              </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="convergence.bot" type="f1a62948:ProjectNode" />
-                <item name="convergence.bot" type="2d1252cf:ModuleNode" />
-                <item name="messengerPlugin" type="2d1252cf:ModuleNode" />
-              </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="convergence.bot" type="f1a62948:ProjectNode" />
-                <item name="convergence.bot" type="2d1252cf:ModuleNode" />
-                <item name="messengerPlugin" type="2d1252cf:ModuleNode" />
-                <item name="Tasks" type="e4a08cd1:TasksNode" />
-              </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="convergence.bot" type="f1a62948:ProjectNode" />
-                <item name="convergence.bot" type="2d1252cf:ModuleNode" />
-                <item name="messengerPlugin" type="2d1252cf:ModuleNode" />
-                <item name="Tasks" type="e4a08cd1:TasksNode" />
-                <item name="build" type="c8890929:TasksNode$1" />
               </path>
               <path>
                 <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
@@ -236,33 +198,13 @@
       <command value="gradle --version" />
     </option>
   </component>
-  <component name="RunManager" selected="Gradle.convergenceBot [run]">
+  <component name="RunManager" selected="Gradle.convergenceBot:messengerPlugin:MessengerJSConnector [putIntoOneFile]">
     <configuration default="true" type="AndroidJUnit">
       <option name="TEST_OBJECT" value="class" />
       <option name="WORKING_DIRECTORY" value="$MODULE_DIR$" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
-    </configuration>
-    <configuration default="true" type="DjangoTestsConfigurationType">
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <module name="" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="TARGET" value="" />
-      <option name="SETTINGS_FILE" value="" />
-      <option name="CUSTOM_SETTINGS" value="false" />
-      <option name="USE_OPTIONS" value="false" />
-      <option name="OPTIONS" value="" />
-      <method v="2" />
     </configuration>
     <configuration name="convergenceBot [run]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
@@ -321,7 +263,7 @@
       <GradleScriptDebugEnabled>true</GradleScriptDebugEnabled>
       <method v="2" />
     </configuration>
-    <configuration name="convergenceBot:messengerPlugin:MessengerJSConnector [babelify]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+    <configuration name="convergenceBot:messengerPlugin:MessengerJSConnector [npmInstall]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$/messengerPlugin/MessengerJSConnector" />
@@ -332,7 +274,7 @@
         </option>
         <option name="taskNames">
           <list>
-            <option value="babelify" />
+            <option value="npmInstall" />
           </list>
         </option>
         <option name="vmOptions" />
@@ -359,158 +301,20 @@
       <GradleScriptDebugEnabled>true</GradleScriptDebugEnabled>
       <method v="2" />
     </configuration>
-    <configuration default="true" type="JetRunConfigurationType" factoryName="Kotlin">
-      <option name="VM_PARAMETERS" />
-      <option name="PROGRAM_PARAMETERS" />
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" />
-      <option name="PASS_PARENT_ENVS" value="true" />
-      <option name="MAIN_CLASS_NAME" />
-      <option name="WORKING_DIRECTORY" />
-      <module name="" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType" factoryName="Kotlin script">
-      <option name="filePath" />
-      <option name="vmParameters" />
-      <option name="alternativeJrePath" />
-      <option name="programParameters" />
-      <option name="passParentEnvs" value="true" />
-      <option name="workingDirectory" />
-      <option name="isAlternativeJrePathEnabled" value="false" />
-      <option name="VM_PARAMETERS" />
-      <option name="PROGRAM_PARAMETERS" />
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" />
-      <option name="PASS_PARENT_ENVS" value="true" />
-      <option name="MAIN_CLASS_NAME" />
-      <option name="WORKING_DIRECTORY" />
-      <module name="" />
-      <option name="filePath" />
-      <option name="vmParameters" />
-      <option name="alternativeJrePath" />
-      <option name="programParameters" />
-      <option name="passParentEnvs" value="true" />
-      <option name="workingDirectory" />
-      <option name="isAlternativeJrePathEnabled" value="false" />
-      <option name="VM_PARAMETERS" />
-      <option name="PROGRAM_PARAMETERS" />
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" />
-      <option name="PASS_PARENT_ENVS" value="true" />
-      <option name="MAIN_CLASS_NAME" />
-      <option name="WORKING_DIRECTORY" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration default="true" type="PyBehaveRunConfigurationType" factoryName="Behave">
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <module name="" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="ADDITIONAL_ARGS" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration default="true" type="PyLettuceRunConfigurationType" factoryName="Lettuce">
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <module name="" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="ADDITIONAL_ARGS" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration default="true" type="PythonConfigurationType" factoryName="Python">
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <module name="" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration default="true" type="Python.FlaskServer">
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <module name="" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="launchJavascriptDebuger" value="false" />
-      <method v="2" />
-    </configuration>
-    <configuration default="true" type="Tox" factoryName="Tox">
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <method v="2" />
-    </configuration>
-    <configuration default="true" type="tests" factoryName="Doctests">
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <module name="" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="" />
-      <option name="CLASS_NAME" value="" />
-      <option name="METHOD_NAME" value="" />
-      <option name="FOLDER_NAME" value="" />
-      <option name="TEST_TYPE" value="TEST_SCRIPT" />
-      <option name="PATTERN" value="" />
-      <option name="USE_PATTERN" value="false" />
-      <method v="2" />
-    </configuration>
     <list>
-      <item itemvalue="Gradle.convergenceBot:messengerPlugin:MessengerJSConnector [putIntoOneFile]" />
-      <item itemvalue="Gradle.convergenceBot:messengerPlugin:MessengerJSConnector [babelify]" />
       <item itemvalue="Gradle.convergenceBot:messengerPlugin [jar]" />
       <item itemvalue="Gradle.convergenceBot [run]" />
       <item itemvalue="Gradle.convergenceBot:messengerPlugin [clean]" />
+      <item itemvalue="Gradle.convergenceBot:messengerPlugin:MessengerJSConnector [npmInstall]" />
+      <item itemvalue="Gradle.convergenceBot:messengerPlugin:MessengerJSConnector [putIntoOneFile]" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Gradle.convergenceBot:messengerPlugin:MessengerJSConnector [putIntoOneFile]" />
+        <item itemvalue="Gradle.convergenceBot:messengerPlugin:MessengerJSConnector [npmInstall]" />
         <item itemvalue="Gradle.convergenceBot [run]" />
         <item itemvalue="Gradle.convergenceBot:messengerPlugin [clean]" />
         <item itemvalue="Gradle.convergenceBot:messengerPlugin [jar]" />
-        <item itemvalue="Gradle.convergenceBot:messengerPlugin:MessengerJSConnector [babelify]" />
-        <item itemvalue="Gradle.convergenceBot:messengerPlugin:MessengerJSConnector [putIntoOneFile]" />
       </list>
     </recent_temporary>
   </component>
@@ -660,6 +464,7 @@
       <workItem from="1574367102155" duration="3270000" />
       <workItem from="1574666631772" duration="3728000" />
       <workItem from="1574813343035" duration="7439000" />
+      <workItem from="1574894261514" duration="887000" />
     </task>
     <task id="LOCAL-00001" summary="Add more stages to research.">
       <created>1533403104037</created>
@@ -1075,22 +880,26 @@
     </state>
     <state x="628" y="252" key="FileChooserDialogImpl/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1574461792528" />
     <state x="2308" y="262" key="FileChooserDialogImpl/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1571244861433" />
-    <state width="1634" height="315" key="GridCell.Tab.0.bottom" timestamp="1573852283800">
-      <screen x="0" y="0" width="1680" height="1008" />
+    <state width="1874" height="264" key="GridCell.Tab.0.bottom" timestamp="1574894780969">
+      <screen x="0" y="0" width="1920" height="1038" />
     </state>
     <state width="1634" height="315" key="GridCell.Tab.0.bottom/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1573852283800" />
-    <state width="1634" height="315" key="GridCell.Tab.0.center" timestamp="1573852283800">
-      <screen x="0" y="0" width="1680" height="1008" />
+    <state width="1874" height="264" key="GridCell.Tab.0.bottom/0.0.1920.1038@0.0.1920.1038" timestamp="1574894780969" />
+    <state width="1874" height="264" key="GridCell.Tab.0.center" timestamp="1574894780969">
+      <screen x="0" y="0" width="1920" height="1038" />
     </state>
     <state width="1634" height="315" key="GridCell.Tab.0.center/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1573852283800" />
-    <state width="1634" height="315" key="GridCell.Tab.0.left" timestamp="1573852283800">
-      <screen x="0" y="0" width="1680" height="1008" />
+    <state width="1874" height="264" key="GridCell.Tab.0.center/0.0.1920.1038@0.0.1920.1038" timestamp="1574894780969" />
+    <state width="1874" height="264" key="GridCell.Tab.0.left" timestamp="1574894780968">
+      <screen x="0" y="0" width="1920" height="1038" />
     </state>
     <state width="1634" height="315" key="GridCell.Tab.0.left/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1573852283800" />
-    <state width="1634" height="315" key="GridCell.Tab.0.right" timestamp="1573852283800">
-      <screen x="0" y="0" width="1680" height="1008" />
+    <state width="1874" height="264" key="GridCell.Tab.0.left/0.0.1920.1038@0.0.1920.1038" timestamp="1574894780968" />
+    <state width="1874" height="264" key="GridCell.Tab.0.right" timestamp="1574894780969">
+      <screen x="0" y="0" width="1920" height="1038" />
     </state>
     <state width="1634" height="315" key="GridCell.Tab.0.right/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1573852283800" />
+    <state width="1874" height="264" key="GridCell.Tab.0.right/0.0.1920.1038@0.0.1920.1038" timestamp="1574894780969" />
     <state width="1634" height="315" key="GridCell.Tab.1.bottom" timestamp="1573852283800">
       <screen x="0" y="0" width="1680" height="1008" />
     </state>

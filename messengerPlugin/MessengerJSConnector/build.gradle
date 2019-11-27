@@ -27,13 +27,13 @@ task removeUnminifiedFile(type: Delete) {
 
 task babelify(type: Exec) {
     workingDir projectDir
-    commandLine '/usr/local/bin/npx', 'babel', '--presets', '@babel/preset-env', '../resources/rawFacebookApi.js', '--minified', '--no-comments', '-o', '../resources/facebookApi.js'
+    commandLine './node_modules/.bin/npx', 'babel', '--presets', '@babel/preset-env', '../resources/rawFacebookApi.js', '--minified', '--no-comments', '-o', '../resources/facebookApi.js'
     finalizedBy(removeUnminifiedFile)
 }
 
 task putIntoOneFile(type: Exec, dependsOn: 'npmInstall') {
     workingDir projectDir
-    commandLine '/usr/local/bin/browserify', 'node_modules/facebook-chat-api/index.js', '--bare'
+    commandLine './node_modules/.bin/browserify', 'node_modules/facebook-chat-api/index.js', '--bare'
     standardOutput(new FileOutputStream(getProjectDir().toPath().resolve("../resources/rawFacebookApi.js").toFile()))
     finalizedBy(babelify)
 }
