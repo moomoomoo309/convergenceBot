@@ -30,3 +30,4 @@ out/
 target/
 
 messengerPlugin/MessengerJSConnector/package-lock.json
+.idea

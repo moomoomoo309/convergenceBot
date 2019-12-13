@@ -23,7 +23,6 @@ object PluginLoader {
     init {
         jcl.localLoader.order = 100
         jcl.addLoader(jcl.localLoader)
-        jcl.loadedClasses
     }
 
     fun add(s: String) = add(Paths.get(s))

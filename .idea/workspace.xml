@@ -5,8 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="29d84833-fb05-450b-b63e-091fc3136e36" name="Default Changelist" comment="Make Plugin loading add stuff first before doing any loading to avoid duplicating work, fix protocol registration.&#10;&#10;- Plugin loading was scanning through every loaded file every time a plugin was loaded, which is pretty slow. Originally, this was fine, since only one directory of plugins was being added anyway, so it wasn't a big deal. I would rather not do that, and instead add everything before loading plugins so it's guaranteed to only go through once.&#10;- Protocol registration did not check for duplicates properly before, which it now does, thanks to it having a default implementation of HashCode and Equals, courtesy of IntelliJ. This also meant the code in BasicPlugin and ConsolePlugin checking if their protocol was registered needed to be removed, since it's not really the plugin's job to check if it got loaded properly, it's the loader's.&#10;- TODO.md was updated to reflect the current progress on the Messenger Plugin.">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/TODO.md" beforeDir="false" afterPath="$PROJECT_DIR$/TODO.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/PluginLoader.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/PluginLoader.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1040,7 +1041,14 @@
       <option name="project" value="LOCAL" />
       <updated>1576201071755</updated>
     </task>
-    <option name="localTasksCounter" value="46" />
+    <task id="LOCAL-00046" summary="Make Plugin loading add stuff first before doing any loading to avoid duplicating work, fix protocol registration.&#10;&#10;- Plugin loading was scanning through every loaded file every time a plugin was loaded, which is pretty slow. Originally, this was fine, since only one directory of plugins was being added anyway, so it wasn't a big deal. I would rather not do that, and instead add everything before loading plugins so it's guaranteed to only go through once.&#10;- Protocol registration did not check for duplicates properly before, which it now does, thanks to it having a default implementation of HashCode and Equals, courtesy of IntelliJ. This also meant the code in BasicPlugin and ConsolePlugin checking if their protocol was registered needed to be removed, since it's not really the plugin's job to check if it got loaded properly, it's the loader's.&#10;- TODO.md was updated to reflect the current progress on the Messenger Plugin.">
+      <created>1576201591603</created>
+      <option name="number" value="00046" />
+      <option name="presentableId" value="LOCAL-00046" />
+      <option name="project" value="LOCAL" />
+      <updated>1576201591603</updated>
+    </task>
+    <option name="localTasksCounter" value="47" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1085,7 +1093,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
-    <MESSAGE value="HackNJIT!" />
     <MESSAGE value="Fix up gradle dependencies, implement JCL correctly, set up test to load a plugin." />
     <MESSAGE value="Make working classLoader implementation, adjust test accordingly." />
     <MESSAGE value="Create main, rename classLoader to PluginLoader, refactor its test." />
@@ -1110,7 +1117,8 @@
     <MESSAGE value="Convert MessengerPlugin to using a JS library and Nashorn.&#10;&#10;The JS library and all of its dependencies are bundled into one file and converted to ES5 using babel, which is then put into the MessengerPlugin's resources folder. The PluginLoader then loads it when it loads the plugin. None of the JS code is written yet." />
     <MESSAGE value="Set up kotlin functions to mirror the functions exposed through the unofficial facebook api." />
     <MESSAGE value="Make Plugin loading add stuff first before doing any loading to avoid duplicating work, fix protocol registration." />
-    <option name="LAST_COMMIT_MESSAGE" value="Make Plugin loading add stuff first before doing any loading to avoid duplicating work, fix protocol registration." />
+    <MESSAGE value="Make Plugin loading add stuff first before doing any loading to avoid duplicating work, fix protocol registration.&#10;&#10;- Plugin loading was scanning through every loaded file every time a plugin was loaded, which is pretty slow. Originally, this was fine, since only one directory of plugins was being added anyway, so it wasn't a big deal. I would rather not do that, and instead add everything before loading plugins so it's guaranteed to only go through once.&#10;- Protocol registration did not check for duplicates properly before, which it now does, thanks to it having a default implementation of HashCode and Equals, courtesy of IntelliJ. This also meant the code in BasicPlugin and ConsolePlugin checking if their protocol was registered needed to be removed, since it's not really the plugin's job to check if it got loaded properly, it's the loader's.&#10;- TODO.md was updated to reflect the current progress on the Messenger Plugin." />
+    <option name="LAST_COMMIT_MESSAGE" value="Make Plugin loading add stuff first before doing any loading to avoid duplicating work, fix protocol registration.&#10;&#10;- Plugin loading was scanning through every loaded file every time a plugin was loaded, which is pretty slow. Originally, this was fine, since only one directory of plugins was being added anyway, so it wasn't a big deal. I would rather not do that, and instead add everything before loading plugins so it's guaranteed to only go through once.&#10;- Protocol registration did not check for duplicates properly before, which it now does, thanks to it having a default implementation of HashCode and Equals, courtesy of IntelliJ. This also meant the code in BasicPlugin and ConsolePlugin checking if their protocol was registered needed to be removed, since it's not really the plugin's job to check if it got loaded properly, it's the loader's.&#10;- TODO.md was updated to reflect the current progress on the Messenger Plugin." />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REARRANGE_BEFORE_PROJECT_COMMIT" value="true" />
@@ -1143,10 +1151,10 @@
       <screen x="0" y="0" width="1680" height="1008" />
     </state>
     <state x="578" y="253" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1573764154482" />
-    <state x="362" y="27" key="CommitChangelistDialog2" timestamp="1576201522890">
+    <state x="0" y="0" key="CommitChangelistDialog2" timestamp="1576202230245">
       <screen x="0" y="0" width="1680" height="1008" />
     </state>
-    <state x="362" y="27" key="CommitChangelistDialog2/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1576201522890" />
+    <state x="0" y="0" key="CommitChangelistDialog2/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1576202230245" />
     <state x="509" y="27" key="CommitChangelistDialog2/1920.1080" timestamp="1569211853553" />
     <state x="336" y="94" key="DiffContextDialog" timestamp="1574736024873">
       <screen x="0" y="0" width="1680" height="1008" />
@@ -1210,10 +1218,10 @@
       <screen x="0" y="0" width="1680" height="1008" />
     </state>
     <state x="577" y="129" key="VCS.ChangeListViewerDialog/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1572838061346" />
-    <state x="440" y="240" key="Vcs.Push.Dialog.v2" timestamp="1576201074032">
+    <state x="440" y="240" key="Vcs.Push.Dialog.v2" timestamp="1576201667189">
       <screen x="0" y="0" width="1680" height="1008" />
     </state>
-    <state x="440" y="240" key="Vcs.Push.Dialog.v2/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1576201074032" />
+    <state x="440" y="240" key="Vcs.Push.Dialog.v2/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1576201667189" />
     <state x="100" y="100" width="1480" height="808" key="com.intellij.dvcs.ui.CompareBranchesDialog" timestamp="1572837815450">
       <screen x="0" y="0" width="1680" height="1008" />
     </state>
@@ -1231,18 +1239,22 @@
     <state x="608" y="341" key="com.intellij.ide.util.TipDialog/0.0.1680.1014/1680.0.1680.1050@0.0.1680.1014" timestamp="1569219149727" />
     <state x="608" y="341" key="com.intellij.ide.util.TipDialog/1680.1050/1680.1050" timestamp="1569211853553" />
     <state x="608" y="341" key="com.intellij.ide.util.TipDialog/1920.1080" timestamp="1569211853553" />
-    <state x="635" y="419" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1576201555843">
+    <state x="635" y="419" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1576201675499">
       <screen x="0" y="0" width="1680" height="1008" />
     </state>
-    <state x="635" y="419" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1576201555843" />
+    <state x="635" y="419" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1576201675499" />
     <state x="503" y="244" width="673" height="520" key="find.popup" timestamp="1575855598532">
       <screen x="0" y="0" width="1680" height="1008" />
     </state>
     <state x="503" y="244" width="673" height="520" key="find.popup/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1575855598532" />
-    <state x="577" y="406" key="git4idea.ui.GitStashDialog" timestamp="1572838072561">
+    <state x="566" y="295" key="git4idea.merge.GitMergeDialog" timestamp="1576201629155">
       <screen x="0" y="0" width="1680" height="1008" />
     </state>
-    <state x="577" y="406" key="git4idea.ui.GitStashDialog/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1572838072561" />
+    <state x="566" y="295" key="git4idea.merge.GitMergeDialog/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1576201629155" />
+    <state x="577" y="406" key="git4idea.ui.GitStashDialog" timestamp="1576201683192">
+      <screen x="0" y="0" width="1680" height="1008" />
+    </state>
+    <state x="577" y="406" key="git4idea.ui.GitStashDialog/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1576201683192" />
     <state x="487" y="353" key="git4idea.ui.GitUnstashDialog" timestamp="1572838063156">
       <screen x="0" y="0" width="1680" height="1008" />
     </state>
