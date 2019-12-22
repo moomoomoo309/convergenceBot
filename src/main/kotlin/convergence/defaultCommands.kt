@@ -11,6 +11,7 @@ import java.time.Duration
 import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.util.*
+import kotlin.math.ceil
 import kotlin.math.nextUp
 
 class UnregisteredChat: Exception()
@@ -54,7 +55,7 @@ const val commandsPerPage = 10
 fun help(args: List<String>, sender: User): String? {
     val chat = sender.chat
     val pageOrCommand = if (args.isEmpty()) 1 else args[0].toIntOrNull() ?: args[0]
-    val numPages = Math.ceil(sortedHelpText.size.toDouble() / commandsPerPage).nextUp().toInt()
+    val numPages = ceil(sortedHelpText.size.toDouble() / commandsPerPage).nextUp().toInt()
     return when (pageOrCommand) {
         is Int -> {
             val helpText = StringBuilder("Help page $pageOrCommand/$numPages:\n")
@@ -84,7 +85,7 @@ fun addAlias(args: List<String>, sender: User): String? {
     val commandDelimiter = commandDelimiters.getOrDefault(chat, defaultCommandDelimiter)
     val command = parseCommand(commandDelimiter + args[1], commandDelimiter, chat)
             ?: return "Alias does not refer to a valid command!"
-    if (!registerAlias(Alias(chat, args[0], command.command, command.args, command.command.helpText, command.command.syntaxText)))
+    if (!registerAlias(Alias(chat, args[0], command.command, command.args, args[1], command.command.syntaxText)))
         return ""
     return "Alias \"${args[0]}\" registered to \"${args[1]}\"."
 }
@@ -132,21 +133,22 @@ fun dateToOffsetDateTime(d: Date, tz: ZoneId? = null): OffsetDateTime {
 private fun scheduleLoc(groups: List<DateGroup>, sender: User, location: String, durationStr: String,
                         duration: Duration, time: String): String {
     val thisCommand = commands[UniversalChat]!!["goingto"]!!
+    val builder = StringBuilder()
     for (group in groups) {
         if (group.isRecurring) {
             return "Sorry, the bot doesn't support recurring events."
         } else {
             group.dates.forEach {
-                schedule(sender, CommandData(thisCommand,
+                builder.append(SchedulerThread.schedule(sender, CommandData(thisCommand,
                         if (durationStr.isEmpty())
                             listOf(location)
                         else
-                            listOf(location, "for", durationStr)),
-                        dateToOffsetDateTime(it))
+                            listOf(location, "for", durationStr)), dateToOffsetDateTime(it))
+                        ?: "No events scheduled.")
             }
         }
     }
-    return ""
+    return if (builder.isNotEmpty()) builder.toString() else "No events scheduled."
 }
 
 val defaultDuration = Duration.ofMinutes(45)!!
@@ -220,16 +222,18 @@ fun target(args: List<String>, sender: User): String? {
 }
 
 fun commands(args: List<String>, sender: User): String? {
-    val commandList = ArrayList<String>(10)
+    val commandList = mutableListOf<String>()
     commands[sender.chat]?.forEach { commandList.add(it.key) }
     commands[UniversalChat]?.forEach { commandList.add(it.key) }
+    linkedChats[sender.chat]?.forEach { chat -> commands[chat]?.forEach { commandList.add(it.key) } }
     return if (commandList.isNotEmpty()) commandList.joinToString(", ") else "No commands found."
 }
 
 fun aliases(args: List<String>, sender: User): String? {
-    val aliasList = ArrayList<String>(10)
+    val aliasList = mutableListOf<String>()
     aliases[sender.chat]?.forEach { aliasList.add(it.key) }
     aliases[UniversalChat]?.forEach { aliasList.add(it.key) }
+    linkedChats[sender.chat]?.forEach { chat -> aliases[chat]?.forEach { aliasList.add(it.key) } }
     return if (aliasList.isNotEmpty()) aliasList.joinToString(", ") else "No aliases found."
 }
 
@@ -262,12 +266,12 @@ fun events(args: List<String>, sender: User): String? {
  * Gets all of the currently scheduled events that were scheduled by [sender].
  */
 @ImplicitReflectionSerializer
-private fun getUserEvents(sender: User): Map<User, ArrayList<ScheduledCommand>> {
+private fun getUserEvents(sender: User): Map<User, MutableList<ScheduledCommand>> {
     val eventsList = SchedulerThread.getCommands(sender)
-    val eventMap = HashMap<User, ArrayList<ScheduledCommand>>()
+    val eventMap = HashMap<User, MutableList<ScheduledCommand>>()
     for (event in eventsList) {
         if (!eventMap.containsKey(event.sender))
-            eventMap[event.sender] = ArrayList()
+            eventMap[event.sender] = mutableListOf()
         eventMap[event.sender]!!.add(event)
     }
     return eventMap
@@ -281,7 +285,7 @@ fun eventsFromUser(args: List<String>, sender: User): String? {
     val builder = StringBuilder("Your currently scheduled events:\n")
     builder.append("${getUserName(sender)}:\n")
     if (sender in eventMap) {
-        val events = eventMap[sender]!!
+        val events = eventMap[sender] ?: mutableListOf()
         events.sortBy { it.time }
         for (event in events)
             builder.append("\t[${event.id}] ${formatTime(event.time)}: \"${commandDelimiters[sender.chat]}${event.commandData.command.name} ${event.commandData.args.joinToString(" ")}\"")

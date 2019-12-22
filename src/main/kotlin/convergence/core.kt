@@ -35,6 +35,7 @@ val protocols = mutableSetOf<Protocol>()
 val baseInterfaceMap = mutableMapOf<Protocol, BaseInterface>()
 val chatMap = mutableMapOf<Int, Chat>()
 val reverseChatMap = mutableMapOf<Chat, Int>()
+val pluginThreads = mutableMapOf<Plugin, Thread>()
 var currentChatID: Int = 0
 /**
  * Adds a protocol to the protocol registry.
@@ -266,7 +267,7 @@ object SchedulerThread: Thread() {
     private const val allowedTimeDifference = 30
     private const val updatesPerSecond = 1
 
-    private val scheduledCommands = TreeMap<OffsetDateTime, ArrayList<ScheduledCommand>>()
+    private val scheduledCommands = TreeMap<OffsetDateTime, MutableList<ScheduledCommand>>()
     private val commandsList = TreeMap<Int, ScheduledCommand>()
     private var currentId: Int = 0
 
@@ -314,7 +315,7 @@ object SchedulerThread: Thread() {
      */
     fun schedule(sender: User, command: CommandData, time: OffsetDateTime): String? {
         if (time !in scheduledCommands)
-            scheduledCommands[time] = ArrayList(2)
+            scheduledCommands[time] = mutableListOf()
         val cmd = ScheduledCommand(time, sender, command, currentId)
         @Suppress("ControlFlowWithEmptyBody")
         while (commandsList.containsKey(++currentId));
@@ -362,12 +363,6 @@ object SchedulerThread: Thread() {
     } != null
 }
 
-/**
- * Schedules [command] to run at [time] from [sender].
- */
-@ImplicitReflectionSerializer
-fun schedule(sender: User, command: CommandData, time: OffsetDateTime) = SchedulerThread.schedule(sender, command, time)
-
 lateinit var commandLineArgs: Namespace
 
 class core {
@@ -409,7 +404,10 @@ class core {
 
             for (plugin in plugins) {
                 log("Initializing plugin: ${plugin.name}")
-                Thread(plugin::init).start()
+                Thread(plugin::init).let {
+                    pluginThreads[plugin] = it
+                    it.start()
+                }
             }
 
             log("Starting scheduler thread...")

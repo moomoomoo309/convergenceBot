@@ -4,10 +4,14 @@
     <option name="SCOPE_TYPE" value="3" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="29d84833-fb05-450b-b63e-091fc3136e36" name="Default Changelist" comment="Make Plugin loading add stuff first before doing any loading to avoid duplicating work, fix protocol registration.&#10;&#10;- Plugin loading was scanning through every loaded file every time a plugin was loaded, which is pretty slow. Originally, this was fine, since only one directory of plugins was being added anyway, so it wasn't a big deal. I would rather not do that, and instead add everything before loading plugins so it's guaranteed to only go through once.&#10;- Protocol registration did not check for duplicates properly before, which it now does, thanks to it having a default implementation of HashCode and Equals, courtesy of IntelliJ. This also meant the code in BasicPlugin and ConsolePlugin checking if their protocol was registered needed to be removed, since it's not really the plugin's job to check if it got loaded properly, it's the loader's.&#10;- TODO.md was updated to reflect the current progress on the Messenger Plugin.">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+    <list default="true" id="29d84833-fb05-450b-b63e-091fc3136e36" name="Default Changelist" comment="Make sure CommandData can store aliases as well.">
+      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/PluginLoader.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/PluginLoader.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/discordPlugin/src/Serializers.kt" beforeDir="false" afterPath="$PROJECT_DIR$/discordPlugin/src/Serializers.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/commandParser.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/commandParser.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/core.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/core.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/defaultCommands.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/defaultCommands.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/kotlin/convergence/PluginLoaderTest.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/kotlin/convergence/PluginLoaderTest.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -725,6 +729,7 @@
       <workItem from="1574367102155" duration="3270000" />
       <workItem from="1574666631772" duration="3728000" />
       <workItem from="1574813343035" duration="7439000" />
+      <workItem from="1576609162187" duration="5348000" />
     </task>
     <task id="LOCAL-00001" summary="Add more stages to research.">
       <created>1533403104037</created>
@@ -1048,7 +1053,14 @@
       <option name="project" value="LOCAL" />
       <updated>1576201591603</updated>
     </task>
-    <option name="localTasksCounter" value="47" />
+    <task id="LOCAL-00047" summary="Add .idea folder to .gitignore.">
+      <created>1576202313782</created>
+      <option name="number" value="00047" />
+      <option name="presentableId" value="LOCAL-00047" />
+      <option name="project" value="LOCAL" />
+      <updated>1576202313782</updated>
+    </task>
+    <option name="localTasksCounter" value="48" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1093,7 +1105,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
-    <MESSAGE value="Fix up gradle dependencies, implement JCL correctly, set up test to load a plugin." />
     <MESSAGE value="Make working classLoader implementation, adjust test accordingly." />
     <MESSAGE value="Create main, rename classLoader to PluginLoader, refactor its test." />
     <MESSAGE value="Remove files that shouldn't be tracked by git, add interface callbacks." />
@@ -1118,7 +1129,8 @@
     <MESSAGE value="Set up kotlin functions to mirror the functions exposed through the unofficial facebook api." />
     <MESSAGE value="Make Plugin loading add stuff first before doing any loading to avoid duplicating work, fix protocol registration." />
     <MESSAGE value="Make Plugin loading add stuff first before doing any loading to avoid duplicating work, fix protocol registration.&#10;&#10;- Plugin loading was scanning through every loaded file every time a plugin was loaded, which is pretty slow. Originally, this was fine, since only one directory of plugins was being added anyway, so it wasn't a big deal. I would rather not do that, and instead add everything before loading plugins so it's guaranteed to only go through once.&#10;- Protocol registration did not check for duplicates properly before, which it now does, thanks to it having a default implementation of HashCode and Equals, courtesy of IntelliJ. This also meant the code in BasicPlugin and ConsolePlugin checking if their protocol was registered needed to be removed, since it's not really the plugin's job to check if it got loaded properly, it's the loader's.&#10;- TODO.md was updated to reflect the current progress on the Messenger Plugin." />
-    <option name="LAST_COMMIT_MESSAGE" value="Make Plugin loading add stuff first before doing any loading to avoid duplicating work, fix protocol registration.&#10;&#10;- Plugin loading was scanning through every loaded file every time a plugin was loaded, which is pretty slow. Originally, this was fine, since only one directory of plugins was being added anyway, so it wasn't a big deal. I would rather not do that, and instead add everything before loading plugins so it's guaranteed to only go through once.&#10;- Protocol registration did not check for duplicates properly before, which it now does, thanks to it having a default implementation of HashCode and Equals, courtesy of IntelliJ. This also meant the code in BasicPlugin and ConsolePlugin checking if their protocol was registered needed to be removed, since it's not really the plugin's job to check if it got loaded properly, it's the loader's.&#10;- TODO.md was updated to reflect the current progress on the Messenger Plugin." />
+    <MESSAGE value="Add .idea folder to .gitignore." />
+    <option name="LAST_COMMIT_MESSAGE" value="Add .idea folder to .gitignore." />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REARRANGE_BEFORE_PROJECT_COMMIT" value="true" />
@@ -1141,25 +1153,25 @@
     </state>
     <state x="747" y="238" key="#com.intellij.ide.util.MemberChooser/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1576200431495" />
     <state x="747" y="238" key="#com.intellij.ide.util.MemberChooser/1920.1080" timestamp="1569211853553" />
-    <state x="646" y="255" key="#com.intellij.openapi.updateSettings.impl.PluginUpdateInfoDialog" timestamp="1574813276982">
+    <state x="646" y="255" key="#com.intellij.openapi.updateSettings.impl.PluginUpdateInfoDialog" timestamp="1576968523713">
       <screen x="0" y="0" width="1680" height="1008" />
     </state>
-    <state x="646" y="255" key="#com.intellij.openapi.updateSettings.impl.PluginUpdateInfoDialog/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1574813276982" />
+    <state x="646" y="255" key="#com.intellij.openapi.updateSettings.impl.PluginUpdateInfoDialog/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1576968523713" />
     <state x="646" y="255" key="#com.intellij.openapi.updateSettings.impl.PluginUpdateInfoDialog/1680.1050/1680.1050" timestamp="1569211853553" />
     <state x="646" y="255" key="#com.intellij.openapi.updateSettings.impl.PluginUpdateInfoDialog/1920.1080" timestamp="1569211853553" />
     <state x="578" y="253" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog" timestamp="1573764154482">
       <screen x="0" y="0" width="1680" height="1008" />
     </state>
     <state x="578" y="253" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1573764154482" />
-    <state x="0" y="0" key="CommitChangelistDialog2" timestamp="1576202230245">
+    <state x="0" y="0" key="CommitChangelistDialog2" timestamp="1577058998887">
       <screen x="0" y="0" width="1680" height="1008" />
     </state>
-    <state x="0" y="0" key="CommitChangelistDialog2/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1576202230245" />
+    <state x="0" y="0" key="CommitChangelistDialog2/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1577058998887" />
     <state x="509" y="27" key="CommitChangelistDialog2/1920.1080" timestamp="1569211853553" />
-    <state x="336" y="94" key="DiffContextDialog" timestamp="1574736024873">
+    <state x="137" y="104" width="1344" height="806" key="DiffContextDialog" timestamp="1576266887748">
       <screen x="0" y="0" width="1680" height="1008" />
     </state>
-    <state x="336" y="94" key="DiffContextDialog/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1574736024873" />
+    <state x="137" y="104" width="1344" height="806" key="DiffContextDialog/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1576266887748" />
     <state x="628" y="252" key="FileChooserDialogImpl" timestamp="1574461792528">
       <screen x="0" y="0" width="1680" height="1008" />
     </state>
@@ -1218,10 +1230,10 @@
       <screen x="0" y="0" width="1680" height="1008" />
     </state>
     <state x="577" y="129" key="VCS.ChangeListViewerDialog/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1572838061346" />
-    <state x="440" y="240" key="Vcs.Push.Dialog.v2" timestamp="1576201667189">
+    <state x="440" y="240" key="Vcs.Push.Dialog.v2" timestamp="1576202315349">
       <screen x="0" y="0" width="1680" height="1008" />
     </state>
-    <state x="440" y="240" key="Vcs.Push.Dialog.v2/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1576201667189" />
+    <state x="440" y="240" key="Vcs.Push.Dialog.v2/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1576202315349" />
     <state x="100" y="100" width="1480" height="808" key="com.intellij.dvcs.ui.CompareBranchesDialog" timestamp="1572837815450">
       <screen x="0" y="0" width="1680" height="1008" />
     </state>
@@ -1243,10 +1255,10 @@
       <screen x="0" y="0" width="1680" height="1008" />
     </state>
     <state x="635" y="419" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1576201675499" />
-    <state x="503" y="244" width="673" height="520" key="find.popup" timestamp="1575855598532">
+    <state x="503" y="244" width="673" height="520" key="find.popup" timestamp="1576266121341">
       <screen x="0" y="0" width="1680" height="1008" />
     </state>
-    <state x="503" y="244" width="673" height="520" key="find.popup/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1575855598532" />
+    <state x="503" y="244" width="673" height="520" key="find.popup/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1576266121341" />
     <state x="566" y="295" key="git4idea.merge.GitMergeDialog" timestamp="1576201629155">
       <screen x="0" y="0" width="1680" height="1008" />
     </state>

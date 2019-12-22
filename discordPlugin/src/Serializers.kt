@@ -19,15 +19,9 @@ object DiscordChatSerializer: KSerializer<DiscordChat> {
 
     override fun deserialize(decoder: Decoder): DiscordChat {
         return when (decoder.decodeByte().toInt()) {
-            0 -> {
-                DiscordChat(PrivateChannelImpl(decoder.decodeLong(), UserImpl(decoder.decodeLong(), jdaImpl)))
-            }
-            1 -> {
-                DiscordChat(TextChannelImpl(decoder.decodeLong(), GuildImpl(jdaImpl, decoder.decodeLong())))
-            }
-            else -> {
-                throw IllegalArgumentException("DiscordChat not encoded properly!")
-            }
+            0 -> DiscordChat(PrivateChannelImpl(decoder.decodeLong(), UserImpl(decoder.decodeLong(), jdaImpl)))
+            1 -> DiscordChat(TextChannelImpl(decoder.decodeLong(), GuildImpl(jdaImpl, decoder.decodeLong())))
+            else -> throw IllegalArgumentException("DiscordChat not encoded properly!")
         }
     }
 
