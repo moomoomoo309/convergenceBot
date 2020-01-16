@@ -12,8 +12,6 @@ object ConsoleInterface: BaseInterface {
     override val protocol: Protocol = ConsoleProtocol
 
     init {
-        if (!registerProtocol(this.protocol, this))
-            System.err.println("Protocol with name \"$this.protocol.name\" registered more than once!")
         val id = currentChatID++ // Only one chat, so we can register it right away.
         chatMap[id] = ConsoleChat
         reverseChatMap[ConsoleChat] = id
@@ -51,7 +49,7 @@ object ConsoleInterface: BaseInterface {
 
 }
 
-class Main: Plugin {
+object Main: Plugin {
     override val name = "consolePlugin"
     override val baseInterface: BaseInterface = ConsoleInterface
     override fun init() {

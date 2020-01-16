@@ -14,7 +14,6 @@ import net.sourceforge.argparse4j.inf.Namespace
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.ocpsoft.prettytime.units.JustNow
-import java.nio.file.Files
 import java.nio.file.Paths
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
@@ -36,6 +35,7 @@ val protocols = mutableSetOf<Protocol>()
 val baseInterfaceMap = mutableMapOf<Protocol, BaseInterface>()
 val chatMap = mutableMapOf<Int, Chat>()
 val reverseChatMap = mutableMapOf<Chat, Int>()
+val pluginThreads = mutableMapOf<Plugin, Thread>()
 var currentChatID: Int = 0
 /**
  * Adds a protocol to the protocol registry.
@@ -315,8 +315,9 @@ object SchedulerThread: Thread() {
      */
     fun schedule(sender: User, command: CommandData, time: OffsetDateTime): String? {
         if (time !in scheduledCommands)
-            scheduledCommands[time] = ArrayList(2)
+            scheduledCommands[time] = mutableListOf()
         val cmd = ScheduledCommand(time, sender, command, currentId)
+        @Suppress("ControlFlowWithEmptyBody")
         while (commandsList.containsKey(++currentId));
         scheduledCommands[time]!!.add(cmd)
         if (cmd.id in commandsList)
@@ -400,10 +401,7 @@ class core {
             log("Starting scheduler thread...")
             SchedulerThread.start()
 
-            val plugins = mutableListOf<Plugin>()
-            Files.list(Paths.get(commandLineArgs.getString("plugin_path"))).forEach {
-                plugins.addAll(PluginLoader.load(it))
-            }
+            val plugins = PluginLoader.load(Paths.get(commandLineArgs.getString("plugin_path")))
             if (plugins.isEmpty())
                 log("No plugins loaded.")
             else

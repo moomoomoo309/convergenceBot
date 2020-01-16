@@ -68,6 +68,24 @@ enum class messageReaction(val stringValue: String) {
 }
 
 @Suppress("unused")
+enum class ThreadColor(val color: String?) {
+    MessengerBlue(null),
+    GoldenPoppy("#ffc300"),
+    RadicalRed("#fa3c4c"),
+    Shocking("#d696bb"),
+    PictonBlue("#6699cc"),
+    FreeSpeechGreen("#13cf13"),
+    Pumpkin("#ff7e29"),
+    LightCoral("#e68585"),
+    MediumSlateBlue("#7646ff"),
+    DeepSkyBlue("#20cef5"),
+    Fern("#67b868"),
+    Cameo("#d4a88c"),
+    BrilliantRose("#ff5ca1"),
+    BilobaFlower("#a695c7")
+}
+
+@Suppress("unused")
 object api {
     fun addUserToGroup(userId: String, threadId: String, callback: FBCallback): Any? =
             invocable.invokeMethod(rawApi, "addUserToGroup", userId, threadId, callback)
@@ -87,8 +105,8 @@ object api {
     fun changeNickname(nickname: String, threadId: String, participantId: String, callback: FBCallback): Any? =
             invocable.invokeMethod(rawApi, "changeNickname", nickname, threadId, participantId, callback)
 
-    fun changeThreadColor(color: String, threadId: String, callback: FBCallback): Any? =
-            invocable.invokeMethod(rawApi, "changeThreadColor", color, threadId, callback)
+    fun changeThreadColor(color: ThreadColor, threadId: String, callback: FBCallback): Any? =
+            invocable.invokeMethod(rawApi, "changeThreadColor", color.color, threadId, callback)
 
     fun changeThreadEmoji(emoji: String, threadId: String, callback: FBCallback): Any? =
             invocable.invokeMethod(rawApi, "changeThreadEmoji", emoji, threadId, callback)
@@ -130,20 +148,20 @@ object api {
             invocable.invokeMethod(rawApi, "getUserInfo", ids, callback)
 
     val threadColors = mapOf(
-            "MessengerBlue" to null,
-            "GoldenPoppy" to "#ffc300",
-            "RadicalRed" to "#fa3c4c",
-            "Shocking" to "#d696bb",
-            "PictonBlue" to "#6699cc",
-            "FreeSpeechGreen" to "#13cf13",
-            "Pumpkin" to "#ff7e29",
-            "LightCoral" to "#e68585",
-            "MediumSlateBlue" to "#7646ff",
-            "DeepSkyBlue" to "#20cef5",
-            "Fern" to "#67b868",
-            "Cameo" to "#d4a88c",
-            "BrilliantRose" to "#ff5ca1",
-            "BilobaFlower" to "#a695c7"
+            "MessengerBlue" to ThreadColor.MessengerBlue,
+            "GoldenPoppy" to ThreadColor.GoldenPoppy,
+            "RadicalRed" to ThreadColor.RadicalRed,
+            "Shocking" to ThreadColor.Shocking,
+            "PictonBlue" to ThreadColor.PictonBlue,
+            "FreeSpeechGreen" to ThreadColor.FreeSpeechGreen,
+            "Pumpkin" to ThreadColor.Pumpkin,
+            "LightCoral" to ThreadColor.LightCoral,
+            "MediumSlateBlue" to ThreadColor.MediumSlateBlue,
+            "DeepSkyBlue" to ThreadColor.DeepSkyBlue,
+            "Fern" to ThreadColor.Fern,
+            "Cameo" to ThreadColor.Cameo,
+            "BrilliantRose" to ThreadColor.BrilliantRose,
+            "BilobaFlower" to ThreadColor.BilobaFlower
     )
 
     fun handleMessageRequest(threadId: String, accept: Boolean, callback: FBCallback): Any? =
@@ -194,8 +212,6 @@ object Main: Plugin {
     override fun init() {
         println("Messenger Plugin initialized.")
         val context = engine.context
-        println(context.scopes)
-        println(jcl.loadedResources)
         engine.eval(String(jcl.loadedResources["facebookApi.js"]!!))
         context.setAttribute("username", "", 200)
         context.setAttribute("password", "", 200)

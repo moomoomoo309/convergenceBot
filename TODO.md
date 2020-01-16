@@ -17,11 +17,12 @@
 ## Discord Bot rich integration
 - Make help command embed its contents?
 - Make it actually handle emojis and formatted text correctly (might need some kind of parser?)
-## Messenger Bot
-- Implement all of the methods with a TODO. See Discord plugin for an example.
-- <https://github.com/BotMill/fb-botmill> is a good looking library for FB Messenger bots
+## Messenger Bot (In progress)
+- Get the JS API to compile correctly
+- Implement a nice way for the Kotlin code to deal with JS callbacks
+  - Futures? Coroutines? Kotlin has a few ways of doing this
 ## Testing and bug fixing of existing commands
 - Help definitely has a bug in it
 ## New commands to be implemented
-- Mimic: Runs a command as another user.
+- Mimic: Runs a command as another user. Should be able to mimic any user from any chat linked to the current one.
 - At: Says who went where. (It's the companion command to goingto)

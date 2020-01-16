@@ -1,13 +1,12 @@
 package convergence
 
 import org.xeustechnologies.jcl.JarClassLoader
-import java.lang.reflect.AccessibleObject
 import java.net.URI
 import java.net.URL
 import java.nio.file.Path
 import java.nio.file.Paths
-import java.util.*
-import kotlin.NoSuchElementException
+import kotlin.jvm.internal.Reflection
+import kotlin.reflect.jvm.jvmName
 
 interface Plugin {
     val name: String
@@ -17,46 +16,41 @@ interface Plugin {
 }
 
 val jcl = JarClassLoader()
+
 object PluginLoader {
+    val plugins = mutableListOf<Plugin>()
+
     init {
         jcl.localLoader.order = 100
         jcl.addLoader(jcl.localLoader)
     }
 
-    private fun nullIfException(result: List<Plugin>): List<Plugin> = try {
-        result
-    } catch (e: Exception) {
-        emptyList()
-    }
-
-    fun load(s: String): List<Plugin> = nullIfException(load(Paths.get(s)))
-    fun load(p: Path): List<Plugin> = nullIfException(load(p.toUri()))
-    fun load(u: URI): List<Plugin> = nullIfException(load(u.toURL()))
-    fun load(u: URL): List<Plugin> {
-        if (u.file.toLowerCase().startsWith("discordplugin"))
-            return emptyList()
-        jcl.add(u)
-        val pluginList: ArrayList<Plugin> = ArrayList()
+    fun add(s: String) = add(Paths.get(s))
+    fun add(p: Path) = add(p.toUri())
+    fun add(u: URI) = add(u.toURL())
+    fun add(u: URL) = jcl.add(u)
+    fun load(): List<Plugin> {
         for (rawClassName in jcl.loadedResources.keys.filter { it.startsWith("convergence/") && it.endsWith("Main.class") }) {
             val className = rawClassName.substringBefore(".class").replace('/', '.')
             try {
-                val pluginClass = jcl.loadClass(className)
-                val constructors = pluginClass.declaredConstructors
-                AccessibleObject.setAccessible(constructors, true)
-                val plugin = try {
-                    constructors.first { it.parameterCount == 0 }.newInstance()
-                } catch (e: NoSuchElementException) {
-                    logErr("No default constructor found for class \"$className\".")
+                val pluginClass = Reflection.createKotlinClass(jcl.loadClass(className))
+                val plugin = pluginClass.objectInstance as Plugin?
+                if (plugin == null) {
+                    logErr("Plugin with classname ${pluginClass.simpleName ?: pluginClass.jvmName} is not a singleton!")
                     continue
-                } as Plugin
+                }
+                if (plugin.name == "DiscordPlugin")
+                    continue
                 // Don't register test plugins, since they won't actually be used outside of tests.
                 if (plugin.baseInterface !is FakeBaseInterface)
-                    registerProtocol(plugin.baseInterface.protocol, plugin.baseInterface)
-                pluginList.add(plugin)
+                    if (!registerProtocol(plugin.baseInterface.protocol, plugin.baseInterface))
+                        logErr("Tried to load duplicate plugin with name ${plugin.name}.")
+                    else
+                        plugins.add(plugin)
             } catch (e: ClassCastException) {
                 logErr("Class \"$className\" in convergence package called \"Main.class\" but is not a plugin! Report this to the plugin author.")
             }
         }
-        return pluginList
+        return plugins
     }
 }

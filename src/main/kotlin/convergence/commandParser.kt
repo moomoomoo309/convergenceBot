@@ -19,7 +19,7 @@ private fun isEscapeCharacter(c: Char, l: Int): Boolean {
 }
 
 private val validUnicodeChars = setOf('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f')
-private fun isEscapeSequence(s: String): Boolean {
+private fun isEscapeSequence(s: String, throwException: Boolean = true): Boolean {
     if (s.isEmpty())
         return false
     val c = s[0]
@@ -29,12 +29,12 @@ private fun isEscapeSequence(s: String): Boolean {
         in '0'..'9' -> {
             var i = 0
             if (s[0] !in '0'..'3')
-                throw InvalidEscapeSequence("\"$s\" (Did not capture entire escape, stopped at first invalid character)")
+                return if (throwException) false else throw InvalidEscapeSequence("\"$s\" (Did not capture entire escape, stopped at first invalid character)")
             s.all {
                 when (i) {
                     0 -> s[i++] in '0'..'3'
                     1, 2 -> s[i++] in '0'..'7'
-                    else -> false
+                    else -> if (throwException) false else throw InvalidEscapeSequence("\"$s\" (Did not capture entire escape, stopped at first invalid character)")
                 }
             }
         }
