@@ -1,0 +1,10 @@
+group = 'convergence.test'
+version = '1.0-SNAPSHOT'
+
+description = """Messenger plugin for convergence bot"""
+
+
+
+dependencies {
+}
+

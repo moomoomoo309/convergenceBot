@@ -39,14 +39,13 @@ object PluginLoader {
                     logErr("Plugin with classname ${pluginClass.simpleName ?: pluginClass.jvmName} is not a singleton!")
                     continue
                 }
-                if (plugin.name == "DiscordPlugin")
-                    continue
                 // Don't register test plugins, since they won't actually be used outside of tests.
                 if (plugin.baseInterface !is FakeBaseInterface)
                     if (!registerProtocol(plugin.baseInterface.protocol, plugin.baseInterface))
                         logErr("Tried to load duplicate plugin with name ${plugin.name}.")
                     else
                         plugins.add(plugin)
+
             } catch (e: ClassCastException) {
                 logErr("Class \"$className\" in convergence package called \"Main.class\" but is not a plugin! Report this to the plugin author.")
             }

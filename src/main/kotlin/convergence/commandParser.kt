@@ -29,12 +29,12 @@ private fun isEscapeSequence(s: String, throwException: Boolean = true): Boolean
         in '0'..'9' -> {
             var i = 0
             if (s[0] !in '0'..'3')
-                return if (throwException) false else throw InvalidEscapeSequence("\"$s\" (Did not capture entire escape, stopped at first invalid character)")
+                return if (!throwException) false else throw InvalidEscapeSequence("\"$s\" (Did not capture entire escape, stopped at first invalid character)")
             s.all {
                 when (i) {
                     0 -> s[i++] in '0'..'3'
                     1, 2 -> s[i++] in '0'..'7'
-                    else -> if (throwException) false else throw InvalidEscapeSequence("\"$s\" (Did not capture entire escape, stopped at first invalid character)")
+                    else -> if (!throwException) false else throw InvalidEscapeSequence("\"$s\" (Did not capture entire escape, stopped at first invalid character)")
                 }
             }
         }

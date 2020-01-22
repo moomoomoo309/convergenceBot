@@ -12,24 +12,24 @@ description = """Convergence bot"""
 sourceCompatibility = 1.5
 targetCompatibility = 1.5
 tasks.withType(JavaCompile) {
-	options.encoding = 'UTF-8'
+    options.encoding = 'UTF-8'
 }
 
 
 repositories {
     jcenter()
-    maven { url "http://repo.maven.apache.org/maven2" }
     maven { url "https://kotlin.bintray.com/kotlinx" }
     mavenCentral()
 }
+
 dependencies {
-    testCompile group: 'org.jetbrains.kotlin', name: 'kotlin-test-junit', version:"$kotlin_version"
+    testCompile group: 'org.jetbrains.kotlin', name: 'kotlin-test-junit', version: "$kotlin_version"
     compile 'com.beust:klaxon:3.0.1'
     runtime "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     compile "com.joestelmach:natty:0.11"
     compile "org.xeustechnologies:jcl-core:2.8"
     compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
-    compile "org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.11.1-1.3.40-eap-67"
+    compile "org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.14.0"
     compile group: 'net.sourceforge.argparse4j', name: 'argparse4j', version: '0.8.1'
     compile group: 'com.github.mfornos', name: 'humanize-slim', version: '1.2.2'
     compile group: 'com.beust', name: 'klaxon', version: '5.0.2'
@@ -45,13 +45,12 @@ subprojects { project ->
             compile group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib', version: "$kotlin_version"
             testCompile group: 'org.jetbrains.kotlin', name: 'kotlin-test-junit', version: "$kotlin_version"
             compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
-            compile "org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.11.1-1.3.40-eap-67"
+            compile "org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.14.0"
             compile 'org.jetbrains.exposed:exposed:+'
             compile rootProject
         }
         repositories {
             jcenter()
-            maven { url "http://repo.maven.apache.org/maven2" }
             maven { url "https://kotlin.bintray.com/kotlinx" }
             mavenCentral()
         }
@@ -118,20 +117,22 @@ jar {
 }
 
 task copyPlugins(type: Copy) {
-    from("${projectDir.toPath().resolve("./build/libs/")}")
+    from './build/libs/'
+    from './basicPlugin/build/libs'
+    from './consolePlugin/build/libs'
+    from './discordPlugin/build/libs'
+    from './messengerPlugin/build/libs'
     into(Paths.get(System.getProperty("user.home"), ".convergence", "plugins"))
     include("*Plugin*")
 }
 
-task copyBot(type: Copy) {
-    from("${projectDir.toPath().resolve("./build/libs/")}")
+task copyBot(type: Copy, dependsOn: copyPlugins) {
+    from './build/libs/'
     into(Paths.get(System.getProperty("user.home"), ".convergence"))
-    exclude("*Plugin*")
-    dependsOn(copyPlugins)
 }
 
 run {
     standardInput = System.in
 }
-run.dependsOn(jar)
-jar.finalizedBy(copyBot)
+run.dependsOn(buildDependents)
+buildDependents.finalizedBy(copyBot)

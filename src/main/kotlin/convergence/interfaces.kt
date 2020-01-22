@@ -192,11 +192,11 @@ sealed class OptionalFunctionality {
 
         fun sendSticker(chat: Chat, sticker: Sticker)
 
-        class ReceivedSticker(val fct: (Chat, Sticker) -> Boolean): OptionalFunctionality() {
-            override fun invoke(vararg args: Any): Boolean = fct(args[0] as Chat, args[1] as Sticker)
+        class ReceivedSticker(val fct: (Chat, Sticker, User) -> Boolean): OptionalFunctionality() {
+            override fun invoke(vararg args: Any): Boolean = fct(args[0] as Chat, args[1] as Sticker, args[2] as User)
         }
 
-        fun receivedSticker(chat: Chat, sticker: Sticker) = runCallbacks(ReceivedSticker::class, chat, sticker)
+        fun receivedSticker(chat: Chat, sticker: Sticker, sender: User) = runCallbacks(ReceivedSticker::class, chat, sticker, sender)
     }
 
     interface IUserStatus { // Like your status on Skype.

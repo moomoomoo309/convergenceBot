@@ -267,17 +267,21 @@ object SchedulerThread: Thread() {
     private const val allowedTimeDifference = 30
     private const val updatesPerSecond = 1
 
-    private val scheduledCommands = TreeMap<OffsetDateTime, ArrayList<ScheduledCommand>>()
+    private val scheduledCommands = TreeMap<OffsetDateTime, MutableList<ScheduledCommand>>()
     private val commandsList = TreeMap<Int, ScheduledCommand>()
     private var currentId: Int = 0
 
     init {
-        loadFromDatabase(connection)
+        try {
+            loadFromDatabase()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     private fun loadFromDatabase(connection: Database = convergence.connection) {
         transaction(connection) {
-            SchemaUtils.create(SerializedScheduledCommand)
+            SchemaUtils.createMissingTablesAndColumns(SerializedScheduledCommand)
             SerializedScheduledCommand.selectAll().forEach { row ->
                 row.getOrNull(SerializedScheduledCommand.scheduledCommand)?.let {
                     schedule(Cbor.load(it.getBytes(1, it.length().toInt())))
@@ -401,7 +405,8 @@ class core {
             log("Starting scheduler thread...")
             SchedulerThread.start()
 
-            val plugins = PluginLoader.load(Paths.get(commandLineArgs.getString("plugin_path")))
+            PluginLoader.add(Paths.get(commandLineArgs.getString("plugin_path")))
+            val plugins = PluginLoader.load()
             if (plugins.isEmpty())
                 log("No plugins loaded.")
             else
@@ -411,10 +416,6 @@ class core {
                 log("Initializing plugin: ${plugin.name}")
                 Thread(plugin::init).start()
             }
-
-            log("Starting scheduler thread...")
-            SchedulerThread.start()
-
         }
     }
 }

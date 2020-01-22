@@ -5,11 +5,24 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="29d84833-fb05-450b-b63e-091fc3136e36" name="Default Changelist" comment="Updated TODO.md, added CommandSerializer.">
+      <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/jarRepositories.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/jarRepositories.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/messengerPlugin/MessengerJSConnector/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/messengerPlugin/MessengerJSConnector/build.gradle" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/messengerPlugin/MessengerJSConnector/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/messengerPlugin/MessengerJSConnector/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/messengerPlugin/MessengerJSConnector/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/messengerPlugin/MessengerJSConnector/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/basicPlugin/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/basicPlugin/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/consolePlugin/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/consolePlugin/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/discordPlugin/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/discordPlugin/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/messengerPlugin/MessengerJSApplication/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/messengerPlugin/MessengerJSApplication/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/messengerPlugin/MessengerJSApplication/src/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/messengerPlugin/MessengerJSApplication/src/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/messengerPlugin/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/messengerPlugin/build.gradle" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/messengerPlugin/src/Main.kt" beforeDir="false" afterPath="$PROJECT_DIR$/messengerPlugin/src/Main.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/messengerPlugin/src/MessengerAPI.kt" beforeDir="false" afterPath="$PROJECT_DIR$/messengerPlugin/src/MessengerAPI.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/settings.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/settings.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/PluginLoader.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/PluginLoader.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/commandParser.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/commandParser.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/core.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/core.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/interfaces.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/interfaces.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -71,27 +84,67 @@
               <path>
                 <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
                 <item name="convergence.bot" type="f1a62948:ProjectNode" />
-                <item name="messengerPlugin/MessengerJSConnector" type="2d1252cf:ModuleNode" />
+                <item name="convergence.bot" type="2d1252cf:ModuleNode" />
               </path>
               <path>
                 <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
                 <item name="convergence.bot" type="f1a62948:ProjectNode" />
-                <item name="messengerPlugin/MessengerJSConnector" type="2d1252cf:ModuleNode" />
+                <item name="convergence.bot" type="2d1252cf:ModuleNode" />
                 <item name="Tasks" type="e4a08cd1:TasksNode" />
               </path>
               <path>
                 <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
                 <item name="convergence.bot" type="f1a62948:ProjectNode" />
-                <item name="messengerPlugin/MessengerJSConnector" type="2d1252cf:ModuleNode" />
+                <item name="convergence.bot" type="2d1252cf:ModuleNode" />
                 <item name="Tasks" type="e4a08cd1:TasksNode" />
-                <item name="node" type="c8890929:TasksNode$1" />
+                <item name="application" type="c8890929:TasksNode$1" />
               </path>
               <path>
                 <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
                 <item name="convergence.bot" type="f1a62948:ProjectNode" />
-                <item name="messengerPlugin/MessengerJSConnector" type="2d1252cf:ModuleNode" />
+                <item name="convergence.bot" type="2d1252cf:ModuleNode" />
                 <item name="Tasks" type="e4a08cd1:TasksNode" />
-                <item name="other" type="c8890929:TasksNode$1" />
+                <item name="build" type="c8890929:TasksNode$1" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="convergence.bot" type="f1a62948:ProjectNode" />
+                <item name="convergence.bot" type="2d1252cf:ModuleNode" />
+                <item name="messengerPlugin" type="2d1252cf:ModuleNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="convergence.bot" type="f1a62948:ProjectNode" />
+                <item name="convergence.bot" type="2d1252cf:ModuleNode" />
+                <item name="messengerPlugin" type="2d1252cf:ModuleNode" />
+                <item name="Source Sets" type="e897c970:GradleViewContributor$SourceSetsNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="convergence.bot" type="f1a62948:ProjectNode" />
+                <item name="convergence.bot" type="2d1252cf:ModuleNode" />
+                <item name="messengerPlugin" type="2d1252cf:ModuleNode" />
+                <item name="Source Sets" type="e897c970:GradleViewContributor$SourceSetsNode" />
+                <item name="main" type="396b929e:GradleViewContributor$SourceSetNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="convergence.bot" type="f1a62948:ProjectNode" />
+                <item name="convergence.bot" type="2d1252cf:ModuleNode" />
+                <item name="messengerPlugin" type="2d1252cf:ModuleNode" />
+                <item name="Source Sets" type="e897c970:GradleViewContributor$SourceSetsNode" />
+                <item name="main" type="396b929e:GradleViewContributor$SourceSetNode" />
+                <item name="Dependencies" type="6de06a37:ExternalSystemViewDefaultContributor$MyDependenciesNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="convergence.bot" type="f1a62948:ProjectNode" />
+                <item name="convergence.bot" type="2d1252cf:ModuleNode" />
+                <item name="messengerPlugin" type="2d1252cf:ModuleNode" />
+                <item name="Source Sets" type="e897c970:GradleViewContributor$SourceSetsNode" />
+                <item name="main" type="396b929e:GradleViewContributor$SourceSetNode" />
+                <item name="Dependencies" type="6de06a37:ExternalSystemViewDefaultContributor$MyDependenciesNode" />
+                <item name="io.ktor:ktor-client-cio:1.3.0" type="cfea851d:ExternalSystemViewDefaultContributor$LibraryDependencyDataExternalSystemNode" />
               </path>
             </expand>
             <select />
@@ -130,7 +183,7 @@
     <setting file="file://$PROJECT_DIR$/src/main/kotlin/convergence/commandParser.kt" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="MacroExpansionManager">
-    <option name="directoryName" value="ESZRssKT" />
+    <option name="directoryName" value="EZWYEANw" />
   </component>
   <component name="MavenImportPreferences">
     <option name="importingSettings">
@@ -158,6 +211,7 @@
     <property name="aspect.path.notification.shown" value="true" />
     <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1548263320171" />
     <property name="full.screen.before.presentation.mode" value="false" />
+    <property name="javascript.nodejs.core.library.configured.version" value="8.17.0" />
     <property name="jdk.selected.JAVA_MODULE" value="Kotlin SDK" />
     <property name="last_opened_file_path" value="$USER_HOME$/PhpstormProjects/CS490" />
     <property name="node.js.detected.package.eslint" value="true" />
@@ -198,13 +252,32 @@
       <command value="gradle --version" />
     </option>
   </component>
-  <component name="RunManager" selected="Gradle.convergenceBot:messengerPlugin:MessengerJSConnector [putIntoOneFile]">
+  <component name="RunManager" selected="Gradle.convergenceBot [jar]">
     <configuration default="true" type="AndroidJUnit">
       <option name="TEST_OBJECT" value="class" />
       <option name="WORKING_DIRECTORY" value="$MODULE_DIR$" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
+    </configuration>
+    <configuration name="convergenceBot [jar]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="jar" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <GradleScriptDebugEnabled>true</GradleScriptDebugEnabled>
+      <method v="2" />
     </configuration>
     <configuration name="convergenceBot [run]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
@@ -237,25 +310,6 @@
         <option name="taskNames">
           <list>
             <option value="clean" />
-          </list>
-        </option>
-        <option name="vmOptions" />
-      </ExternalSystemSettings>
-      <GradleScriptDebugEnabled>true</GradleScriptDebugEnabled>
-      <method v="2" />
-    </configuration>
-    <configuration name="convergenceBot:messengerPlugin [jar]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
-      <ExternalSystemSettings>
-        <option name="executionName" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$/messengerPlugin" />
-        <option name="externalSystemIdString" value="GRADLE" />
-        <option name="scriptParameters" />
-        <option name="taskDescriptions">
-          <list />
-        </option>
-        <option name="taskNames">
-          <list>
-            <option value="jar" />
           </list>
         </option>
         <option name="vmOptions" />
@@ -302,19 +356,19 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Gradle.convergenceBot:messengerPlugin [jar]" />
       <item itemvalue="Gradle.convergenceBot [run]" />
       <item itemvalue="Gradle.convergenceBot:messengerPlugin [clean]" />
       <item itemvalue="Gradle.convergenceBot:messengerPlugin:MessengerJSConnector [npmInstall]" />
       <item itemvalue="Gradle.convergenceBot:messengerPlugin:MessengerJSConnector [putIntoOneFile]" />
+      <item itemvalue="Gradle.convergenceBot [jar]" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Gradle.convergenceBot [jar]" />
         <item itemvalue="Gradle.convergenceBot:messengerPlugin:MessengerJSConnector [putIntoOneFile]" />
         <item itemvalue="Gradle.convergenceBot:messengerPlugin:MessengerJSConnector [npmInstall]" />
         <item itemvalue="Gradle.convergenceBot [run]" />
         <item itemvalue="Gradle.convergenceBot:messengerPlugin [clean]" />
-        <item itemvalue="Gradle.convergenceBot:messengerPlugin [jar]" />
       </list>
     </recent_temporary>
   </component>
@@ -465,6 +519,9 @@
       <workItem from="1574666631772" duration="3728000" />
       <workItem from="1574813343035" duration="7439000" />
       <workItem from="1574894261514" duration="887000" />
+      <workItem from="1579568964722" duration="1543000" />
+      <workItem from="1579663209797" duration="4638000" />
+      <workItem from="1579671933156" duration="2048000" />
     </task>
     <task id="LOCAL-00001" summary="Add more stages to research.">
       <created>1533403104037</created>
@@ -854,23 +911,21 @@
       <screen x="0" y="0" width="1680" height="1008" />
     </state>
     <state x="541" y="118" key="#Tests_in_'convergence.bot'/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1572470182393" />
-    <state x="747" y="238" key="#com.intellij.ide.util.MemberChooser" timestamp="1569211853552" />
-    <state x="747" y="238" key="#com.intellij.ide.util.MemberChooser/1920.1080" timestamp="1569211853553" />
-    <state x="646" y="255" key="#com.intellij.openapi.updateSettings.impl.PluginUpdateInfoDialog" timestamp="1574813276982">
-      <screen x="0" y="0" width="1680" height="1008" />
+    <state x="738" y="262" key="#com.intellij.openapi.updateSettings.impl.PluginUpdateInfoDialog" timestamp="1579569008301">
+      <screen x="0" y="0" width="1920" height="1036" />
     </state>
     <state x="646" y="255" key="#com.intellij.openapi.updateSettings.impl.PluginUpdateInfoDialog/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1574813276982" />
-    <state x="646" y="255" key="#com.intellij.openapi.updateSettings.impl.PluginUpdateInfoDialog/1680.1050/1680.1050" timestamp="1569211853553" />
-    <state x="646" y="255" key="#com.intellij.openapi.updateSettings.impl.PluginUpdateInfoDialog/1920.1080" timestamp="1569211853553" />
+    <state x="738" y="262" key="#com.intellij.openapi.updateSettings.impl.PluginUpdateInfoDialog/0.0.1920.1036@0.0.1920.1036" timestamp="1579569008301" />
     <state x="578" y="253" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog" timestamp="1573764154482">
       <screen x="0" y="0" width="1680" height="1008" />
     </state>
     <state x="578" y="253" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1573764154482" />
-    <state x="362" y="27" key="CommitChangelistDialog2" timestamp="1574736109674">
-      <screen x="0" y="0" width="1680" height="1008" />
+    <state x="414" y="28" key="CommitChangelistDialog2" timestamp="1579675166999">
+      <screen x="0" y="0" width="1920" height="1036" />
     </state>
     <state x="362" y="27" key="CommitChangelistDialog2/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1574736109674" />
-    <state x="509" y="27" key="CommitChangelistDialog2/1920.1080" timestamp="1569211853553" />
+    <state x="414" y="28" key="CommitChangelistDialog2/0.0.1920.1036@0.0.1920.1036" timestamp="1579675166999" />
+    <state x="2334" y="29" key="CommitChangelistDialog2/1920.0.1920.1080/0.0.1920.1036@1920.0.1920.1080" timestamp="1579196576859" />
     <state x="336" y="94" key="DiffContextDialog" timestamp="1574736024873">
       <screen x="0" y="0" width="1680" height="1008" />
     </state>
@@ -880,25 +935,29 @@
     </state>
     <state x="628" y="252" key="FileChooserDialogImpl/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1574461792528" />
     <state x="2308" y="262" key="FileChooserDialogImpl/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1571244861433" />
-    <state width="1874" height="264" key="GridCell.Tab.0.bottom" timestamp="1574894780969">
-      <screen x="0" y="0" width="1920" height="1038" />
+    <state width="1874" height="260" key="GridCell.Tab.0.bottom" timestamp="1579570507651">
+      <screen x="0" y="0" width="1920" height="1036" />
     </state>
     <state width="1634" height="315" key="GridCell.Tab.0.bottom/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1573852283800" />
+    <state width="1874" height="260" key="GridCell.Tab.0.bottom/0.0.1920.1036@0.0.1920.1036" timestamp="1579570507651" />
     <state width="1874" height="264" key="GridCell.Tab.0.bottom/0.0.1920.1038@0.0.1920.1038" timestamp="1574894780969" />
-    <state width="1874" height="264" key="GridCell.Tab.0.center" timestamp="1574894780969">
-      <screen x="0" y="0" width="1920" height="1038" />
+    <state width="1874" height="260" key="GridCell.Tab.0.center" timestamp="1579570507650">
+      <screen x="0" y="0" width="1920" height="1036" />
     </state>
     <state width="1634" height="315" key="GridCell.Tab.0.center/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1573852283800" />
+    <state width="1874" height="260" key="GridCell.Tab.0.center/0.0.1920.1036@0.0.1920.1036" timestamp="1579570507650" />
     <state width="1874" height="264" key="GridCell.Tab.0.center/0.0.1920.1038@0.0.1920.1038" timestamp="1574894780969" />
-    <state width="1874" height="264" key="GridCell.Tab.0.left" timestamp="1574894780968">
-      <screen x="0" y="0" width="1920" height="1038" />
+    <state width="1874" height="260" key="GridCell.Tab.0.left" timestamp="1579570507649">
+      <screen x="0" y="0" width="1920" height="1036" />
     </state>
     <state width="1634" height="315" key="GridCell.Tab.0.left/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1573852283800" />
+    <state width="1874" height="260" key="GridCell.Tab.0.left/0.0.1920.1036@0.0.1920.1036" timestamp="1579570507649" />
     <state width="1874" height="264" key="GridCell.Tab.0.left/0.0.1920.1038@0.0.1920.1038" timestamp="1574894780968" />
-    <state width="1874" height="264" key="GridCell.Tab.0.right" timestamp="1574894780969">
-      <screen x="0" y="0" width="1920" height="1038" />
+    <state width="1874" height="260" key="GridCell.Tab.0.right" timestamp="1579570507650">
+      <screen x="0" y="0" width="1920" height="1036" />
     </state>
     <state width="1634" height="315" key="GridCell.Tab.0.right/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1573852283800" />
+    <state width="1874" height="260" key="GridCell.Tab.0.right/0.0.1920.1036@0.0.1920.1036" timestamp="1579570507650" />
     <state width="1874" height="264" key="GridCell.Tab.0.right/0.0.1920.1038@0.0.1920.1038" timestamp="1574894780969" />
     <state width="1634" height="315" key="GridCell.Tab.1.bottom" timestamp="1573852283800">
       <screen x="0" y="0" width="1680" height="1008" />
@@ -924,15 +983,15 @@
       <screen x="0" y="0" width="1680" height="1008" />
     </state>
     <state x="472" y="130" key="SettingsEditor/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1573337651344" />
-    <state x="329" y="142" key="SettingsEditor/0.0.1680.1014/1680.0.1680.1050@0.0.1680.1014" timestamp="1569218651446" />
     <state x="577" y="129" key="VCS.ChangeListViewerDialog" timestamp="1572838061346">
       <screen x="0" y="0" width="1680" height="1008" />
     </state>
     <state x="577" y="129" key="VCS.ChangeListViewerDialog/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1572838061346" />
-    <state x="440" y="240" key="Vcs.Push.Dialog.v2" timestamp="1574736111945">
-      <screen x="0" y="0" width="1680" height="1008" />
+    <state x="2423" y="257" key="Vcs.Push.Dialog.v2" timestamp="1579196582408">
+      <screen x="1920" y="0" width="1920" height="1080" />
     </state>
     <state x="440" y="240" key="Vcs.Push.Dialog.v2/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1574736111945" />
+    <state x="2423" y="257" key="Vcs.Push.Dialog.v2/1920.0.1920.1080/0.0.1920.1036@1920.0.1920.1080" timestamp="1579196582408" />
     <state x="100" y="100" width="1480" height="808" key="com.intellij.dvcs.ui.CompareBranchesDialog" timestamp="1572837815450">
       <screen x="0" y="0" width="1680" height="1008" />
     </state>
@@ -941,15 +1000,16 @@
       <screen x="0" y="0" width="1680" height="1008" />
     </state>
     <state x="100" y="100" width="1480" height="808" key="com.intellij.history.integration.ui.views.FileHistoryDialog/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1573342273814" />
-    <state x="608" y="339" key="com.intellij.ide.util.TipDialog" timestamp="1574813343026">
-      <screen x="0" y="0" width="1680" height="1008" />
+    <state x="695" y="348" key="com.intellij.ide.util.TipDialog" timestamp="1579671981404">
+      <screen x="0" y="0" width="1920" height="1036" />
     </state>
-    <state x="608" y="338" key="com.intellij.ide.util.TipDialog/0.0.1680.1006/1680.0.1680.1050@0.0.1680.1006" timestamp="1570427107057" />
     <state x="608" y="339" key="com.intellij.ide.util.TipDialog/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1574813343026" />
     <state x="2288" y="353" key="com.intellij.ide.util.TipDialog/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1571244831598" />
-    <state x="608" y="341" key="com.intellij.ide.util.TipDialog/0.0.1680.1014/1680.0.1680.1050@0.0.1680.1014" timestamp="1569219149727" />
-    <state x="608" y="341" key="com.intellij.ide.util.TipDialog/1680.1050/1680.1050" timestamp="1569211853553" />
-    <state x="608" y="341" key="com.intellij.ide.util.TipDialog/1920.1080" timestamp="1569211853553" />
+    <state x="695" y="348" key="com.intellij.ide.util.TipDialog/0.0.1920.1036@0.0.1920.1036" timestamp="1579671981404" />
+    <state x="654" y="187" key="com.intellij.openapi.editor.actions.MultiplePasteAction$ClipboardContentChooser" timestamp="1579570243207">
+      <screen x="0" y="0" width="1920" height="1036" />
+    </state>
+    <state x="654" y="187" key="com.intellij.openapi.editor.actions.MultiplePasteAction$ClipboardContentChooser/0.0.1920.1036@0.0.1920.1036" timestamp="1579570243207" />
     <state x="635" y="419" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1572838022963">
       <screen x="0" y="0" width="1680" height="1008" />
     </state>
@@ -966,7 +1026,6 @@
       <screen x="0" y="0" width="1680" height="1008" />
     </state>
     <state x="329" y="157" key="new project wizard/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1572471030943" />
-    <state x="2336" y="109" key="new project wizard/2560.1080/1680.1050/1680.1050" timestamp="1569211853553" />
     <state x="504" y="229" width="672" height="677" key="run.anything.popup" timestamp="1574819019656">
       <screen x="0" y="0" width="1680" height="1008" />
     </state>
