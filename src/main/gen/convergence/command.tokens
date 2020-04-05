@@ -1,0 +1,9 @@
+RegularEscape=1
+UnicodeEscape=2
+OctalEscape=3
+InvalidEscape=4
+Alnum=5
+Whitespace=6
+NotWhitespaceOrQuote=7
+Quote=8
+'"'=8

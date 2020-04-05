@@ -42,6 +42,13 @@ class CommandParserTest {
     }
 
     @Test
+    fun invalidCommand() {
+        assertFailsWith<InvalidCommandException>("Did not fail on invalid command.") {
+            loadCommandData("!test2.5 abc\"def")
+        }
+    }
+
+    @Test
     fun invalidUnicodeEscapes() {
         assertFailsWith<InvalidEscapeSequence>("Did not fail on empty unicode escape.") {
             loadCommandData("!test3 \\u")
@@ -53,9 +60,9 @@ class CommandParserTest {
 
     @Test
     fun validOctalEscapes() {
-        val testCommandData = loadCommandData("!test5 \\0 \\10 \\100")
+        val testCommandData = loadCommandData("!test5 h\\0 \\10 \\100")
         assertEquals("test5", testCommandData?.command?.name, "Did not load test5 command correctly.")
-        assertEquals("\u0000", testCommandData?.args?.get(0), "Did not escape \\0 properly.")
+        assertEquals("h\u0000", testCommandData?.args?.get(0), "Did not escape \\0 properly.")
         assertEquals("\u0008", testCommandData?.args?.get(1), "Did not escape \\10 properly.")
         assertEquals("\u0040", testCommandData?.args?.get(2), "Did not escape \\100 properly.")
     }

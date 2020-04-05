@@ -34,7 +34,7 @@ object PluginLoader {
             val className = rawClassName.substringBefore(".class").replace('/', '.')
             try {
                 val pluginClass = Reflection.createKotlinClass(jcl.loadClass(className))
-                val plugin = pluginClass.objectInstance as Plugin?
+                val plugin = pluginClass.objectInstance as? Plugin
                 if (plugin == null) {
                     logErr("Plugin with classname ${pluginClass.simpleName ?: pluginClass.jvmName} is not a singleton!")
                     continue

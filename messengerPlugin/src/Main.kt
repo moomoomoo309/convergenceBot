@@ -103,7 +103,7 @@ fun String.md5(): String {
 @KtorExperimentalAPI
 object Main: Plugin {
     override val name = "MessengerPlugin"
-    override val baseInterface: BaseInterface = MessengerInterface
+    override val baseInterface = MessengerInterface
     override fun init() {
         println("Messenger Plugin initialized.")
         val facebookCredentials = Paths.get(System.getProperty("user.home"), ".convergence", "facebookCredentials.json")

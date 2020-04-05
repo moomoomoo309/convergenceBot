@@ -5,7 +5,6 @@ package convergence
 import kotlinx.serialization.Polymorphic
 import kotlinx.serialization.Serializable
 import java.time.OffsetDateTime
-import kotlin.collections.set
 import kotlin.reflect.KClass
 
 @Polymorphic
@@ -19,9 +18,7 @@ abstract class Protocol(val name: String) {
         return true
     }
 
-    override fun hashCode(): Int {
-        return name.hashCode()
-    }
+    override fun hashCode(): Int = name.hashCode()
 }
 
 //Intentionally empty, because it might be represented as an int or a string or whatever.
@@ -93,19 +90,15 @@ interface BaseInterface {
 private val callbacks = HashMap<KClass<out OptionalFunctionality>, ArrayList<OptionalFunctionality>>()
 
 fun registerCallback(fct: OptionalFunctionality) {
-    if (callbacks[fct::class] == null)
-        callbacks[fct::class] = ArrayList()
-    callbacks[fct::class]!!.add(fct)
+    callbacks.putIfAbsent(fct::class, ArrayList())
+    callbacks[fct::class]?.add(fct)
+            ?: throw IllegalArgumentException("Tried to register callback for unregistered class ${fct::class.simpleName}.")
 }
 
-fun runCallbacks(callbackClass: KClass<out OptionalFunctionality>, vararg args: Any): Boolean {
-    var success = false
-    if (callbackClass in callbacks)
-        for (callback in callbacks[callbackClass]!!)
-            if (callback(args))
-                success = true
-    return success
-}
+fun runCallbacks(callbackClass: KClass<out OptionalFunctionality>, vararg args: Any) =
+        callbacks[callbackClass]?.any { callback ->
+            callback(args)
+        } ?: false
 
 inline fun <reified T: OptionalFunctionality> runCallbacks(vararg args: Any) = runCallbacks(T::class, *args)
 
@@ -127,7 +120,7 @@ sealed class OptionalFunctionality {
             override fun invoke(vararg args: Any) = fct(args[0] as Chat, args[1] as User, args[2] as String)
         }
 
-        fun changedNickname(chat: Chat, user: User, oldName: String): Boolean = runCallbacks(ChangedNickname::class, chat, user, oldName)
+        fun changedNickname(chat: Chat, user: User, oldName: String) = runCallbacks<ChangedNickname>(chat, user, oldName)
     }
 
     interface IImages {
@@ -140,7 +133,7 @@ sealed class OptionalFunctionality {
                     ?: "")
         }
 
-        fun receivedImage(chat: Chat, image: Image, sender: User, message: String): Boolean = runCallbacks(ReceivedImage::class, chat, image, sender, message)
+        fun receivedImage(chat: Chat, image: Image, sender: User, message: String) = runCallbacks<ReceivedImage>(chat, image, sender, message)
     }
 
     interface IOtherMessageEditable {
@@ -150,7 +143,7 @@ sealed class OptionalFunctionality {
             override fun invoke(vararg args: Any): Boolean = fct(args[0] as String, args[1] as User, args[2] as String)
         }
 
-        fun editedMessage(oldMessage: String, sender: User, newMessage: String) = runCallbacks(EditMessage::class, oldMessage, sender, newMessage)
+        fun editedMessage(oldMessage: String, sender: User, newMessage: String) = runCallbacks<EditMessage>(oldMessage, sender, newMessage)
     }
 
     interface IMessageHistory {
@@ -168,7 +161,7 @@ sealed class OptionalFunctionality {
             override fun invoke(vararg args: Any) = fct(args[0] as Chat, args[1] as String, args[2] as Set<User>)
         }
 
-        fun mentionedUsers(chat: Chat, message: String, users: Set<User>) = runCallbacks(MentionedUser::class, chat, message, users)
+        fun mentionedUsers(chat: Chat, message: String, users: Set<User>) = runCallbacks<MentionedUser>(chat, message, users)
     }
 
     interface ITypingStatus {
@@ -178,13 +171,13 @@ sealed class OptionalFunctionality {
             override fun invoke(vararg args: Any): Boolean = fct(args[0] as Chat, args[1] as User)
         }
 
-        fun startedTyping(chat: Chat, user: User) = runCallbacks(StartedTyping::class, chat, user)
+        fun startedTyping(chat: Chat, user: User) = runCallbacks<StartedTyping>(chat, user)
 
         class StoppedTyping(val fct: (Chat, User) -> Boolean): OptionalFunctionality() {
             override fun invoke(vararg args: Any): Boolean = fct(args[0] as Chat, args[1] as User)
         }
 
-        fun stoppedTyping(chat: Chat, user: User) = runCallbacks(StoppedTyping::class, chat, user)
+        fun stoppedTyping(chat: Chat, user: User) = runCallbacks<StoppedTyping>(chat, user)
     }
 
     interface IStickers {
@@ -196,7 +189,7 @@ sealed class OptionalFunctionality {
             override fun invoke(vararg args: Any): Boolean = fct(args[0] as Chat, args[1] as Sticker, args[2] as User)
         }
 
-        fun receivedSticker(chat: Chat, sticker: Sticker, sender: User) = runCallbacks(ReceivedSticker::class, chat, sticker, sender)
+        fun receivedSticker(chat: Chat, sticker: Sticker, sender: User) = runCallbacks<ReceivedSticker>(chat, sticker, sender)
     }
 
     interface IUserStatus { // Like your status on Skype.
@@ -214,7 +207,7 @@ sealed class OptionalFunctionality {
             override fun invoke(vararg args: Any): Boolean = fct(args[0] as Chat, args[1] as User, args[2] as Availability)
         }
 
-        fun changedAvailability(chat: Chat, user: User, availability: Availability) = runCallbacks(ChangedAvailability::class, chat, user, availability)
+        fun changedAvailability(chat: Chat, user: User, availability: Availability) = runCallbacks<ChangedAvailability>(chat, user, availability)
     }
 
     interface IReadStatus {
@@ -225,7 +218,7 @@ sealed class OptionalFunctionality {
             override fun invoke(vararg args: Any): Boolean = fct(args[0] as Chat, args[1] as MessageHistory, args[2] as User)
         }
 
-        fun readByUser(chat: Chat, message: MessageHistory, user: User) = runCallbacks(ReadByUser::class, chat, message, user)
+        fun readByUser(chat: Chat, message: MessageHistory, user: User) = runCallbacks<ReadByUser>(chat, message, user)
     }
 
     interface IFormatting {

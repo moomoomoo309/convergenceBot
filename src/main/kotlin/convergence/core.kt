@@ -170,9 +170,8 @@ fun replaceAliasVars(message: String?, sender: User): String? {
     val stringBuilder = StringBuilder((message.length * 1.5).toInt())
 
     var charIndex = -1
-    // Bitsets are faster than boolean arrays.
-    val bitSet = BitSet(aliasVars.size)
-    bitSet.set(0, aliasVars.size)
+    val possibleMatches = BooleanArray(aliasVars.size)
+    possibleMatches.fill(false)
 
     var anyTrue = false
     for (currentChar in message) {
@@ -185,9 +184,9 @@ fun replaceAliasVars(message: String?, sender: User): String? {
             var i = -1
             for ((string, aliasVar) in aliasVars) {
                 i++
-                if (bitSet[i] && currentChar != string[charIndex])
-                    bitSet[i] = false
-                if (bitSet[i]) {
+                if (possibleMatches[i] && currentChar != string[charIndex])
+                    possibleMatches[i] = false
+                if (possibleMatches[i]) {
                     anyTrue = true
                     if (charIndex == string.length - 1) {
                         val baseInterface = baseInterfaceMap[chat.protocol]!!

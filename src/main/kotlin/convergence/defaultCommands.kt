@@ -11,7 +11,6 @@ import java.time.Duration
 import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.util.*
-import kotlin.math.ceil
 import kotlin.math.nextUp
 
 class UnregisteredChat: Exception()
@@ -45,7 +44,7 @@ fun getUserFromName(chat: Chat, name: String): User? {
 fun getFullName(chat: Chat, name: String): String? {
     val user = getUserFromName(chat, name)
     if (chat.protocol in protocols)
-        return if (user != null) baseInterfaceMap[chat.protocol]!!.getName(chat, user) else null
+        return user?.let { baseInterfaceMap[chat.protocol]?.getName(chat, user) }
     unregisteredChat(chat)
     return null
 }
@@ -55,7 +54,7 @@ const val commandsPerPage = 10
 fun help(args: List<String>, sender: User): String? {
     val chat = sender.chat
     val pageOrCommand = if (args.isEmpty()) 1 else args[0].toIntOrNull() ?: args[0]
-    val numPages = ceil(sortedHelpText.size.toDouble() / commandsPerPage).nextUp().toInt()
+    val numPages = (sortedHelpText.size.toDouble() / commandsPerPage).nextUp().toInt()
     return when (pageOrCommand) {
         is Int -> {
             val helpText = StringBuilder("Help page $pageOrCommand/$numPages:\n")
@@ -77,7 +76,6 @@ fun help(args: List<String>, sender: User): String? {
 }
 
 fun echo(args: List<String>, sender: User): String? = args.joinToString(" ")
-
 fun ping(args: List<String>, sender: User): String? = "Pong!"
 
 fun addAlias(args: List<String>, sender: User): String? {
@@ -86,7 +84,7 @@ fun addAlias(args: List<String>, sender: User): String? {
     val command = parseCommand(commandDelimiter + args[1], commandDelimiter, chat)
             ?: return "Alias does not refer to a valid command!"
     if (!registerAlias(Alias(chat, args[0], command.command, command.args, args[1], command.command.syntaxText)))
-        return ""
+        return "An alias with that name is already registered!"
     return "Alias \"${args[0]}\" registered to \"${args[1]}\"."
 }
 
@@ -107,9 +105,7 @@ fun removeAlias(args: List<String>, sender: User): String? {
     else "Aliases \"${args.asSequence().filterIndexed { i, _ -> validAliases[i] }.joinToString("\", \"")}\" removed."
 }
 
-fun me(args: List<String>, sender: User): String? {
-    return "*${getUserName(sender)} ${args.joinToString(" ")}"
-}
+fun me(args: List<String>, sender: User): String? = "*${getUserName(sender)} ${args.joinToString(" ")}."
 
 fun chats(args: List<String>, sender: User): String? {
     val builder = StringBuilder()
@@ -125,9 +121,8 @@ fun chats(args: List<String>, sender: User): String? {
 
 val dateTimeParser = Parser()
 
-fun dateToOffsetDateTime(d: Date, tz: ZoneId? = null): OffsetDateTime {
-    return OffsetDateTime.ofInstant(d.toInstant(), tz ?: ZoneId.systemDefault())
-}
+fun dateToOffsetDateTime(d: Date, tz: ZoneId? = null): OffsetDateTime = OffsetDateTime.ofInstant(d.toInstant(), tz
+        ?: ZoneId.systemDefault())
 
 @ImplicitReflectionSerializer
 private fun scheduleLoc(groups: List<DateGroup>, sender: User, location: String, durationStr: String,
@@ -144,7 +139,7 @@ private fun scheduleLoc(groups: List<DateGroup>, sender: User, location: String,
                             listOf(location)
                         else
                             listOf(location, "for", durationStr)), dateToOffsetDateTime(it))
-                        ?: "No events scheduled.")
+                        ?: "No events scheduled.\n")
             }
         }
     }
@@ -153,6 +148,7 @@ private fun scheduleLoc(groups: List<DateGroup>, sender: User, location: String,
 
 val defaultDuration = Duration.ofMinutes(45)!!
 private val locations = HashMap<User, Pair<OffsetDateTime, String>>()
+
 @ImplicitReflectionSerializer
 fun setLocation(args: List<String>, sender: User): String? {
     val location = StringBuilder(args[0])
