@@ -22,24 +22,8 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="29d84833-fb05-450b-b63e-091fc3136e36" name="Default Changelist" comment="Replace commandParser with an ANTLRv4 based parser.">
-      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="29d84833-fb05-450b-b63e-091fc3136e36" name="Default Changelist" comment="Remove kotlinx.serialization, replace with a JSON-based serialization method with less magic.&#10;&#10;Less magic means the dynamic class loading mechanisms will cause less issues, plus the code is actually very easy to write, easier than the equivalent kotlinx.serialization code, and to maintain, since this code does not depend on any library besides Klaxon (and switching that out would be simple)">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/consolePlugin/src/Main.kt" beforeDir="false" afterPath="$PROJECT_DIR$/consolePlugin/src/Main.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/discordPlugin/src/Main.kt" beforeDir="false" afterPath="$PROJECT_DIR$/discordPlugin/src/Main.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/discordPlugin/src/Serializers.kt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/messengerPlugin/src/Main.kt" beforeDir="false" afterPath="$PROJECT_DIR$/messengerPlugin/src/Main.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/messengerPlugin/src/MessengerAPI.kt" beforeDir="false" afterPath="$PROJECT_DIR$/messengerPlugin/src/MessengerAPI.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/Serializers.kt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/command.g4" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/command.g4" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/commandParser.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/commandParser.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/core.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/core.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/defaultCommands.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/defaultCommands.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/interfaces.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/interfaces.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/kotlin/convergence/CommandParserTest.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/kotlin/convergence/CommandParserTest.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/kotlin/convergence/DefaultCommandTests.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/kotlin/convergence/DefaultCommandTests.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -602,14 +586,7 @@
       <workItem from="1586070758392" duration="2308000" />
       <workItem from="1586140482540" duration="5858000" />
       <workItem from="1586472573229" duration="6000" />
-      <workItem from="1586472600088" duration="19192000" />
-    </task>
-    <task id="LOCAL-00001" summary="Add more stages to research.">
-      <created>1533403104037</created>
-      <option name="number" value="00001" />
-      <option name="presentableId" value="LOCAL-00001" />
-      <option name="project" value="LOCAL" />
-      <updated>1533403104038</updated>
+      <workItem from="1586472600088" duration="19567000" />
     </task>
     <task id="LOCAL-00002" summary="Add notes on how to implement stage 1.">
       <created>1533482292925</created>
@@ -947,7 +924,14 @@
       <option name="project" value="LOCAL" />
       <updated>1586069516996</updated>
     </task>
-    <option name="localTasksCounter" value="50" />
+    <task id="LOCAL-00050" summary="Remove kotlinx.serialization, replace with a JSON-based serialization method with less magic.&#10;&#10;Less magic means the dynamic class loading mechanisms will cause less issues, plus the code is actually very easy to write, easier than the equivalent kotlinx.serialization code, and to maintain, since this code does not depend on any library besides Klaxon (and switching that out would be simple)">
+      <created>1586504779718</created>
+      <option name="number" value="00050" />
+      <option name="presentableId" value="LOCAL-00050" />
+      <option name="project" value="LOCAL" />
+      <updated>1586504779719</updated>
+    </task>
+    <option name="localTasksCounter" value="51" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -991,7 +975,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
-    <MESSAGE value="Remove files that shouldn't be tracked by git, add interface callbacks." />
     <MESSAGE value="Implement Scheduler for the schedule command." />
     <MESSAGE value="Implemented SchedulerThread, made bot runnable from gradle." />
     <MESSAGE value="Remove serialization stuff, add Klaxon as a library." />
@@ -1016,7 +999,8 @@
     <MESSAGE value="Add .idea folder to .gitignore." />
     <MESSAGE value="Make plugin threads accessible globally." />
     <MESSAGE value="Replace commandParser with an ANTLRv4 based parser." />
-    <option name="LAST_COMMIT_MESSAGE" value="Replace commandParser with an ANTLRv4 based parser." />
+    <MESSAGE value="Remove kotlinx.serialization, replace with a JSON-based serialization method with less magic.&#10;&#10;Less magic means the dynamic class loading mechanisms will cause less issues, plus the code is actually very easy to write, easier than the equivalent kotlinx.serialization code, and to maintain, since this code does not depend on any library besides Klaxon (and switching that out would be simple)" />
+    <option name="LAST_COMMIT_MESSAGE" value="Remove kotlinx.serialization, replace with a JSON-based serialization method with less magic.&#10;&#10;Less magic means the dynamic class loading mechanisms will cause less issues, plus the code is actually very easy to write, easier than the equivalent kotlinx.serialization code, and to maintain, since this code does not depend on any library besides Klaxon (and switching that out would be simple)" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REARRANGE_BEFORE_PROJECT_COMMIT" value="true" />
@@ -1105,10 +1089,10 @@
       <screen x="0" y="0" width="1680" height="1008" />
     </state>
     <state x="559" y="123" key="VCS.ChangeListViewerDialog/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1581986049959" />
-    <state x="2120" y="240" key="Vcs.Push.Dialog.v2" timestamp="1586069519071">
+    <state x="2120" y="240" key="Vcs.Push.Dialog.v2" timestamp="1586504782607">
       <screen x="1680" y="0" width="1680" height="1050" />
     </state>
-    <state x="2120" y="240" key="Vcs.Push.Dialog.v2/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586069519071" />
+    <state x="2120" y="240" key="Vcs.Push.Dialog.v2/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586504782607" />
     <state x="635" y="419" width="411" height="173" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1586186689060">
       <screen x="0" y="0" width="1680" height="1008" />
     </state>
