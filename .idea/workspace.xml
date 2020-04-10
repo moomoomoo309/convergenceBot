@@ -22,30 +22,24 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="29d84833-fb05-450b-b63e-091fc3136e36" name="Default Changelist" comment="Make plugin threads accessible globally.">
-      <change afterPath="$PROJECT_DIR$/src/main/gen/convergence/command.interp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/gen/convergence/command.tokens" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/gen/convergence/commandBaseListener.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/gen/convergence/commandBaseVisitor.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/gen/convergence/commandLexer.interp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/gen/convergence/commandLexer.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/gen/convergence/commandLexer.tokens" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/gen/convergence/commandListener.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/gen/convergence/commandParser.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/gen/convergence/commandVisitor.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/command.g4" afterDir="false" />
+    <list default="true" id="29d84833-fb05-450b-b63e-091fc3136e36" name="Default Changelist" comment="Replace commandParser with an ANTLRv4 based parser.">
       <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/jarRepositories.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/jarRepositories.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/consolePlugin/src/Main.kt" beforeDir="false" afterPath="$PROJECT_DIR$/consolePlugin/src/Main.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/discordPlugin/src/Main.kt" beforeDir="false" afterPath="$PROJECT_DIR$/discordPlugin/src/Main.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/discordPlugin/src/Serializers.kt" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/messengerPlugin/src/Main.kt" beforeDir="false" afterPath="$PROJECT_DIR$/messengerPlugin/src/Main.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/PluginLoader.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/PluginLoader.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/messengerPlugin/src/MessengerAPI.kt" beforeDir="false" afterPath="$PROJECT_DIR$/messengerPlugin/src/MessengerAPI.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/Serializers.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/command.g4" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/command.g4" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/commandParser.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/commandParser.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/core.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/core.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/defaultCommands.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/defaultCommands.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/interfaces.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/interfaces.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/test/kotlin/convergence/CommandParserTest.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/kotlin/convergence/CommandParserTest.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/kotlin/convergence/DefaultCommandTests.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/kotlin/convergence/DefaultCommandTests.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -122,90 +116,7 @@
                 <item name="convergence.bot" type="f1a62948:ProjectNode" />
                 <item name="convergence.bot" type="2d1252cf:ModuleNode" />
                 <item name="Tasks" type="e4a08cd1:TasksNode" />
-                <item name="application" type="c8890929:TasksNode$1" />
-              </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="convergence.bot" type="f1a62948:ProjectNode" />
-                <item name="convergence.bot" type="2d1252cf:ModuleNode" />
-                <item name="Tasks" type="e4a08cd1:TasksNode" />
-                <item name="build" type="c8890929:TasksNode$1" />
-              </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="convergence.bot" type="f1a62948:ProjectNode" />
-                <item name="convergence.bot" type="2d1252cf:ModuleNode" />
-                <item name="basicPlugin" type="2d1252cf:ModuleNode" />
-              </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="convergence.bot" type="f1a62948:ProjectNode" />
-                <item name="convergence.bot" type="2d1252cf:ModuleNode" />
-                <item name="basicPlugin" type="2d1252cf:ModuleNode" />
-                <item name="Tasks" type="e4a08cd1:TasksNode" />
-              </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="convergence.bot" type="f1a62948:ProjectNode" />
-                <item name="convergence.bot" type="2d1252cf:ModuleNode" />
-                <item name="basicPlugin" type="2d1252cf:ModuleNode" />
-                <item name="Tasks" type="e4a08cd1:TasksNode" />
-                <item name="build" type="c8890929:TasksNode$1" />
-              </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="convergence.bot" type="f1a62948:ProjectNode" />
-                <item name="convergence.bot" type="2d1252cf:ModuleNode" />
-                <item name="consolePlugin" type="2d1252cf:ModuleNode" />
-              </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="convergence.bot" type="f1a62948:ProjectNode" />
-                <item name="convergence.bot" type="2d1252cf:ModuleNode" />
-                <item name="consolePlugin" type="2d1252cf:ModuleNode" />
-                <item name="Tasks" type="e4a08cd1:TasksNode" />
-              </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="convergence.bot" type="f1a62948:ProjectNode" />
-                <item name="convergence.bot" type="2d1252cf:ModuleNode" />
-                <item name="consolePlugin" type="2d1252cf:ModuleNode" />
-                <item name="Tasks" type="e4a08cd1:TasksNode" />
-                <item name="build" type="c8890929:TasksNode$1" />
-              </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="convergence.bot" type="f1a62948:ProjectNode" />
-                <item name="convergence.bot" type="2d1252cf:ModuleNode" />
-                <item name="discordPlugin" type="2d1252cf:ModuleNode" />
-              </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="convergence.bot" type="f1a62948:ProjectNode" />
-                <item name="convergence.bot" type="2d1252cf:ModuleNode" />
-                <item name="discordPlugin" type="2d1252cf:ModuleNode" />
-                <item name="Tasks" type="e4a08cd1:TasksNode" />
-              </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="convergence.bot" type="f1a62948:ProjectNode" />
-                <item name="convergence.bot" type="2d1252cf:ModuleNode" />
-                <item name="messengerPlugin" type="2d1252cf:ModuleNode" />
-              </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="convergence.bot" type="f1a62948:ProjectNode" />
-                <item name="convergence.bot" type="2d1252cf:ModuleNode" />
-                <item name="messengerPlugin" type="2d1252cf:ModuleNode" />
-                <item name="Tasks" type="e4a08cd1:TasksNode" />
-              </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="convergence.bot" type="f1a62948:ProjectNode" />
-                <item name="convergence.bot" type="2d1252cf:ModuleNode" />
-                <item name="messengerPlugin" type="2d1252cf:ModuleNode" />
-                <item name="Tasks" type="e4a08cd1:TasksNode" />
-                <item name="build" type="c8890929:TasksNode$1" />
+                <item name="help" type="c8890929:TasksNode$1" />
               </path>
             </expand>
             <select />
@@ -304,7 +215,7 @@
       <command value="gradle --version" />
     </option>
   </component>
-  <component name="RunManager" selected="Gradle.CommandParserTest">
+  <component name="RunManager" selected="Gradle.convergenceBot [copyBot]">
     <configuration default="true" type="AndroidJUnit">
       <option name="TEST_OBJECT" value="class" />
       <option name="WORKING_DIRECTORY" value="$MODULE_DIR$" />
@@ -332,99 +243,99 @@
       <option name="OPTIONS" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="CommandParserTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+    <configuration name="convergenceBot [copyBot]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
         <option name="externalSystemIdString" value="GRADLE" />
-        <option name="scriptParameters" value="--tests &quot;convergence.CommandParserTest&quot;" />
+        <option name="scriptParameters" />
         <option name="taskDescriptions">
           <list />
         </option>
         <option name="taskNames">
           <list>
-            <option value=":test" />
+            <option value="copyBot" />
           </list>
         </option>
         <option name="vmOptions" />
       </ExternalSystemSettings>
-      <GradleScriptDebugEnabled>false</GradleScriptDebugEnabled>
+      <GradleScriptDebugEnabled>true</GradleScriptDebugEnabled>
       <method v="2" />
     </configuration>
-    <configuration name="CommandParserTest.doubleQuotedArguments" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+    <configuration name="convergenceBot [copyPlugins]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
         <option name="externalSystemIdString" value="GRADLE" />
-        <option name="scriptParameters" value="--tests &quot;convergence.CommandParserTest.doubleQuotedArguments&quot;" />
+        <option name="scriptParameters" />
         <option name="taskDescriptions">
           <list />
         </option>
         <option name="taskNames">
           <list>
-            <option value=":test" />
+            <option value="copyPlugins" />
           </list>
         </option>
         <option name="vmOptions" />
       </ExternalSystemSettings>
-      <GradleScriptDebugEnabled>false</GradleScriptDebugEnabled>
+      <GradleScriptDebugEnabled>true</GradleScriptDebugEnabled>
       <method v="2" />
     </configuration>
-    <configuration name="CommandParserTest.invalidCommand" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+    <configuration name="convergenceBot [dependencies]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
         <option name="externalSystemIdString" value="GRADLE" />
-        <option name="scriptParameters" value="--tests &quot;convergence.CommandParserTest.invalidCommand&quot;" />
+        <option name="scriptParameters" />
         <option name="taskDescriptions">
           <list />
         </option>
         <option name="taskNames">
           <list>
-            <option value=":test" />
+            <option value="dependencies" />
           </list>
         </option>
         <option name="vmOptions" />
       </ExternalSystemSettings>
-      <GradleScriptDebugEnabled>false</GradleScriptDebugEnabled>
+      <GradleScriptDebugEnabled>true</GradleScriptDebugEnabled>
       <method v="2" />
     </configuration>
-    <configuration name="CommandParserTest.validCommandWithQuotes" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+    <configuration name="convergenceBot [jar]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
         <option name="externalSystemIdString" value="GRADLE" />
-        <option name="scriptParameters" value="--tests &quot;convergence.CommandParserTest.validCommandWithQuotes&quot;" />
+        <option name="scriptParameters" />
         <option name="taskDescriptions">
           <list />
         </option>
         <option name="taskNames">
           <list>
-            <option value=":test" />
+            <option value="jar" />
           </list>
         </option>
         <option name="vmOptions" />
       </ExternalSystemSettings>
-      <GradleScriptDebugEnabled>false</GradleScriptDebugEnabled>
+      <GradleScriptDebugEnabled>true</GradleScriptDebugEnabled>
       <method v="2" />
     </configuration>
-    <configuration name="CommandParserTest.validOctalEscapes" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+    <configuration name="convergenceBot:discordPlugin [jar]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$/discordPlugin" />
         <option name="externalSystemIdString" value="GRADLE" />
-        <option name="scriptParameters" value="--tests &quot;convergence.CommandParserTest.validOctalEscapes&quot;" />
+        <option name="scriptParameters" />
         <option name="taskDescriptions">
           <list />
         </option>
         <option name="taskNames">
           <list>
-            <option value=":test" />
+            <option value="jar" />
           </list>
         </option>
         <option name="vmOptions" />
       </ExternalSystemSettings>
-      <GradleScriptDebugEnabled>false</GradleScriptDebugEnabled>
+      <GradleScriptDebugEnabled>true</GradleScriptDebugEnabled>
       <method v="2" />
     </configuration>
     <configuration default="true" type="PyBehaveRunConfigurationType" factoryName="Behave">
@@ -519,19 +430,19 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Gradle.CommandParserTest.doubleQuotedArguments" />
-      <item itemvalue="Gradle.CommandParserTest" />
-      <item itemvalue="Gradle.CommandParserTest.validOctalEscapes" />
-      <item itemvalue="Gradle.CommandParserTest.validCommandWithQuotes" />
-      <item itemvalue="Gradle.CommandParserTest.invalidCommand" />
+      <item itemvalue="Gradle.convergenceBot [jar]" />
+      <item itemvalue="Gradle.convergenceBot:discordPlugin [jar]" />
+      <item itemvalue="Gradle.convergenceBot [copyBot]" />
+      <item itemvalue="Gradle.convergenceBot [copyPlugins]" />
+      <item itemvalue="Gradle.convergenceBot [dependencies]" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Gradle.CommandParserTest" />
-        <item itemvalue="Gradle.CommandParserTest.invalidCommand" />
-        <item itemvalue="Gradle.CommandParserTest.validCommandWithQuotes" />
-        <item itemvalue="Gradle.CommandParserTest.validOctalEscapes" />
-        <item itemvalue="Gradle.CommandParserTest.doubleQuotedArguments" />
+        <item itemvalue="Gradle.convergenceBot [copyBot]" />
+        <item itemvalue="Gradle.convergenceBot [dependencies]" />
+        <item itemvalue="Gradle.convergenceBot [jar]" />
+        <item itemvalue="Gradle.convergenceBot [copyPlugins]" />
+        <item itemvalue="Gradle.convergenceBot:discordPlugin [jar]" />
       </list>
     </recent_temporary>
   </component>
@@ -687,7 +598,11 @@
       <workItem from="1586036990459" duration="58000" />
       <workItem from="1586037066284" duration="786000" />
       <workItem from="1586037872441" duration="25742000" />
-      <workItem from="1586066702304" duration="2719000" />
+      <workItem from="1586066702304" duration="4033000" />
+      <workItem from="1586070758392" duration="2308000" />
+      <workItem from="1586140482540" duration="5858000" />
+      <workItem from="1586472573229" duration="6000" />
+      <workItem from="1586472600088" duration="19192000" />
     </task>
     <task id="LOCAL-00001" summary="Add more stages to research.">
       <created>1533403104037</created>
@@ -1025,7 +940,14 @@
       <option name="project" value="LOCAL" />
       <updated>1577059039854</updated>
     </task>
-    <option name="localTasksCounter" value="49" />
+    <task id="LOCAL-00049" summary="Replace commandParser with an ANTLRv4 based parser.">
+      <created>1586069516996</created>
+      <option name="number" value="00049" />
+      <option name="presentableId" value="LOCAL-00049" />
+      <option name="project" value="LOCAL" />
+      <updated>1586069516996</updated>
+    </task>
+    <option name="localTasksCounter" value="50" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1069,7 +991,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
-    <MESSAGE value="Create main, rename classLoader to PluginLoader, refactor its test." />
     <MESSAGE value="Remove files that shouldn't be tracked by git, add interface callbacks." />
     <MESSAGE value="Implement Scheduler for the schedule command." />
     <MESSAGE value="Implemented SchedulerThread, made bot runnable from gradle." />
@@ -1094,7 +1015,8 @@
     <MESSAGE value="Make Plugin loading add stuff first before doing any loading to avoid duplicating work, fix protocol registration.&#10;&#10;- Plugin loading was scanning through every loaded file every time a plugin was loaded, which is pretty slow. Originally, this was fine, since only one directory of plugins was being added anyway, so it wasn't a big deal. I would rather not do that, and instead add everything before loading plugins so it's guaranteed to only go through once.&#10;- Protocol registration did not check for duplicates properly before, which it now does, thanks to it having a default implementation of HashCode and Equals, courtesy of IntelliJ. This also meant the code in BasicPlugin and ConsolePlugin checking if their protocol was registered needed to be removed, since it's not really the plugin's job to check if it got loaded properly, it's the loader's.&#10;- TODO.md was updated to reflect the current progress on the Messenger Plugin." />
     <MESSAGE value="Add .idea folder to .gitignore." />
     <MESSAGE value="Make plugin threads accessible globally." />
-    <option name="LAST_COMMIT_MESSAGE" value="Make plugin threads accessible globally." />
+    <MESSAGE value="Replace commandParser with an ANTLRv4 based parser." />
+    <option name="LAST_COMMIT_MESSAGE" value="Replace commandParser with an ANTLRv4 based parser." />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REARRANGE_BEFORE_PROJECT_COMMIT" value="true" />
@@ -1104,14 +1026,14 @@
       <screen x="0" y="0" width="1680" height="1008" />
     </state>
     <state x="440" y="148" width="1148" height="711" key="#Plugins/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1582329273608" />
-    <state x="2008" y="82" key="#Project_Structure" timestamp="1586060623663">
+    <state x="2008" y="82" width="1024" height="844" key="#Project_Structure" timestamp="1586495411107">
       <screen x="1680" y="0" width="1680" height="1050" />
     </state>
-    <state x="2008" y="82" key="#Project_Structure/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586060623663" />
-    <state x="2301" y="223" key="#com.intellij.ide.util.MemberChooser" timestamp="1586059016899">
+    <state x="2008" y="82" width="1024" height="844" key="#Project_Structure/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586495411107" />
+    <state x="2301" y="223" key="#com.intellij.ide.util.MemberChooser" timestamp="1586503740673">
       <screen x="1680" y="0" width="1680" height="1050" />
     </state>
-    <state x="2301" y="223" key="#com.intellij.ide.util.MemberChooser/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586059016899" />
+    <state x="2301" y="223" key="#com.intellij.ide.util.MemberChooser/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586503740673" />
     <state x="646" y="255" key="#com.intellij.openapi.updateSettings.impl.PluginUpdateInfoDialog" timestamp="1581272567155">
       <screen x="0" y="0" width="1680" height="1008" />
     </state>
@@ -1120,51 +1042,53 @@
       <screen x="1680" y="0" width="1680" height="1050" />
     </state>
     <state x="2259" y="394" width="512" height="219" key="ANALYSIS_DLG_com.intellij.analysis.BaseAnalysisAction$1/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586040079389" />
-    <state x="0" y="0" key="CommitChangelistDialog2" timestamp="1585246295154">
-      <screen x="0" y="0" width="1680" height="1008" />
+    <state x="1680" y="0" width="1174" height="1008" key="CommitChangelistDialog2" timestamp="1586069524506">
+      <screen x="1680" y="0" width="1680" height="1050" />
     </state>
     <state x="0" y="0" key="CommitChangelistDialog2/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1585246295154" />
-    <state x="137" y="104" width="1344" height="806" key="DiffContextDialog" timestamp="1581986049523">
-      <screen x="0" y="0" width="1680" height="1008" />
+    <state x="1680" y="0" width="1174" height="1008" key="CommitChangelistDialog2/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586069524506" />
+    <state x="1817" y="108" width="1344" height="806" key="DiffContextDialog" timestamp="1586069437655">
+      <screen x="1680" y="0" width="1680" height="1050" />
     </state>
     <state x="137" y="104" width="1344" height="806" key="DiffContextDialog/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1581986049523" />
+    <state x="1817" y="108" key="DiffContextDialog/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586069437655" />
     <state x="2308" y="273" key="FileChooserDialogImpl" timestamp="1586049034759">
       <screen x="1680" y="0" width="1680" height="1050" />
     </state>
     <state x="628" y="262" key="FileChooserDialogImpl/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1585168699818" />
     <state x="2308" y="273" key="FileChooserDialogImpl/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586049034759" />
-    <state width="1638" height="252" key="GridCell.Tab.0.bottom" timestamp="1586069304929">
+    <state width="1638" height="252" key="GridCell.Tab.0.bottom" timestamp="1586503884911">
       <screen x="1680" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="252" key="GridCell.Tab.0.bottom/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586069304929" />
-    <state width="1638" height="252" key="GridCell.Tab.0.center" timestamp="1586069304929">
+    <state width="1638" height="252" key="GridCell.Tab.0.bottom/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586503884911" />
+    <state width="1638" height="252" key="GridCell.Tab.0.center" timestamp="1586503884911">
       <screen x="1680" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="252" key="GridCell.Tab.0.center/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586069304929" />
-    <state width="1638" height="252" key="GridCell.Tab.0.left" timestamp="1586069304929">
+    <state width="1638" height="252" key="GridCell.Tab.0.center/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586503884911" />
+    <state width="1638" height="252" key="GridCell.Tab.0.left" timestamp="1586503884911">
       <screen x="1680" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="252" key="GridCell.Tab.0.left/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586069304929" />
-    <state width="1638" height="252" key="GridCell.Tab.0.right" timestamp="1586069304929">
+    <state width="1638" height="252" key="GridCell.Tab.0.left/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586503884911" />
+    <state width="1638" height="252" key="GridCell.Tab.0.right" timestamp="1586503884911">
       <screen x="1680" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="252" key="GridCell.Tab.0.right/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586069304929" />
-    <state width="1638" height="315" key="GridCell.Tab.1.bottom" timestamp="1586069288504">
+    <state width="1638" height="252" key="GridCell.Tab.0.right/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586503884911" />
+    <state width="1638" height="315" key="GridCell.Tab.1.bottom" timestamp="1586070737007">
       <screen x="1680" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="315" key="GridCell.Tab.1.bottom/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586069288504" />
-    <state width="1638" height="315" key="GridCell.Tab.1.center" timestamp="1586069288504">
+    <state width="1638" height="315" key="GridCell.Tab.1.bottom/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586070737007" />
+    <state width="1638" height="315" key="GridCell.Tab.1.center" timestamp="1586070737007">
       <screen x="1680" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="315" key="GridCell.Tab.1.center/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586069288504" />
-    <state width="1638" height="315" key="GridCell.Tab.1.left" timestamp="1586069288504">
+    <state width="1638" height="315" key="GridCell.Tab.1.center/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586070737007" />
+    <state width="1638" height="315" key="GridCell.Tab.1.left" timestamp="1586070737007">
       <screen x="1680" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="315" key="GridCell.Tab.1.left/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586069288504" />
-    <state width="1638" height="315" key="GridCell.Tab.1.right" timestamp="1586069288504">
+    <state width="1638" height="315" key="GridCell.Tab.1.left/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586070737007" />
+    <state width="1638" height="315" key="GridCell.Tab.1.right" timestamp="1586070737007">
       <screen x="1680" y="0" width="1680" height="1050" />
     </state>
-    <state width="1638" height="315" key="GridCell.Tab.1.right/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586069288504" />
+    <state width="1638" height="315" key="GridCell.Tab.1.right/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586070737007" />
     <state x="428" y="241" key="IDE.errors.dialog" timestamp="1581274044490">
       <screen x="0" y="0" width="1680" height="1008" />
     </state>
@@ -1181,14 +1105,18 @@
       <screen x="0" y="0" width="1680" height="1008" />
     </state>
     <state x="559" y="123" key="VCS.ChangeListViewerDialog/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1581986049959" />
-    <state x="635" y="419" width="406" height="173" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1581273816916">
-      <screen x="0" y="0" width="1680" height="1008" />
-    </state>
-    <state x="635" y="419" width="406" height="173" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1581273816916" />
-    <state x="2229" y="260" width="581" height="488" key="find.popup" timestamp="1586068637524">
+    <state x="2120" y="240" key="Vcs.Push.Dialog.v2" timestamp="1586069519071">
       <screen x="1680" y="0" width="1680" height="1050" />
     </state>
-    <state x="2229" y="260" width="581" height="488" key="find.popup/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586068637524" />
+    <state x="2120" y="240" key="Vcs.Push.Dialog.v2/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586069519071" />
+    <state x="635" y="419" width="411" height="173" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1586186689060">
+      <screen x="0" y="0" width="1680" height="1008" />
+    </state>
+    <state x="635" y="419" width="411" height="173" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1586186689060" />
+    <state x="2229" y="260" width="581" height="490" key="find.popup" timestamp="1586503665786">
+      <screen x="1680" y="0" width="1680" height="1050" />
+    </state>
+    <state x="2229" y="260" width="581" height="490" key="find.popup/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586503665786" />
     <state x="2183" y="230" width="672" height="707" key="search.everywhere.popup" timestamp="1586068420009">
       <screen x="1680" y="0" width="1680" height="1050" />
     </state>
@@ -1196,15 +1124,6 @@
     <state x="2183" y="230" width="672" height="707" key="search.everywhere.popup/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586068420009" />
   </component>
   <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" type="kotlin-line">
-          <url>file://$PROJECT_DIR$/src/main/kotlin/convergence/commandParser.kt</url>
-          <line>92</line>
-          <option name="timeStamp" value="5" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
     <watches-manager>
       <configuration name="Remote">
         <watch expression="commandParser.RULE_nonQuoteArgument" language="kotlin" />

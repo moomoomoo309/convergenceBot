@@ -41,4 +41,3 @@ fragment Backslash: '\\';
 fragment U: 'u';
 fragment UnicodeDigit: [0-9a-fA-F];
 fragment NotUnicodeDigit: ~[0-9a-fA-F];
-

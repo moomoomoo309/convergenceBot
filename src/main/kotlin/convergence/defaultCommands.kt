@@ -4,7 +4,6 @@ package convergence
 
 import com.joestelmach.natty.DateGroup
 import com.joestelmach.natty.Parser
-import kotlinx.serialization.ImplicitReflectionSerializer
 import java.io.PrintWriter
 import java.io.StringWriter
 import java.time.Duration
@@ -105,7 +104,11 @@ fun removeAlias(args: List<String>, sender: User): String? {
     else "Aliases \"${args.asSequence().filterIndexed { i, _ -> validAliases[i] }.joinToString("\", \"")}\" removed."
 }
 
-fun me(args: List<String>, sender: User): String? = "*${getUserName(sender)} ${args.joinToString(" ")}."
+fun me(args: List<String>, sender: User): String? {
+    val (boldOpen, boldClose) =
+            (baseInterfaceMap[sender.chat.protocol] as? IFormatting)?.getDelimiters(Format.bold) ?: Pair("", "")
+    return "$boldOpen*${getUserName(sender)} ${args.joinToString(" ")}$boldClose."
+}
 
 fun chats(args: List<String>, sender: User): String? {
     val builder = StringBuilder()
@@ -124,7 +127,6 @@ val dateTimeParser = Parser()
 fun dateToOffsetDateTime(d: Date, tz: ZoneId? = null): OffsetDateTime = OffsetDateTime.ofInstant(d.toInstant(), tz
         ?: ZoneId.systemDefault())
 
-@ImplicitReflectionSerializer
 private fun scheduleLoc(groups: List<DateGroup>, sender: User, location: String, durationStr: String,
                         duration: Duration, time: String): String {
     val thisCommand = commands[UniversalChat]!!["goingto"]!!
@@ -149,7 +151,6 @@ private fun scheduleLoc(groups: List<DateGroup>, sender: User, location: String,
 val defaultDuration = Duration.ofMinutes(45)!!
 private val locations = HashMap<User, Pair<OffsetDateTime, String>>()
 
-@ImplicitReflectionSerializer
 fun setLocation(args: List<String>, sender: User): String? {
     val location = StringBuilder(args[0])
     val timeStr = StringBuilder()
@@ -233,7 +234,6 @@ fun aliases(args: List<String>, sender: User): String? {
     return if (aliasList.isNotEmpty()) aliasList.joinToString(", ") else "No aliases found."
 }
 
-@ImplicitReflectionSerializer
 fun schedule(args: List<String>, sender: User): String? {
     if (args.size != 2)
         return "Expected 2 arguments, got ${args.size}."
@@ -250,7 +250,6 @@ fun schedule(args: List<String>, sender: User): String? {
 /**
  * Gets all of the currently scheduled events sorted by ID.
  */
-@ImplicitReflectionSerializer
 fun events(args: List<String>, sender: User): String? {
     val strs = SchedulerThread.getCommandStrings(sender, true)
     if (strs.isEmpty())
@@ -261,7 +260,6 @@ fun events(args: List<String>, sender: User): String? {
 /**
  * Gets all of the currently scheduled events that were scheduled by [sender].
  */
-@ImplicitReflectionSerializer
 private fun getUserEvents(sender: User): Map<User, MutableList<ScheduledCommand>> {
     val eventsList = SchedulerThread.getCommands(sender)
     val eventMap = HashMap<User, MutableList<ScheduledCommand>>()
@@ -273,7 +271,6 @@ private fun getUserEvents(sender: User): Map<User, MutableList<ScheduledCommand>
     return eventMap
 }
 
-@ImplicitReflectionSerializer
 fun eventsFromUser(args: List<String>, sender: User): String? {
     val eventMap = getUserEvents(sender)
     if (eventMap.isEmpty())
@@ -289,7 +286,6 @@ fun eventsFromUser(args: List<String>, sender: User): String? {
     return builder.toString()
 }
 
-@ImplicitReflectionSerializer
 fun eventsByUser(args: List<String>, sender: User): String? {
     val eventMap = getUserEvents(sender)
     if (eventMap.isEmpty())
@@ -304,7 +300,6 @@ fun eventsByUser(args: List<String>, sender: User): String? {
     return builder.toString()
 }
 
-@ImplicitReflectionSerializer
 fun unschedule(args: List<String>, sender: User): String? {
     val index: Int = try {
         Integer.parseInt(args[0])
@@ -368,7 +363,6 @@ fun setDelimiter(args: List<String>, sender: User): String? = when {
     else -> "\"${args[0]}\" is not a valid command delimiter!"
 }
 
-@ImplicitReflectionSerializer
 fun registerDefaultCommands() {
     registerCommand(Command(UniversalChat, "help", ::help,
             "Provides a paginated list of commands and their syntax, or specific help on a single command.",

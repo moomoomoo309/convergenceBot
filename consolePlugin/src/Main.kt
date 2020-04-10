@@ -4,8 +4,14 @@ import convergence.*
 import java.util.*
 import kotlin.system.exitProcess
 
-object ConsoleUser: User(ConsoleChat)
-object ConsoleChat: Chat(ConsoleProtocol, "Console")
+object ConsoleUser: User(ConsoleChat) {
+    override fun serialize() = "{\"type\":\"ConsoleUser\"}"
+}
+
+object ConsoleChat: Chat(ConsoleProtocol, "Console") {
+    override fun serialize() = "{\"type\":\"ConsoleChat\"}"
+}
+
 object ConsoleProtocol: Protocol("Console")
 object ConsoleInterface: BaseInterface {
     override val name = "ConsoleInterface"

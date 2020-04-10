@@ -10,8 +10,8 @@ version = '1.0-SNAPSHOT'
 
 description = """Convergence bot"""
 
-sourceCompatibility = 1.5
-targetCompatibility = 1.5
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
 }
@@ -30,7 +30,6 @@ dependencies {
     compile "com.joestelmach:natty:0.11"
     compile "org.xeustechnologies:jcl-core:2.8"
     compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
-    compile "org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.14.0"
     compile group: 'net.sourceforge.argparse4j', name: 'argparse4j', version: '0.8.1'
     compile group: 'com.github.mfornos', name: 'humanize-slim', version: '1.2.2'
     compile group: 'com.beust', name: 'klaxon', version: '5.0.2'
@@ -47,7 +46,6 @@ subprojects { project ->
             compile group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib', version: "$kotlin_version"
             testCompile group: 'org.jetbrains.kotlin', name: 'kotlin-test-junit', version: "$kotlin_version"
             compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
-            compile "org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.20.0-1.4-M1"
             compile 'org.jetbrains.exposed:exposed:+'
             compile rootProject
         }
@@ -66,7 +64,6 @@ subprojects { project ->
         }
         dependencies {
             classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-            classpath "org.jetbrains.kotlin:kotlin-serialization:$kotlin_version"
         }
         ext.kotlin_version = '1.4-M1'
     }
@@ -94,13 +91,10 @@ buildscript {
     }
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath "org.jetbrains.kotlin:kotlin-serialization:$kotlin_version"
     }
 }
 
 sourceSets.main.java.srcDirs += 'src/main/gen'
-
-apply plugin: 'kotlinx-serialization'
 
 compileKotlin {
     kotlinOptions {
@@ -124,8 +118,7 @@ jar {
     }
 }
 
-task copyPlugins(type: Copy) {
-    from './build/libs/'
+task copyPlugins(type: Copy, dependsOn: [build, buildDependents]) {
     from './basicPlugin/build/libs'
     from './consolePlugin/build/libs'
     from './discordPlugin/build/libs'

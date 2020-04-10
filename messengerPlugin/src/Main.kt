@@ -4,7 +4,6 @@ package convergence.testPlugins.messengerPlugin
 
 import com.beust.klaxon.JsonArray
 import com.beust.klaxon.JsonObject
-import com.beust.klaxon.Klaxon
 import convergence.*
 import io.ktor.util.KtorExperimentalAPI
 import java.io.File
@@ -18,9 +17,6 @@ import java.security.MessageDigest
 import java.time.OffsetDateTime
 
 object MessengerProtocol: Protocol("Messenger")
-
-val jsonParser = Klaxon()
-
 
 @Suppress("unused")
 @KtorExperimentalAPI
@@ -105,6 +101,9 @@ object Main: Plugin {
     override val name = "MessengerPlugin"
     override val baseInterface = MessengerInterface
     override fun init() {
+        deserializationFunctions["MessengerInterface"] = { MessengerInterface }
+        deserializationFunctions["MessengerChat"] = { MessengerChat(it["id"] as String) }
+        deserializationFunctions["MessengerUser"] = { MessengerUser(it["id"] as String, deserialize(it["chat"] as String)) }
         println("Messenger Plugin initialized.")
         val facebookCredentials = Paths.get(System.getProperty("user.home"), ".convergence", "facebookCredentials.json")
         if (!Files.exists(facebookCredentials)) {

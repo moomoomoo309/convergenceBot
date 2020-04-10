@@ -3,10 +3,7 @@ package convergence.testPlugins.messengerPlugin
 
 import com.beust.klaxon.JsonArray
 import com.beust.klaxon.JsonObject
-import convergence.Chat
-import convergence.Image
-import convergence.Sticker
-import convergence.User
+import convergence.*
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.features.websocket.WebSockets
@@ -35,14 +32,28 @@ fun sendToAPI(method: String, vararg args: Any?) = runBlocking {
     }
 }
 
-class MessengerChat(val id: String): Chat(MessengerProtocol, id)
-class MessengerUser(val id: String, chat: MessengerChat): User(chat)
+class MessengerChat(val id: String): Chat(MessengerProtocol, id), ISerializable {
+    override fun serialize() = mapOf(
+            "type" to "MessengerChat",
+            "id" to id
+    ).json()
+}
+
+class MessengerUser(val id: String, chat: MessengerChat): User(chat), ISerializable {
+    override fun serialize() = mapOf(
+            "type" to "MessengerUser",
+            "id" to id,
+            "chat" to chat.serialize()
+    ).json()
+}
+
 class MessengerImage(val url: String): Image()
 class MessengerSticker(name: String, val url: String): Sticker(name, url)
 
 enum class emojiSize(val size: Int) { small(32), medium(64), large(128) }
 
 enum class emojiPixelRatio(val ratio: String) { low("1.0"), high("1.5") }
+
 @Suppress("enumEntryName")
 enum class messageReaction(val stringValue: String) {
     love("\uD83D\uDE0D"),

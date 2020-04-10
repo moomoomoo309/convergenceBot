@@ -5,7 +5,15 @@ import kotlin.test.assertEquals
 
 
 private val testChat = TestChat()
-class TestUser: User(testChat)
+class TestUser: User(testChat) {
+    override fun serialize() = "{\"type\":\"TestUser\"}"
+
+    companion object {
+        init {
+            deserializationFunctions["TestUser"] = { TestUser() }
+        }
+    }
+}
 
 private val testUser = TestUser()
 

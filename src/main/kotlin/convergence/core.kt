@@ -2,12 +2,8 @@
 
 package convergence
 
+import com.beust.klaxon.Klaxon
 import humanize.Humanize
-import kotlinx.serialization.ImplicitReflectionSerializer
-import kotlinx.serialization.Polymorphic
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.cbor.Cbor
-import kotlinx.serialization.load
 import net.sourceforge.argparse4j.ArgumentParsers
 import net.sourceforge.argparse4j.inf.ArgumentParserException
 import net.sourceforge.argparse4j.inf.Namespace
@@ -37,6 +33,7 @@ val chatMap = mutableMapOf<Int, Chat>()
 val reverseChatMap = mutableMapOf<Chat, Int>()
 val pluginThreads = mutableMapOf<Plugin, Thread>()
 var currentChatID: Int = 0
+val jsonParser = Klaxon()
 /**
  * Adds a protocol to the protocol registry.
  * @return true if a protocol with that name does not already exist in the registry, false otherwise.
@@ -63,14 +60,7 @@ fun registerCommand(command: Command): Boolean {
     if (command.name in commands[chat]!!)
         return false
 
-    if (sortedHelpText.isNotEmpty())
-        for (i in 0..sortedHelpText.size)
-            if (command.name < sortedHelpText[i].name || i == sortedHelpText.size - 1) {
-                sortedHelpText.add(i, command)
-                break
-            } else
-                sortedHelpText.add(command)
-
+    sortedHelpText.add(sortedHelpText.binarySearch(command), command)
     commands[chat]!![command.name] = command
     return true
 }
@@ -103,7 +93,7 @@ fun registerAlias(alias: Alias): Boolean {
 const val defaultCommandDelimiter = "!"
 
 class DefaultMap<K, V>(var defaultValue: V): HashMap<K, V>() {
-    override fun get(key: K): V = super.get(key) ?: defaultValue
+    override fun get(key: K): V = super.getOrDefault(key, defaultValue)
 }
 
 val commandDelimiters = DefaultMap<Chat, String>(defaultCommandDelimiter)
@@ -250,9 +240,27 @@ fun forwardToLinkedChats(message: String?, sender: User) {
 fun offsetDateTimeToDate(time: OffsetDateTime): Date = Date.from(time.toInstant())
 fun formatTime(time: OffsetDateTime): String = Humanize.naturalTime(offsetDateTimeToDate(time))
 
-@Serializable
-data class ScheduledCommand(@Serializable(OffsetDateTimeSerializer::class) val time: OffsetDateTime,
-                            @Polymorphic val sender: User, val commandData: CommandData, val id: Int)
+data class ScheduledCommand(
+        val time: OffsetDateTime,
+        val sender: User,
+        val commandData: CommandData,
+        val id: Int,
+): ISerializable {
+    override fun serialize() = mapOf(
+            "type" to "ScheduledCommand",
+            "sender" to sender.serialize(),
+            "commandData" to commandData.serialize(),
+            "id" to id
+    ).json()
+}
+
+class SerializableOffsetDateTime(val ODT: OffsetDateTime): ISerializable {
+    override fun serialize() = mapOf(
+            "type" to "SerializableOffsetDateTime",
+            "payload" to ODT.toString()
+    ).json()
+}
+
 
 val connection: Database by lazy {
     Database.connect("jdbc:h2:~/.convergence/database", driver = "org.h2.Driver")
@@ -261,7 +269,6 @@ val connection: Database by lazy {
 /**
  * Checks if commands scheduled for later are ready to be run yet. Can give information on the commands in its queue.
  */
-@ImplicitReflectionSerializer
 object SchedulerThread: Thread() {
     private const val allowedTimeDifference = 30
     private const val updatesPerSecond = 1
@@ -283,7 +290,7 @@ object SchedulerThread: Thread() {
             SchemaUtils.createMissingTablesAndColumns(SerializedScheduledCommand)
             SerializedScheduledCommand.selectAll().forEach { row ->
                 row.getOrNull(SerializedScheduledCommand.scheduledCommand)?.let {
-                    schedule(Cbor.load(it.getBytes(1, it.length().toInt())))
+                    schedule(deserialize(it.getBytes(1, it.length().toInt()).toString()))
                 }
             }
         }
@@ -330,7 +337,7 @@ object SchedulerThread: Thread() {
             SchemaUtils.create(SerializedScheduledCommand)
             SerializedScheduledCommand.insert {
                 it[id] = cmd.id
-                it[scheduledCommand] = SerialBlob(Cbor.dump(ScheduledCommand.serializer(), cmd))
+                it[scheduledCommand] = SerialBlob(cmd.serialize().toByteArray())
             }
         }
         return "Scheduled ${getUserName(sender)} to run \"$command\" to run at $time."
@@ -369,14 +376,12 @@ object SchedulerThread: Thread() {
 /**
  * Schedules [command] to run at [time] from [sender].
  */
-@ImplicitReflectionSerializer
 fun schedule(sender: User, command: CommandData, time: OffsetDateTime) = SchedulerThread.schedule(sender, command, time)
 
 lateinit var commandLineArgs: Namespace
 
 class core {
     companion object {
-        @ImplicitReflectionSerializer
         @JvmStatic
         fun main(args: Array<String>) {
             // Parse command line arguments.

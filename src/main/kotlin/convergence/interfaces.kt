@@ -1,13 +1,12 @@
-@file:Suppress("unused", "UNUSED_PARAMETER")
+@file:Suppress("unused", "UNUSED_PARAMETER", "UNCHECKED_CAST")
 
 package convergence
 
-import kotlinx.serialization.Polymorphic
-import kotlinx.serialization.Serializable
+import com.beust.klaxon.JsonArray
+import com.beust.klaxon.JsonObject
 import java.time.OffsetDateTime
 import kotlin.reflect.KClass
 
-@Polymorphic
 abstract class Protocol(val name: String) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -22,19 +21,22 @@ abstract class Protocol(val name: String) {
 }
 
 //Intentionally empty, because it might be represented as an int or a string or whatever.
-@Polymorphic
-abstract class User(val chat: Chat)
+abstract class User(val chat: Chat): ISerializable
 
-@Polymorphic
-abstract class Chat(val protocol: Protocol, val name: String)
+abstract class Chat(val protocol: Protocol, val name: String): ISerializable
 
-@Serializable(UniversalUserSerializer::class)
-object UniversalUser: User(UniversalChat)
+object UniversalUser: User(UniversalChat), ISerializable {
+    override fun serialize() = """{"type":"UniversalUser"}"""
+}
 
-object UniversalProtocol: Protocol("Universal") // Used to represent the universal chat.
+object UniversalProtocol: Protocol("Universal"), ISerializable {
+    override fun serialize() = """{"type":"UniversalProtocol"}"""
+}
 
-@Serializable(UniversalChatSerializer::class)
-object UniversalChat: Chat(UniversalProtocol, "Universal")
+// Used to represent the universal chat.
+object UniversalChat: Chat(UniversalProtocol, "Universal"), ISerializable {
+    override fun serialize() = """{"type":"UniversalChat"}"""
+}
 
 object FakeBaseInterface: BaseInterface {
     override val protocol: Protocol = UniversalProtocol
@@ -45,37 +47,72 @@ object FakeBaseInterface: BaseInterface {
     override fun getChats(): List<Chat> = emptyList()
     override fun getUsers(chat: Chat): List<User> = emptyList()
     override fun getChatName(chat: Chat): String = ""
+
     override val name: String = "FakeBaseInterface"
 }
 
-@Polymorphic
-@Serializable
-sealed class CommandLike(@Polymorphic open val chat: Chat,
+sealed class CommandLike(open val chat: Chat,
                          open val name: String,
                          open val helpText: String,
-                         open val syntaxText: String) {
+                         open val syntaxText: String): ISerializable, Comparable<CommandLike> {
+    override fun compareTo(other: CommandLike) = name.compareTo(other.name)
 
-    @Polymorphic
-    @Serializable(CommandSerializer::class)
-    data class Command(@Polymorphic override val chat: Chat,
+    data class Command(override val chat: Chat,
                        override val name: String,
                        val function: (List<String>, User) -> String?,
                        override val helpText: String,
-                       override val syntaxText: String): CommandLike(chat, name, helpText, syntaxText)
+                       override val syntaxText: String): CommandLike(chat, name, helpText, syntaxText) {
+        override fun serialize() = mapOf(
+                "type" to "Command",
+                "name" to name,
+                "chat" to chat.serialize()
+        ).json()
+    }
 
-    @Polymorphic
-    @Serializable(AliasSerializer::class)
-    data class Alias(@Polymorphic override val chat: Chat,
-                     override val name: String,
-                     val command: Command,
-                     val args: List<String>,
-                     override val helpText: String,
-                     override val syntaxText: String): CommandLike(chat, name, helpText, syntaxText)
+    data class Alias(
+            override val chat: Chat,
+            override val name: String,
+            val command: Command,
+            val args: List<String>,
+            override val helpText: String,
+            override val syntaxText: String): CommandLike(chat, name, helpText, syntaxText) {
+        override fun serialize() = mapOf(
+                "type" to "Alias",
+                "name" to name,
+                "args" to JsonArray(args).toJsonString(),
+                "chat" to chat.serialize()
+        ).json()
+    }
 }
 typealias Command = CommandLike.Command
 typealias Alias = CommandLike.Alias
 
-interface BaseInterface {
+
+interface ISerializable {
+    fun serialize(): String
+}
+
+fun Map<String, Any>.json() = JsonObject(this).toJsonString()
+
+val deserializationFunctions = mutableMapOf<String, (JsonObject) -> ISerializable>(
+        "UniversalChat" to { UniversalChat },
+        "UniversalUser" to { UniversalChat },
+        "UniversalProtocol" to { UniversalProtocol },
+        "SerializableOffsetDateTime" to { SerializableOffsetDateTime(OffsetDateTime.parse(it["payload"] as String)) },
+        "ScheduledCommand" to {
+            ScheduledCommand(deserialize<SerializableOffsetDateTime>(it["time"] as String).ODT,
+                    deserialize(it["sender"] as String),
+                    deserialize(it["commandData"] as String),
+                    (it["id"] as String).toInt())
+        },
+        "Format" to { Format(it["name"] as String) }
+)
+
+fun <T: ISerializable> deserialize(str: String) = deserialize<T>(jsonParser.parse<JsonObject>(str)!!)
+fun <T: ISerializable> deserialize(json: JsonObject): T =
+        deserializationFunctions[json["type"] as String]!!(json) as T
+
+interface BaseInterface: ISerializable {
     val name: String
     val protocol: Protocol
     fun receivedMessage(chat: Chat, message: String, sender: User) = runCommand(message, sender)
@@ -85,6 +122,7 @@ interface BaseInterface {
     fun getChats(): List<Chat>
     fun getUsers(chat: Chat): List<User>
     fun getChatName(chat: Chat): String
+    override fun serialize() = mapOf("type" to name).json()
 }
 
 private val callbacks = HashMap<KClass<out OptionalFunctionality>, ArrayList<OptionalFunctionality>>()
@@ -147,7 +185,7 @@ sealed class OptionalFunctionality {
     }
 
     interface IMessageHistory {
-        open class MessageHistory(var message: String, val timestamp: OffsetDateTime, val sender: User)
+        abstract class MessageHistory(var message: String, val timestamp: OffsetDateTime, val sender: User): ISerializable
 
         fun getMessages(chat: Chat, since: OffsetDateTime? = null, until: OffsetDateTime? = null): List<MessageHistory>
         fun getUserMessages(chat: Chat, user: User, since: OffsetDateTime? = null, until: OffsetDateTime? = null): List<MessageHistory>
@@ -156,8 +194,7 @@ sealed class OptionalFunctionality {
     interface IMention {
         fun getMentionText(chat: Chat, user: User): String
 
-        class MentionedUser(private val fct: (Chat, String, Set<User>) -> Boolean): OptionalFunctionality() {
-            @Suppress("UNCHECKED_CAST")
+        abstract class MentionedUser(private val fct: (Chat, String, Set<User>) -> Boolean): OptionalFunctionality() {
             override fun invoke(vararg args: Any) = fct(args[0] as Chat, args[1] as String, args[2] as Set<User>)
         }
 
@@ -224,7 +261,7 @@ sealed class OptionalFunctionality {
     interface IFormatting {
         // If possible, the name would be an enum instead, but I want the ability for protocols to add extra formats
         // beyond the defaults in the companion object, so it's an open class.
-        open class Format(name: String) {
+        open class Format(name: String): ISerializable {
             val name: String = name.toUpperCase()
 
             companion object {
@@ -237,6 +274,11 @@ sealed class OptionalFunctionality {
                 val spoiler = Format("SPOILER")
                 val greentext = Format("GREENTEXT")
             }
+
+            override fun serialize() = mapOf(
+                    "type" to "Format",
+                    "name" to name
+            ).json()
         }
 
         val supportedFormats: Set<Format>
@@ -258,7 +300,7 @@ sealed class OptionalFunctionality {
     }
 
     interface ICustomEmoji {
-        open class Emoji(val name: String, val URL: String?)
+        abstract class Emoji(val name: String, val URL: String?): ISerializable
 
         fun getEmojis(chat: Chat): List<Emoji>
     }
