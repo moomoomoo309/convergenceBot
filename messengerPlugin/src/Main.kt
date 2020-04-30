@@ -5,21 +5,22 @@ package convergence.testPlugins.messengerPlugin
 import com.beust.klaxon.JsonArray
 import com.beust.klaxon.JsonObject
 import convergence.*
-import io.ktor.util.KtorExperimentalAPI
 import java.io.File
 import java.io.IOException
+import java.io.InputStream
+import java.io.OutputStream
 import java.math.BigInteger
-import java.nio.file.FileAlreadyExistsException
-import java.nio.file.Files
-import java.nio.file.Paths
-import java.nio.file.StandardOpenOption
+import java.nio.file.*
 import java.security.MessageDigest
 import java.time.OffsetDateTime
 
 object MessengerProtocol: Protocol("Messenger")
 
+val messengerPath: Path = Paths.get(System.getProperty("user.home"), ".convergence", "messenger")
+
+
 @Suppress("unused")
-@KtorExperimentalAPI
+@ExperimentalUnsignedTypes
 object MessengerInterface: BaseInterface, IFormatting, INickname, IImages, IMention, IMessageHistory, IStickers, ITypingStatus {
     override val name: String = Main.name
     override val protocol: Protocol = MessengerProtocol
@@ -76,12 +77,17 @@ object MessengerInterface: BaseInterface, IFormatting, INickname, IImages, IMent
 }
 
 
-fun runCommand(command: String, workingDir: File = File(".")): Process? {
+fun runCommand(command: String, workingDir: File = File("."), redirectStreams: Boolean = false): Process? {
     return try {
         val parts = command.split("\\s".toRegex())
         ProcessBuilder(*parts.toTypedArray())
                 .directory(workingDir)
-                .redirectOutput(ProcessBuilder.Redirect.INHERIT)
+                .also {
+                    if (redirectStreams) {
+                        it.redirectInput(ProcessBuilder.Redirect.INHERIT)
+                        it.redirectOutput(ProcessBuilder.Redirect.INHERIT)
+                    }
+                }
                 .redirectError(ProcessBuilder.Redirect.INHERIT)
                 .start()
     } catch (e: IOException) {
@@ -96,10 +102,12 @@ fun String.md5(): String {
 }
 
 @Suppress("unused")
-@KtorExperimentalAPI
+@ExperimentalUnsignedTypes
 object Main: Plugin {
     override val name = "MessengerPlugin"
     override val baseInterface = MessengerInterface
+    var jsOutput: InputStream? = null
+    var jsInput: OutputStream? = null
     override fun init() {
         deserializationFunctions["MessengerInterface"] = { MessengerInterface }
         deserializationFunctions["MessengerChat"] = { MessengerChat(it["id"] as String) }
@@ -116,7 +124,6 @@ object Main: Plugin {
             println("Put your credentials in facebookCredentials.json!")
             return
         }
-        val messengerPath = Paths.get(System.getProperty("user.home"), ".convergence", "messenger")
         try {
             Files.createDirectory(messengerPath)
         } catch (ignored: FileAlreadyExistsException) {
@@ -128,11 +135,12 @@ object Main: Plugin {
             Files.write(hashPath, hash.toByteArray())
             Files.write(messengerPath.resolve("index.js"), jcl.loadedResources["index.js"]!!, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE)
             Files.write(messengerPath.resolve("package.json"), jcl.loadedResources["package.json"]!!, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE)
-            runCommand("npm i --production", messengerPath.toFile())?.waitFor()
+            runCommand("npm i --production", messengerPath.toFile(), true)?.waitFor()
         }
-        runCommand("node ${messengerPath.toFile().absolutePath}/index.js")
-        Thread.sleep(5000)
-        Api.listen()
+        runCommand("node ${messengerPath.toFile().absolutePath}/index.js", messengerPath.toFile())?.let {
+            jsOutput = it.inputStream
+            jsInput = it.outputStream
+        }
     }
 }
 

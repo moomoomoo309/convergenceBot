@@ -8,8 +8,6 @@ targetCompatibility = 1.5
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
 }
-ext.graal_version = '19.3.0.2'
-
 
 sourceSets {
     main {
@@ -18,16 +16,14 @@ sourceSets {
             srcDir 'src'
         }
         resources {
-            srcDirs 'resources'
+            srcDirs 'MessengerJSApplication/resources'
         }
     }
 }
 
 ext.ktor_version = "+"
 dependencies {
-    compile "io.ktor:ktor-client-core:$ktor_version"
-    compile "io.ktor:ktor-client-cio:$ktor_version"
-    compile "io.ktor:ktor-client-websockets:$ktor_version"
+    compile group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-core', version: "+"
 }
 
 jar {
@@ -36,6 +32,6 @@ jar {
     }
 
     from {
-        configurations.compile.filter { it.path.contains("atomicfu") || it.path.contains("io.ktor") }.collect { it.isDirectory() ? it : zipTree(it) }
+        configurations.compile.filter { it.path.contains("kotlinx-coroutines-core") }.collect { it.isDirectory() ? it : zipTree(it) }
     }
 }

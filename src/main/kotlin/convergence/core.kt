@@ -2,20 +2,19 @@
 
 package convergence
 
+import com.beust.klaxon.JsonObject
 import com.beust.klaxon.Klaxon
 import humanize.Humanize
 import net.sourceforge.argparse4j.ArgumentParsers
 import net.sourceforge.argparse4j.inf.ArgumentParserException
 import net.sourceforge.argparse4j.inf.Namespace
-import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.transactions.transaction
 import org.ocpsoft.prettytime.units.JustNow
+import java.io.ByteArrayOutputStream
+import java.io.PrintStream
 import java.nio.file.Paths
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
-import java.util.Date
-import javax.sql.rowset.serial.SerialBlob
 import kotlin.collections.component1
 import kotlin.collections.component2
 import kotlin.collections.set
@@ -34,6 +33,7 @@ val reverseChatMap = mutableMapOf<Chat, Int>()
 val pluginThreads = mutableMapOf<Plugin, Thread>()
 var currentChatID: Int = 0
 val jsonParser = Klaxon()
+
 /**
  * Adds a protocol to the protocol registry.
  * @return true if a protocol with that name does not already exist in the registry, false otherwise.
@@ -48,6 +48,7 @@ fun registerProtocol(protocol: Protocol, baseInterface: BaseInterface): Boolean 
 
 val sortedHelpText = arrayListOf<CommandLike>()
 val commands = mutableMapOf<Chat, MutableMap<String, Command>>()
+
 /**
  * Adds a command to the command registry.
  * @return true if a command with that name does not already exist in the registry, false otherwise.
@@ -60,12 +61,16 @@ fun registerCommand(command: Command): Boolean {
     if (command.name in commands[chat]!!)
         return false
 
-    sortedHelpText.add(sortedHelpText.binarySearch(command), command)
+    if (sortedHelpText.isEmpty())
+        sortedHelpText.add(command)
+    else
+        sortedHelpText.add(-sortedHelpText.binarySearch(command) - 1, command)
     commands[chat]!![command.name] = command
     return true
 }
 
 val aliases = mutableMapOf<Chat, MutableMap<String, Alias>>()
+
 /**
  * Adds an alias to the alias registry.
  * @return true if an alias with that name does not already exist in the registry, false otherwise.
@@ -114,7 +119,7 @@ fun setCommandDelimiter(chat: Chat, commandDelimiter: String): Boolean {
 fun sendMessage(sender: User, message: String?) {
     if (sender != baseInterfaceMap[sender.chat.protocol]!!.getBot(sender.chat))
         sendMessage(sender.chat, message)
-    forwardToLinkedChats(message, sender)
+    forwardToLinkedChats(message, sender, true)
 }
 
 /**
@@ -210,13 +215,25 @@ fun getCommandData(message: String, sender: User): CommandData? = try {
  */
 fun runCommand(message: String, sender: User) {
     log("[${getUserName(sender)}]: $message")
+    forwardToLinkedChats(message, sender)
     getCommandData(message, sender)?.let { runCommand(sender, it) }
 }
 
-fun runCommand(sender: User, command: CommandData) = sendMessage(sender, replaceAliasVars(command(sender), sender))
+fun getStackTraceText(e: Exception): String = ByteArrayOutputStream().let {
+    e.printStackTrace(PrintStream(it))
+    it.toString("UTF8")
+}
 
-val linkedChats = HashMap<Chat, MutableSet<Chat>>()
-fun forwardToLinkedChats(message: String?, sender: User) {
+fun runCommand(sender: User, command: CommandData) = try {
+    sendMessage(sender, replaceAliasVars(command(sender), sender))
+} catch (e: Exception) {
+    sendMessage(sender, "Error while running command! Stack trace:\n${getStackTraceText(e)}")
+}
+
+@Suppress("UNCHECKED_CAST")
+val linkedChats = hashMapOf<Chat, MutableSet<Chat>>()
+
+fun forwardToLinkedChats(message: String?, sender: User, isCommand: Boolean = false) {
     if (message == null)
         return
     val chat = sender.chat
@@ -232,9 +249,11 @@ fun forwardToLinkedChats(message: String?, sender: User) {
     }
 
     // Send the messages out to the linked chats, if there are any. Don't error if there aren't any.
-    if (chat in linkedChats)
-        for (linkedChat in linkedChats[chat]!!)
-            sendMessage(linkedChat, "$boldOpen${getUserName(sender)}:$boldClose $message")
+    val bot = baseInterfaceMap[sender.chat.protocol]!!.getBot(sender.chat)
+    if (isCommand || sender != bot)
+        if (chat in linkedChats)
+            for (linkedChat in linkedChats[chat]!!)
+                sendMessage(linkedChat, "$boldOpen${getUserName(if (isCommand) bot else sender)}:$boldClose $message")
 }
 
 fun offsetDateTimeToDate(time: OffsetDateTime): Date = Date.from(time.toInstant())
@@ -261,11 +280,6 @@ class SerializableOffsetDateTime(val ODT: OffsetDateTime): ISerializable {
     ).json()
 }
 
-
-val connection: Database by lazy {
-    Database.connect("jdbc:h2:~/.convergence/database", driver = "org.h2.Driver")
-}
-
 /**
  * Checks if commands scheduled for later are ready to be run yet. Can give information on the commands in its queue.
  */
@@ -276,23 +290,19 @@ object SchedulerThread: Thread() {
     private val scheduledCommands = TreeMap<OffsetDateTime, MutableList<ScheduledCommand>>()
     private val commandsList = TreeMap<Int, ScheduledCommand>()
     private var currentId: Int = 0
+    private val serializedCommands = hashMapOf<Int, String>()
 
     init {
-        try {
-            loadFromDatabase()
-        } catch (e: Exception) {
-            e.printStackTrace()
+        deserializationFunctions["ScheduledCommand"] = {
+            ScheduledCommand(OffsetDateTime.parse(it["time"] as String),
+                    deserialize(it["sender"] as JsonObject),
+                    deserialize(it["commandData"] as JsonObject),
+                    (it["id"] as String).toInt())
         }
-    }
-
-    private fun loadFromDatabase(connection: Database = convergence.connection) {
-        transaction(connection) {
-            SchemaUtils.createMissingTablesAndColumns(SerializedScheduledCommand)
-            SerializedScheduledCommand.selectAll().forEach { row ->
-                row.getOrNull(SerializedScheduledCommand.scheduledCommand)?.let {
-                    schedule(deserialize(it.getBytes(1, it.length().toInt()).toString()))
-                }
-            }
+        serializedCommands.values.forEach {
+            val cmd = deserialize<ScheduledCommand>(it)
+            commandsList[cmd.id] = cmd
+            scheduledCommands.getOrPut(cmd.time) { mutableListOf(cmd) }
         }
     }
 
@@ -333,13 +343,7 @@ object SchedulerThread: Thread() {
         if (cmd.id in commandsList)
             logErr("Duplicate IDs in schedulerThread!")
         commandsList[cmd.id] = cmd
-        transaction(connection) {
-            SchemaUtils.create(SerializedScheduledCommand)
-            SerializedScheduledCommand.insert {
-                it[id] = cmd.id
-                it[scheduledCommand] = SerialBlob(cmd.serialize().toByteArray())
-            }
-        }
+        serializedCommands[cmd.id] = cmd.serialize()
         return "Scheduled ${getUserName(sender)} to run \"$command\" to run at $time."
     }
 
@@ -366,10 +370,8 @@ object SchedulerThread: Thread() {
      * Removes a command from the queue.
      */
     fun unschedule(sender: User, index: Int) = commandsList.remove(index)?.let {
+        serializedCommands.remove(it.id)
         scheduledCommands[it.time]?.remove(it)
-        transaction(connection) {
-            SerializedScheduledCommand.deleteWhere { SerializedScheduledCommand.id eq index }
-        }
     } != null
 }
 
@@ -418,8 +420,22 @@ class core {
 
             for (plugin in plugins) {
                 log("Initializing plugin: ${plugin.name}")
-                Thread(plugin::init).start()
+                Thread(plugin::init).also { it.name = "${plugin.name}-Thread" }.start()
             }
+            // Update the chat map
+            Thread {
+                val chatUpdateDelay = 6000L
+                Thread.sleep(chatUpdateDelay)
+                for (protocol in protocols) {
+                    baseInterfaceMap[protocol]!!.getChats().forEach {
+                        if (it !in reverseChatMap) {
+                            while (currentChatID in chatMap) currentChatID++
+                            chatMap[currentChatID] = it
+                            reverseChatMap[it] = currentChatID
+                        }
+                    }
+                }
+            }.also { it.name = "ChatInitThread" }.start()
         }
     }
 }

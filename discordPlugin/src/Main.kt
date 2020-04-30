@@ -63,6 +63,19 @@ class DiscordUser(chat: Chat, val name: String, override val id: Long, val autho
             "id" to id,
             "author" to author.idLong
     ).json()
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is DiscordUser) return false
+
+        if (id != other.id) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return id.hashCode()
+    }
 }
 
 class DiscordEmoji(val url: String, name: String, val emoji: Emote, override val id: Long): Emoji(url, name), DiscordObject, ISerializable {

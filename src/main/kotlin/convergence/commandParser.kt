@@ -24,11 +24,11 @@ class InvalidEscapeSequence(message: String): Exception(message)
 
 fun getCommand(command: String, chat: Chat): CommandLike {
     return when {
-        chat in commands && commands[chat] is MutableMap<String, Command> && command in commands[chat]!! -> commands[chat]!![command] as CommandLike
-        chat in aliases && aliases[chat] is MutableMap<String, Alias> && command in aliases[chat]!! -> aliases[chat]!![command] as CommandLike
-        UniversalChat in commands && commands[UniversalChat] is MutableMap<String, Command> && command in commands[UniversalChat]!! -> commands[UniversalChat]!![command] as CommandLike
+        chat in commands && commands[chat] is MutableMap<String, Command> && command in commands[chat]!! -> commands[chat]!![command]
+        chat in aliases && aliases[chat] is MutableMap<String, Alias> && command in aliases[chat]!! -> aliases[chat]!![command]
+        UniversalChat in commands && commands[UniversalChat] is MutableMap<String, Command> && command in commands[UniversalChat]!! -> commands[UniversalChat]!![command]
         else -> throw CommandDoesNotExist(command)
-    }
+    } as CommandLike
 }
 
 // This function replaces the escape sequences with their replaced variants, and ignores quotes, so the quotes don't

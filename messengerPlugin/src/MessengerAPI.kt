@@ -1,34 +1,45 @@
 @file:Suppress("unused")
+
+
 package convergence.testPlugins.messengerPlugin
 
 import com.beust.klaxon.JsonArray
 import com.beust.klaxon.JsonObject
 import convergence.*
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.cio.CIO
-import io.ktor.client.features.websocket.WebSockets
-import io.ktor.client.features.websocket.ws
-import io.ktor.client.request.post
-import io.ktor.http.HttpMethod
-import io.ktor.http.cio.websocket.Frame
-import io.ktor.util.KtorExperimentalAPI
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import java.io.StringReader
 
 const val address = "127.0.0.1"
-@KtorExperimentalAPI
-val client = HttpClient(CIO) {
-    install(WebSockets)
-}
 
-@KtorExperimentalAPI
-fun sendToAPI(method: String, vararg args: Any?) = runBlocking {
-    client.post<String>(host = address, port = 5672) {
-        body = JsonObject(mapOf(
-                "method" to method,
-                "arguments" to args
-        )).toString()
+@ExperimentalUnsignedTypes
+var currentMessageId: UByte = 0U
+val responses = Array<String?>(256) { null }
+
+@ExperimentalUnsignedTypes
+fun sendToAPI(method: String, vararg args: Any?): String {
+    val id = currentMessageId++.toInt()
+    val jsonStr = mapOf(
+            "method" to method,
+            "arguments" to jsonParser.parseJsonArray(StringReader(jsonParser.toJsonString(args))),
+            "id" to id
+    ).json()
+    runBlocking {
+        if (Main.jsInput == null) {
+            while (Main.jsInput == null)
+                delay(100L)
+        }
+    }
+
+    Main.jsInput!!.write(jsonStr.toByteArray())
+    Main.jsInput!!.write('\n'.toInt())
+    Main.jsInput!!.flush()
+    return runBlocking {
+        while (id == -1 || responses[id] == null)
+            delay(100L)
+        val response = responses[id]!!
+        responses[id] = null
+        response
     }
 }
 
@@ -84,7 +95,7 @@ enum class ThreadColor(val color: String?) {
 }
 
 @Suppress("unused")
-@KtorExperimentalAPI
+@ExperimentalUnsignedTypes
 object Api {
     fun addUserToGroup(userId: String, threadId: String) = sendToAPI("addUserToGroup", userId, threadId)
     fun changeAdminStatus(threadId: String, adminIds: Array<String>, adminStatus: Boolean) = sendToAPI("changeAdminStatus", threadId, adminIds, adminStatus)
@@ -126,20 +137,25 @@ object Api {
     )
 
     fun handleMessageRequest(threadId: String, accept: Boolean) = sendToAPI("handleMessageRequest", threadId, accept)
+
     fun listen() {
-        sendToAPI("listen")
-        GlobalScope.launch {
-            client.ws(method = HttpMethod.Get, host = address, port = 50672) {
-                for (frame in incoming) {
-                    if (frame !is Frame.Text) {
-                        println("Got invalid frame! Frame type: ${frame.frameType}")
-                        continue
-                    } else {
-                        val msg = jsonParser.parse<JsonObject>(String(frame.data))
-                        if (msg == null) {
-                            println("Got invalid body! Body: ${frame.data}")
-                            continue
-                        }
+        Thread {
+            while (true) {
+                if (Main.jsOutput!!.available() == 0) {
+                    Thread.sleep(10L)
+                    continue
+                }
+                val lines = Main.jsOutput!!.reader().readLines()
+                for (line in lines) {
+                    println("Got Line! Line: $line")
+                    val msg = try {
+                        jsonParser.parse<JsonObject>(line)
+                    } catch (e: Exception) {
+                        println("Got invalid body! Body: $line")
+                        null
+                    }
+                    if (msg != null) {
+                        responses[msg["id"]!!.toString().toInt()] = line
                         when (msg["type"] as String) {
                             "message" -> {
                                 val chat = MessengerChat(msg["threadID"] as String)
@@ -169,7 +185,7 @@ object Api {
                     }
                 }
             }
-        }
+        }.start()
     }
 
     fun logout() = sendToAPI("logout")

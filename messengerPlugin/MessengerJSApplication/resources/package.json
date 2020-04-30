@@ -1,0 +1,15 @@
+{
+  "name": "messengerjsapplication",
+  "version": "1.0.0",
+  "description": "Connects messenger plugin to the facebook chat api.",
+  "main": "index.js",
+  "dependencies": {
+    "facebook-chat-api": "^1.6.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT"
+}

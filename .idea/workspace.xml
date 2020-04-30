@@ -23,7 +23,19 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="29d84833-fb05-450b-b63e-091fc3136e36" name="Default Changelist" comment="Remove kotlinx.serialization, replace with a JSON-based serialization method with less magic.&#10;&#10;Less magic means the dynamic class loading mechanisms will cause less issues, plus the code is actually very easy to write, easier than the equivalent kotlinx.serialization code, and to maintain, since this code does not depend on any library besides Klaxon (and switching that out would be simple)">
+      <change afterPath="$PROJECT_DIR$/messengerPlugin/MessengerJSApplication/resources/package.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/discordPlugin/src/Main.kt" beforeDir="false" afterPath="$PROJECT_DIR$/discordPlugin/src/Main.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/messengerPlugin/MessengerJSApplication/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/messengerPlugin/MessengerJSApplication/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/messengerPlugin/MessengerJSApplication/src/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/messengerPlugin/MessengerJSApplication/resources/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/messengerPlugin/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/messengerPlugin/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/messengerPlugin/src/Main.kt" beforeDir="false" afterPath="$PROJECT_DIR$/messengerPlugin/src/Main.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/messengerPlugin/src/MessengerAPI.kt" beforeDir="false" afterPath="$PROJECT_DIR$/messengerPlugin/src/MessengerAPI.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/DatabaseAccessObjects.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/commandParser.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/commandParser.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/core.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/core.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/defaultCommands.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/defaultCommands.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -46,10 +58,6 @@
     </option>
     <expand />
     <select />
-  </component>
-  <component name="ErrorTreeViewConfiguration">
-    <option name="autoscrollToSource" value="true" />
-    <option name="IS_AUTOSCROLL_TO_SOURCE" value="true" />
   </component>
   <component name="ExternalProjectsData">
     <projectState path="$PROJECT_DIR$">
@@ -100,7 +108,35 @@
                 <item name="convergence.bot" type="f1a62948:ProjectNode" />
                 <item name="convergence.bot" type="2d1252cf:ModuleNode" />
                 <item name="Tasks" type="e4a08cd1:TasksNode" />
+                <item name="application" type="c8890929:TasksNode$1" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="convergence.bot" type="f1a62948:ProjectNode" />
+                <item name="convergence.bot" type="2d1252cf:ModuleNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
                 <item name="help" type="c8890929:TasksNode$1" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="convergence.bot" type="f1a62948:ProjectNode" />
+                <item name="convergence.bot" type="2d1252cf:ModuleNode" />
+                <item name="messengerPlugin" type="2d1252cf:ModuleNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="convergence.bot" type="f1a62948:ProjectNode" />
+                <item name="convergence.bot" type="2d1252cf:ModuleNode" />
+                <item name="messengerPlugin" type="2d1252cf:ModuleNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="convergence.bot" type="f1a62948:ProjectNode" />
+                <item name="convergence.bot" type="2d1252cf:ModuleNode" />
+                <item name="messengerPlugin" type="2d1252cf:ModuleNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+                <item name="build" type="c8890929:TasksNode$1" />
               </path>
             </expand>
             <select />
@@ -140,6 +176,9 @@
   <component name="MacroExpansionManager">
     <option name="directoryName" value="ESZRssKT" />
   </component>
+  <component name="PackageJsonUpdateNotifier">
+    <dismissed value="$PROJECT_DIR$/messengerPlugin/MessengerJSApplication/resources/package.json" />
+  </component>
   <component name="ProjectId" id="1Ngzt17DMMTKWSdUJEz3ILdPPvV" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true">
     <ConfirmationsSetting value="2" id="Add" />
@@ -175,13 +214,16 @@
     <property name="project.structure.proportion" value="0.15" />
     <property name="project.structure.side.proportion" value="0.23337679" />
     <property name="run.code.analysis.last.selected.profile" value="pProject Default" />
-    <property name="settings.editor.selected.configurable" value="preferences.language.Kotlin" />
+    <property name="settings.editor.selected.configurable" value="preferences.sourceCode" />
+    <property name="ts.external.directory.path" value="$APPLICATION_HOME_DIR$/plugins/JavaScriptLanguage/jsLanguageServicesImpl/external" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/messengerPlugin/MessengerJSApplication" />
+      <recent name="$PROJECT_DIR$/messengerPlugin/MessengerJSApplication/resources" />
       <recent name="$PROJECT_DIR$/messengerPlugin/MessengerJSConnector" />
       <recent name="$PROJECT_DIR$" />
       <recent name="$PROJECT_DIR$/basicPlugin/src" />
@@ -199,7 +241,7 @@
       <command value="gradle --version" />
     </option>
   </component>
-  <component name="RunManager" selected="Gradle.convergenceBot [copyBot]">
+  <component name="RunManager" selected="Gradle.convergenceBot [run]">
     <configuration default="true" type="AndroidJUnit">
       <option name="TEST_OBJECT" value="class" />
       <option name="WORKING_DIRECTORY" value="$MODULE_DIR$" />
@@ -246,25 +288,6 @@
       <GradleScriptDebugEnabled>true</GradleScriptDebugEnabled>
       <method v="2" />
     </configuration>
-    <configuration name="convergenceBot [copyPlugins]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
-      <ExternalSystemSettings>
-        <option name="executionName" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$" />
-        <option name="externalSystemIdString" value="GRADLE" />
-        <option name="scriptParameters" />
-        <option name="taskDescriptions">
-          <list />
-        </option>
-        <option name="taskNames">
-          <list>
-            <option value="copyPlugins" />
-          </list>
-        </option>
-        <option name="vmOptions" />
-      </ExternalSystemSettings>
-      <GradleScriptDebugEnabled>true</GradleScriptDebugEnabled>
-      <method v="2" />
-    </configuration>
     <configuration name="convergenceBot [dependencies]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
@@ -284,7 +307,7 @@
       <GradleScriptDebugEnabled>true</GradleScriptDebugEnabled>
       <method v="2" />
     </configuration>
-    <configuration name="convergenceBot [jar]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+    <configuration name="convergenceBot [run]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -295,7 +318,7 @@
         </option>
         <option name="taskNames">
           <list>
-            <option value="jar" />
+            <option value="run" />
           </list>
         </option>
         <option name="vmOptions" />
@@ -303,10 +326,29 @@
       <GradleScriptDebugEnabled>true</GradleScriptDebugEnabled>
       <method v="2" />
     </configuration>
-    <configuration name="convergenceBot:discordPlugin [jar]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+    <configuration name="convergenceBot:messengerPlugin [clean]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$/discordPlugin" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$/messengerPlugin" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="clean" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <GradleScriptDebugEnabled>true</GradleScriptDebugEnabled>
+      <method v="2" />
+    </configuration>
+    <configuration name="convergenceBot:messengerPlugin [jar]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$/messengerPlugin" />
         <option name="externalSystemIdString" value="GRADLE" />
         <option name="scriptParameters" />
         <option name="taskDescriptions">
@@ -414,19 +456,19 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Gradle.convergenceBot [jar]" />
-      <item itemvalue="Gradle.convergenceBot:discordPlugin [jar]" />
       <item itemvalue="Gradle.convergenceBot [copyBot]" />
-      <item itemvalue="Gradle.convergenceBot [copyPlugins]" />
       <item itemvalue="Gradle.convergenceBot [dependencies]" />
+      <item itemvalue="Gradle.convergenceBot [run]" />
+      <item itemvalue="Gradle.convergenceBot:messengerPlugin [jar]" />
+      <item itemvalue="Gradle.convergenceBot:messengerPlugin [clean]" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Gradle.convergenceBot [run]" />
+        <item itemvalue="Gradle.convergenceBot:messengerPlugin [clean]" />
+        <item itemvalue="Gradle.convergenceBot:messengerPlugin [jar]" />
         <item itemvalue="Gradle.convergenceBot [copyBot]" />
         <item itemvalue="Gradle.convergenceBot [dependencies]" />
-        <item itemvalue="Gradle.convergenceBot [jar]" />
-        <item itemvalue="Gradle.convergenceBot [copyPlugins]" />
-        <item itemvalue="Gradle.convergenceBot:discordPlugin [jar]" />
       </list>
     </recent_temporary>
   </component>
@@ -586,21 +628,21 @@
       <workItem from="1586070758392" duration="2308000" />
       <workItem from="1586140482540" duration="5858000" />
       <workItem from="1586472573229" duration="6000" />
-      <workItem from="1586472600088" duration="19567000" />
-    </task>
-    <task id="LOCAL-00002" summary="Add notes on how to implement stage 1.">
-      <created>1533482292925</created>
-      <option name="number" value="00002" />
-      <option name="presentableId" value="LOCAL-00002" />
-      <option name="project" value="LOCAL" />
-      <updated>1533482292925</updated>
-    </task>
-    <task id="LOCAL-00003" summary="Finish notes on stage 1, add notes for stage 2.">
-      <created>1533484897511</created>
-      <option name="number" value="00003" />
-      <option name="presentableId" value="LOCAL-00003" />
-      <option name="project" value="LOCAL" />
-      <updated>1533484897511</updated>
+      <workItem from="1586472600088" duration="39054000" />
+      <workItem from="1586666020733" duration="7995000" />
+      <workItem from="1586886731969" duration="16000" />
+      <workItem from="1586886775111" duration="2257000" />
+      <workItem from="1586899517779" duration="602000" />
+      <workItem from="1586900233517" duration="1957000" />
+      <workItem from="1587063957835" duration="10786000" />
+      <workItem from="1587129401886" duration="7400000" />
+      <workItem from="1587155221016" duration="8191000" />
+      <workItem from="1587225184823" duration="1812000" />
+      <workItem from="1587237354984" duration="4888000" />
+      <workItem from="1587746333282" duration="26000" />
+      <workItem from="1587746381983" duration="8114000" />
+      <workItem from="1587760680630" duration="10963000" />
+      <workItem from="1588280584546" duration="2954000" />
     </task>
     <task id="LOCAL-00004" summary="Update research status.">
       <created>1533495398993</created>
@@ -931,7 +973,21 @@
       <option name="project" value="LOCAL" />
       <updated>1586504779719</updated>
     </task>
-    <option name="localTasksCounter" value="51" />
+    <task id="LOCAL-00051" summary="Remove kotlinx.serialization, replace with a JSON-based serialization method with less magic.&#10;&#10;Less magic means the dynamic class loading mechanisms will cause less issues, plus the code is actually very easy to write, easier than the equivalent kotlinx.serialization code, and to maintain, since this code does not depend on any library besides Klaxon (and switching that out would be simple)">
+      <created>1586504896279</created>
+      <option name="number" value="00051" />
+      <option name="presentableId" value="LOCAL-00051" />
+      <option name="project" value="LOCAL" />
+      <updated>1586504896279</updated>
+    </task>
+    <task id="LOCAL-00052" summary="Remove kotlinx.serialization, replace with a JSON-based serialization method with less magic.&#10;&#10;Less magic means the dynamic class loading mechanisms will cause less issues, plus the code is actually very easy to write, easier than the equivalent kotlinx.serialization code, and to maintain, since this code does not depend on any library besides Klaxon (and switching that out would be simple)">
+      <created>1586504902384</created>
+      <option name="number" value="00052" />
+      <option name="presentableId" value="LOCAL-00052" />
+      <option name="project" value="LOCAL" />
+      <updated>1586504902384</updated>
+    </task>
+    <option name="localTasksCounter" value="53" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1014,6 +1070,10 @@
       <screen x="1680" y="0" width="1680" height="1050" />
     </state>
     <state x="2008" y="82" width="1024" height="844" key="#Project_Structure/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586495411107" />
+    <state x="1978" y="162" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1587132645160">
+      <screen x="1680" y="0" width="1680" height="1050" />
+    </state>
+    <state x="1978" y="162" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1587132645160" />
     <state x="2301" y="223" key="#com.intellij.ide.util.MemberChooser" timestamp="1586503740673">
       <screen x="1680" y="0" width="1680" height="1050" />
     </state>
@@ -1031,90 +1091,118 @@
     </state>
     <state x="0" y="0" key="CommitChangelistDialog2/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1585246295154" />
     <state x="1680" y="0" width="1174" height="1008" key="CommitChangelistDialog2/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586069524506" />
-    <state x="1817" y="108" width="1344" height="806" key="DiffContextDialog" timestamp="1586069437655">
+    <state x="1817" y="108" width="1344" height="806" key="DiffContextDialog" timestamp="1586673655117">
       <screen x="1680" y="0" width="1680" height="1050" />
     </state>
     <state x="137" y="104" width="1344" height="806" key="DiffContextDialog/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1581986049523" />
-    <state x="1817" y="108" key="DiffContextDialog/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586069437655" />
-    <state x="2308" y="273" key="FileChooserDialogImpl" timestamp="1586049034759">
-      <screen x="1680" y="0" width="1680" height="1050" />
-    </state>
-    <state x="628" y="262" key="FileChooserDialogImpl/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1585168699818" />
-    <state x="2308" y="273" key="FileChooserDialogImpl/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586049034759" />
-    <state width="1638" height="252" key="GridCell.Tab.0.bottom" timestamp="1586503884911">
-      <screen x="1680" y="0" width="1680" height="1050" />
-    </state>
-    <state width="1638" height="252" key="GridCell.Tab.0.bottom/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586503884911" />
-    <state width="1638" height="252" key="GridCell.Tab.0.center" timestamp="1586503884911">
-      <screen x="1680" y="0" width="1680" height="1050" />
-    </state>
-    <state width="1638" height="252" key="GridCell.Tab.0.center/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586503884911" />
-    <state width="1638" height="252" key="GridCell.Tab.0.left" timestamp="1586503884911">
-      <screen x="1680" y="0" width="1680" height="1050" />
-    </state>
-    <state width="1638" height="252" key="GridCell.Tab.0.left/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586503884911" />
-    <state width="1638" height="252" key="GridCell.Tab.0.right" timestamp="1586503884911">
-      <screen x="1680" y="0" width="1680" height="1050" />
-    </state>
-    <state width="1638" height="252" key="GridCell.Tab.0.right/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586503884911" />
-    <state width="1638" height="315" key="GridCell.Tab.1.bottom" timestamp="1586070737007">
-      <screen x="1680" y="0" width="1680" height="1050" />
-    </state>
-    <state width="1638" height="315" key="GridCell.Tab.1.bottom/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586070737007" />
-    <state width="1638" height="315" key="GridCell.Tab.1.center" timestamp="1586070737007">
-      <screen x="1680" y="0" width="1680" height="1050" />
-    </state>
-    <state width="1638" height="315" key="GridCell.Tab.1.center/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586070737007" />
-    <state width="1638" height="315" key="GridCell.Tab.1.left" timestamp="1586070737007">
-      <screen x="1680" y="0" width="1680" height="1050" />
-    </state>
-    <state width="1638" height="315" key="GridCell.Tab.1.left/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586070737007" />
-    <state width="1638" height="315" key="GridCell.Tab.1.right" timestamp="1586070737007">
-      <screen x="1680" y="0" width="1680" height="1050" />
-    </state>
-    <state width="1638" height="315" key="GridCell.Tab.1.right/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586070737007" />
-    <state x="428" y="241" key="IDE.errors.dialog" timestamp="1581274044490">
+    <state x="1817" y="108" width="1344" height="806" key="DiffContextDialog/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586673655117" />
+    <state x="628" y="262" width="424" height="483" key="FileChooserDialogImpl" timestamp="1587762905402">
       <screen x="0" y="0" width="1680" height="1008" />
     </state>
-    <state x="428" y="241" key="IDE.errors.dialog/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1581274044490" />
+    <state x="628" y="262" width="424" height="483" key="FileChooserDialogImpl/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1587762905402" />
+    <state x="2308" y="273" key="FileChooserDialogImpl/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586049034759" />
+    <state width="1638" height="251" key="GridCell.Tab.0.bottom" timestamp="1588284244851">
+      <screen x="0" y="0" width="1680" height="1008" />
+    </state>
+    <state width="1638" height="251" key="GridCell.Tab.0.bottom/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1588284244851" />
+    <state width="1638" height="251" key="GridCell.Tab.0.bottom/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1587187220869" />
+    <state width="1638" height="251" key="GridCell.Tab.0.center" timestamp="1588284244850">
+      <screen x="0" y="0" width="1680" height="1008" />
+    </state>
+    <state width="1638" height="251" key="GridCell.Tab.0.center/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1588284244850" />
+    <state width="1638" height="251" key="GridCell.Tab.0.center/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1587187220869" />
+    <state width="1638" height="251" key="GridCell.Tab.0.left" timestamp="1588284244850">
+      <screen x="0" y="0" width="1680" height="1008" />
+    </state>
+    <state width="1638" height="251" key="GridCell.Tab.0.left/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1588284244850" />
+    <state width="1638" height="251" key="GridCell.Tab.0.left/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1587187220869" />
+    <state width="1638" height="251" key="GridCell.Tab.0.right" timestamp="1588284244851">
+      <screen x="0" y="0" width="1680" height="1008" />
+    </state>
+    <state width="1638" height="251" key="GridCell.Tab.0.right/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1588284244851" />
+    <state width="1638" height="251" key="GridCell.Tab.0.right/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1587187220869" />
+    <state width="1638" height="315" key="GridCell.Tab.1.bottom" timestamp="1587940438496">
+      <screen x="0" y="0" width="1680" height="1008" />
+    </state>
+    <state width="1638" height="315" key="GridCell.Tab.1.bottom/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1587940438496" />
+    <state width="1638" height="315" key="GridCell.Tab.1.bottom/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1587185638541" />
+    <state width="1638" height="315" key="GridCell.Tab.1.center" timestamp="1587940438496">
+      <screen x="0" y="0" width="1680" height="1008" />
+    </state>
+    <state width="1638" height="315" key="GridCell.Tab.1.center/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1587940438496" />
+    <state width="1638" height="315" key="GridCell.Tab.1.center/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1587185638541" />
+    <state width="1638" height="315" key="GridCell.Tab.1.left" timestamp="1587940438496">
+      <screen x="0" y="0" width="1680" height="1008" />
+    </state>
+    <state width="1638" height="315" key="GridCell.Tab.1.left/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1587940438496" />
+    <state width="1638" height="315" key="GridCell.Tab.1.left/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1587185638541" />
+    <state width="1638" height="315" key="GridCell.Tab.1.right" timestamp="1587940438496">
+      <screen x="0" y="0" width="1680" height="1008" />
+    </state>
+    <state width="1638" height="315" key="GridCell.Tab.1.right/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1587940438496" />
+    <state width="1638" height="315" key="GridCell.Tab.1.right/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1587185638541" />
+    <state x="428" y="241" key="IDE.errors.dialog" timestamp="1587093252234">
+      <screen x="0" y="0" width="1680" height="1008" />
+    </state>
+    <state x="428" y="241" key="IDE.errors.dialog/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1587093252234" />
     <state x="168" y="86" key="MergeDialog" timestamp="1581273838046">
       <screen x="0" y="0" width="1680" height="1008" />
     </state>
     <state x="168" y="86" key="MergeDialog/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1581273838046" />
-    <state x="562" y="151" key="SettingsEditor" timestamp="1586037819515">
+    <state x="562" y="151" key="SettingsEditor" timestamp="1586887484821">
       <screen x="0" y="0" width="1680" height="1008" />
     </state>
-    <state x="562" y="151" key="SettingsEditor/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1586037819515" />
+    <state x="562" y="151" key="SettingsEditor/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1586887484821" />
+    <state x="2242" y="157" key="SettingsEditor/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586886908071" />
     <state x="559" y="123" key="VCS.ChangeListViewerDialog" timestamp="1581986049959">
       <screen x="0" y="0" width="1680" height="1008" />
     </state>
     <state x="559" y="123" key="VCS.ChangeListViewerDialog/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1581986049959" />
-    <state x="2120" y="240" key="Vcs.Push.Dialog.v2" timestamp="1586504782607">
+    <state x="2120" y="240" key="Vcs.Push.Dialog.v2" timestamp="1586504913440">
       <screen x="1680" y="0" width="1680" height="1050" />
     </state>
-    <state x="2120" y="240" key="Vcs.Push.Dialog.v2/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586504782607" />
-    <state x="635" y="419" width="411" height="173" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1586186689060">
+    <state x="2120" y="240" key="Vcs.Push.Dialog.v2/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586504913440" />
+    <state width="840" height="504" key="XDebugger.FullValuePopup" timestamp="1587772837152">
       <screen x="0" y="0" width="1680" height="1008" />
     </state>
-    <state x="635" y="419" width="411" height="173" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1586186689060" />
-    <state x="2229" y="260" width="581" height="490" key="find.popup" timestamp="1586503665786">
+    <state width="840" height="504" key="XDebugger.FullValuePopup/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1587772837152" />
+    <state x="1781" y="123" width="1480" height="808" key="com.intellij.history.integration.ui.views.FileHistoryDialog" timestamp="1586673655117">
       <screen x="1680" y="0" width="1680" height="1050" />
     </state>
-    <state x="2229" y="260" width="581" height="490" key="find.popup/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586503665786" />
-    <state x="2183" y="230" width="672" height="707" key="search.everywhere.popup" timestamp="1586068420009">
+    <state x="1781" y="123" width="1480" height="808" key="com.intellij.history.integration.ui.views.FileHistoryDialog/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586673655117" />
+    <state x="2315" y="436" width="411" height="173" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1586559258456">
+      <screen x="1680" y="0" width="1680" height="1050" />
+    </state>
+    <state x="635" y="419" width="411" height="173" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1586186689060" />
+    <state x="2315" y="436" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586559258456" />
+    <state x="549" y="250" width="581" height="494" key="find.popup" timestamp="1588282973958">
+      <screen x="0" y="0" width="1680" height="1008" />
+    </state>
+    <state x="549" y="250" width="581" height="494" key="find.popup/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1588282973958" />
+    <state x="2229" y="260" width="581" height="490" key="find.popup/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1587184073048" />
+    <state width="600" height="440" key="javadoc.popup" timestamp="1586673852085">
+      <screen x="1680" y="0" width="1680" height="1050" />
+    </state>
+    <state width="600" height="440" key="javadoc.popup/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586673852085" />
+    <state x="2183" y="230" width="672" height="707" key="search.everywhere.popup" timestamp="1587187883311">
       <screen x="1680" y="0" width="1680" height="1050" />
     </state>
     <state x="503" y="221" width="672" height="678" key="search.everywhere.popup/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1585273264180" />
-    <state x="2183" y="230" width="672" height="707" key="search.everywhere.popup/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586068420009" />
+    <state x="2183" y="230" width="672" height="707" key="search.everywhere.popup/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1587187883311" />
   </component>
   <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="kotlin-line">
+          <url>file://$PROJECT_DIR$/messengerPlugin/src/MessengerAPI.kt</url>
+          <line>149</line>
+          <option name="timeStamp" value="8" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
     <watches-manager>
       <configuration name="Remote">
-        <watch expression="commandParser.RULE_nonQuoteArgument" language="kotlin" />
-        <watch expression="ctx?.children?.filter { (it.payload as CommonToken).type == commandParser.OctalEscape }" language="kotlin" />
-        <watch expression="(tok.payload as CommonToken).text()" language="kotlin" />
-        <watch expression="it" language="kotlin" />
-        <watch expression="(it.children.first() as ParserRuleContext).children[0].childCount" language="kotlin" />
+        <watch expression="String(ByteArray(500).also{Main.jsOutput!!.read(it, 0, 500)})" language="kotlin" />
       </configuration>
     </watches-manager>
   </component>

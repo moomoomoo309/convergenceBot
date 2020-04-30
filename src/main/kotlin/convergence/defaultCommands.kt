@@ -113,11 +113,21 @@ fun me(args: List<String>, sender: User): String? {
 fun chats(args: List<String>, sender: User): String? {
     val builder = StringBuilder()
     for (protocol in protocols) {
-        builder.append("${protocol.name}\n\t")
-        for ((id, chat) in chatMap)
-            builder.append(chat.name).append(" (").append(id).append("), ")
-        builder.setLength(builder.length - 2) // Remove the last ", ".
-        builder.append('\n')
+        try {
+            baseInterfaceMap[protocol]!!.getChats().also { builder.append("${protocol.name}\n\t") }.forEach {
+                if (it !in reverseChatMap) {
+                    while (currentChatID in chatMap) currentChatID++
+                    chatMap[currentChatID] = it
+                    reverseChatMap[it] = currentChatID
+                    builder.append(it.name).append(" (").append(currentChatID++).append("), ")
+                } else
+                    builder.append(it.name).append(" (").append(reverseChatMap[it]).append("), ")
+            }
+            builder.setLength(builder.length - 2) // Remove the last ", ".
+            builder.append('\n')
+        } catch (e: Exception) {
+            println("Error getting chats for ${baseInterfaceMap[protocol]!!.name}. Stack Trace:\n${getStackTraceText(e)}")
+        }
     }
     return builder.toString()
 }
@@ -357,6 +367,7 @@ fun links(args: List<String>, sender: User): String? {
         "No chats are linked to this one."
 }
 
+val delimiters = hashMapOf<Chat, String>()
 fun setDelimiter(args: List<String>, sender: User): String? = when {
     args.isEmpty() -> "You need to pass the new delimiter!"
     setCommandDelimiter(sender.chat, args[0]) -> "Command delimiter set to \"${args[0]}\"."
