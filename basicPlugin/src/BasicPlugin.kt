@@ -1,9 +1,10 @@
 package convergence.testPlugins.basicPlugin
 
 import convergence.*
+import org.pf4j.PluginWrapper
 
 object BasicBaseInterface: BaseInterface {
-    override val protocol: Protocol = UniversalProtocol
+    override val protocols: List<Protocol> = listOf(UniversalProtocol)
 
     override fun sendMessage(chat: Chat, message: String): Boolean = false
     override fun getBot(chat: Chat): User = UniversalUser
@@ -11,10 +12,10 @@ object BasicBaseInterface: BaseInterface {
     override fun getChats(): List<Chat> = emptyList()
     override fun getUsers(chat: Chat): List<User> = emptyList()
     override fun getChatName(chat: Chat): String = ""
-    override val name: String = "FakeBaseInterface"
+    override val name: String = "BasicBaseInterface"
 }
 
-object Main: Plugin {
+class BasicPlugin(wrapper: PluginWrapper): Plugin(wrapper) {
     override val name = "basicPlugin"
     override val baseInterface: BaseInterface = BasicBaseInterface
     override fun init() {

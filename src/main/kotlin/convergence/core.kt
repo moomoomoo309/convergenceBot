@@ -2,15 +2,21 @@
 
 package convergence
 
-import com.beust.klaxon.JsonObject
-import com.beust.klaxon.Klaxon
+import com.squareup.moshi.JsonDataException
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import humanize.Humanize
+import kotlinx.coroutines.*
 import net.sourceforge.argparse4j.ArgumentParsers
 import net.sourceforge.argparse4j.inf.ArgumentParserException
 import net.sourceforge.argparse4j.inf.Namespace
 import org.ocpsoft.prettytime.units.JustNow
+import org.pf4j.DefaultPluginManager
+import org.pf4j.PluginManager
+import org.pf4j.PluginWrapper
 import java.io.ByteArrayOutputStream
 import java.io.PrintStream
+import java.nio.file.Path
 import java.nio.file.Paths
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
@@ -32,7 +38,42 @@ val chatMap = mutableMapOf<Int, Chat>()
 val reverseChatMap = mutableMapOf<Chat, Int>()
 val pluginThreads = mutableMapOf<Plugin, Thread>()
 var currentChatID: Int = 0
-val jsonParser = Klaxon()
+val moshiBuilder = Moshi.Builder()
+        .add(SingletonAdapterFactory)
+        .add(OffsetDateTimeAdapter)
+        .add(KotlinJsonAdapterFactory())!!
+lateinit var moshi: Moshi
+val convergencePath: Path = Paths.get(System.getProperty("user.home"), ".convergence")
+
+
+/**
+ * Deserializes a JSON string into the type specified in [T].
+ */
+inline fun <reified T: Any> Moshi.fromJson(jsonStr: String): T =
+        this.adapter(T::class.java)?.fromJson(jsonStr)
+                ?: throw JsonDataException("Is there an adapter missing for ${T::class.simpleName}?")
+
+fun <T> Moshi.fromJson(jsonStr: String, cls: Class<T>): T = this.adapter(cls)?.fromJson(jsonStr)
+        ?: throw JsonDataException("Is there an adapter missing for ${cls.simpleName}?")
+
+/**
+ * Serializes a variable of type [T] into a JSON string. Will serialize null values if they are present.
+ */
+inline fun <reified T: Any> Moshi.toJson(obj: T, prettyPrint: Boolean = false): String =
+        this.adapter(T::class.java)?.serializeNulls()?.indent(if (prettyPrint) "    " else "")?.toJson(obj)
+                ?: throw JsonDataException("Is there an adapter missing for ${T::class.simpleName}?")
+
+fun <T> Moshi.toJson(obj: T, cls: Class<T>, prettyPrint: Boolean = false): String =
+        this.adapter(cls)?.serializeNulls()?.indent(if (prettyPrint) "    " else "")?.toJson(obj)
+                ?: throw JsonDataException("Is there an adapter missing for ${cls.simpleName}?")
+
+/**
+ * Adds a list of protocol to the protocol registry.
+ * @return a list of booleans, true if a protocol with that name does not already exist in the registry, false otherwise.
+ */
+fun registerProtocols(protocols: List<Protocol>, baseInterface: BaseInterface) = protocols.map {
+    registerProtocol(it, baseInterface)
+}
 
 /**
  * Adds a protocol to the protocol registry.
@@ -84,8 +125,8 @@ fun registerAlias(alias: Alias): Boolean {
         return false
 
     if (sortedHelpText.isNotEmpty())
-        for (i in 0..sortedHelpText.size)
-            if (alias.name < sortedHelpText[i].name || i == sortedHelpText.size - 1) {
+        for ((i, commandLike) in sortedHelpText.withIndex())
+            if (alias.name < commandLike.name || i == sortedHelpText.size - 1) {
                 sortedHelpText.add(i, alias)
                 break
             } else
@@ -142,7 +183,7 @@ fun sendMessage(chat: Chat, message: String?) {
 fun getUserName(sender: User): String {
     val chat = sender.chat
     val baseInterface = baseInterfaceMap[chat.protocol]!!
-    return if (baseInterface is INickname)
+    return if (baseInterface is HasNicknames)
         baseInterface.getUserNickname(chat, sender) ?: baseInterface.getName(chat, sender)
     else
         baseInterface.getName(chat, sender)
@@ -230,7 +271,6 @@ fun runCommand(sender: User, command: CommandData) = try {
     sendMessage(sender, "Error while running command! Stack trace:\n${getStackTraceText(e)}")
 }
 
-@Suppress("UNCHECKED_CAST")
 val linkedChats = hashMapOf<Chat, MutableSet<Chat>>()
 
 fun forwardToLinkedChats(message: String?, sender: User, isCommand: Boolean = false) {
@@ -242,7 +282,7 @@ fun forwardToLinkedChats(message: String?, sender: User, isCommand: Boolean = fa
     var boldClose = ""
     val baseInterface = baseInterfaceMap[protocol]
     // Try to get the delimiters for bold, if possible.
-    if (baseInterface is IFormatting && Format.bold in baseInterface.supportedFormats) {
+    if (baseInterface is CanFormatMessages && Format.bold in baseInterface.supportedFormats) {
         val delimiters = baseInterface.getDelimiters(Format.bold)
         boldOpen = delimiters?.first ?: boldOpen
         boldClose = delimiters?.second ?: boldClose
@@ -264,19 +304,12 @@ data class ScheduledCommand(
         val sender: User,
         val commandData: CommandData,
         val id: Int,
-): ISerializable {
-    override fun serialize() = mapOf(
+): JsonConvertible {
+    override fun toJson() = mapOf(
             "type" to "ScheduledCommand",
-            "sender" to sender.serialize(),
-            "commandData" to commandData.serialize(),
+            "sender" to sender.toJson(),
+            "commandData" to commandData.toJson(),
             "id" to id
-    ).json()
-}
-
-class SerializableOffsetDateTime(val ODT: OffsetDateTime): ISerializable {
-    override fun serialize() = mapOf(
-            "type" to "SerializableOffsetDateTime",
-            "payload" to ODT.toString()
     ).json()
 }
 
@@ -293,14 +326,8 @@ object SchedulerThread: Thread() {
     private val serializedCommands = hashMapOf<Int, String>()
 
     init {
-        deserializationFunctions["ScheduledCommand"] = {
-            ScheduledCommand(OffsetDateTime.parse(it["time"] as String),
-                    deserialize(it["sender"] as JsonObject),
-                    deserialize(it["commandData"] as JsonObject),
-                    (it["id"] as String).toInt())
-        }
         serializedCommands.values.forEach {
-            val cmd = deserialize<ScheduledCommand>(it)
+            val cmd = moshi.fromJson<ScheduledCommand>(it)
             commandsList[cmd.id] = cmd
             scheduledCommands.getOrPut(cmd.time) { mutableListOf(cmd) }
         }
@@ -333,7 +360,7 @@ object SchedulerThread: Thread() {
      * Schedules [command] sent by [sender] to run at [time].
      * @return The response the user will get from the command.
      */
-    fun schedule(sender: User, command: CommandData, time: OffsetDateTime): String? {
+    fun schedule(sender: User, command: CommandData, time: OffsetDateTime): String {
         if (time !in scheduledCommands)
             scheduledCommands[time] = mutableListOf()
         val cmd = ScheduledCommand(time, sender, command, currentId)
@@ -343,7 +370,7 @@ object SchedulerThread: Thread() {
         if (cmd.id in commandsList)
             logErr("Duplicate IDs in schedulerThread!")
         commandsList[cmd.id] = cmd
-        serializedCommands[cmd.id] = cmd.serialize()
+        serializedCommands[cmd.id] = cmd.toJson()
         return "Scheduled ${getUserName(sender)} to run \"$command\" to run at $time."
     }
 
@@ -352,7 +379,11 @@ object SchedulerThread: Thread() {
     /**
      * Gets all of the commands scheduled by [sender].
      */
-    fun getCommands(sender: User?): List<ScheduledCommand> = if (sender == null) getCommands() else commandsList.values.filter { it.sender == sender }
+    fun getCommands(sender: User?): List<ScheduledCommand> =
+            if (sender == null)
+                getCommands()
+            else
+                commandsList.values.filter { it.sender == sender }
 
     /**
      * Gets all of the commands scheduled.
@@ -362,9 +393,14 @@ object SchedulerThread: Thread() {
     /**
      * Writes out all of the commands in a human-readable format.
      */
-    fun getCommandStrings(sender: User, getAllCommands: Boolean = false) = getCommands(if (getAllCommands) null else sender)
-            .sortedBy { it.time }
-            .map { "[${it.id}] ${formatTime(it.time)}: ${getUserName(it.sender)} - \"${commandDelimiters[sender.chat]}${it.commandData.command.name} ${it.commandData.args.joinToString(" ")}\"" }
+    fun getCommandStrings(sender: User, getAllCommands: Boolean = false) =
+            getCommands(if (getAllCommands) null else sender)
+                    .sortedBy { it.time }
+                    .map {
+                        "[${it.id}] ${formatTime(it.time)}: ${getUserName(it.sender)} - \"${commandDelimiters[sender.chat]}${it.commandData.command.name} ${
+                            it.commandData.args.joinToString(" ")
+                        }\""
+                    }
 
     /**
      * Removes a command from the queue.
@@ -381,9 +417,13 @@ object SchedulerThread: Thread() {
 fun schedule(sender: User, command: CommandData, time: OffsetDateTime) = SchedulerThread.schedule(sender, command, time)
 
 lateinit var commandLineArgs: Namespace
+lateinit var pluginManager: PluginManager
+lateinit var pluginPaths: Set<Path>
+val pluginWrappers: MutableList<PluginWrapper> get() = pluginManager.plugins
 
 class core {
     companion object {
+        @DelicateCoroutinesApi
         @JvmStatic
         fun main(args: Array<String>) {
             // Parse command line arguments.
@@ -393,13 +433,23 @@ class core {
 
             val paths = argParser.addArgumentGroup("Paths")
             paths.addArgument("-pp", "--plugin-path")
-                    .type(String::class.java).default = Paths.get(System.getProperty("user.home"), ".convergence", "plugins").toString()
-            try {
-                commandLineArgs = argParser.parseArgs(args)
+                    .dest("pluginPath")
+                    .nargs("+")
+                    .type(String::class.java)
+                    .default = convergencePath.resolve("plugins").toString()
+            commandLineArgs = try {
+                argParser.parseArgs(args)
             } catch (e: ArgumentParserException) {
                 logErr("Failed to parse command line arguments. Printing stack trace:")
                 logErr(e)
                 return
+            }
+
+            // It'd be silly to get this list, convert it to a set, then convert it back to a list for the plugin
+            // manager, so we'll keep this locally so we can construct the plugin manager.
+            commandLineArgs.get<List<String>>("pluginPath").map { Paths.get(it) }.let {
+                pluginManager = DefaultPluginManager(it)
+                pluginPaths = it.toSet()
             }
 
             // Remove "just now" as an option for time formatting. 5 minutes for "just now" is annoying.
@@ -411,31 +461,40 @@ class core {
             log("Starting scheduler thread...")
             SchedulerThread.start()
 
-            PluginLoader.add(Paths.get(commandLineArgs.getString("plugin_path")))
-            val plugins = PluginLoader.load()
-            if (plugins.isEmpty())
+            pluginManager.loadPlugins()
+            if (pluginWrappers.isEmpty())
                 log("No plugins loaded.")
             else
-                log("Loaded Plugins:\t${plugins.joinToString("\t") { it.name }}")
+                log("Loaded Plugins:\t${pluginWrappers.joinToString("\t") { it.pluginId }}")
 
-            for (plugin in plugins) {
-                log("Initializing plugin: ${plugin.name}")
-                Thread(plugin::init).also { it.name = "${plugin.name}-Thread" }.start()
+
+            moshi = moshiBuilder.build()
+            for (wrapper in pluginWrappers) {
+                log("Initializing plugin: ${wrapper.pluginId}")
+
+                Thread(wrapper.plugin::start, "${wrapper.pluginId}-Thread").start()
             }
+
             // Update the chat map
-            Thread {
-                val chatUpdateDelay = 6000L
-                Thread.sleep(chatUpdateDelay)
-                for (protocol in protocols) {
-                    baseInterfaceMap[protocol]!!.getChats().forEach {
-                        if (it !in reverseChatMap) {
-                            while (currentChatID in chatMap) currentChatID++
-                            chatMap[currentChatID] = it
-                            reverseChatMap[it] = currentChatID
-                        }
+            val chatUpdateDelay = 6000L
+            for (protocol in protocols) {
+                GlobalScope.launch(CoroutineName("Chat Init for ${protocol.name}")) {
+                    delay(chatUpdateDelay)
+                    try {
+                        (baseInterfaceMap[protocol]
+                                ?: throw Exception("Protocol ${protocol.name} is not in the base interface map!"))
+                                .getChats().forEach {
+                                    if (it !in reverseChatMap) {
+                                        while (currentChatID in chatMap) currentChatID++
+                                        chatMap[currentChatID] = it
+                                        reverseChatMap[it] = currentChatID
+                                    }
+                                }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
                     }
                 }
-            }.also { it.name = "ChatInitThread" }.start()
+            }
         }
     }
 }

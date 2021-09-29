@@ -1,6 +1,7 @@
 package convergence.testPlugins.discordPlugin
 
 import convergence.*
+import convergence.MessageHistory
 import convergence.User
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
@@ -10,6 +11,7 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.dv8tion.jda.api.requests.GatewayIntent
 import net.dv8tion.jda.api.utils.cache.CacheFlag
+import org.pf4j.PluginWrapper
 import java.io.FileNotFoundException
 import java.net.URL
 import java.nio.file.Files
@@ -25,40 +27,31 @@ interface DiscordObject {
 
 class DiscordAvailability(val status: OnlineStatus): Availability(status.name)
 
-class DiscordChat(name: String, override val id: Long, val channel: MessageChannel): Chat(DiscordProtocol, name), DiscordObject, ISerializable {
+class DiscordChat(name: String, override val id: Long, val channel: MessageChannel): Chat(DiscordProtocol, name), DiscordObject, JsonConvertible {
     constructor(channel: MessageChannel): this(channel.name, channel.idLong, channel)
     constructor(message: Message): this(message.channel)
     constructor(msgEvent: MessageReceivedEvent): this(msgEvent.message)
 
     override fun hashCode() = id.hashCode()
-    override fun serialize() = mapOf("type" to "DiscordChat",
-            "name" to name,
-            "id" to id,
-            "channel" to channel.id
-    ).json()
-
     override fun equals(other: Any?) = this === other || (javaClass == other?.javaClass && id == (other as DiscordChat).id)
 }
 
-class DiscordMessageHistory(val msg: Message, override val id: Long): MessageHistory(msg.contentRaw, msg.timeCreated, DiscordUser(DiscordChat(msg), msg.author)), DiscordObject, ISerializable {
+class DiscordMessageHistory(val msg: Message, override val id: Long): MessageHistory(msg.contentRaw, msg.timeCreated, DiscordUser(DiscordChat(msg), msg.author)), DiscordObject, JsonConvertible {
     constructor(msg: Message): this(msg, msg.idLong)
-
-    override fun serialize() = mapOf(
-            "msg" to msg.id,
-            "msgChannel" to msg.channel.id,
-            "id" to id
-    ).json()
 }
 
-class DiscordUser(chat: Chat, val name: String, override val id: Long, val author: net.dv8tion.jda.api.entities.User): User(chat), DiscordObject, ISerializable {
+class DiscordUser(chat: Chat,
+                  val name: String,
+                  override val id: Long,
+                  val author: net.dv8tion.jda.api.entities.User): User(chat), DiscordObject, JsonConvertible {
     constructor(msgEvent: MessageReceivedEvent): this(DiscordChat(msgEvent), msgEvent)
     constructor(chat: Chat, msgEvent: MessageReceivedEvent): this(chat, msgEvent.author)
     constructor(chat: Chat, author: net.dv8tion.jda.api.entities.User): this(chat, author.name, author.idLong, author)
     constructor(chat: Chat, author: Member): this(chat, author.user)
 
-    override fun serialize() = mapOf(
+    override fun toJson() = mapOf(
             "type" to "DiscordUser",
-            "chat" to chat.serialize(),
+            "chat" to chat.toJson(),
             "name" to name,
             "id" to id,
             "author" to author.idLong
@@ -78,34 +71,32 @@ class DiscordUser(chat: Chat, val name: String, override val id: Long, val autho
     }
 }
 
-class DiscordEmoji(val url: String, name: String, val emoji: Emote, override val id: Long): Emoji(url, name), DiscordObject, ISerializable {
+data class DiscordEmoji(
+        val url: String,
+        override val name: String,
+        val emoji: Emote,
+        override val id: Long): CustomEmoji(url, name), DiscordObject, JsonConvertible {
     constructor(emoji: Emote): this(emoji.imageUrl, emoji.name, emoji, emoji.idLong)
-
-    override fun serialize() = mapOf(
-            "type" to "DiscordEmoji",
-            "url" to url,
-            "name" to name,
-            "emoji" to emoji.id,
-            "guild" to emoji.guild!!.id,
-            "id" to id
-    ).json()
 }
 
-val formatMap = mapOf(Format.code to Pair("```", "```"),
+val formatMap = mapOf(
+        Format.code to Pair("```", "```"),
         Format.monospace to Pair("`", "`"),
         Format.underline to Pair("__", "__"),
         Format.bold to Pair("**", "**"),
         Format.italics to Pair("*", "*"),
         Format.strikethrough to Pair("~~", "~~"),
-        Format.spoiler to Pair("||", "||"))
+        Format.spoiler to Pair("||", "||")
+)
 
-class DiscordImage(var URL: String? = null, var data: ByteArray? = null): Image()
+/** TODO: Use this, then add a [Json Adapter][com.squareup.moshi.JsonAdapter] for it. */
+class DiscordImage(var url: String? = null, var data: ByteArray? = null): Image()
 
-object DiscordProtocol: Protocol("Discord")
-object DiscordInterface: BaseInterface, IFormatting, INickname, IImages, IMention, IMessageHistory, IOtherMessageEditable, IUserAvailability, ICustomEmoji {
-    override val name: String = Main.name
-    override val protocol: Protocol = DiscordProtocol
-    override val supportedFormats: Set<Format> = formatMap.keys
+object DiscordProtocol: convergence.Protocol("Discord")
+object DiscordInterface: BaseInterface, CanFormatMessages, HasNicknames, HasImages, CanMentionUsers, HasMessageHistory, CanEditOtherMessages, HasUserAvailability, HasCustomEmoji {
+    override val name: String = "DiscordInterface"
+    override val protocols = listOf(DiscordProtocol)
+    override val supportedFormats = formatMap.keys
 
     override fun getUserNickname(chat: Chat, user: User): String? {
         if (user is DiscordUser && chat is DiscordChat && chat.channel is TextChannel)
@@ -118,8 +109,8 @@ object DiscordInterface: BaseInterface, IFormatting, INickname, IImages, IMentio
 
     override fun sendImage(chat: Chat, image: Image, sender: User, message: String) {
         if (chat is DiscordChat && image is DiscordImage)
-            if (image.URL != null)
-                chat.channel.sendFile(URL(image.URL).openStream(), name)
+            if (image.url != null)
+                chat.channel.sendFile(URL(image.url).openStream(), name)
             else {
                 val data = image.data
                 if (data != null)
@@ -127,7 +118,7 @@ object DiscordInterface: BaseInterface, IFormatting, INickname, IImages, IMentio
             }
     }
 
-    override fun editMessage(message: OptionalFunctionality.IMessageHistory.MessageHistory, oldMessage: String, sender: User, newMessage: String) {
+    override fun editMessage(message: MessageHistory, oldMessage: String, sender: User, newMessage: String) {
         if (message is DiscordMessageHistory)
             message.msg.editMessage(newMessage)
     }
@@ -137,7 +128,7 @@ object DiscordInterface: BaseInterface, IFormatting, INickname, IImages, IMentio
             return emptyList()
         val history = chat.channel.history
         if (history != null) {
-            for (i in 0..9) {
+            for (i in 0..9) { // Get the last 1000 messages, 100 at a time.
                 history.retrievePast(100)
                 if (since != null && history.retrievedHistory.last().timeCreated.isBefore(since)) {
                     if (until == null) {
@@ -169,8 +160,6 @@ object DiscordInterface: BaseInterface, IFormatting, INickname, IImages, IMentio
         return getMessages(chat, since).filter { it.sender == user }
     }
 
-    override fun getMentionText(chat: Chat, user: User): String = if (user is DiscordUser) jda.retrieveUserById(user.id).complete().asMention else ""
-
     override fun setBotAvailability(chat: Chat, availability: Availability) {
         if (availability is DiscordAvailability)
             jda.presence.setPresence(availability.status, true)
@@ -185,8 +174,7 @@ object DiscordInterface: BaseInterface, IFormatting, INickname, IImages, IMentio
     }
 
     override fun getDelimiters(format: Format): Pair<String, String>? = formatMap[format]
-    override fun getEmojis(chat: Chat): List<Emoji> = jda.emotes.map { DiscordEmoji(it) }
-    fun getCachedEmojis() = jda.emoteCache.map { DiscordEmoji(it) }
+    override fun getEmojis(chat: Chat): List<CustomEmoji> = jda.emotes.map { DiscordEmoji(it) }
     override fun sendMessage(chat: Chat, message: String): Boolean {
         if (chat !is DiscordChat)
             return false
@@ -201,10 +189,11 @@ object DiscordInterface: BaseInterface, IFormatting, INickname, IImages, IMentio
     override fun getBot(chat: Chat): User = DiscordUser(chat, jda.selfUser)
     override fun getName(chat: Chat, user: User): String = if (user is DiscordUser) user.name else ""
     override fun getChats(): List<Chat> = jda.textChannels.map { DiscordChat(it) }
-    fun getCachedChats(): List<Chat> = jda.textChannelCache.map { DiscordChat(it) }
     override fun getUsers(chat: Chat): List<User> = jda.users.map { DiscordUser(chat, it) }
-    fun getCachedUsers(chat: Chat): List<User> = jda.userCache.map { DiscordUser(chat, it) }
     override fun getChatName(chat: Chat): String = if (chat is DiscordChat) chat.name else ""
+    override fun mention(chat: Chat, user: User, message: String?) {
+        sendMessage(chat, jda.retrieveUserById((user as DiscordUser).id).complete().asMention + message?.let { " $it" })
+    }
 }
 
 object MessageListener: ListenerAdapter() {
@@ -217,53 +206,36 @@ object MessageListener: ListenerAdapter() {
     }
 }
 
-object Main: Plugin {
+class DiscordPlugin(wrapper: PluginWrapper): convergence.Plugin(wrapper) {
     override val name = "DiscordPlugin"
     override val baseInterface = DiscordInterface
+    override fun preinit() {
+        moshiBuilder.add(DiscordMessageHistoryAdapter)
+                .add(DiscordEmojiAdapter)
+                .add(DiscordUserAdapter)
+                .add(DiscordChatAdapter)
+    }
+
     override fun init() {
-        deserializationFunctions["DiscordUser"] = {
-            DiscordUser(
-                    deserialize<DiscordChat>(it["chat"] as String),
-                    it["name"] as String,
-                    (it["name"] as String).toLong(),
-                    jda.retrieveUserById(it["author"] as String).complete(true)
-            )
-        }
-        deserializationFunctions["DiscordMessageHistory"] = {
-            val channel = jda.getTextChannelById(it["msgChannel"] as String)!!
-            DiscordMessageHistory(
-                    channel.retrieveMessageById(it["msg"] as String).complete(true),
-                    (it["id"] as String).toLong()
-            )
-        }
-        deserializationFunctions["DiscordEmoji"] = {
-            val guild = jda.getGuildById(it["guild"] as String)!!
-            DiscordEmoji(it["url"] as String,
-                    it["name"] as String,
-                    guild.getEmoteById(it["emoji"] as String)!!,
-                    (it["id"] as String).toLong()
-            )
-        }
-        deserializationFunctions["DiscordInterface"] = { DiscordInterface }
         registerProtocol(DiscordProtocol, DiscordInterface)
         println("Discord Plugin initialized.")
         jda = try {
-            val it = JDABuilder(String(
-                    Files.readAllBytes(Paths.get(System.getProperty("user.home"), ".convergence", "discordToken"))).trim())
-            it.enableIntents(
-                    setOf(
-                            GatewayIntent.GUILD_PRESENCES,
-                            GatewayIntent.GUILD_MESSAGE_TYPING,
-                            GatewayIntent.GUILD_MESSAGE_REACTIONS,
-                            GatewayIntent.GUILD_MESSAGES,
-                            GatewayIntent.GUILD_MEMBERS,
-                            GatewayIntent.GUILD_EMOJIS,
-                            GatewayIntent.DIRECT_MESSAGE_TYPING,
-                            GatewayIntent.DIRECT_MESSAGE_REACTIONS,
-                            GatewayIntent.DIRECT_MESSAGES
+            val it = JDABuilder
+                    .create(
+                            setOf(
+                                    GatewayIntent.GUILD_PRESENCES,
+                                    GatewayIntent.GUILD_MESSAGE_TYPING,
+                                    GatewayIntent.GUILD_MESSAGE_REACTIONS,
+                                    GatewayIntent.GUILD_MESSAGES,
+                                    GatewayIntent.GUILD_MEMBERS,
+                                    GatewayIntent.GUILD_EMOJIS,
+                                    GatewayIntent.DIRECT_MESSAGE_TYPING,
+                                    GatewayIntent.DIRECT_MESSAGE_REACTIONS,
+                                    GatewayIntent.DIRECT_MESSAGES
+                            )
                     )
-            )
-            it.disableCache(CacheFlag.VOICE_STATE)
+                    .setToken(String(Files.readAllBytes(Paths.get(System.getProperty("user.home"), ".convergence", "discordToken"))).trim())
+                    .disableCache(CacheFlag.VOICE_STATE)
             it.build()
         } catch (e: FileNotFoundException) {
             logErr("You need to put your discord token in .convergence/discordToken!")

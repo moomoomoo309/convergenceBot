@@ -1,21 +1,22 @@
 package convergence.testPlugins.consolePlugin
 
 import convergence.*
+import org.pf4j.PluginWrapper
 import java.util.*
 import kotlin.system.exitProcess
 
 object ConsoleUser: User(ConsoleChat) {
-    override fun serialize() = "{\"type\":\"ConsoleUser\"}"
+    override fun toJson() = "{\"type\":\"ConsoleUser\"}"
 }
 
 object ConsoleChat: Chat(ConsoleProtocol, "Console") {
-    override fun serialize() = "{\"type\":\"ConsoleChat\"}"
+    override fun toJson() = "{\"type\":\"ConsoleChat\"}"
 }
 
 object ConsoleProtocol: Protocol("Console")
 object ConsoleInterface: BaseInterface {
     override val name = "ConsoleInterface"
-    override val protocol: Protocol = ConsoleProtocol
+    override val protocols: List<Protocol> = listOf(ConsoleProtocol)
 
     init {
         val id = currentChatID++ // Only one chat, so we can register it right away.
@@ -55,7 +56,7 @@ object ConsoleInterface: BaseInterface {
 
 }
 
-object Main: Plugin {
+class ConsolePlugin(wrapper: PluginWrapper): Plugin(wrapper) {
     override val name = "consolePlugin"
     override val baseInterface: BaseInterface = ConsoleInterface
     override fun init() {

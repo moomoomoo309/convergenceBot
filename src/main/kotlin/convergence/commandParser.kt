@@ -1,6 +1,7 @@
 package convergence
 
-import com.beust.klaxon.JsonArray
+import commandLexer
+import commandParser
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonToken
 import org.antlr.v4.runtime.CommonTokenStream
@@ -8,16 +9,12 @@ import org.antlr.v4.runtime.ParserRuleContext
 
 class InvalidCommandException(msg: String): Exception(msg)
 
-data class CommandData(var command: Command, var args: List<String>): ISerializable {
+data class CommandData(var command: Command, var args: List<String>): JsonConvertible {
     constructor(alias: Alias, args: List<String>): this(alias.command, alias.args + args)
 
+    operator fun invoke(vararg args: String, sender: User): String? = this.command.function(args.toList(), sender)
     operator fun invoke(args: List<String>, sender: User): String? = this.command.function(args, sender)
     operator fun invoke(sender: User): String? = invoke(args, sender)
-    override fun serialize() = mapOf(
-            "type" to "CommandData",
-            "command" to command.serialize(),
-            "args" to JsonArray(args).toJsonString()
-    ).json()
 }
 
 class InvalidEscapeSequence(message: String): Exception(message)
@@ -92,4 +89,3 @@ fun parseCommand(command: String, commandDelimiter: String, chat: Chat): Command
     val cmd = if (commandName != null) getCommand(commandName, chat) else return null
     return if (cmd is Command) CommandData(cmd, args) else CommandData(cmd as Alias, args)
 }
-

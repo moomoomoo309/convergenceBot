@@ -2,7 +2,7 @@ grammar command;
 
 // Parser Rules
 
-command: commandName Whitespace* (argument (Whitespace+ | EOF))* EOF;
+command: commandName Whitespace+ (argument (Whitespace+ | EOF))* EOF;
 argument: quoteArgument | nonQuoteArgument;
 nonQuoteArgument: (Alnum | RegularEscape | UnicodeEscape | OctalEscape | InvalidEscape | NotWhitespaceOrQuote)+;
 quoteArgument: Quote notQuote* Quote;

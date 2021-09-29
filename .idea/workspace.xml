@@ -3,6 +3,9 @@
   <component name="AnalysisUIOptions">
     <option name="SCOPE_TYPE" value="3" />
   </component>
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
   <component name="BranchesTreeState">
     <expand>
       <path>
@@ -22,20 +25,57 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="29d84833-fb05-450b-b63e-091fc3136e36" name="Default Changelist" comment="Remove kotlinx.serialization, replace with a JSON-based serialization method with less magic.&#10;&#10;Less magic means the dynamic class loading mechanisms will cause less issues, plus the code is actually very easy to write, easier than the equivalent kotlinx.serialization code, and to maintain, since this code does not depend on any library besides Klaxon (and switching that out would be simple)">
-      <change afterPath="$PROJECT_DIR$/messengerPlugin/MessengerJSApplication/resources/package.json" afterDir="false" />
+    <list default="true" id="29d84833-fb05-450b-b63e-091fc3136e36" name="Default Changelist" comment="Switch the pluginLoader to use PF4J, switch serialization to Moshi, heavily refactor interfaces.kt, switch all gradle files to the Kotlin DSL.">
+      <change afterPath="$PROJECT_DIR$/basicPlugin/gradle.properties" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build.gradle.kts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/consolePlugin/build.gradle.kts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/consolePlugin/gradle.properties" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/discordPlugin/build.gradle.kts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/discordPlugin/gradle.properties" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/discordPlugin/src/TypeAdapters.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/matterbridgePlugin/build.gradle.kts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/matterbridgePlugin/gradle.properties" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/matterbridgePlugin/src/Main.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/TypeAdapters.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/codeStyles/codeStyleConfig.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/codeStyles/codeStyleConfig.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/discord.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/discord.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/jarRepositories.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/jarRepositories.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/basicPlugin/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/basicPlugin/build.gradle.kts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/basicPlugin/src/Main.kt" beforeDir="false" afterPath="$PROJECT_DIR$/basicPlugin/src/BasicPlugin.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle.bak" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/consolePlugin/build.gradle" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/consolePlugin/src/Main.kt" beforeDir="false" afterPath="$PROJECT_DIR$/consolePlugin/src/Main.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/discordPlugin/build.gradle" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/discordPlugin/src/Main.kt" beforeDir="false" afterPath="$PROJECT_DIR$/discordPlugin/src/Main.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/messengerPlugin/MessengerJSApplication/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/messengerPlugin/MessengerJSApplication/build.gradle" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/messengerPlugin/MessengerJSApplication/src/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/messengerPlugin/MessengerJSApplication/resources/index.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/messengerPlugin/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/messengerPlugin/build.gradle" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/messengerPlugin/src/Main.kt" beforeDir="false" afterPath="$PROJECT_DIR$/messengerPlugin/src/Main.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/messengerPlugin/src/MessengerAPI.kt" beforeDir="false" afterPath="$PROJECT_DIR$/messengerPlugin/src/MessengerAPI.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/DatabaseAccessObjects.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.properties" beforeDir="false" afterPath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/messengerPlugin/MessengerJSApplication/build.gradle" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/messengerPlugin/MessengerJSApplication/resources/index.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/messengerPlugin/MessengerJSApplication/resources/package.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/messengerPlugin/build.gradle" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/messengerPlugin/src/Main.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/messengerPlugin/src/MessengerAPI.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/settings.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/settings.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/gen/convergence/command.interp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/gen/convergence/command.interp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/gen/convergence/commandBaseListener.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/gen/convergence/commandBaseListener.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/gen/convergence/commandBaseVisitor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/gen/convergence/commandBaseVisitor.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/gen/convergence/commandLexer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/gen/convergence/commandLexer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/gen/convergence/commandListener.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/gen/convergence/commandListener.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/gen/convergence/commandParser.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/gen/convergence/commandParser.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/gen/convergence/commandVisitor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/gen/convergence/commandVisitor.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/PluginLoader.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/PluginLoader.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/command.g4" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/command.g4" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/commandParser.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/commandParser.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/core.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/core.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/defaultCommands.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/defaultCommands.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/interfaces.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/interfaces.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/kotlin/convergence/CommandParserTest.kt" beforeDir="false" afterPath="$PROJECT_DIR$/test/CommandParserTest.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/kotlin/convergence/DefaultCommandTests.kt" beforeDir="false" afterPath="$PROJECT_DIR$/test/DefaultCommandTests.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/kotlin/convergence/PluginLoaderTest.kt" beforeDir="false" afterPath="$PROJECT_DIR$/test/PluginLoaderTest.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -44,20 +84,6 @@
   </component>
   <component name="ComposerSettings">
     <execution />
-  </component>
-  <component name="DatabaseView">
-    <option name="SHOW_INTERMEDIATE" value="true" />
-    <option name="GROUP_DATA_SOURCES" value="true" />
-    <option name="GROUP_SCHEMA" value="true" />
-    <option name="GROUP_CONTENTS" value="false" />
-    <option name="SORT_POSITIONED" value="false" />
-    <option name="SHOW_EMPTY_GROUPS" value="false" />
-    <option name="AUTO_SCROLL_FROM_SOURCE" value="false" />
-    <option name="HIDDEN_KINDS">
-      <set />
-    </option>
-    <expand />
-    <select />
   </component>
   <component name="ExternalProjectsData">
     <projectState path="$PROJECT_DIR$">
@@ -85,6 +111,12 @@
         <task path="$PROJECT_DIR$/messengerPlugin/MessengerJSConnector">
           <activation />
         </task>
+        <task path="$PROJECT_DIR$/../IntelliJIDEAProjects/convergenceBot">
+          <activation />
+        </task>
+        <task path="$PROJECT_DIR$/../test">
+          <activation />
+        </task>
         <projects_view>
           <tree_state>
             <expand>
@@ -95,48 +127,45 @@
               <path>
                 <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
                 <item name="convergence.bot" type="f1a62948:ProjectNode" />
-                <item name="convergence.bot" type="2d1252cf:ModuleNode" />
-              </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="convergence.bot" type="f1a62948:ProjectNode" />
-                <item name="convergence.bot" type="2d1252cf:ModuleNode" />
                 <item name="Tasks" type="e4a08cd1:TasksNode" />
               </path>
               <path>
                 <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
                 <item name="convergence.bot" type="f1a62948:ProjectNode" />
-                <item name="convergence.bot" type="2d1252cf:ModuleNode" />
-                <item name="Tasks" type="e4a08cd1:TasksNode" />
-                <item name="application" type="c8890929:TasksNode$1" />
-              </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="convergence.bot" type="f1a62948:ProjectNode" />
-                <item name="convergence.bot" type="2d1252cf:ModuleNode" />
-                <item name="Tasks" type="e4a08cd1:TasksNode" />
-                <item name="help" type="c8890929:TasksNode$1" />
-              </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="convergence.bot" type="f1a62948:ProjectNode" />
-                <item name="convergence.bot" type="2d1252cf:ModuleNode" />
-                <item name="messengerPlugin" type="2d1252cf:ModuleNode" />
-              </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="convergence.bot" type="f1a62948:ProjectNode" />
-                <item name="convergence.bot" type="2d1252cf:ModuleNode" />
-                <item name="messengerPlugin" type="2d1252cf:ModuleNode" />
-                <item name="Tasks" type="e4a08cd1:TasksNode" />
-              </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="convergence.bot" type="f1a62948:ProjectNode" />
-                <item name="convergence.bot" type="2d1252cf:ModuleNode" />
-                <item name="messengerPlugin" type="2d1252cf:ModuleNode" />
                 <item name="Tasks" type="e4a08cd1:TasksNode" />
                 <item name="build" type="c8890929:TasksNode$1" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="convergence.bot" type="f1a62948:ProjectNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+                <item name="other" type="c8890929:TasksNode$1" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="convergence.bot" type="f1a62948:ProjectNode" />
+                <item name="basicPlugin" type="2d1252cf:ModuleNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="convergence.bot" type="f1a62948:ProjectNode" />
+                <item name="basicPlugin" type="2d1252cf:ModuleNode" />
+                <item name="Dependencies" type="6de06a37:ExternalSystemViewDefaultContributor$MyDependenciesNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="convergence.bot" type="f1a62948:ProjectNode" />
+                <item name="basicPlugin" type="2d1252cf:ModuleNode" />
+                <item name="Dependencies" type="6de06a37:ExternalSystemViewDefaultContributor$MyDependenciesNode" />
+                <item name="compileClasspath" type="62daadca:ExternalSystemViewDefaultContributor$DependencyScopeExternalSystemNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="convergence.bot" type="f1a62948:ProjectNode" />
+                <item name="basicPlugin" type="2d1252cf:ModuleNode" />
+                <item name="Dependencies" type="6de06a37:ExternalSystemViewDefaultContributor$MyDependenciesNode" />
+                <item name="compileClasspath" type="62daadca:ExternalSystemViewDefaultContributor$DependencyScopeExternalSystemNode" />
+                <item name="project convergence.bot" type="b3323d55:ExternalSystemViewDefaultContributor$DependencyExternalSystemNode" />
               </path>
             </expand>
             <select />
@@ -161,23 +190,32 @@
     <option name="PUSH_AUTO_UPDATE" value="true" />
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="Testing" />
+        <entry key="$PROJECT_DIR$" value="master" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
-    <option name="UPDATE_TYPE" value="MERGE" />
+    <option name="ROOT_SYNC" value="SYNC" />
+  </component>
+  <component name="GitSEFilterConfiguration">
+    <file-type-list>
+      <filtered-out-file-type name="LOCAL_BRANCH" />
+      <filtered-out-file-type name="REMOTE_BRANCH" />
+      <filtered-out-file-type name="TAG" />
+      <filtered-out-file-type name="COMMIT_BY_MESSAGE" />
+    </file-type-list>
+  </component>
+  <component name="GitToolBoxStore">
+    <option name="projectConfigVersion" value="2" />
   </component>
   <component name="GithubDefaultAccount">
     <option name="defaultAccountId" value="39f80656-d015-4b39-9d07-31879c6f40d2" />
   </component>
-  <component name="HighlightingSettingsPerFile">
-    <setting file="file://$PROJECT_DIR$/messengerPlugin/src/Main.kt" root0="FORCE_HIGHLIGHTING" />
+  <component name="JupyterTrust" id="b5ddd552-37b4-4fb6-b793-f5351a5ed238" />
+  <component name="KotlinCodeInsightWorkspaceSettings">
+    <option name="optimizeImportsOnTheFly" value="true" />
   </component>
   <component name="MacroExpansionManager">
     <option name="directoryName" value="ESZRssKT" />
-  </component>
-  <component name="PackageJsonUpdateNotifier">
-    <dismissed value="$PROJECT_DIR$/messengerPlugin/MessengerJSApplication/resources/package.json" />
   </component>
   <component name="ProjectId" id="1Ngzt17DMMTKWSdUJEz3ILdPPvV" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true">
@@ -193,13 +231,14 @@
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="add_unversioned_files" value="$PROJECT_DIR$/.gitignore&#10;true" />
-    <property name="android.sdk.path" value="$USER_HOME$/Android/Sdk" />
+    <property name="android.sdk.path" value="$PROJECT_DIR$/../Android/Sdk" />
     <property name="aspect.path.notification.shown" value="true" />
     <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1548263320171" />
     <property name="full.screen.before.presentation.mode" value="false" />
-    <property name="javascript.nodejs.core.library.configured.version" value="8.10.0" />
+    <property name="javascript.nodejs.core.library.configured.version" value="10.19.0" />
+    <property name="javascript.nodejs.core.library.typings.version" value="10.17.28" />
     <property name="jdk.selected.JAVA_MODULE" value="Kotlin SDK" />
-    <property name="last_opened_file_path" value="$USER_HOME$/Dropbox/ComputerCraft Programs/CCWE/CCWE Old Versions/CCWE Release (14-5-29)/CCWE Reqs" />
+    <property name="last_opened_file_path" value="$USER_HOME$/IdeaProjects/Conductor" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.tslint" value="true" />
     <property name="node.js.path.for.package.eslint" value="project" />
@@ -214,19 +253,26 @@
     <property name="project.structure.proportion" value="0.15" />
     <property name="project.structure.side.proportion" value="0.23337679" />
     <property name="run.code.analysis.last.selected.profile" value="pProject Default" />
-    <property name="settings.editor.selected.configurable" value="preferences.sourceCode" />
+    <property name="settings.editor.selected.configurable" value="preferences.sourceCode.Kotlin" />
     <property name="ts.external.directory.path" value="$APPLICATION_HOME_DIR$/plugins/JavaScriptLanguage/jsLanguageServicesImpl/external" />
+  </component>
+  <component name="ReaderModeSettings">
+    <option name="showLigatures" value="true" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/../IntelliJIDEAProjects/convergenceBot/matterbridgePlugin" />
+      <recent name="$PROJECT_DIR$/../IntelliJIDEAProjects/convergenceBot/discordPlugin" />
+      <recent name="$PROJECT_DIR$/../IntelliJIDEAProjects/convergenceBot/consolePlugin" />
       <recent name="$PROJECT_DIR$" />
+      <recent name="$PROJECT_DIR$/../IntelliJIDEAProjects/convergenceBot" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/main/gen/convergence" />
+      <recent name="$PROJECT_DIR$/../IntelliJIDEAProjects/convergenceBot" />
+      <recent name="$PROJECT_DIR$/../IntelliJIDEAProjects/convergenceBot/src/test" />
       <recent name="$PROJECT_DIR$/messengerPlugin/MessengerJSApplication" />
       <recent name="$PROJECT_DIR$/messengerPlugin/MessengerJSApplication/resources" />
-      <recent name="$PROJECT_DIR$/messengerPlugin/MessengerJSConnector" />
-      <recent name="$PROJECT_DIR$" />
-      <recent name="$PROJECT_DIR$/basicPlugin/src" />
     </key>
   </component>
   <component name="RunAnythingCache">
@@ -241,7 +287,7 @@
       <command value="gradle --version" />
     </option>
   </component>
-  <component name="RunManager" selected="Gradle.convergenceBot [run]">
+  <component name="RunManager" selected="Gradle.convergenceBot [clean]">
     <configuration default="true" type="AndroidJUnit">
       <option name="TEST_OBJECT" value="class" />
       <option name="WORKING_DIRECTORY" value="$MODULE_DIR$" />
@@ -267,101 +313,6 @@
       <option name="CUSTOM_SETTINGS" value="false" />
       <option name="USE_OPTIONS" value="false" />
       <option name="OPTIONS" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="convergenceBot [copyBot]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
-      <ExternalSystemSettings>
-        <option name="executionName" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$" />
-        <option name="externalSystemIdString" value="GRADLE" />
-        <option name="scriptParameters" />
-        <option name="taskDescriptions">
-          <list />
-        </option>
-        <option name="taskNames">
-          <list>
-            <option value="copyBot" />
-          </list>
-        </option>
-        <option name="vmOptions" />
-      </ExternalSystemSettings>
-      <GradleScriptDebugEnabled>true</GradleScriptDebugEnabled>
-      <method v="2" />
-    </configuration>
-    <configuration name="convergenceBot [dependencies]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
-      <ExternalSystemSettings>
-        <option name="executionName" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$" />
-        <option name="externalSystemIdString" value="GRADLE" />
-        <option name="scriptParameters" />
-        <option name="taskDescriptions">
-          <list />
-        </option>
-        <option name="taskNames">
-          <list>
-            <option value="dependencies" />
-          </list>
-        </option>
-        <option name="vmOptions" />
-      </ExternalSystemSettings>
-      <GradleScriptDebugEnabled>true</GradleScriptDebugEnabled>
-      <method v="2" />
-    </configuration>
-    <configuration name="convergenceBot [run]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
-      <ExternalSystemSettings>
-        <option name="executionName" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$" />
-        <option name="externalSystemIdString" value="GRADLE" />
-        <option name="scriptParameters" />
-        <option name="taskDescriptions">
-          <list />
-        </option>
-        <option name="taskNames">
-          <list>
-            <option value="run" />
-          </list>
-        </option>
-        <option name="vmOptions" />
-      </ExternalSystemSettings>
-      <GradleScriptDebugEnabled>true</GradleScriptDebugEnabled>
-      <method v="2" />
-    </configuration>
-    <configuration name="convergenceBot:messengerPlugin [clean]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
-      <ExternalSystemSettings>
-        <option name="executionName" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$/messengerPlugin" />
-        <option name="externalSystemIdString" value="GRADLE" />
-        <option name="scriptParameters" />
-        <option name="taskDescriptions">
-          <list />
-        </option>
-        <option name="taskNames">
-          <list>
-            <option value="clean" />
-          </list>
-        </option>
-        <option name="vmOptions" />
-      </ExternalSystemSettings>
-      <GradleScriptDebugEnabled>true</GradleScriptDebugEnabled>
-      <method v="2" />
-    </configuration>
-    <configuration name="convergenceBot:messengerPlugin [jar]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
-      <ExternalSystemSettings>
-        <option name="executionName" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$/messengerPlugin" />
-        <option name="externalSystemIdString" value="GRADLE" />
-        <option name="scriptParameters" />
-        <option name="taskDescriptions">
-          <list />
-        </option>
-        <option name="taskNames">
-          <list>
-            <option value="jar" />
-          </list>
-        </option>
-        <option name="vmOptions" />
-      </ExternalSystemSettings>
-      <GradleScriptDebugEnabled>true</GradleScriptDebugEnabled>
       <method v="2" />
     </configuration>
     <configuration default="true" type="PyBehaveRunConfigurationType" factoryName="Behave">
@@ -436,6 +387,29 @@
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <method v="2" />
     </configuration>
+    <configuration default="true" type="ccruntests" factoryName="Run Study Tests">
+      <module name="convergenceBot.convergence.bot" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <option name="studyTest" value="" />
+      <method v="2" />
+    </configuration>
     <configuration default="true" type="tests" factoryName="Doctests">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -455,23 +429,138 @@
       <option name="USE_PATTERN" value="false" />
       <method v="2" />
     </configuration>
+    <configuration name="convergenceBot [clean]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="clean" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <method v="2" />
+    </configuration>
+    <configuration name="convergenceBot::home:nicholasdelello:IntelliJIDEAProjects:convergenceBot [shadowJar]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$/../IntelliJIDEAProjects/convergenceBot" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="shadowJar" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <method v="2" />
+    </configuration>
+    <configuration name="convergenceBot::home:nicholasdelello:IntelliJIDEAProjects:convergenceBot [wrapper 6.5]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$/../IntelliJIDEAProjects/convergenceBot" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" value="" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="wrapper" />
+            <option value="6.5" />
+          </list>
+        </option>
+        <option name="vmOptions" value="" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <method v="2" />
+    </configuration>
+    <configuration name="convergenceBot::home:nicholasdelello:IntelliJIDEAProjects:convergenceBot [wrapper]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$/../IntelliJIDEAProjects/convergenceBot" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="wrapper" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <method v="2" />
+    </configuration>
+    <configuration name="convergenceBot::home:nicholasdelello:IntelliJIDEAProjects:convergenceBot" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$/../IntelliJIDEAProjects/convergenceBot" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" value="--refreshDependencies" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list />
+        </option>
+        <option name="vmOptions" value="" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="lua.app" factoryName="Lua Application">
+      <option name="program" value="/usr/bin/lua" />
+      <option name="file" value="" />
+      <option name="workingDir" value="$PROJECT_DIR$/../IntelliJIDEAProjects/convergenceBot/src/test/kotlin" />
+      <option name="debuggerType" value="2" />
+      <option name="params" value="" />
+      <option name="charset" value="UTF-8" />
+      <option name="showConsole" value="true" />
+      <method v="2" />
+    </configuration>
     <list>
-      <item itemvalue="Gradle.convergenceBot [copyBot]" />
-      <item itemvalue="Gradle.convergenceBot [dependencies]" />
-      <item itemvalue="Gradle.convergenceBot [run]" />
-      <item itemvalue="Gradle.convergenceBot:messengerPlugin [jar]" />
-      <item itemvalue="Gradle.convergenceBot:messengerPlugin [clean]" />
+      <item itemvalue="Gradle.convergenceBot::home:nicholasdelello:IntelliJIDEAProjects:convergenceBot [shadowJar]" />
+      <item itemvalue="Gradle.convergenceBot::home:nicholasdelello:IntelliJIDEAProjects:convergenceBot [wrapper 6.5]" />
+      <item itemvalue="Gradle.convergenceBot::home:nicholasdelello:IntelliJIDEAProjects:convergenceBot [wrapper]" />
+      <item itemvalue="Gradle.convergenceBot::home:nicholasdelello:IntelliJIDEAProjects:convergenceBot" />
+      <item itemvalue="Gradle.convergenceBot [clean]" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Gradle.convergenceBot [run]" />
-        <item itemvalue="Gradle.convergenceBot:messengerPlugin [clean]" />
-        <item itemvalue="Gradle.convergenceBot:messengerPlugin [jar]" />
-        <item itemvalue="Gradle.convergenceBot [copyBot]" />
-        <item itemvalue="Gradle.convergenceBot [dependencies]" />
+        <item itemvalue="Gradle.convergenceBot [clean]" />
+        <item itemvalue="Gradle.convergenceBot::home:nicholasdelello:IntelliJIDEAProjects:convergenceBot" />
+        <item itemvalue="Gradle.convergenceBot::home:nicholasdelello:IntelliJIDEAProjects:convergenceBot [wrapper]" />
+        <item itemvalue="Gradle.convergenceBot::home:nicholasdelello:IntelliJIDEAProjects:convergenceBot [wrapper 6.5]" />
+        <item itemvalue="Gradle.convergenceBot::home:nicholasdelello:IntelliJIDEAProjects:convergenceBot [shadowJar]" />
       </list>
     </recent_temporary>
   </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="SvnConfiguration">
     <configuration />
   </component>
@@ -643,6 +732,28 @@
       <workItem from="1587746381983" duration="8114000" />
       <workItem from="1587760680630" duration="10963000" />
       <workItem from="1588280584546" duration="2954000" />
+      <workItem from="1596576118529" duration="7674000" />
+      <workItem from="1596638815179" duration="4532000" />
+      <workItem from="1597426476050" duration="1789000" />
+      <workItem from="1597776052315" duration="422000" />
+      <workItem from="1597890035423" duration="8641000" />
+      <workItem from="1598046900931" duration="141000" />
+      <workItem from="1598047090597" duration="1250000" />
+      <workItem from="1604868682094" duration="8117000" />
+      <workItem from="1604940318566" duration="2922000" />
+      <workItem from="1605713157031" duration="15067000" />
+      <workItem from="1607187062817" duration="29000" />
+      <workItem from="1607187134298" duration="28000" />
+      <workItem from="1607380028050" duration="4122000" />
+      <workItem from="1608314412700" duration="10613000" />
+      <workItem from="1608574609975" duration="4350000" />
+      <workItem from="1611937987008" duration="393000" />
+      <workItem from="1622240621866" duration="22897000" />
+      <workItem from="1623156717927" duration="2160000" />
+      <workItem from="1623358436069" duration="11000" />
+      <workItem from="1624906614158" duration="108000" />
+      <workItem from="1624907935305" duration="1216000" />
+      <workItem from="1624913448160" duration="15000" />
     </task>
     <task id="LOCAL-00004" summary="Update research status.">
       <created>1533495398993</created>
@@ -991,7 +1102,7 @@
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
-    <option name="version" value="2" />
+    <option name="version" value="3" />
   </component>
   <component name="Vcs.Log.History.Properties">
     <option name="COLUMN_ORDER">
@@ -1031,8 +1142,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
-    <MESSAGE value="Implement Scheduler for the schedule command." />
-    <MESSAGE value="Implemented SchedulerThread, made bot runnable from gradle." />
     <MESSAGE value="Remove serialization stuff, add Klaxon as a library." />
     <MESSAGE value="Replace serialization with Klaxon, add build instructions." />
     <MESSAGE value="Allow pluginLoader to load more than one plugin." />
@@ -1056,150 +1165,14 @@
     <MESSAGE value="Make plugin threads accessible globally." />
     <MESSAGE value="Replace commandParser with an ANTLRv4 based parser." />
     <MESSAGE value="Remove kotlinx.serialization, replace with a JSON-based serialization method with less magic.&#10;&#10;Less magic means the dynamic class loading mechanisms will cause less issues, plus the code is actually very easy to write, easier than the equivalent kotlinx.serialization code, and to maintain, since this code does not depend on any library besides Klaxon (and switching that out would be simple)" />
-    <option name="LAST_COMMIT_MESSAGE" value="Remove kotlinx.serialization, replace with a JSON-based serialization method with less magic.&#10;&#10;Less magic means the dynamic class loading mechanisms will cause less issues, plus the code is actually very easy to write, easier than the equivalent kotlinx.serialization code, and to maintain, since this code does not depend on any library besides Klaxon (and switching that out would be simple)" />
+    <MESSAGE value="Switch serialization to Moshi, switch gradle to Kotlin." />
+    <MESSAGE value="Switch the pluginLoader to use PF4J, switch serialization to Moshi, heavily refactor interfaces.kt, switch all gradle files to the Kotlin DSL." />
+    <option name="LAST_COMMIT_MESSAGE" value="Switch the pluginLoader to use PF4J, switch serialization to Moshi, heavily refactor interfaces.kt, switch all gradle files to the Kotlin DSL." />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REARRANGE_BEFORE_PROJECT_COMMIT" value="true" />
   </component>
-  <component name="WindowStateProjectService">
-    <state x="440" y="148" width="1148" height="711" key="#Plugins" timestamp="1582329273608">
-      <screen x="0" y="0" width="1680" height="1008" />
-    </state>
-    <state x="440" y="148" width="1148" height="711" key="#Plugins/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1582329273608" />
-    <state x="2008" y="82" width="1024" height="844" key="#Project_Structure" timestamp="1586495411107">
-      <screen x="1680" y="0" width="1680" height="1050" />
-    </state>
-    <state x="2008" y="82" width="1024" height="844" key="#Project_Structure/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586495411107" />
-    <state x="1978" y="162" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1587132645160">
-      <screen x="1680" y="0" width="1680" height="1050" />
-    </state>
-    <state x="1978" y="162" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1587132645160" />
-    <state x="2301" y="223" key="#com.intellij.ide.util.MemberChooser" timestamp="1586503740673">
-      <screen x="1680" y="0" width="1680" height="1050" />
-    </state>
-    <state x="2301" y="223" key="#com.intellij.ide.util.MemberChooser/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586503740673" />
-    <state x="646" y="255" key="#com.intellij.openapi.updateSettings.impl.PluginUpdateInfoDialog" timestamp="1581272567155">
-      <screen x="0" y="0" width="1680" height="1008" />
-    </state>
-    <state x="646" y="255" key="#com.intellij.openapi.updateSettings.impl.PluginUpdateInfoDialog/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1581272567155" />
-    <state x="2259" y="394" width="512" height="219" key="ANALYSIS_DLG_com.intellij.analysis.BaseAnalysisAction$1" timestamp="1586040079389">
-      <screen x="1680" y="0" width="1680" height="1050" />
-    </state>
-    <state x="2259" y="394" width="512" height="219" key="ANALYSIS_DLG_com.intellij.analysis.BaseAnalysisAction$1/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586040079389" />
-    <state x="1680" y="0" width="1174" height="1008" key="CommitChangelistDialog2" timestamp="1586069524506">
-      <screen x="1680" y="0" width="1680" height="1050" />
-    </state>
-    <state x="0" y="0" key="CommitChangelistDialog2/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1585246295154" />
-    <state x="1680" y="0" width="1174" height="1008" key="CommitChangelistDialog2/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586069524506" />
-    <state x="1817" y="108" width="1344" height="806" key="DiffContextDialog" timestamp="1586673655117">
-      <screen x="1680" y="0" width="1680" height="1050" />
-    </state>
-    <state x="137" y="104" width="1344" height="806" key="DiffContextDialog/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1581986049523" />
-    <state x="1817" y="108" width="1344" height="806" key="DiffContextDialog/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586673655117" />
-    <state x="628" y="262" width="424" height="483" key="FileChooserDialogImpl" timestamp="1587762905402">
-      <screen x="0" y="0" width="1680" height="1008" />
-    </state>
-    <state x="628" y="262" width="424" height="483" key="FileChooserDialogImpl/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1587762905402" />
-    <state x="2308" y="273" key="FileChooserDialogImpl/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586049034759" />
-    <state width="1638" height="251" key="GridCell.Tab.0.bottom" timestamp="1588284244851">
-      <screen x="0" y="0" width="1680" height="1008" />
-    </state>
-    <state width="1638" height="251" key="GridCell.Tab.0.bottom/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1588284244851" />
-    <state width="1638" height="251" key="GridCell.Tab.0.bottom/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1587187220869" />
-    <state width="1638" height="251" key="GridCell.Tab.0.center" timestamp="1588284244850">
-      <screen x="0" y="0" width="1680" height="1008" />
-    </state>
-    <state width="1638" height="251" key="GridCell.Tab.0.center/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1588284244850" />
-    <state width="1638" height="251" key="GridCell.Tab.0.center/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1587187220869" />
-    <state width="1638" height="251" key="GridCell.Tab.0.left" timestamp="1588284244850">
-      <screen x="0" y="0" width="1680" height="1008" />
-    </state>
-    <state width="1638" height="251" key="GridCell.Tab.0.left/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1588284244850" />
-    <state width="1638" height="251" key="GridCell.Tab.0.left/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1587187220869" />
-    <state width="1638" height="251" key="GridCell.Tab.0.right" timestamp="1588284244851">
-      <screen x="0" y="0" width="1680" height="1008" />
-    </state>
-    <state width="1638" height="251" key="GridCell.Tab.0.right/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1588284244851" />
-    <state width="1638" height="251" key="GridCell.Tab.0.right/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1587187220869" />
-    <state width="1638" height="315" key="GridCell.Tab.1.bottom" timestamp="1587940438496">
-      <screen x="0" y="0" width="1680" height="1008" />
-    </state>
-    <state width="1638" height="315" key="GridCell.Tab.1.bottom/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1587940438496" />
-    <state width="1638" height="315" key="GridCell.Tab.1.bottom/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1587185638541" />
-    <state width="1638" height="315" key="GridCell.Tab.1.center" timestamp="1587940438496">
-      <screen x="0" y="0" width="1680" height="1008" />
-    </state>
-    <state width="1638" height="315" key="GridCell.Tab.1.center/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1587940438496" />
-    <state width="1638" height="315" key="GridCell.Tab.1.center/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1587185638541" />
-    <state width="1638" height="315" key="GridCell.Tab.1.left" timestamp="1587940438496">
-      <screen x="0" y="0" width="1680" height="1008" />
-    </state>
-    <state width="1638" height="315" key="GridCell.Tab.1.left/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1587940438496" />
-    <state width="1638" height="315" key="GridCell.Tab.1.left/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1587185638541" />
-    <state width="1638" height="315" key="GridCell.Tab.1.right" timestamp="1587940438496">
-      <screen x="0" y="0" width="1680" height="1008" />
-    </state>
-    <state width="1638" height="315" key="GridCell.Tab.1.right/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1587940438496" />
-    <state width="1638" height="315" key="GridCell.Tab.1.right/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1587185638541" />
-    <state x="428" y="241" key="IDE.errors.dialog" timestamp="1587093252234">
-      <screen x="0" y="0" width="1680" height="1008" />
-    </state>
-    <state x="428" y="241" key="IDE.errors.dialog/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1587093252234" />
-    <state x="168" y="86" key="MergeDialog" timestamp="1581273838046">
-      <screen x="0" y="0" width="1680" height="1008" />
-    </state>
-    <state x="168" y="86" key="MergeDialog/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1581273838046" />
-    <state x="562" y="151" key="SettingsEditor" timestamp="1586887484821">
-      <screen x="0" y="0" width="1680" height="1008" />
-    </state>
-    <state x="562" y="151" key="SettingsEditor/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1586887484821" />
-    <state x="2242" y="157" key="SettingsEditor/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586886908071" />
-    <state x="559" y="123" key="VCS.ChangeListViewerDialog" timestamp="1581986049959">
-      <screen x="0" y="0" width="1680" height="1008" />
-    </state>
-    <state x="559" y="123" key="VCS.ChangeListViewerDialog/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1581986049959" />
-    <state x="2120" y="240" key="Vcs.Push.Dialog.v2" timestamp="1586504913440">
-      <screen x="1680" y="0" width="1680" height="1050" />
-    </state>
-    <state x="2120" y="240" key="Vcs.Push.Dialog.v2/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586504913440" />
-    <state width="840" height="504" key="XDebugger.FullValuePopup" timestamp="1587772837152">
-      <screen x="0" y="0" width="1680" height="1008" />
-    </state>
-    <state width="840" height="504" key="XDebugger.FullValuePopup/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1587772837152" />
-    <state x="1781" y="123" width="1480" height="808" key="com.intellij.history.integration.ui.views.FileHistoryDialog" timestamp="1586673655117">
-      <screen x="1680" y="0" width="1680" height="1050" />
-    </state>
-    <state x="1781" y="123" width="1480" height="808" key="com.intellij.history.integration.ui.views.FileHistoryDialog/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586673655117" />
-    <state x="2315" y="436" width="411" height="173" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1586559258456">
-      <screen x="1680" y="0" width="1680" height="1050" />
-    </state>
-    <state x="635" y="419" width="411" height="173" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1586186689060" />
-    <state x="2315" y="436" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586559258456" />
-    <state x="549" y="250" width="581" height="494" key="find.popup" timestamp="1588282973958">
-      <screen x="0" y="0" width="1680" height="1008" />
-    </state>
-    <state x="549" y="250" width="581" height="494" key="find.popup/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1588282973958" />
-    <state x="2229" y="260" width="581" height="490" key="find.popup/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1587184073048" />
-    <state width="600" height="440" key="javadoc.popup" timestamp="1586673852085">
-      <screen x="1680" y="0" width="1680" height="1050" />
-    </state>
-    <state width="600" height="440" key="javadoc.popup/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1586673852085" />
-    <state x="2183" y="230" width="672" height="707" key="search.everywhere.popup" timestamp="1587187883311">
-      <screen x="1680" y="0" width="1680" height="1050" />
-    </state>
-    <state x="503" y="221" width="672" height="678" key="search.everywhere.popup/0.0.1680.1008/1680.0.1680.1050@0.0.1680.1008" timestamp="1585273264180" />
-    <state x="2183" y="230" width="672" height="707" key="search.everywhere.popup/0.0.1680.1008/1680.0.1680.1050@1680.0.1680.1050" timestamp="1587187883311" />
-  </component>
   <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" type="kotlin-line">
-          <url>file://$PROJECT_DIR$/messengerPlugin/src/MessengerAPI.kt</url>
-          <line>149</line>
-          <option name="timeStamp" value="8" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
     <watches-manager>
       <configuration name="Remote">
         <watch expression="String(ByteArray(500).also{Main.jsOutput!!.read(it, 0, 500)})" language="kotlin" />
