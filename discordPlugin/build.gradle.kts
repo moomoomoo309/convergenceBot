@@ -20,6 +20,8 @@ dependencies {
     implementation("net.dv8tion:JDA:4.3.0_307") {
         exclude(module = "opus-java")
     }
+    implementation("net.sf.trove4j:trove4j:3.0.3")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.10.1")
 }
 
 repositories {

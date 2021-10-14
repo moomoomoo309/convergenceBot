@@ -1,7 +1,11 @@
+package convergence.testPlugins.matterbridgePlugin
+
+import com.squareup.moshi.Moshi
 import convergence.*
 import org.pf4j.PluginWrapper
 import java.net.HttpURLConnection
 import java.net.URL
+import java.nio.file.Path
 
 object MatterBridgeProtocol: Protocol("MatterBridge")
 
@@ -54,6 +58,8 @@ object MatterBridgeInterface: BaseInterface {
 class MatterbridgePlugin(wrapper: PluginWrapper): Plugin(wrapper) {
     override val name = "MatterBridgePlugin"
     override val baseInterface: BaseInterface = MatterBridgeInterface
+    val convergencePath: Path by configuration
+    val moshi: Moshi by configuration
 
     override fun init() {
         val outLog = convergencePath.resolve("matterbridge.log").toFile()

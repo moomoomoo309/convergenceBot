@@ -26,56 +26,46 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="29d84833-fb05-450b-b63e-091fc3136e36" name="Default Changelist" comment="Switch the pluginLoader to use PF4J, switch serialization to Moshi, heavily refactor interfaces.kt, switch all gradle files to the Kotlin DSL.">
-      <change afterPath="$PROJECT_DIR$/basicPlugin/gradle.properties" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/build.gradle.kts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/consolePlugin/build.gradle.kts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/consolePlugin/gradle.properties" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/discordPlugin/build.gradle.kts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/discordPlugin/gradle.properties" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/discordPlugin/src/TypeAdapters.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/matterbridgePlugin/build.gradle.kts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/matterbridgePlugin/gradle.properties" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/matterbridgePlugin/src/Main.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/TypeAdapters.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/codeStyles/codeStyleConfig.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/codeStyles/codeStyleConfig.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/discord.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/discord.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/jarRepositories.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/jarRepositories.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/convergence/command.interp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/convergence/command.tokens" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/convergence/commandBaseListener.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/convergence/commandBaseVisitor.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/convergence/commandLexer.interp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/convergence/commandLexer.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/convergence/commandLexer.tokens" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/convergence/commandListener.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/convergence/commandParser.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/convergence/commandVisitor.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/Configuration.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/basicPlugin/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/basicPlugin/build.gradle.kts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/basicPlugin/src/Main.kt" beforeDir="false" afterPath="$PROJECT_DIR$/basicPlugin/src/BasicPlugin.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle.bak" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/consolePlugin/build.gradle" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/basicPlugin/gradle.properties" beforeDir="false" afterPath="$PROJECT_DIR$/basicPlugin/gradle.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle.kts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/consolePlugin/gradle.properties" beforeDir="false" afterPath="$PROJECT_DIR$/consolePlugin/gradle.properties" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/consolePlugin/src/Main.kt" beforeDir="false" afterPath="$PROJECT_DIR$/consolePlugin/src/Main.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/discordPlugin/build.gradle" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/discordPlugin/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/discordPlugin/build.gradle.kts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/discordPlugin/gradle.properties" beforeDir="false" afterPath="$PROJECT_DIR$/discordPlugin/gradle.properties" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/discordPlugin/src/Main.kt" beforeDir="false" afterPath="$PROJECT_DIR$/discordPlugin/src/Main.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.properties" beforeDir="false" afterPath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/messengerPlugin/MessengerJSApplication/build.gradle" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/messengerPlugin/MessengerJSApplication/resources/index.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/messengerPlugin/MessengerJSApplication/resources/package.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/messengerPlugin/build.gradle" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/messengerPlugin/src/Main.kt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/messengerPlugin/src/MessengerAPI.kt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/settings.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/settings.gradle" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/gen/convergence/command.interp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/gen/convergence/command.interp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/gen/convergence/commandBaseListener.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/gen/convergence/commandBaseListener.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/gen/convergence/commandBaseVisitor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/gen/convergence/commandBaseVisitor.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/gen/convergence/commandLexer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/gen/convergence/commandLexer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/gen/convergence/commandListener.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/gen/convergence/commandListener.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/gen/convergence/commandParser.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/gen/convergence/commandParser.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/gen/convergence/commandVisitor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/gen/convergence/commandVisitor.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/discordPlugin/src/TypeAdapters.kt" beforeDir="false" afterPath="$PROJECT_DIR$/discordPlugin/src/TypeAdapters.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/matterbridgePlugin/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/matterbridgePlugin/build.gradle.kts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/matterbridgePlugin/gradle.properties" beforeDir="false" afterPath="$PROJECT_DIR$/matterbridgePlugin/gradle.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/matterbridgePlugin/src/Main.kt" beforeDir="false" afterPath="$PROJECT_DIR$/matterbridgePlugin/src/Main.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/gen/convergence/command.interp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/gen/convergence/command.tokens" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/gen/convergence/commandBaseListener.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/gen/convergence/commandBaseVisitor.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/gen/convergence/commandLexer.interp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/gen/convergence/commandLexer.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/gen/convergence/commandLexer.tokens" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/gen/convergence/commandListener.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/gen/convergence/commandParser.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/gen/convergence/commandVisitor.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/PluginLoader.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/PluginLoader.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/TypeAdapters.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/TypeAdapters.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/command.g4" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/command.g4" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/commandParser.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/commandParser.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/core.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/core.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/defaultCommands.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/defaultCommands.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/interfaces.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/interfaces.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/kotlin/convergence/CommandParserTest.kt" beforeDir="false" afterPath="$PROJECT_DIR$/test/CommandParserTest.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/kotlin/convergence/DefaultCommandTests.kt" beforeDir="false" afterPath="$PROJECT_DIR$/test/DefaultCommandTests.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/kotlin/convergence/PluginLoaderTest.kt" beforeDir="false" afterPath="$PROJECT_DIR$/test/PluginLoaderTest.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -133,39 +123,13 @@
                 <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
                 <item name="convergence.bot" type="f1a62948:ProjectNode" />
                 <item name="Tasks" type="e4a08cd1:TasksNode" />
-                <item name="build" type="c8890929:TasksNode$1" />
-              </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="convergence.bot" type="f1a62948:ProjectNode" />
-                <item name="Tasks" type="e4a08cd1:TasksNode" />
                 <item name="other" type="c8890929:TasksNode$1" />
               </path>
               <path>
                 <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
                 <item name="convergence.bot" type="f1a62948:ProjectNode" />
-                <item name="basicPlugin" type="2d1252cf:ModuleNode" />
-              </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="convergence.bot" type="f1a62948:ProjectNode" />
-                <item name="basicPlugin" type="2d1252cf:ModuleNode" />
-                <item name="Dependencies" type="6de06a37:ExternalSystemViewDefaultContributor$MyDependenciesNode" />
-              </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="convergence.bot" type="f1a62948:ProjectNode" />
-                <item name="basicPlugin" type="2d1252cf:ModuleNode" />
-                <item name="Dependencies" type="6de06a37:ExternalSystemViewDefaultContributor$MyDependenciesNode" />
-                <item name="compileClasspath" type="62daadca:ExternalSystemViewDefaultContributor$DependencyScopeExternalSystemNode" />
-              </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="convergence.bot" type="f1a62948:ProjectNode" />
-                <item name="basicPlugin" type="2d1252cf:ModuleNode" />
-                <item name="Dependencies" type="6de06a37:ExternalSystemViewDefaultContributor$MyDependenciesNode" />
-                <item name="compileClasspath" type="62daadca:ExternalSystemViewDefaultContributor$DependencyScopeExternalSystemNode" />
-                <item name="project convergence.bot" type="b3323d55:ExternalSystemViewDefaultContributor$DependencyExternalSystemNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+                <item name="shadow" type="c8890929:TasksNode$1" />
               </path>
             </expand>
             <select />
@@ -238,7 +202,8 @@
     <property name="javascript.nodejs.core.library.configured.version" value="10.19.0" />
     <property name="javascript.nodejs.core.library.typings.version" value="10.17.28" />
     <property name="jdk.selected.JAVA_MODULE" value="Kotlin SDK" />
-    <property name="last_opened_file_path" value="$USER_HOME$/IdeaProjects/Conductor" />
+    <property name="last_directory_selection" value="$PROJECT_DIR$/src/main/kotlin/convergence" />
+    <property name="last_opened_file_path" value="$USER_HOME$/convergenceBot/build/libs/convergence.bot-1.0-SNAPSHOT-all.jar" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.tslint" value="true" />
     <property name="node.js.path.for.package.eslint" value="project" />
@@ -249,7 +214,7 @@
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
     <property name="nodejs_package_manager_path" value="npm" />
     <property name="org.rust.cargo.project.model.PROJECT_DISCOVERY" value="true" />
-    <property name="project.structure.last.edited" value="Modules" />
+    <property name="project.structure.last.edited" value="Libraries" />
     <property name="project.structure.proportion" value="0.15" />
     <property name="project.structure.side.proportion" value="0.23337679" />
     <property name="run.code.analysis.last.selected.profile" value="pProject Default" />
@@ -268,11 +233,14 @@
       <recent name="$PROJECT_DIR$/../IntelliJIDEAProjects/convergenceBot" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/main/kotlin/convergence" />
+      <recent name="$PROJECT_DIR$/src/main/gen/convergence/convergence" />
       <recent name="$PROJECT_DIR$/src/main/gen/convergence" />
       <recent name="$PROJECT_DIR$/../IntelliJIDEAProjects/convergenceBot" />
       <recent name="$PROJECT_DIR$/../IntelliJIDEAProjects/convergenceBot/src/test" />
-      <recent name="$PROJECT_DIR$/messengerPlugin/MessengerJSApplication" />
-      <recent name="$PROJECT_DIR$/messengerPlugin/MessengerJSApplication/resources" />
+    </key>
+    <key name="MoveClassesOrPackagesDialog.RECENTS_KEY">
+      <recent name="" />
     </key>
   </component>
   <component name="RunAnythingCache">
@@ -287,7 +255,7 @@
       <command value="gradle --version" />
     </option>
   </component>
-  <component name="RunManager" selected="Gradle.convergenceBot [clean]">
+  <component name="RunManager" selected="JAR Application.Jar">
     <configuration default="true" type="AndroidJUnit">
       <option name="TEST_OBJECT" value="class" />
       <option name="WORKING_DIRECTORY" value="$MODULE_DIR$" />
@@ -429,6 +397,27 @@
       <option name="USE_PATTERN" value="false" />
       <method v="2" />
     </configuration>
+    <configuration name="convergenceBot [assemblePlugins]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" value="--stacktrace" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="assemblePlugins" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <method v="2" />
+    </configuration>
     <configuration name="convergenceBot [clean]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
@@ -450,10 +439,10 @@
       <DebugAllEnabled>false</DebugAllEnabled>
       <method v="2" />
     </configuration>
-    <configuration name="convergenceBot::home:nicholasdelello:IntelliJIDEAProjects:convergenceBot [shadowJar]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+    <configuration name="convergenceBot [copyBot]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$/../IntelliJIDEAProjects/convergenceBot" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
         <option name="externalSystemIdString" value="GRADLE" />
         <option name="scriptParameters" />
         <option name="taskDescriptions">
@@ -461,7 +450,7 @@
         </option>
         <option name="taskNames">
           <list>
-            <option value="shadowJar" />
+            <option value="copyBot" />
           </list>
         </option>
         <option name="vmOptions" />
@@ -471,32 +460,10 @@
       <DebugAllEnabled>false</DebugAllEnabled>
       <method v="2" />
     </configuration>
-    <configuration name="convergenceBot::home:nicholasdelello:IntelliJIDEAProjects:convergenceBot [wrapper 6.5]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+    <configuration name="convergenceBot [shadowJar]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$/../IntelliJIDEAProjects/convergenceBot" />
-        <option name="externalSystemIdString" value="GRADLE" />
-        <option name="scriptParameters" value="" />
-        <option name="taskDescriptions">
-          <list />
-        </option>
-        <option name="taskNames">
-          <list>
-            <option value="wrapper" />
-            <option value="6.5" />
-          </list>
-        </option>
-        <option name="vmOptions" value="" />
-      </ExternalSystemSettings>
-      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
-      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
-      <DebugAllEnabled>false</DebugAllEnabled>
-      <method v="2" />
-    </configuration>
-    <configuration name="convergenceBot::home:nicholasdelello:IntelliJIDEAProjects:convergenceBot [wrapper]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
-      <ExternalSystemSettings>
-        <option name="executionName" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$/../IntelliJIDEAProjects/convergenceBot" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
         <option name="externalSystemIdString" value="GRADLE" />
         <option name="scriptParameters" />
         <option name="taskDescriptions">
@@ -504,7 +471,7 @@
         </option>
         <option name="taskNames">
           <list>
-            <option value="wrapper" />
+            <option value="shadowJar" />
           </list>
         </option>
         <option name="vmOptions" />
@@ -533,6 +500,15 @@
       <DebugAllEnabled>false</DebugAllEnabled>
       <method v="2" />
     </configuration>
+    <configuration name="Jar" type="JarApplication">
+      <option name="JAR_PATH" value="$USER_HOME$/convergenceBot/build/libs/convergence.bot-1.0-SNAPSHOT-all.jar" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
+      <option name="ALTERNATIVE_JRE_PATH" value="1.8.0_181" />
+      <method v="2">
+        <option name="Gradle.BeforeRunTask" enabled="true" tasks="shadowJar" externalProjectPath="$PROJECT_DIR$" vmOptions="" scriptParameters="" />
+      </method>
+    </configuration>
     <configuration default="true" type="lua.app" factoryName="Lua Application">
       <option name="program" value="/usr/bin/lua" />
       <option name="file" value="" />
@@ -544,19 +520,20 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Gradle.convergenceBot::home:nicholasdelello:IntelliJIDEAProjects:convergenceBot [shadowJar]" />
-      <item itemvalue="Gradle.convergenceBot::home:nicholasdelello:IntelliJIDEAProjects:convergenceBot [wrapper 6.5]" />
-      <item itemvalue="Gradle.convergenceBot::home:nicholasdelello:IntelliJIDEAProjects:convergenceBot [wrapper]" />
-      <item itemvalue="Gradle.convergenceBot::home:nicholasdelello:IntelliJIDEAProjects:convergenceBot" />
+      <item itemvalue="Gradle.convergenceBot [assemblePlugins]" />
       <item itemvalue="Gradle.convergenceBot [clean]" />
+      <item itemvalue="Gradle.convergenceBot [copyBot]" />
+      <item itemvalue="Gradle.convergenceBot [shadowJar]" />
+      <item itemvalue="Gradle.convergenceBot::home:nicholasdelello:IntelliJIDEAProjects:convergenceBot" />
+      <item itemvalue="JAR Application.Jar" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Gradle.convergenceBot [shadowJar]" />
+        <item itemvalue="Gradle.convergenceBot [assemblePlugins]" />
         <item itemvalue="Gradle.convergenceBot [clean]" />
         <item itemvalue="Gradle.convergenceBot::home:nicholasdelello:IntelliJIDEAProjects:convergenceBot" />
-        <item itemvalue="Gradle.convergenceBot::home:nicholasdelello:IntelliJIDEAProjects:convergenceBot [wrapper]" />
-        <item itemvalue="Gradle.convergenceBot::home:nicholasdelello:IntelliJIDEAProjects:convergenceBot [wrapper 6.5]" />
-        <item itemvalue="Gradle.convergenceBot::home:nicholasdelello:IntelliJIDEAProjects:convergenceBot [shadowJar]" />
+        <item itemvalue="Gradle.convergenceBot [copyBot]" />
       </list>
     </recent_temporary>
   </component>
@@ -754,13 +731,6 @@
       <workItem from="1624906614158" duration="108000" />
       <workItem from="1624907935305" duration="1216000" />
       <workItem from="1624913448160" duration="15000" />
-    </task>
-    <task id="LOCAL-00004" summary="Update research status.">
-      <created>1533495398993</created>
-      <option name="number" value="00004" />
-      <option name="presentableId" value="LOCAL-00004" />
-      <option name="project" value="LOCAL" />
-      <updated>1533495398993</updated>
     </task>
     <task id="LOCAL-00005" summary="Add read status to stage 1.">
       <created>1533496126117</created>
@@ -1098,7 +1068,14 @@
       <option name="project" value="LOCAL" />
       <updated>1586504902384</updated>
     </task>
-    <option name="localTasksCounter" value="53" />
+    <task id="LOCAL-00053" summary="Switch the pluginLoader to use PF4J, switch serialization to Moshi, heavily refactor interfaces.kt, switch all gradle files to the Kotlin DSL.">
+      <created>1632882723753</created>
+      <option name="number" value="00053" />
+      <option name="presentableId" value="LOCAL-00053" />
+      <option name="project" value="LOCAL" />
+      <updated>1632882723753</updated>
+    </task>
+    <option name="localTasksCounter" value="54" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1173,9 +1150,27 @@
     <option name="REARRANGE_BEFORE_PROJECT_COMMIT" value="true" />
   </component>
   <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <breakpoint type="java-exception">
+          <properties class="java.lang.NullPointerException" package="java.lang" />
+          <option name="timeStamp" value="13" />
+        </breakpoint>
+        <breakpoint type="java-exception">
+          <properties class="java.lang.reflect.InvocationTargetException" package="java.lang.reflect" />
+          <option name="timeStamp" value="15" />
+        </breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
     <watches-manager>
       <configuration name="Remote">
         <watch expression="String(ByteArray(500).also{Main.jsOutput!!.read(it, 0, 500)})" language="kotlin" />
+      </configuration>
+      <configuration name="JarApplication">
+        <watch expression="commands" language="kotlin" />
+        <watch expression="baseInterfaceMap" language="kotlin" />
+        <watch expression="Configuration" language="kotlin" />
+        <watch expression="protocols" language="kotlin" />
       </configuration>
     </watches-manager>
   </component>

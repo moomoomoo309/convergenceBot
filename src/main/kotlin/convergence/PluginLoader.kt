@@ -7,6 +7,8 @@ abstract class Plugin(wrapper: PluginWrapper): org.pf4j.Plugin(wrapper) {
 
     abstract val baseInterface: BaseInterface
 
+    val configuration: MutableMap<String, Any?> by lazy { (ClassLoader.getSystemClassLoader().loadClass("convergence.Configuration").kotlin.objectInstance!! as Configuration).conf }
+
     override fun start() {
         preinit()
         init()
@@ -18,13 +20,11 @@ abstract class Plugin(wrapper: PluginWrapper): org.pf4j.Plugin(wrapper) {
      * if you need it for any serialization or deserialization.
      */
     open fun preinit() {
-        throw NotImplementedError()
     }
 
     /**
      * Initializes the plugin. [moshi] is built when this is run, so it can be used.
      */
     open fun init() {
-        throw NotImplementedError()
     }
 }

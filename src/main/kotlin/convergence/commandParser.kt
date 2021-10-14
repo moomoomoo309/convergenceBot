@@ -1,7 +1,5 @@
 package convergence
 
-import commandLexer
-import commandParser
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonToken
 import org.antlr.v4.runtime.CommonTokenStream
@@ -69,8 +67,11 @@ fun parseCommand(command: String, commandDelimiter: String, chat: Chat): Command
         throw InvalidEscapeSequence("Command \"$command\" contains the following invalid escape sequences: \"${invalidEscapes.joinToString("\", \"") { it.text }}\".")
 
     // See if the command was actually parsed successfully, and error if it wasn't.
-    if (tree.exception != null)
+    if (!tree.exception?.message.isNullOrBlank())
         throw InvalidCommandException(tree.exception?.message ?: "")
+    else if (tree.exception != null)
+        throw tree.exception
+
 
     // Grab the command name
     val commandName = tree.commandName().text

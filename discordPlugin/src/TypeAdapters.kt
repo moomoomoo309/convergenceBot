@@ -1,29 +1,12 @@
 package convergence.testPlugins.discordPlugin
 
-import com.squareup.moshi.JsonAdapter
-import com.squareup.moshi.JsonDataException
-import com.squareup.moshi.JsonReader
-import com.squareup.moshi.JsonWriter
+import com.squareup.moshi.*
 import convergence.fromJson
-import convergence.moshi
+import convergence.getReadStringOrThrow
 import convergence.toJson
 
-fun numToOrdinal(num: Int): String {
-    val suffixes = arrayOf("th", "st", "nd", "rd")
-    return "$num${suffixes.getOrNull(num % 10) ?: "th"}"
-}
-
-fun getReadStringOrThrow(reader: JsonReader, className: String, startCountAt: Int = 1): (String) -> String {
-    var count = startCountAt
-    fun readStringOrThrow(fieldName: String): String {
-        if (reader.nextName() != fieldName)
-            throw JsonDataException("$fieldName should be the ${numToOrdinal(count++)} field for a $className")
-        return reader.nextString()
-    }
-    return ::readStringOrThrow
-}
-
 object DiscordMessageHistoryAdapter: JsonAdapter<DiscordMessageHistory>() {
+    @FromJson
     override fun fromJson(reader: JsonReader): DiscordMessageHistory? {
         val readStringOrThrow = getReadStringOrThrow(reader, "DiscordMessageHistory")
         if (readStringOrThrow("type") != "DiscordMessageHistory")
@@ -36,6 +19,7 @@ object DiscordMessageHistoryAdapter: JsonAdapter<DiscordMessageHistory>() {
         return DiscordMessageHistory(msg, id.toLong())
     }
 
+    @ToJson
     override fun toJson(writer: JsonWriter, value: DiscordMessageHistory?) {
         value?.let {
             writer.name("msgChannel")
@@ -49,6 +33,7 @@ object DiscordMessageHistoryAdapter: JsonAdapter<DiscordMessageHistory>() {
 }
 
 object DiscordEmojiAdapter: JsonAdapter<DiscordEmoji>() {
+    @FromJson
     override fun fromJson(reader: JsonReader): DiscordEmoji? {
         val readStringOrThrow = getReadStringOrThrow(reader, "DiscordEmoji")
         if (readStringOrThrow("type") != "DiscordEmoji")
@@ -62,6 +47,7 @@ object DiscordEmojiAdapter: JsonAdapter<DiscordEmoji>() {
         return DiscordEmoji(url, name, emote, id.toLong())
     }
 
+    @ToJson
     override fun toJson(writer: JsonWriter, value: DiscordEmoji?) {
         value?.let {
             writer.name("type")
@@ -81,6 +67,7 @@ object DiscordEmojiAdapter: JsonAdapter<DiscordEmoji>() {
 }
 
 object DiscordUserAdapter: JsonAdapter<DiscordUser>() {
+    @FromJson
     override fun fromJson(reader: JsonReader): DiscordUser? {
         var readStringOrThrow = getReadStringOrThrow(reader, "DiscordUser")
         if (readStringOrThrow("type") != "DiscordUser")
@@ -88,15 +75,15 @@ object DiscordUserAdapter: JsonAdapter<DiscordUser>() {
         if (reader.nextName() != "chat")
             throw JsonDataException("The 2nd field should be chat in DiscordUser!")
         val chatJson = when (val json = reader.readJsonValue()) {
-            is String -> moshi.toJson(json)
-            is Number -> moshi.toJson(json)
-            is Boolean -> moshi.toJson(json)
-            is List<*> -> moshi.toJson(json)
-            is Map<*, *> -> moshi.toJson(json)
+            is String -> _moshi.toJson(json)
+            is Number -> _moshi.toJson(json)
+            is Boolean -> _moshi.toJson(json)
+            is List<*> -> _moshi.toJson(json)
+            is Map<*, *> -> _moshi.toJson(json)
             else -> return null
         }
-        val chat = moshi.fromJson<DiscordChat>(chatJson)
-        readStringOrThrow = getReadStringOrThrow(reader, "DiscordUser", 3)
+        val chat = _moshi.fromJson<DiscordChat>(chatJson)
+        readStringOrThrow = getReadStringOrThrow(reader, "DiscordUser", 4)
         val name = readStringOrThrow("name")
         val id = readStringOrThrow("id")
         val authorId = readStringOrThrow("author")
@@ -104,6 +91,7 @@ object DiscordUserAdapter: JsonAdapter<DiscordUser>() {
         return DiscordUser(chat, name, id.toLong(), author)
     }
 
+    @ToJson
     override fun toJson(writer: JsonWriter, value: DiscordUser?) {
         value?.let {
             writer.name("type")
@@ -121,6 +109,7 @@ object DiscordUserAdapter: JsonAdapter<DiscordUser>() {
 }
 
 object DiscordChatAdapter: JsonAdapter<DiscordChat>() {
+    @FromJson
     override fun fromJson(reader: JsonReader): DiscordChat? {
         val readStringOrThrow = getReadStringOrThrow(reader, "DiscordChat")
         if (readStringOrThrow("type") != "DiscordChat")
@@ -132,6 +121,7 @@ object DiscordChatAdapter: JsonAdapter<DiscordChat>() {
         return DiscordChat(name, id.toLong(), channel)
     }
 
+    @ToJson
     override fun toJson(writer: JsonWriter, value: DiscordChat?) {
         value?.let {
             writer.name("type")

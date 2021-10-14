@@ -1,4 +1,5 @@
 // Generated from /home/nicholasdelello/IntelliJIDEAProjects/convergenceBot/src/main/kotlin/convergence/command.g4 by ANTLR 4.9.1
+package convergence;
 
 import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
 

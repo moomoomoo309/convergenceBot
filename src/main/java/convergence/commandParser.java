@@ -1,4 +1,5 @@
 // Generated from /home/nicholasdelello/IntelliJIDEAProjects/convergenceBot/src/main/kotlin/convergence/command.g4 by ANTLR 4.9.1
+package convergence;
 
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.atn.ATN;
@@ -27,23 +28,23 @@ public class commandParser extends Parser {
 	@Deprecated
 	public static final String[] tokenNames;
 	public static final String _serializedATN =
-			"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3\n>\4\2\t\2\4\3\t" +
-					"\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\3\2\3\2\6\2\21\n\2\r\2\16\2\22\3\2" +
-					"\3\2\6\2\27\n\2\r\2\16\2\30\3\2\5\2\34\n\2\7\2\36\n\2\f\2\16\2!\13\2\3" +
-					"\2\3\2\3\3\3\3\5\3\'\n\3\3\4\6\4*\n\4\r\4\16\4+\3\5\3\5\7\5\60\n\5\f\5" +
-					"\16\5\63\13\5\3\5\3\5\3\6\3\6\3\7\6\7:\n\7\r\7\16\7;\3\7\2\2\b\2\4\6\b" +
-					"\n\f\2\4\4\2\3\7\t\t\3\2\3\t\2?\2\16\3\2\2\2\4&\3\2\2\2\6)\3\2\2\2\b-" +
-					"\3\2\2\2\n\66\3\2\2\2\f9\3\2\2\2\16\20\5\f\7\2\17\21\7\b\2\2\20\17\3\2" +
-					"\2\2\21\22\3\2\2\2\22\20\3\2\2\2\22\23\3\2\2\2\23\37\3\2\2\2\24\33\5\4" +
-					"\3\2\25\27\7\b\2\2\26\25\3\2\2\2\27\30\3\2\2\2\30\26\3\2\2\2\30\31\3\2" +
-					"\2\2\31\34\3\2\2\2\32\34\7\2\2\3\33\26\3\2\2\2\33\32\3\2\2\2\34\36\3\2" +
-					"\2\2\35\24\3\2\2\2\36!\3\2\2\2\37\35\3\2\2\2\37 \3\2\2\2 \"\3\2\2\2!\37" +
-					"\3\2\2\2\"#\7\2\2\3#\3\3\2\2\2$\'\5\b\5\2%\'\5\6\4\2&$\3\2\2\2&%\3\2\2" +
-					"\2\'\5\3\2\2\2(*\t\2\2\2)(\3\2\2\2*+\3\2\2\2+)\3\2\2\2+,\3\2\2\2,\7\3" +
-					"\2\2\2-\61\7\n\2\2.\60\5\n\6\2/.\3\2\2\2\60\63\3\2\2\2\61/\3\2\2\2\61" +
-					"\62\3\2\2\2\62\64\3\2\2\2\63\61\3\2\2\2\64\65\7\n\2\2\65\t\3\2\2\2\66" +
-					"\67\t\3\2\2\67\13\3\2\2\28:\7\7\2\298\3\2\2\2:;\3\2\2\2;9\3\2\2\2;<\3" +
-					"\2\2\2<\r\3\2\2\2\n\22\30\33\37&+\61;";
+			"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3\n?\4\2\t\2\4\3\t" +
+					"\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\3\2\3\2\7\2\21\n\2\f\2\16\2\24\13\2" +
+					"\3\2\3\2\6\2\30\n\2\r\2\16\2\31\3\2\5\2\35\n\2\7\2\37\n\2\f\2\16\2\"\13" +
+					"\2\3\2\3\2\3\3\3\3\5\3(\n\3\3\4\6\4+\n\4\r\4\16\4,\3\5\3\5\7\5\61\n\5" +
+					"\f\5\16\5\64\13\5\3\5\3\5\3\6\3\6\3\7\6\7;\n\7\r\7\16\7<\3\7\2\2\b\2\4" +
+					"\6\b\n\f\2\4\4\2\3\7\t\t\3\2\3\t\2@\2\16\3\2\2\2\4\'\3\2\2\2\6*\3\2\2" +
+					"\2\b.\3\2\2\2\n\67\3\2\2\2\f:\3\2\2\2\16\22\5\f\7\2\17\21\7\b\2\2\20\17" +
+					"\3\2\2\2\21\24\3\2\2\2\22\20\3\2\2\2\22\23\3\2\2\2\23 \3\2\2\2\24\22\3" +
+					"\2\2\2\25\34\5\4\3\2\26\30\7\b\2\2\27\26\3\2\2\2\30\31\3\2\2\2\31\27\3" +
+					"\2\2\2\31\32\3\2\2\2\32\35\3\2\2\2\33\35\7\2\2\3\34\27\3\2\2\2\34\33\3" +
+					"\2\2\2\35\37\3\2\2\2\36\25\3\2\2\2\37\"\3\2\2\2 \36\3\2\2\2 !\3\2\2\2" +
+					"!#\3\2\2\2\" \3\2\2\2#$\7\2\2\3$\3\3\2\2\2%(\5\b\5\2&(\5\6\4\2\'%\3\2" +
+					"\2\2\'&\3\2\2\2(\5\3\2\2\2)+\t\2\2\2*)\3\2\2\2+,\3\2\2\2,*\3\2\2\2,-\3" +
+					"\2\2\2-\7\3\2\2\2.\62\7\n\2\2/\61\5\n\6\2\60/\3\2\2\2\61\64\3\2\2\2\62" +
+					"\60\3\2\2\2\62\63\3\2\2\2\63\65\3\2\2\2\64\62\3\2\2\2\65\66\7\n\2\2\66" +
+					"\t\3\2\2\2\678\t\3\2\28\13\3\2\2\29;\7\7\2\2:9\3\2\2\2;<\3\2\2\2<:\3\2" +
+					"\2\2<=\3\2\2\2=\r\3\2\2\2\n\22\31\34 \',\62<";
 	public static final ATN _ATN =
 			new ATNDeserializer().deserialize(_serializedATN.toCharArray());
 	protected static final DFA[] _decisionToDFA;
@@ -144,50 +145,50 @@ public class commandParser extends Parser {
 			{
 				setState(12);
 				commandName();
-				setState(14);
+				setState(16);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
-				do {
+				while (_la == Whitespace) {
 					{
 						{
 							setState(13);
 							match(Whitespace);
 						}
 					}
-					setState(16);
+					setState(18);
 					_errHandler.sync(this);
 					_la = _input.LA(1);
-				} while (_la == Whitespace);
-				setState(29);
+				}
+				setState(30);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 				while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << RegularEscape) | (1L << UnicodeEscape) | (1L << OctalEscape) | (1L << InvalidEscape) | (1L << Alnum) | (1L << NotWhitespaceOrQuote) | (1L << Quote))) != 0)) {
 					{
 						{
-							setState(18);
+							setState(19);
 							argument();
-							setState(25);
+							setState(26);
 							_errHandler.sync(this);
 							switch (_input.LA(1)) {
 								case Whitespace: {
-									setState(20);
+									setState(21);
 									_errHandler.sync(this);
 									_la = _input.LA(1);
 									do {
 										{
 											{
-												setState(19);
+												setState(20);
 												match(Whitespace);
 											}
 										}
-										setState(22);
+										setState(23);
 										_errHandler.sync(this);
 										_la = _input.LA(1);
 									} while (_la == Whitespace);
 								}
 								break;
 								case EOF: {
-									setState(24);
+									setState(25);
 									match(EOF);
 								}
 								break;
@@ -196,11 +197,11 @@ public class commandParser extends Parser {
 							}
 						}
 					}
-					setState(31);
+					setState(32);
 					_errHandler.sync(this);
 					_la = _input.LA(1);
 				}
-				setState(32);
+				setState(33);
 				match(EOF);
 			}
 		} catch (RecognitionException re) {
@@ -217,13 +218,13 @@ public class commandParser extends Parser {
 		ArgumentContext _localctx = new ArgumentContext(_ctx, getState());
 		enterRule(_localctx, 2, RULE_argument);
 		try {
-			setState(36);
+			setState(37);
 			_errHandler.sync(this);
 			switch (_input.LA(1)) {
 				case Quote:
 					enterOuterAlt(_localctx, 1);
 				{
-					setState(34);
+					setState(35);
 					quoteArgument();
 				}
 				break;
@@ -235,7 +236,7 @@ public class commandParser extends Parser {
 				case NotWhitespaceOrQuote:
 					enterOuterAlt(_localctx, 2);
 				{
-					setState(35);
+					setState(36);
 					nonQuoteArgument();
 				}
 				break;
@@ -259,13 +260,13 @@ public class commandParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-				setState(39);
+				setState(40);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 				do {
 					{
 						{
-							setState(38);
+							setState(39);
 							_la = _input.LA(1);
 							if (!((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << RegularEscape) | (1L << UnicodeEscape) | (1L << OctalEscape) | (1L << InvalidEscape) | (1L << Alnum) | (1L << NotWhitespaceOrQuote))) != 0))) {
 								_errHandler.recoverInline(this);
@@ -276,7 +277,7 @@ public class commandParser extends Parser {
 							}
 						}
 					}
-					setState(41);
+					setState(42);
 					_errHandler.sync(this);
 					_la = _input.LA(1);
 				} while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << RegularEscape) | (1L << UnicodeEscape) | (1L << OctalEscape) | (1L << InvalidEscape) | (1L << Alnum) | (1L << NotWhitespaceOrQuote))) != 0));
@@ -298,23 +299,23 @@ public class commandParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-				setState(43);
+				setState(44);
 				match(Quote);
-				setState(47);
+				setState(48);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 				while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << RegularEscape) | (1L << UnicodeEscape) | (1L << OctalEscape) | (1L << InvalidEscape) | (1L << Alnum) | (1L << Whitespace) | (1L << NotWhitespaceOrQuote))) != 0)) {
 					{
 						{
-							setState(44);
+							setState(45);
 							notQuote();
 						}
 					}
-					setState(49);
+					setState(50);
 					_errHandler.sync(this);
 					_la = _input.LA(1);
 				}
-				setState(50);
+				setState(51);
 				match(Quote);
 			}
 		} catch (RecognitionException re) {
@@ -334,7 +335,7 @@ public class commandParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-				setState(52);
+				setState(53);
 				_la = _input.LA(1);
 				if (!((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << RegularEscape) | (1L << UnicodeEscape) | (1L << OctalEscape) | (1L << InvalidEscape) | (1L << Alnum) | (1L << Whitespace) | (1L << NotWhitespaceOrQuote))) != 0))) {
 					_errHandler.recoverInline(this);
@@ -357,24 +358,29 @@ public class commandParser extends Parser {
 	public final CommandNameContext commandName() throws RecognitionException {
 		CommandNameContext _localctx = new CommandNameContext(_ctx, getState());
 		enterRule(_localctx, 10, RULE_commandName);
-		int _la;
 		try {
+			int _alt;
 			enterOuterAlt(_localctx, 1);
 			{
-				setState(55);
+				setState(56);
 				_errHandler.sync(this);
-				_la = _input.LA(1);
+				_alt = 1;
 				do {
-					{
-						{
-							setState(54);
-							match(Alnum);
+					switch (_alt) {
+						case 1: {
+							{
+								setState(55);
+								match(Alnum);
+							}
 						}
+						break;
+						default:
+							throw new NoViableAltException(this);
 					}
-					setState(57);
+					setState(58);
 					_errHandler.sync(this);
-					_la = _input.LA(1);
-				} while (_la == Alnum);
+					_alt = getInterpreter().adaptivePredict(_input, 7, _ctx);
+				} while (_alt != 2 && _alt != org.antlr.v4.runtime.atn.ATN.INVALID_ALT_NUMBER);
 			}
 		} catch (RecognitionException re) {
 			_localctx.exception = re;
@@ -426,17 +432,20 @@ public class commandParser extends Parser {
 
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if (listener instanceof commandListener) ((commandListener) listener).enterCommand(this);
+			if (listener instanceof convergence.commandListener)
+				((convergence.commandListener) listener).enterCommand(this);
 		}
 
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if (listener instanceof commandListener) ((commandListener) listener).exitCommand(this);
+			if (listener instanceof convergence.commandListener)
+				((convergence.commandListener) listener).exitCommand(this);
 		}
 
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if (visitor instanceof commandVisitor) return ((commandVisitor<? extends T>) visitor).visitCommand(this);
+			if (visitor instanceof convergence.commandVisitor)
+				return ((convergence.commandVisitor<? extends T>) visitor).visitCommand(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -461,17 +470,20 @@ public class commandParser extends Parser {
 
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if (listener instanceof commandListener) ((commandListener) listener).enterArgument(this);
+			if (listener instanceof convergence.commandListener)
+				((convergence.commandListener) listener).enterArgument(this);
 		}
 
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if (listener instanceof commandListener) ((commandListener) listener).exitArgument(this);
+			if (listener instanceof convergence.commandListener)
+				((convergence.commandListener) listener).exitArgument(this);
 		}
 
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if (visitor instanceof commandVisitor) return ((commandVisitor<? extends T>) visitor).visitArgument(this);
+			if (visitor instanceof convergence.commandVisitor)
+				return ((convergence.commandVisitor<? extends T>) visitor).visitArgument(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -536,18 +548,20 @@ public class commandParser extends Parser {
 
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if (listener instanceof commandListener) ((commandListener) listener).enterNonQuoteArgument(this);
+			if (listener instanceof convergence.commandListener)
+				((convergence.commandListener) listener).enterNonQuoteArgument(this);
 		}
 
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if (listener instanceof commandListener) ((commandListener) listener).exitNonQuoteArgument(this);
+			if (listener instanceof convergence.commandListener)
+				((convergence.commandListener) listener).exitNonQuoteArgument(this);
 		}
 
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if (visitor instanceof commandVisitor)
-				return ((commandVisitor<? extends T>) visitor).visitNonQuoteArgument(this);
+			if (visitor instanceof convergence.commandVisitor)
+				return ((convergence.commandVisitor<? extends T>) visitor).visitNonQuoteArgument(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -580,18 +594,20 @@ public class commandParser extends Parser {
 
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if (listener instanceof commandListener) ((commandListener) listener).enterQuoteArgument(this);
+			if (listener instanceof convergence.commandListener)
+				((convergence.commandListener) listener).enterQuoteArgument(this);
 		}
 
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if (listener instanceof commandListener) ((commandListener) listener).exitQuoteArgument(this);
+			if (listener instanceof convergence.commandListener)
+				((convergence.commandListener) listener).exitQuoteArgument(this);
 		}
 
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if (visitor instanceof commandVisitor)
-				return ((commandVisitor<? extends T>) visitor).visitQuoteArgument(this);
+			if (visitor instanceof convergence.commandVisitor)
+				return ((convergence.commandVisitor<? extends T>) visitor).visitQuoteArgument(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -636,17 +652,20 @@ public class commandParser extends Parser {
 
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if (listener instanceof commandListener) ((commandListener) listener).enterNotQuote(this);
+			if (listener instanceof convergence.commandListener)
+				((convergence.commandListener) listener).enterNotQuote(this);
 		}
 
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if (listener instanceof commandListener) ((commandListener) listener).exitNotQuote(this);
+			if (listener instanceof convergence.commandListener)
+				((convergence.commandListener) listener).exitNotQuote(this);
 		}
 
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if (visitor instanceof commandVisitor) return ((commandVisitor<? extends T>) visitor).visitNotQuote(this);
+			if (visitor instanceof convergence.commandVisitor)
+				return ((convergence.commandVisitor<? extends T>) visitor).visitNotQuote(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -671,18 +690,20 @@ public class commandParser extends Parser {
 
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if (listener instanceof commandListener) ((commandListener) listener).enterCommandName(this);
+			if (listener instanceof convergence.commandListener)
+				((convergence.commandListener) listener).enterCommandName(this);
 		}
 
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if (listener instanceof commandListener) ((commandListener) listener).exitCommandName(this);
+			if (listener instanceof convergence.commandListener)
+				((convergence.commandListener) listener).exitCommandName(this);
 		}
 
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if (visitor instanceof commandVisitor)
-				return ((commandVisitor<? extends T>) visitor).visitCommandName(this);
+			if (visitor instanceof convergence.commandVisitor)
+				return ((convergence.commandVisitor<? extends T>) visitor).visitCommandName(this);
 			else return visitor.visitChildren(this);
 		}
 	}

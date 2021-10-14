@@ -15,7 +15,7 @@ import kotlin.reflect.jvm.jvmName
 
 class UnregisteredChat: Exception()
 
-@Suppress("NOTHING_TO_INLINE") // It's inlined so it won't show up in the stack trace, not for performance.
+@Suppress("NOTHING_TO_INLINE") // It's inlined, so it won't show up in the stack trace, not for performance.
 inline fun unregisteredChat(chat: Chat) {
     try {
         throw UnregisteredChat()
@@ -367,7 +367,6 @@ fun links(args: List<String>, sender: User): String {
         "No chats are linked to this one."
 }
 
-val delimiters = hashMapOf<Chat, String>()
 fun setDelimiter(args: List<String>, sender: User): String = when {
     args.isEmpty() -> "You need to pass the new delimiter!"
     setCommandDelimiter(sender.chat, args[0]) -> "Command delimiter set to \"${args[0]}\"."

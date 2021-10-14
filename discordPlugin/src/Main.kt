@@ -1,5 +1,6 @@
 package convergence.testPlugins.discordPlugin
 
+import com.squareup.moshi.Moshi
 import convergence.*
 import convergence.MessageHistory
 import convergence.User
@@ -206,10 +207,14 @@ object MessageListener: ListenerAdapter() {
     }
 }
 
+lateinit var _moshi: Moshi
+
 class DiscordPlugin(wrapper: PluginWrapper): convergence.Plugin(wrapper) {
     override val name = "DiscordPlugin"
     override val baseInterface = DiscordInterface
+    val moshi: Moshi by configuration
     override fun preinit() {
+        val moshiBuilder: Moshi.Builder by configuration
         moshiBuilder.add(DiscordMessageHistoryAdapter)
                 .add(DiscordEmojiAdapter)
                 .add(DiscordUserAdapter)
@@ -217,6 +222,7 @@ class DiscordPlugin(wrapper: PluginWrapper): convergence.Plugin(wrapper) {
     }
 
     override fun init() {
+        _moshi = this.moshi
         registerProtocol(DiscordProtocol, DiscordInterface)
         println("Discord Plugin initialized.")
         jda = try {

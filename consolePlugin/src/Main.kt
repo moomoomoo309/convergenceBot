@@ -5,25 +5,16 @@ import org.pf4j.PluginWrapper
 import java.util.*
 import kotlin.system.exitProcess
 
-object ConsoleUser: User(ConsoleChat) {
-    override fun toJson() = "{\"type\":\"ConsoleUser\"}"
-}
+class ConsoleUser: User(ConsoleChat)
+object ConsoleChat: Chat(ConsoleProtocol, "Console")
 
-object ConsoleChat: Chat(ConsoleProtocol, "Console") {
-    override fun toJson() = "{\"type\":\"ConsoleChat\"}"
-}
+val user = ConsoleUser()
+val bot = ConsoleUser()
 
 object ConsoleProtocol: Protocol("Console")
 object ConsoleInterface: BaseInterface {
     override val name = "ConsoleInterface"
     override val protocols: List<Protocol> = listOf(ConsoleProtocol)
-
-    init {
-        val id = currentChatID++ // Only one chat, so we can register it right away.
-        chatMap[id] = ConsoleChat
-        reverseChatMap[ConsoleChat] = id
-    }
-
     override fun sendMessage(chat: Chat, message: String): Boolean {
         if (chat is ConsoleChat) {
             println(message)
@@ -33,7 +24,7 @@ object ConsoleInterface: BaseInterface {
     }
 
     override fun getBot(chat: Chat): User {
-        return ConsoleUser
+        return bot
     }
 
     override fun getName(chat: Chat, user: User): String {
@@ -47,7 +38,7 @@ object ConsoleInterface: BaseInterface {
     }
 
     override fun getUsers(chat: Chat): List<User> {
-        return listOf(ConsoleUser)
+        return listOf(user)
     }
 
     override fun getChatName(chat: Chat): String {
@@ -59,18 +50,26 @@ object ConsoleInterface: BaseInterface {
 class ConsolePlugin(wrapper: PluginWrapper): Plugin(wrapper) {
     override val name = "consolePlugin"
     override val baseInterface: BaseInterface = ConsoleInterface
+    var currentChatID: Int by configuration
+    val chatMap: MutableMap<Int, Chat> by configuration
+    val reverseChatMap: MutableMap<Chat, Int> by configuration
     override fun init() {
+        val id = currentChatID++ // Only one chat, so we can register it right away.
+        chatMap[id] = ConsoleChat
+        reverseChatMap[ConsoleChat] = id
+
         print("consolePlugin initialized.\n\n> ")
+
         System.out.flush() // Flush guarantees that the > shows up before stdin. IntelliJ still doesn't listen to it.
         try {
             val stdin = Scanner(System.`in`)
             val currentLine = stdin.nextLine()
-            ConsoleInterface.receivedMessage(ConsoleChat, currentLine, ConsoleUser)
+            ConsoleInterface.receivedMessage(ConsoleChat, currentLine, user)
             while (true) {
                 print("> ")
                 System.out.flush()
                 while (!stdin.hasNextLine()) stdin.next()
-                ConsoleInterface.receivedMessage(ConsoleChat, stdin.nextLine(), ConsoleUser)
+                ConsoleInterface.receivedMessage(ConsoleChat, stdin.nextLine(), user)
             }
         } catch (e: NoSuchElementException) {
             // Catch Ctrl-D (EOF). Normally, I wouldn't do this in a plugin, but it's the local console of the bot,

@@ -6,7 +6,7 @@ plugins {
 group = "convergence.test"
 version = "1.0-SNAPSHOT"
 
-description = "Discord plugin for convergence bot"
+description = "Matterbridge plugin for convergence bot"
 
 sourceSets.main {
     withConvention(org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet::class) {
@@ -19,8 +19,4 @@ sourceSets.test {
     withConvention(org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet::class) {
         kotlin.srcDirs("test/kotlin")
     }
-}
-
-
-dependencies {
 }

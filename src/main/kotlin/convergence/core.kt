@@ -4,15 +4,11 @@ package convergence
 
 import com.squareup.moshi.JsonDataException
 import com.squareup.moshi.Moshi
-import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import humanize.Humanize
-import kotlinx.coroutines.*
 import net.sourceforge.argparse4j.ArgumentParsers
 import net.sourceforge.argparse4j.inf.ArgumentParserException
-import net.sourceforge.argparse4j.inf.Namespace
 import org.ocpsoft.prettytime.units.JustNow
 import org.pf4j.DefaultPluginManager
-import org.pf4j.PluginManager
 import org.pf4j.PluginWrapper
 import java.io.ByteArrayOutputStream
 import java.io.PrintStream
@@ -31,20 +27,6 @@ class CommandDoesNotExist(cmd: String): Exception(cmd)
 fun log(it: Any) = println(it)
 fun logErr(it: Any) = System.err.println(it)
 fun logErr(it: Throwable) = it.printStackTrace()
-
-val protocols = mutableSetOf<Protocol>()
-val baseInterfaceMap = mutableMapOf<Protocol, BaseInterface>()
-val chatMap = mutableMapOf<Int, Chat>()
-val reverseChatMap = mutableMapOf<Chat, Int>()
-val pluginThreads = mutableMapOf<Plugin, Thread>()
-var currentChatID: Int = 0
-val moshiBuilder = Moshi.Builder()
-        .add(SingletonAdapterFactory)
-        .add(OffsetDateTimeAdapter)
-        .add(KotlinJsonAdapterFactory())!!
-lateinit var moshi: Moshi
-val convergencePath: Path = Paths.get(System.getProperty("user.home"), ".convergence")
-
 
 /**
  * Deserializes a JSON string into the type specified in [T].
@@ -82,13 +64,10 @@ fun registerProtocols(protocols: List<Protocol>, baseInterface: BaseInterface) =
 fun registerProtocol(protocol: Protocol, baseInterface: BaseInterface): Boolean {
     if (protocol in protocols)
         return false
-    protocols += protocol
+    protocols.add(protocol)
     baseInterfaceMap[protocol] = baseInterface
     return true
 }
-
-val sortedHelpText = arrayListOf<CommandLike>()
-val commands = mutableMapOf<Chat, MutableMap<String, Command>>()
 
 /**
  * Adds a command to the command registry.
@@ -96,6 +75,7 @@ val commands = mutableMapOf<Chat, MutableMap<String, Command>>()
  */
 fun registerCommand(command: Command): Boolean {
     val chat = command.chat
+    val commands = commands
     if (chat !in commands || commands[chat] !is MutableMap)
         commands[chat] = mutableMapOf(command.name to command)
 
@@ -110,14 +90,13 @@ fun registerCommand(command: Command): Boolean {
     return true
 }
 
-val aliases = mutableMapOf<Chat, MutableMap<String, Alias>>()
-
 /**
  * Adds an alias to the alias registry.
  * @return true if an alias with that name does not already exist in the registry, false otherwise.
  */
 fun registerAlias(alias: Alias): Boolean {
     val chat = alias.chat
+    val aliases = aliases
     if (chat !in aliases || aliases[chat] !is MutableMap<String, Alias>)
         aliases[chat] = mutableMapOf(alias.name to alias)
 
@@ -136,13 +115,9 @@ fun registerAlias(alias: Alias): Boolean {
     return true
 }
 
-const val defaultCommandDelimiter = "!"
-
 class DefaultMap<K, V>(var defaultValue: V): HashMap<K, V>() {
     override fun get(key: K): V = super.getOrDefault(key, defaultValue)
 }
-
-val commandDelimiters = DefaultMap<Chat, String>(defaultCommandDelimiter)
 
 /**
  * Sets the Command delimiter used for the bot's commands. (is it !help, |help, @help, or something else?)
@@ -188,11 +163,6 @@ fun getUserName(sender: User): String {
     else
         baseInterface.getName(chat, sender)
 }
-
-val aliasVars = mutableMapOf(
-        "sender" to { b: BaseInterface, c: Chat, s: User -> b.getName(c, s) },
-        "botname" to { b: BaseInterface, c: Chat, _: User -> b.getName(c, b.getBot(c)) },
-        "chatname" to { b: BaseInterface, c: Chat, _: User -> b.getChatName(c) })
 
 /**
  * Replaces instances of the keys in [aliasVars] preceded by a percent sign with the result of the functions therein,
@@ -271,8 +241,6 @@ fun runCommand(sender: User, command: CommandData) = try {
     sendMessage(sender, "Error while running command! Stack trace:\n${getStackTraceText(e)}")
 }
 
-val linkedChats = hashMapOf<Chat, MutableSet<Chat>>()
-
 fun forwardToLinkedChats(message: String?, sender: User, isCommand: Boolean = false) {
     if (message == null)
         return
@@ -317,7 +285,7 @@ data class ScheduledCommand(
  * Checks if commands scheduled for later are ready to be run yet. Can give information on the commands in its queue.
  */
 object SchedulerThread: Thread() {
-    private const val allowedTimeDifference = 30
+    private const val allowedTimeDifferenceSeconds = 30
     private const val updatesPerSecond = 1
 
     private val scheduledCommands = TreeMap<OffsetDateTime, MutableList<ScheduledCommand>>()
@@ -338,7 +306,7 @@ object SchedulerThread: Thread() {
             val now = OffsetDateTime.now()
             for ((cmdTime, cmdList) in scheduledCommands) {
                 if (cmdTime.isBefore(now)) {
-                    if (cmdTime.until(now, ChronoUnit.SECONDS) in 0..allowedTimeDifference)
+                    if (cmdTime.until(now, ChronoUnit.SECONDS) in 0..allowedTimeDifferenceSeconds)
                         for (cmd in cmdList) {
                             runCommand(cmd.sender, cmd.commandData)
                             scheduledCommands.remove(cmd.time)
@@ -416,14 +384,14 @@ object SchedulerThread: Thread() {
  */
 fun schedule(sender: User, command: CommandData, time: OffsetDateTime) = SchedulerThread.schedule(sender, command, time)
 
-lateinit var commandLineArgs: Namespace
-lateinit var pluginManager: PluginManager
-lateinit var pluginPaths: Set<Path>
 val pluginWrappers: MutableList<PluginWrapper> get() = pluginManager.plugins
+
+class PluginManagerWithConfiguration(list: List<Path>): DefaultPluginManager(list) {
+    val configuration = Configuration.conf
+}
 
 class core {
     companion object {
-        @DelicateCoroutinesApi
         @JvmStatic
         fun main(args: Array<String>) {
             // Parse command line arguments.
@@ -435,8 +403,8 @@ class core {
             paths.addArgument("-pp", "--plugin-path")
                     .dest("pluginPath")
                     .nargs("+")
-                    .type(String::class.java)
-                    .default = convergencePath.resolve("plugins").toString()
+                    .type(List::class.java)
+                    .default = listOf(convergencePath.resolve("plugins").toString())
             commandLineArgs = try {
                 argParser.parseArgs(args)
             } catch (e: ArgumentParserException) {
@@ -448,12 +416,14 @@ class core {
             // It'd be silly to get this list, convert it to a set, then convert it back to a list for the plugin
             // manager, so we'll keep this locally so we can construct the plugin manager.
             commandLineArgs.get<List<String>>("pluginPath").map { Paths.get(it) }.let {
-                pluginManager = DefaultPluginManager(it)
+                pluginManager = PluginManagerWithConfiguration(it)
                 pluginPaths = it.toSet()
             }
 
             // Remove "just now" as an option for time formatting. 5 minutes for "just now" is annoying.
             Humanize.prettyTimeFormat().prettyTime.removeUnit(JustNow::class.java)
+
+            registerProtocol(UniversalProtocol, FakeBaseInterface)
 
             log("Registering default commands...")
             registerDefaultCommands()
@@ -467,19 +437,23 @@ class core {
             else
                 log("Loaded Plugins:\t${pluginWrappers.joinToString("\t") { it.pluginId }}")
 
-
             moshi = moshiBuilder.build()
             for (wrapper in pluginWrappers) {
                 log("Initializing plugin: ${wrapper.pluginId}")
 
-                Thread(wrapper.plugin::start, "${wrapper.pluginId}-Thread").start()
+                Thread({
+                    wrapper.plugin.start()
+                }, "${wrapper.pluginId}-thread").start()
+                val plugin = wrapper.plugin as Plugin
+                for (protocol in plugin.baseInterface.protocols)
+                    registerProtocol(protocol, plugin.baseInterface)
             }
 
             // Update the chat map
             val chatUpdateDelay = 6000L
             for (protocol in protocols) {
-                GlobalScope.launch(CoroutineName("Chat Init for ${protocol.name}")) {
-                    delay(chatUpdateDelay)
+                Thread({
+                    Thread.sleep(chatUpdateDelay)
                     try {
                         (baseInterfaceMap[protocol]
                                 ?: throw Exception("Protocol ${protocol.name} is not in the base interface map!"))
@@ -493,7 +467,7 @@ class core {
                     } catch (e: Exception) {
                         e.printStackTrace()
                     }
-                }
+                }, "Chat Init for ${protocol.name}").start()
             }
         }
     }
