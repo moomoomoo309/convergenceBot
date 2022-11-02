@@ -5,16 +5,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 
-class TestChat: Chat(TestProtocol(), "Test") {
-    override fun serialize() = "{\"type\":\"TestChat\"}"
-
-    companion object {
-        init {
-            deserializationFunctions["TestChat"] = { TestChat() }
-        }
-    }
-}
-
+class TestChat: Chat(TestProtocol(), "Test")
 class TestProtocol: Protocol("Test")
 
 fun doNothing(unused: List<String>, unused2: User): String? {

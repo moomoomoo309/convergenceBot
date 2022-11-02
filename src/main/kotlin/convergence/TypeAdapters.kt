@@ -69,3 +69,43 @@ object SingletonAdapterFactory: JsonAdapter.Factory {
         return null
     }
 }
+
+object BaseInterfaceAdapter: JsonAdapter<BaseInterface>() {
+    override fun fromJson(reader: JsonReader): BaseInterface? {
+        when (reader.nextName()) {
+            "type" -> if (reader.nextString() != "BaseInterface")
+                return null
+
+            "name" -> {
+                val name = reader.nextString()
+                return protocols.firstOrNull { it.name == name }?.let {
+                    baseInterfaceMap[it]
+                }
+            }
+        }
+        return null
+    }
+
+    override fun toJson(writer: JsonWriter, value: BaseInterface?) {
+        value?.let {
+            writer.name("type")
+            writer.value("BaseInterface")
+            writer.name("name")
+            writer.value(value.name)
+        }
+    }
+}
+
+object BaseInterfaceAdapterFactory: JsonAdapter.Factory {
+    override fun create(type: Type, annotations: MutableSet<out Annotation>, moshi: Moshi): JsonAdapter<*>? {
+        return if (type.rawType.isAssignableFrom(BaseInterface::class.java)) BaseInterfaceAdapter else null
+    }
+}
+
+var chatAdapterFactory: PolymorphicJsonAdapterFactory<Chat> by SharedVariables
+var userAdapterFactory: PolymorphicJsonAdapterFactory<User> by SharedVariables
+var imageAdapterFactory: PolymorphicJsonAdapterFactory<Image> by SharedVariables
+var messageHistoryAdapterFactory: PolymorphicJsonAdapterFactory<MessageHistory> by SharedVariables
+var stickerAdapterFactory: PolymorphicJsonAdapterFactory<Sticker> by SharedVariables
+var formatAdapterFactory: PolymorphicJsonAdapterFactory<Format> by SharedVariables
+var customEmojiAdapterFactory: PolymorphicJsonAdapterFactory<CustomEmoji> by SharedVariables

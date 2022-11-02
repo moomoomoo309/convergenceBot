@@ -13,6 +13,8 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.dv8tion.jda.api.requests.GatewayIntent
 import net.dv8tion.jda.api.utils.cache.CacheFlag
 import org.pf4j.PluginWrapper
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.io.FileNotFoundException
 import java.net.URL
 import java.nio.file.Files
@@ -22,19 +24,23 @@ import javax.security.auth.login.LoginException
 
 lateinit var jda: JDA
 
+val discordLogger: Logger = LoggerFactory.getLogger("convergence.discord")
+
 interface DiscordObject {
     val id: Long
 }
 
 class DiscordAvailability(val status: OnlineStatus): Availability(status.name)
 
-class DiscordChat(name: String, override val id: Long, val channel: MessageChannel): Chat(DiscordProtocol, name), DiscordObject, JsonConvertible {
+class DiscordChat(name: String, override val id: Long, val channel: MessageChannel): Chat(DiscordProtocol, name),
+    DiscordObject, JsonConvertible {
     constructor(channel: MessageChannel): this(channel.name, channel.idLong, channel)
     constructor(message: Message): this(message.channel)
     constructor(msgEvent: MessageReceivedEvent): this(msgEvent.message)
 
     override fun hashCode() = id.hashCode()
-    override fun equals(other: Any?) = this === other || (javaClass == other?.javaClass && id == (other as DiscordChat).id)
+    override fun equals(other: Any?) =
+        this === other || (javaClass == other?.javaClass && id == (other as DiscordChat).id)
 }
 
 class DiscordMessageHistory(val msg: Message, override val id: Long): MessageHistory(msg.contentRaw, msg.timeCreated, DiscordUser(DiscordChat(msg), msg.author)), DiscordObject, JsonConvertible {
@@ -81,20 +87,21 @@ data class DiscordEmoji(
 }
 
 val formatMap = mapOf(
-        Format.code to Pair("```", "```"),
-        Format.monospace to Pair("`", "`"),
-        Format.underline to Pair("__", "__"),
-        Format.bold to Pair("**", "**"),
-        Format.italics to Pair("*", "*"),
-        Format.strikethrough to Pair("~~", "~~"),
-        Format.spoiler to Pair("||", "||")
+    Format.code to Pair("```", "```"),
+    Format.monospace to Pair("`", "`"),
+    Format.underline to Pair("__", "__"),
+    Format.bold to Pair("**", "**"),
+    Format.italics to Pair("*", "*"),
+    Format.strikethrough to Pair("~~", "~~"),
+    Format.spoiler to Pair("||", "||")
 )
 
 /** TODO: Use this, then add a [Json Adapter][com.squareup.moshi.JsonAdapter] for it. */
 class DiscordImage(var url: String? = null, var data: ByteArray? = null): Image()
 
-object DiscordProtocol: convergence.Protocol("Discord")
-object DiscordInterface: BaseInterface, CanFormatMessages, HasNicknames, HasImages, CanMentionUsers, HasMessageHistory, CanEditOtherMessages, HasUserAvailability, HasCustomEmoji {
+object DiscordProtocol: Protocol("Discord")
+object DiscordInterface: BaseInterface, CanFormatMessages, HasNicknames, HasImages, CanMentionUsers, HasMessageHistory,
+    CanEditOtherMessages, HasUserAvailability, HasCustomEmoji {
     override val name: String = "DiscordInterface"
     override val protocols = listOf(DiscordProtocol)
     override val supportedFormats = formatMap.keys
@@ -209,21 +216,20 @@ object MessageListener: ListenerAdapter() {
 
 lateinit var _moshi: Moshi
 
-class DiscordPlugin(wrapper: PluginWrapper): convergence.Plugin(wrapper) {
+class DiscordPlugin(wrapper: PluginWrapper): Plugin(wrapper) {
     override val name = "DiscordPlugin"
     override val baseInterface = DiscordInterface
-    val moshi: Moshi by configuration
+    val moshi: Moshi by sharedVariables
     override fun preinit() {
-        val moshiBuilder: Moshi.Builder by configuration
+        val moshiBuilder: Moshi.Builder by sharedVariables
         moshiBuilder.add(DiscordMessageHistoryAdapter)
-                .add(DiscordEmojiAdapter)
-                .add(DiscordUserAdapter)
-                .add(DiscordChatAdapter)
+            .add(DiscordEmojiAdapter)
+            .add(DiscordUserAdapter)
+            .add(DiscordChatAdapter)
     }
 
     override fun init() {
         _moshi = this.moshi
-        registerProtocol(DiscordProtocol, DiscordInterface)
         println("Discord Plugin initialized.")
         jda = try {
             val it = JDABuilder
@@ -244,7 +250,7 @@ class DiscordPlugin(wrapper: PluginWrapper): convergence.Plugin(wrapper) {
                     .disableCache(CacheFlag.VOICE_STATE)
             it.build()
         } catch (e: FileNotFoundException) {
-            logErr("You need to put your discord token in .convergence/discordToken!")
+            discordLogger.error("You need to put your discord token in .convergence/discordToken!")
             return
         } catch (e: LoginException) {
             e.printStackTrace()

@@ -12,7 +12,6 @@ import org.pf4j.DefaultPluginManager
 import org.pf4j.PluginWrapper
 import java.io.ByteArrayOutputStream
 import java.io.PrintStream
-import java.nio.file.Path
 import java.nio.file.Paths
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
@@ -23,31 +22,26 @@ import kotlin.collections.set
 
 class CommandDoesNotExist(cmd: String): Exception(cmd)
 
-// TODO: Replace this with an actual logging system
-fun log(it: Any) = println(it)
-fun logErr(it: Any) = System.err.println(it)
-fun logErr(it: Throwable) = it.printStackTrace()
-
 /**
  * Deserializes a JSON string into the type specified in [T].
  */
 inline fun <reified T: Any> Moshi.fromJson(jsonStr: String): T =
-        this.adapter(T::class.java)?.fromJson(jsonStr)
-                ?: throw JsonDataException("Is there an adapter missing for ${T::class.simpleName}?")
+    this.adapter(T::class.java)?.fromJson(jsonStr)
+        ?: throw JsonDataException("Is there an adapter missing for ${T::class.simpleName}?")
 
 fun <T> Moshi.fromJson(jsonStr: String, cls: Class<T>): T = this.adapter(cls)?.fromJson(jsonStr)
-        ?: throw JsonDataException("Is there an adapter missing for ${cls.simpleName}?")
+    ?: throw JsonDataException("Is there an adapter missing for ${cls.simpleName}?")
 
 /**
  * Serializes a variable of type [T] into a JSON string. Will serialize null values if they are present.
  */
 inline fun <reified T: Any> Moshi.toJson(obj: T, prettyPrint: Boolean = false): String =
-        this.adapter(T::class.java)?.serializeNulls()?.indent(if (prettyPrint) "    " else "")?.toJson(obj)
-                ?: throw JsonDataException("Is there an adapter missing for ${T::class.simpleName}?")
+    this.adapter(T::class.java)?.serializeNulls()?.indent(if (prettyPrint) "    " else "")?.toJson(obj)
+        ?: throw JsonDataException("Is there an adapter missing for ${T::class.simpleName}?")
 
 fun <T> Moshi.toJson(obj: T, cls: Class<T>, prettyPrint: Boolean = false): String =
-        this.adapter(cls)?.serializeNulls()?.indent(if (prettyPrint) "    " else "")?.toJson(obj)
-                ?: throw JsonDataException("Is there an adapter missing for ${cls.simpleName}?")
+    this.adapter(cls)?.serializeNulls()?.indent(if (prettyPrint) "    " else "")?.toJson(obj)
+        ?: throw JsonDataException("Is there an adapter missing for ${cls.simpleName}?")
 
 /**
  * Adds a list of protocol to the protocol registry.
@@ -78,15 +72,16 @@ fun registerCommand(command: Command): Boolean {
     val commands = commands
     if (chat !in commands || commands[chat] !is MutableMap)
         commands[chat] = mutableMapOf(command.name to command)
+    val commandsInChat = commands[chat] ?: return false
 
-    if (command.name in commands[chat]!!)
+    if (command.name in commandsInChat)
         return false
 
     if (sortedHelpText.isEmpty())
         sortedHelpText.add(command)
     else
         sortedHelpText.add(-sortedHelpText.binarySearch(command) - 1, command)
-    commands[chat]!![command.name] = command
+    commandsInChat[command.name] = command
     return true
 }
 
@@ -99,8 +94,9 @@ fun registerAlias(alias: Alias): Boolean {
     val aliases = aliases
     if (chat !in aliases || aliases[chat] !is MutableMap<String, Alias>)
         aliases[chat] = mutableMapOf(alias.name to alias)
+    val aliasesInChat = aliases[chat]!!
 
-    if (alias.name in aliases[chat]!!)
+    if (alias.name in aliasesInChat)
         return false
 
     if (sortedHelpText.isNotEmpty())
@@ -111,12 +107,12 @@ fun registerAlias(alias: Alias): Boolean {
             } else
                 sortedHelpText[0] = alias
 
-    aliases[chat]!![alias.name] = alias
+    aliasesInChat[alias.name] = alias
     return true
 }
 
 class DefaultMap<K, V>(var defaultValue: V): HashMap<K, V>() {
-    override fun get(key: K): V = super.getOrDefault(key, defaultValue)
+    override operator fun get(key: K): V = super.getOrDefault(key, defaultValue)
 }
 
 /**
@@ -145,7 +141,7 @@ fun sendMessage(chat: Chat, message: String?) {
     if (message == null)
         return
     if (chat.protocol !in protocols) {
-        logErr("Protocol \"${chat.protocol.name}\" not properly registered!")
+        defaultLogger.error("Protocol \"${chat.protocol.name}\" not properly registered!")
         return
     }
     val baseInterface = baseInterfaceMap[chat.protocol]!!
@@ -164,6 +160,7 @@ fun getUserName(sender: User): String {
         baseInterface.getName(chat, sender)
 }
 
+// TODO: Rewrite this to use a trie
 /**
  * Replaces instances of the keys in [aliasVars] preceded by a percent sign with the result of the functions therein,
  * such as %sender with the name of the user who sent the message.
@@ -177,7 +174,6 @@ fun replaceAliasVars(message: String?, sender: User): String? {
 
     var charIndex = -1
     val possibleMatches = BooleanArray(aliasVars.size)
-    possibleMatches.fill(false)
 
     var anyTrue = false
     for (currentChar in message) {
@@ -225,7 +221,7 @@ fun getCommandData(message: String, sender: User): CommandData? = try {
  * Run the Command in the given message, or do nothing if none exists.
  */
 fun runCommand(message: String, sender: User) {
-    log("[${getUserName(sender)}]: $message")
+    defaultLogger.info("[${getUserName(sender)}]: $message")
     forwardToLinkedChats(message, sender)
     getCommandData(message, sender)?.let { runCommand(sender, it) }
 }
@@ -268,28 +264,21 @@ fun offsetDateTimeToDate(time: OffsetDateTime): Date = Date.from(time.toInstant(
 fun formatTime(time: OffsetDateTime): String = Humanize.naturalTime(offsetDateTimeToDate(time))
 
 data class ScheduledCommand(
-        val time: OffsetDateTime,
-        val sender: User,
-        val commandData: CommandData,
-        val id: Int,
-): JsonConvertible {
-    override fun toJson() = mapOf(
-            "type" to "ScheduledCommand",
-            "sender" to sender.toJson(),
-            "commandData" to commandData.toJson(),
-            "id" to id
-    ).json()
-}
+    val time: OffsetDateTime,
+    val sender: User,
+    val commandData: CommandData,
+    val id: Int,
+): JsonConvertible
 
 /**
  * Checks if commands scheduled for later are ready to be run yet. Can give information on the commands in its queue.
  */
-object SchedulerThread: Thread() {
+object CommandScheduler: Thread() {
     private const val allowedTimeDifferenceSeconds = 30
     private const val updatesPerSecond = 1
 
-    private val scheduledCommands = TreeMap<OffsetDateTime, MutableList<ScheduledCommand>>()
-    private val commandsList = TreeMap<Int, ScheduledCommand>()
+    private val scheduledCommands = sortedMapOf<OffsetDateTime, MutableList<ScheduledCommand>>()
+    private val commandsList = sortedMapOf<Int, ScheduledCommand>()
     private var currentId: Int = 0
     private val serializedCommands = hashMapOf<Int, String>()
 
@@ -302,7 +291,7 @@ object SchedulerThread: Thread() {
     }
 
     override fun run() {
-        while (this.isAlive) {
+        while (isAlive) {
             val now = OffsetDateTime.now()
             for ((cmdTime, cmdList) in scheduledCommands) {
                 if (cmdTime.isBefore(now)) {
@@ -317,7 +306,7 @@ object SchedulerThread: Thread() {
                             scheduledCommands.remove(cmd.time)
                             commandsList.remove(cmd.id)
                         }
-                } else //TreeMaps are ordered; it's already sorted chronologically, so all following events are early.
+                } else // It's already sorted chronologically, so all following events are early.
                     break
             }
             sleep((1000.0 / updatesPerSecond).toLong())
@@ -332,11 +321,11 @@ object SchedulerThread: Thread() {
         if (time !in scheduledCommands)
             scheduledCommands[time] = mutableListOf()
         val cmd = ScheduledCommand(time, sender, command, currentId)
-        @Suppress("ControlFlowWithEmptyBody")
-        while (commandsList.containsKey(++currentId));
+        while (commandsList.containsKey(currentId))
+            currentId++
         scheduledCommands[time]!!.add(cmd)
         if (cmd.id in commandsList)
-            logErr("Duplicate IDs in schedulerThread!")
+            defaultLogger.error("Duplicate IDs in schedulerThread!")
         commandsList[cmd.id] = cmd
         serializedCommands[cmd.id] = cmd.toJson()
         return "Scheduled ${getUserName(sender)} to run \"$command\" to run at $time."
@@ -345,30 +334,18 @@ object SchedulerThread: Thread() {
     fun schedule(scheduled: ScheduledCommand) = schedule(scheduled.sender, scheduled.commandData, scheduled.time)
 
     /**
-     * Gets all of the commands scheduled by [sender].
+     * Gets all the commands scheduled by [sender].
      */
     fun getCommands(sender: User?): List<ScheduledCommand> =
-            if (sender == null)
-                getCommands()
-            else
-                commandsList.values.filter { it.sender == sender }
+        if (sender == null)
+            getCommands()
+        else
+            commandsList.values.filter { it.sender == sender }
 
     /**
-     * Gets all of the commands scheduled.
+     * Gets all the commands scheduled.
      */
     fun getCommands(): List<ScheduledCommand> = commandsList.values.toList()
-
-    /**
-     * Writes out all of the commands in a human-readable format.
-     */
-    fun getCommandStrings(sender: User, getAllCommands: Boolean = false) =
-            getCommands(if (getAllCommands) null else sender)
-                    .sortedBy { it.time }
-                    .map {
-                        "[${it.id}] ${formatTime(it.time)}: ${getUserName(it.sender)} - \"${commandDelimiters[sender.chat]}${it.commandData.command.name} ${
-                            it.commandData.args.joinToString(" ")
-                        }\""
-                    }
 
     /**
      * Removes a command from the queue.
@@ -382,13 +359,10 @@ object SchedulerThread: Thread() {
 /**
  * Schedules [command] to run at [time] from [sender].
  */
-fun schedule(sender: User, command: CommandData, time: OffsetDateTime) = SchedulerThread.schedule(sender, command, time)
+fun schedule(sender: User, command: CommandData, time: OffsetDateTime) =
+    CommandScheduler.schedule(sender, command, time)
 
 val pluginWrappers: MutableList<PluginWrapper> get() = pluginManager.plugins
-
-class PluginManagerWithConfiguration(list: List<Path>): DefaultPluginManager(list) {
-    val configuration = Configuration.conf
-}
 
 class core {
     companion object {
@@ -396,28 +370,28 @@ class core {
         fun main(args: Array<String>) {
             // Parse command line arguments.
             val argParser = ArgumentParsers.newFor("Convergence Bot").build()
-                    .defaultHelp(true)
-                    .description("Sets the paths used by the bot.")
+                .defaultHelp(true)
+                .description("Sets the paths used by the bot.")
 
             val paths = argParser.addArgumentGroup("Paths")
             paths.addArgument("-pp", "--plugin-path")
-                    .dest("pluginPath")
-                    .nargs("+")
-                    .type(List::class.java)
-                    .default = listOf(convergencePath.resolve("plugins").toString())
+                .dest("pluginPath")
+                .nargs("+")
+                .type(List::class.java)
+                .default = listOf(convergencePath.resolve("plugins").toString())
             commandLineArgs = try {
                 argParser.parseArgs(args)
             } catch (e: ArgumentParserException) {
-                logErr("Failed to parse command line arguments. Printing stack trace:")
-                logErr(e)
+                defaultLogger.error("Failed to parse command line arguments. Printing stack trace:")
+                defaultLogger.error(getStackTraceText(e))
                 return
             }
 
             // It'd be silly to get this list, convert it to a set, then convert it back to a list for the plugin
-            // manager, so we'll keep this locally so we can construct the plugin manager.
+            // manager, so we'll keep this locally, so we can construct the plugin manager.
             commandLineArgs.get<List<String>>("pluginPath").map { Paths.get(it) }.let {
-                pluginManager = PluginManagerWithConfiguration(it)
-                pluginPaths = it.toSet()
+                pluginManager = DefaultPluginManager(it)
+                pluginPaths = it.toMutableSet()
             }
 
             // Remove "just now" as an option for time formatting. 5 minutes for "just now" is annoying.
@@ -425,49 +399,59 @@ class core {
 
             registerProtocol(UniversalProtocol, FakeBaseInterface)
 
-            log("Registering default commands...")
+            defaultLogger.info("Registering default commands...")
             registerDefaultCommands()
 
-            log("Starting scheduler thread...")
-            SchedulerThread.start()
+            defaultLogger.info("Starting command scheduler...")
+            CommandScheduler.start()
 
             pluginManager.loadPlugins()
             if (pluginWrappers.isEmpty())
-                log("No plugins loaded.")
+                defaultLogger.info("No plugins loaded.")
             else
-                log("Loaded Plugins:\t${pluginWrappers.joinToString("\t") { it.pluginId }}")
+                defaultLogger.info("Loaded Plugins:\t${pluginWrappers.joinToString("\t") { it.pluginId }}")
 
-            moshi = moshiBuilder.build()
             for (wrapper in pluginWrappers) {
-                log("Initializing plugin: ${wrapper.pluginId}")
+                defaultLogger.info("Preinitializing plugin: ${wrapper.pluginId}")
+                (wrapper.plugin as Plugin).preinit()
+            }
 
+            moshi = moshiBuilder
+                .add(chatAdapterFactory)
+                .add(userAdapterFactory)
+                .add(imageAdapterFactory)
+                .add(messageHistoryAdapterFactory)
+                .add(stickerAdapterFactory)
+                .add(formatAdapterFactory)
+                .add(customEmojiAdapterFactory)
+                .build()
+            for (wrapper in pluginWrappers) {
+                defaultLogger.info("Initializing plugin: ${wrapper.pluginId}")
                 Thread({
                     wrapper.plugin.start()
                 }, "${wrapper.pluginId}-thread").start()
                 val plugin = wrapper.plugin as Plugin
-                for (protocol in plugin.baseInterface.protocols)
-                    registerProtocol(protocol, plugin.baseInterface)
+                registerProtocols(plugin.baseInterface.protocols, plugin.baseInterface)
             }
 
             // Update the chat map
-            val chatUpdateDelay = 6000L
             for (protocol in protocols) {
-                Thread({
-                    Thread.sleep(chatUpdateDelay)
+                Thread {
                     try {
-                        (baseInterfaceMap[protocol]
-                                ?: throw Exception("Protocol ${protocol.name} is not in the base interface map!"))
-                                .getChats().forEach {
-                                    if (it !in reverseChatMap) {
-                                        while (currentChatID in chatMap) currentChatID++
-                                        chatMap[currentChatID] = it
-                                        reverseChatMap[it] = currentChatID
-                                    }
-                                }
+                        val chats = baseInterfaceMap[protocol]?.getChats()
+                            ?: throw Exception("Protocol ${protocol.name} is not in the base interface map!")
+                        for (chat in chats) {
+                            if (chat !in reverseChatMap) {
+                                while (currentChatID in chatMap)
+                                    currentChatID++
+                                chatMap[currentChatID] = chat
+                                reverseChatMap[chat] = currentChatID
+                            }
+                        }
                     } catch (e: Exception) {
                         e.printStackTrace()
                     }
-                }, "Chat Init for ${protocol.name}").start()
+                }.start()
             }
         }
     }

@@ -2,15 +2,21 @@ package convergence
 
 import org.pf4j.PluginWrapper
 
+private fun loadClass(className: String) = ClassLoader.getSystemClassLoader().loadClass(className)
+
 abstract class Plugin(wrapper: PluginWrapper): org.pf4j.Plugin(wrapper) {
     abstract val name: String
 
     abstract val baseInterface: BaseInterface
 
-    val configuration: MutableMap<String, Any?> by lazy { (ClassLoader.getSystemClassLoader().loadClass("convergence.Configuration").kotlin.objectInstance!! as Configuration).conf }
+    val sharedVariables: SharedVariables by lazy {
+        loadClass("convergence.sharedVariables").kotlin.objectInstance!! as SharedVariables
+    }
+    val settings: Settings by lazy {
+        loadClass("convergence.settings").kotlin.objectInstance!! as Settings
+    }
 
     override fun start() {
-        preinit()
         init()
     }
 

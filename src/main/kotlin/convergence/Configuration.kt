@@ -2,58 +2,167 @@ package convergence
 
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import convergence.ConfigOption.Companion.defaultSettings
 import net.sourceforge.argparse4j.inf.Namespace
+import org.pf4j.DefaultPluginManager
 import org.pf4j.PluginManager
+import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.util.concurrent.ConcurrentHashMap
 
 const val defaultCommandDelimiter = "!"
-private val configuration = Configuration.conf
 
-object Configuration {
-    val conf = mutableMapOf(
-            "protocols" to mutableSetOf<Protocol>(),
-            "baseInterfaceMap" to mutableMapOf<Protocol, BaseInterface>(),
-            "chatMap" to mutableMapOf<Int, Chat>(),
-            "reverseChatMap" to mutableMapOf<Chat, Int>(),
-            "currentChatID" to 0,
-            "moshiBuilder" to Moshi.Builder()
-                    .add(SingletonAdapterFactory)
-                    .add(OffsetDateTimeAdapter)
-                    .add(KotlinJsonAdapterFactory())!!,
-            "moshi" to null,
-            "convergencePath" to Paths.get(System.getProperty("user.home"), ".convergence"),
-            "commandLineArgs" to null,
-            "pluginManager" to null,
-            "pluginPaths" to mutableSetOf<Path>(),
-            "commandDelimiters" to DefaultMap<Chat, String>(defaultCommandDelimiter),
-            "aliasVars" to mutableMapOf(
-                    "sender" to { b: BaseInterface, c: Chat, s: User -> b.getName(c, s) },
-                    "botname" to { b: BaseInterface, c: Chat, _: User -> b.getName(c, b.getBot(c)) },
-                    "chatname" to { b: BaseInterface, c: Chat, _: User -> b.getChatName(c) }),
-            "linkedChats" to hashMapOf<Chat, MutableSet<Chat>>(),
-            "delimiters" to hashMapOf<Chat, String>(),
-            "sortedHelpText" to arrayListOf<CommandLike>(),
-            "commands" to mutableMapOf<Chat, MutableMap<String, Command>>(),
-            "aliases" to mutableMapOf<Chat, MutableMap<String, Alias>>()
-    )
+@Suppress("EnumEntryName", "unused")
+enum class ConfigOption(val defaultValue: Any) {
+    protocols(mutableSetOf<Protocol>()),
+    baseInterfaceMap(mutableMapOf<Protocol, BaseInterface>()),
+    chatMap(mutableMapOf<Int, Chat>()),
+    reverseChatMap(mutableMapOf<Chat, Int>()),
+    convergencePath(Paths.get(System.getProperty("user.home"), ".convergence")),
+    pluginPaths(mutableSetOf<Path>()),
+    commandDelimiters(DefaultMap<Chat, String>(defaultCommandDelimiter)),
+    aliasVars(
+        mutableMapOf(
+            "sender" to { b: BaseInterface, c: Chat, s: User -> b.getName(c, s) },
+            "botname" to { b: BaseInterface, c: Chat, _: User -> b.getName(c, b.getBot(c)) },
+            "chatname" to { b: BaseInterface, c: Chat, _: User -> b.getChatName(c) })
+    ),
+    linkedChats(hashMapOf<Chat, MutableSet<Chat>>()),
+    delimiters(hashMapOf<Chat, String>()),
+    commands(mutableMapOf<Chat, MutableMap<String, Command>>()),
+    aliases(mutableMapOf<Chat, MutableMap<String, Alias>>()),
+    ;
+
+    companion object {
+        val values = values().toList()
+        val defaultSettings = values.associate { it.name to it.defaultValue }
+    }
 }
 
-internal val protocols: MutableSet<Protocol> by configuration
-internal val baseInterfaceMap: MutableMap<Protocol, BaseInterface> by configuration
-internal val chatMap: MutableMap<Int, Chat> by configuration
-internal val reverseChatMap: MutableMap<Chat, Int> by configuration
-internal var currentChatID: Int by configuration
-internal val moshiBuilder: Moshi.Builder by configuration
-internal var moshi: Moshi by configuration
-internal val convergencePath: Path by configuration
-internal var commandLineArgs: Namespace by configuration
-internal var pluginManager: PluginManager by configuration
-internal var pluginPaths: Set<Path> by configuration
-internal val commandDelimiters: DefaultMap<Chat, String> by configuration
-internal val aliasVars: MutableMap<String, (baseInterface: BaseInterface, chat: Chat, sender: User) -> String> by configuration
-internal val linkedChats: MutableMap<Chat, MutableSet<Chat>> by configuration
-internal val delimiters: MutableMap<Chat, String> by configuration
-internal val sortedHelpText: ArrayList<CommandLike> by configuration
-internal val commands: MutableMap<Chat, MutableMap<String, Command>> by configuration
-internal val aliases: MutableMap<Chat, MutableMap<String, Alias>> by configuration
+object Settings: MutableMap<String, Any?> by ConcurrentHashMap(initSettings())
+
+val initMoshi: Moshi = Moshi.Builder()
+    .add(KotlinJsonAdapterFactory())
+    .build()
+
+private fun writeSettingsToFile(settingsToWrite: Map<String, Any>) = Files.write(
+    settingsPath,
+    // Converting to a [SortedMap] makes the keys go in alphabetical order, but Moshi can't serialize sorted maps,
+    // so the SortedMap is converted back into the default map type (toMap() preserves the key ordering).
+    initMoshi.toJson(settingsToWrite.toSortedMap().toMap(), prettyPrint = true).toByteArray(),
+)
+
+fun initSettings(): Map<String, Any> {
+    with(settingsLogger) {
+        if (Files.notExists(settingsPath)) {
+            info("Creating new settings file since one was not found.")
+            writeSettingsToFile(defaultSettings)
+            return defaultSettings
+        }
+    }
+
+    // Make sure to fill in any of the missing keys if needed
+    return readSettings(defaultSettings, initialRun = true)
+}
+
+private var settingsFromPreviousUpdate: ConcurrentHashMap<String, Any>? = null
+fun updateSettings(newSettings: ConcurrentHashMap<String, Any>) {
+    var settingsHaveChanged = false
+    // Make sure all the keys from the default settings exist in the current ones.
+    for ((k, v) in defaultSettings)
+        if (!newSettings.containsKey(k)) {
+            settingsLogger.error("$k was not in the config file, so its default value of $v is being written to the file")
+            newSettings[k] = v
+            settingsHaveChanged = true
+        }
+
+    // See if the settings have changed at all.
+    if (!settingsHaveChanged)
+        settingsHaveChanged = settingsFromPreviousUpdate == null || settingsFromPreviousUpdate != newSettings
+
+    // If the settings have changed, write them out.
+    if (settingsHaveChanged) {
+        settingsLogger.info("Updating settings file...")
+        writeSettingsToFile(newSettings)
+        for ((k, _) in Settings) {
+            if (!newSettings.containsKey(k)) {
+                Settings.remove(k)
+            }
+        }
+        Settings.putAll(newSettings)
+        settingsFromPreviousUpdate = ConcurrentHashMap(newSettings)
+    }
+}
+
+/**
+ * Warning: Editing this function can cause initialization errors that are a royal pain to debug. If you see
+ * an [ExceptionInInitializerError], it's probably from this function.
+ */
+fun readSettings(fallbackSettings: Map<String, Any>, initialRun: Boolean): ConcurrentHashMap<String, Any> = try {
+    val finalSettings = initMoshi.fromJson<MutableMap<String, Any>>(settingsPath.toFile().readText())
+    for ((k, v) in defaultSettings) {
+        if (!finalSettings.containsKey(k)) {
+            settingsLogger.error("$k was not in the config file initially, so its default value of $v will be written to the file")
+            finalSettings[k] = v
+        }
+    }
+    if (initialRun) {
+        writeSettingsToFile(finalSettings)
+        settingsFromPreviousUpdate = ConcurrentHashMap(finalSettings)
+    }
+    ConcurrentHashMap(finalSettings)
+} catch (e: Throwable) {
+    settingsLogger.error("Error occurred while reading settings from $settingsPath. Returning fallback settings instead.\n\tError: $e")
+    e.printStackTrace()
+    ConcurrentHashMap(fallbackSettings)
+}
+
+val protocols: MutableSet<Protocol> by Settings
+val baseInterfaceMap: MutableMap<Protocol, BaseInterface> by Settings
+val chatMap: MutableMap<Int, Chat> by Settings
+val reverseChatMap: MutableMap<Chat, Int> by Settings
+val convergencePath: Path by Settings
+var pluginPaths: MutableSet<Path> by Settings
+val commandDelimiters: MutableMap<Chat, String> by Settings
+val aliasVars: MutableMap<String, (baseInterface: BaseInterface, chat: Chat, sender: User) -> String> by Settings
+val linkedChats: MutableMap<Chat, MutableSet<Chat>> by Settings
+val delimiters: MutableMap<Chat, String> by Settings
+val commands: MutableMap<Chat, MutableMap<String, Command>> by Settings
+val aliases: MutableMap<Chat, MutableMap<String, Alias>> by Settings
+
+object SharedVariables: MutableMap<String, Any?> by ConcurrentHashMap(
+    SharedVariable.values().associate { it.name to it.defaultValue }
+)
+
+@Suppress("unused")
+enum class SharedVariable(val defaultValue: Any?) {
+    sortedHelpText(mutableListOf<CommandLike>()),
+    commandLineArgs(null),
+    pluginManager(DefaultPluginManager()),
+    currentChatID(0),
+    moshiBuilder(
+        Moshi.Builder()
+            .add(SingletonAdapterFactory)
+            .add(OffsetDateTimeAdapter)
+            .add(BaseInterfaceAdapterFactory)
+            .add(KotlinJsonAdapterFactory())!!
+    ),
+    moshi(null),
+    chatAdapterFactory(PolymorphicJsonAdapterFactory.of(Chat::class.java, "type")),
+    userAdapterFactory(PolymorphicJsonAdapterFactory.of(User::class.java, "type")),
+    imageAdapterFactory(PolymorphicJsonAdapterFactory.of(Image::class.java, "type")),
+    messageHistoryAdapterFactory(PolymorphicJsonAdapterFactory.of(MessageHistory::class.java, "type")),
+    stickerAdapterFactory(PolymorphicJsonAdapterFactory.of(Sticker::class.java, "type")),
+    formatAdapterFactory(PolymorphicJsonAdapterFactory.of(Format::class.java, "type")),
+    customEmojiAdapterFactory(PolymorphicJsonAdapterFactory.of(CustomEmoji::class.java, "type")),
+}
+
+val sortedHelpText: MutableList<CommandLike> by SharedVariables
+var commandLineArgs: Namespace by SharedVariables
+var pluginManager: PluginManager by SharedVariables
+var currentChatID: Int by SharedVariables
+val moshiBuilder: Moshi.Builder by SharedVariables
+var moshi: Moshi by SharedVariables
+
+val settingsPath: Path = convergencePath.resolve("settings.json")

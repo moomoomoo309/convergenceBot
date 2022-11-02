@@ -1,20 +1,22 @@
+@file:Suppress("LocalVariableName")
 
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.nio.file.Path
 import java.nio.file.Paths
 
 val pluginsDir: Path = Paths.get(System.getProperty("user.home"), ".convergence", "plugins")
-val moshi_version = "1.12.0"
+val moshi_version = "1.14.0"
 val mapdb_version = "3.0.8"
-val logback_version = "1.2.6"
-val pf4j_version = "3.6.0"
+val logback_version = "1.4.4"
+val pf4j_version = "3.8.0"
 val humanize_version = "1.2.2"
-val antlr_version = "4.9.2"
+val antlr_version = "4.11.1"
 val argparse4j_version = "0.9.0"
 val natty_version = "0.13"
-val coroutines_version = "1.5.2-native-mt"
+val coroutines_version = "1.6.4"
 
 plugins {
-    val kotlin_version = "1.5.31"
+    val kotlin_version = "1.7.20"
     kotlin("jvm") version kotlin_version
     id("application")
     antlr
@@ -49,11 +51,15 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:$logback_version")
 
     implementation("com.squareup.moshi:moshi-kotlin:$moshi_version")
-    implementation("com.squareup.moshi:moshi-adapters:$moshi_version")
 
     implementation("org.mapdb:mapdb:$mapdb_version")
 
+    implementation("ch.qos.logback:logback-classic:$logback_version")
+
     implementation("org.pf4j:pf4j:$pf4j_version")
+    implementation(kotlin("stdlib-jdk8"))
+
+    testImplementation("org.jetbrains.kotlin:kotlin-test:1.7.20")
 }
 
 // here we define the tasks which will build the plugins in the subprojects
@@ -88,21 +94,7 @@ subprojects {
 
         into("classes") {
             with(tasks.named<Jar>("jar").get())
-            // Add dependencies to plugins declared in that plugin's dependencies block, but not this one's.
-            from(
-                    project.configurations.compileClasspath.get().mapNotNull { originalFile ->
-                        if (!rootProject.configurations.compileClasspath.get().contains(originalFile)
-                                && !originalFile.toPath().startsWith(rootProject.projectDir.toPath())) {
-                            println(originalFile)
-                            if (originalFile.isDirectory) originalFile else zipTree(originalFile)
-                        } else
-                            null
-                    }
-            ).also { it.duplicatesStrategy = DuplicatesStrategy.WARN }.exclude {
-                it.path.contains("META-INF/MANIFEST.MF")
-            }
         }
-
         dependsOn(configurations.runtimeClasspath)
 
         archiveExtension.set("zip")
@@ -150,6 +142,8 @@ subprojects {
         implementation("org.mapdb:mapdb:$mapdb_version")
 
         implementation("org.pf4j:pf4j:$pf4j_version")
+
+        testImplementation(kotlin("test"))
         implementation(rootProject)
     }
 }
@@ -164,19 +158,19 @@ sourceSets.main {
 
 sourceSets.test {
     withConvention(org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet::class) {
-        kotlin.srcDirs("test/kotlin")
+        kotlin.srcDirs("test/")
     }
 }
 
 tasks.compileTestKotlin {
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = JavaVersion.VERSION_11.toString()
     }
 }
 
 tasks.compileKotlin {
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = JavaVersion.VERSION_11.toString()
     }
 }
 
@@ -211,7 +205,15 @@ tasks.wrapper {
 }
 
 tasks {
-    "build" {
+    build {
         dependsOn(named("assemblePlugins"))
     }
+}
+val compileKotlin: KotlinCompile by tasks
+compileKotlin.kotlinOptions {
+    jvmTarget = JavaVersion.VERSION_11.toString()
+}
+val compileTestKotlin: KotlinCompile by tasks
+compileTestKotlin.kotlinOptions {
+    jvmTarget = JavaVersion.VERSION_11.toString()
 }

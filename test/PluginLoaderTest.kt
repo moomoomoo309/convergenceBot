@@ -1,5 +1,7 @@
+
 import convergence.Plugin
-import convergence.PluginLoader
+import convergence.pluginManager
+import convergence.pluginPaths
 import org.junit.Test
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -19,14 +21,14 @@ class PluginLoaderTest {
         assertTrue(Files.exists(basicPluginPath), "basicPluginDir is not a file or folder.")
         assertTrue(Files.isDirectory(basicPluginPath), "basicPluginDir is not a folder.")
         assertTrue(Files.list(basicPluginPath).count() > 0, "No files exist in basicPluginDir.")
-        PluginLoader.add(basicPluginPath)
-        pluginList = PluginLoader.load()
-        assertNotNull(pluginList, "Could not load plugin!")
+        pluginPaths.add(basicPluginPath)
+        pluginManager.loadPlugins()
+        assert(pluginManager.plugins.isNotEmpty()) { "Could not load plugin!" }
     }
 
     private fun pushOut() {
         strOut = strOut ?: ByteArrayOutputStream()
-        printStreamOut = printStreamOut ?: PrintStream(strOut)
+        printStreamOut = printStreamOut ?: strOut?.let { PrintStream(it) }
         System.setOut(printStreamOut)
         oldOut = System.out
     }

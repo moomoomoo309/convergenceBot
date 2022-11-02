@@ -22,6 +22,8 @@ object DiscordMessageHistoryAdapter: JsonAdapter<DiscordMessageHistory>() {
     @ToJson
     override fun toJson(writer: JsonWriter, value: DiscordMessageHistory?) {
         value?.let {
+            writer.name("type")
+            writer.value("DiscordMessageHistory")
             writer.name("msgChannel")
             writer.value(it.msg.channel.id)
             writer.name("msg")

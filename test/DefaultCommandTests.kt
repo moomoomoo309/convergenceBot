@@ -4,18 +4,11 @@ import org.junit.Test
 import kotlin.test.assertEquals
 
 
-private val testChat = TestChat()
-class TestUser: User(testChat) {
-    override fun serialize() = "{\"type\":\"TestUser\"}"
+val testChat = TestChat()
 
-    companion object {
-        init {
-            deserializationFunctions["TestUser"] = { TestUser() }
-        }
-    }
-}
+class TestUser: User(testChat)
 
-private val testUser = TestUser()
+val testUser = TestUser()
 
 class DefaultCommandTests {
     @Test

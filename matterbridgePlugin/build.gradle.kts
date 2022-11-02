@@ -1,5 +1,7 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
-    id("de.undercouch.download")
+    kotlin("jvm")
 }
 
 
@@ -19,4 +21,18 @@ sourceSets.test {
     withConvention(org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet::class) {
         kotlin.srcDirs("test/kotlin")
     }
+}
+dependencies {
+    implementation(kotlin("stdlib-jdk8"))
+}
+repositories {
+    mavenCentral()
+}
+val compileKotlin: KotlinCompile by tasks
+compileKotlin.kotlinOptions {
+    jvmTarget = JavaVersion.VERSION_11.toString()
+}
+val compileTestKotlin: KotlinCompile by tasks
+compileTestKotlin.kotlinOptions {
+    jvmTarget = JavaVersion.VERSION_11.toString()
 }

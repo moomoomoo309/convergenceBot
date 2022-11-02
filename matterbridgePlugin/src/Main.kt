@@ -3,6 +3,7 @@ package convergence.testPlugins.matterbridgePlugin
 import com.squareup.moshi.Moshi
 import convergence.*
 import org.pf4j.PluginWrapper
+import org.slf4j.LoggerFactory
 import java.net.HttpURLConnection
 import java.net.URL
 import java.nio.file.Path
@@ -18,6 +19,8 @@ val chats = mutableSetOf<Chat>()
 
 class MatterBridgeChat(name: String): Chat(MatterBridgeProtocol, name)
 open class MatterBridgeUser(chat: Chat, val name: String): User(chat)
+
+val matterBridgeLogger = LoggerFactory.getLogger("convergence.matterbridge")
 
 class MatterBridgeBotUser(chat: Chat): MatterBridgeUser(chat, "ConvergenceBot")
 
@@ -58,25 +61,25 @@ object MatterBridgeInterface: BaseInterface {
 class MatterbridgePlugin(wrapper: PluginWrapper): Plugin(wrapper) {
     override val name = "MatterBridgePlugin"
     override val baseInterface: BaseInterface = MatterBridgeInterface
-    val convergencePath: Path by configuration
-    val moshi: Moshi by configuration
+    val convergencePath: Path by settings
+    val moshi: Moshi by sharedVariables
 
     override fun init() {
         val outLog = convergencePath.resolve("matterbridge.log").toFile()
         val errLog = convergencePath.resolve("matterbridgeErr.log").toFile()
 
         ProcessBuilder()
-                .command(convergencePath.resolve("matterbridge").toAbsolutePath().toString())
-                .directory(convergencePath.toFile())
-                .redirectOutput(outLog)
-                .redirectError(errLog)
+            .command(convergencePath.resolve("matterbridge").toAbsolutePath().toString())
+            .directory(convergencePath.toFile())
+            .redirectOutput(outLog)
+            .redirectError(errLog)
                 .start()
 
         val messageThread = Thread({
             var connection: HttpURLConnection
             while (true) {
                 do {
-                    log("Connecting to matterbridge...")
+                    matterBridgeLogger.info("Connecting to matterbridge...")
                     connection = inUrl.openConnection() as HttpURLConnection
                     connection.requestMethod = "GET"
                     connection.doInput = true

@@ -50,13 +50,20 @@ object ConsoleInterface: BaseInterface {
 class ConsolePlugin(wrapper: PluginWrapper): Plugin(wrapper) {
     override val name = "consolePlugin"
     override val baseInterface: BaseInterface = ConsoleInterface
-    var currentChatID: Int by configuration
-    val chatMap: MutableMap<Int, Chat> by configuration
-    val reverseChatMap: MutableMap<Chat, Int> by configuration
+    var currentChatID: Int by sharedVariables
+    val chatMap: MutableMap<Int, Chat> by settings
+    val reverseChatMap: MutableMap<Chat, Int> by settings
+    var chatAdapterFactory: PolymorphicJsonAdapterFactory<Chat> by sharedVariables
+    var userAdapterFactory: PolymorphicJsonAdapterFactory<User> by sharedVariables
     override fun init() {
         val id = currentChatID++ // Only one chat, so we can register it right away.
         chatMap[id] = ConsoleChat
         reverseChatMap[ConsoleChat] = id
+
+        // The SingletonAdapterFactory should make these work. If not, it's because this plugin is on a different
+        // ClassLoader.
+        chatAdapterFactory = chatAdapterFactory.withSubtype(ConsoleChat::class.java, "ConsoleChat")
+        userAdapterFactory = userAdapterFactory.withSubtype(ConsoleUser::class.java, "ConsoleUser")
 
         print("consolePlugin initialized.\n\n> ")
 

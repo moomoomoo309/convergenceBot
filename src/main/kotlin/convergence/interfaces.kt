@@ -1,4 +1,4 @@
-@file:Suppress("unused", "UNUSED_PARAMETER", "UNCHECKED_CAST")
+@file:Suppress("unused", "UNCHECKED_CAST")
 
 package convergence
 
@@ -50,25 +50,30 @@ object FakeBaseInterface: BaseInterface {
     override val name: String = "FakeBaseInterface"
 }
 
-sealed class CommandLike(open val chat: Chat,
-                         open val name: String,
-                         @Transient open val helpText: String,
-                         @Transient open val syntaxText: String): JsonConvertible, Comparable<CommandLike> {
+sealed class CommandLike(
+    open val chat: Chat,
+    open val name: String,
+    @Transient open val helpText: String,
+    @Transient open val syntaxText: String
+): JsonConvertible, Comparable<CommandLike> {
     override fun compareTo(other: CommandLike) = "$chat.$name".compareTo("${other.chat}.${other.name}")
 
-    data class Command(override val chat: Chat,
-                       override val name: String,
-                       @Transient val function: (List<String>, User) -> String?,
-                       @Transient override val helpText: String,
-                       @Transient override val syntaxText: String): CommandLike(chat, name, helpText, syntaxText)
+    data class Command(
+        override val chat: Chat,
+        override val name: String,
+        @Transient val function: (List<String>, User) -> String?,
+        @Transient override val helpText: String,
+        @Transient override val syntaxText: String
+    ): CommandLike(chat, name, helpText, syntaxText)
 
     data class Alias(
-            override val chat: Chat,
-            override val name: String,
-            val command: Command,
-            val args: List<String>,
-            override val helpText: String,
-            override val syntaxText: String): CommandLike(chat, name, helpText, syntaxText)
+        override val chat: Chat,
+        override val name: String,
+        val command: Command,
+        val args: List<String>,
+        @Transient override val helpText: String,
+        @Transient override val syntaxText: String
+    ): CommandLike(chat, name, helpText, syntaxText)
 }
 typealias Command = CommandLike.Command
 typealias Alias = CommandLike.Alias
@@ -95,28 +100,36 @@ interface BaseInterface: JsonConvertible {
 
 private val callbacks = HashMap<KClass<out ChatEvent>, ArrayList<ChatEvent>>()
 
-fun registerCallback(fct: ChatEvent) {
-    callbacks.putIfAbsent(fct::class, ArrayList())
-    callbacks[fct::class]?.add(fct)
-            ?: throw IllegalArgumentException("Tried to register callback for unregistered class ${fct::class.simpleName}.")
+fun registerCallback(event: ChatEvent) {
+    callbacks.putIfAbsent(event::class, ArrayList())
+    callbacks[event::class]?.add(event)
+        ?: throw IllegalArgumentException("Tried to register callback for unregistered class ${event::class.simpleName}.")
 }
 
-fun runCallbacks(callbackClass: KClass<out ChatEvent>, vararg args: Any) =
-        callbacks[callbackClass]?.any { callback ->
-            callback(args)
-        } ?: false
+fun runCallbacks(eventClass: KClass<out ChatEvent>, vararg args: Any) =
+    callbacks[eventClass]?.any { callback ->
+        callback(args)
+    } ?: false
 
 inline fun <reified T: ChatEvent> runCallbacks(vararg args: Any) = runCallbacks(T::class, *args)
 
 /**
  * Cuts down on type casts/checks because [ChatEvent.invoke] takes varargs of [Any].
  */
-fun <T1, T2, T3, T4> invokeTyped(fct: (T1, T2, T3, T4) -> Boolean, args: Array<out Any>, default1: T1? = null, default2: T2? = null, default3: T3? = null, default4: T4? = null): Boolean {
+fun <T1, T2, T3, T4> invokeTyped(
+    fct: (T1, T2, T3, T4) -> Boolean,
+    args: Array<out Any>,
+    default1: T1? = null,
+    default2: T2? = null,
+    default3: T3? = null,
+    default4: T4? = null
+): Boolean {
     when (args.size) {
         4 -> {
         }
+
         0, 1, 2, 3 -> throw IllegalArgumentException("invokeTyped called with ${args.size} parameters, but 4 expected")
-        else -> log("invokeTyped called with ${args.size} parameters, but 4 expected")
+        else -> defaultLogger.error("invokeTyped called with ${args.size} parameters, but 4 expected")
     }
     val arg1 = args.getOrNull(0) ?: default1
     val arg2 = args.getOrNull(1) ?: default2
@@ -126,12 +139,19 @@ fun <T1, T2, T3, T4> invokeTyped(fct: (T1, T2, T3, T4) -> Boolean, args: Array<o
     return fct(arg1 as T1, arg2 as T2, arg3 as T3, arg4 as T4)
 }
 
-fun <T1, T2, T3> invokeTyped(fct: (T1, T2, T3) -> Boolean, args: Array<out Any>, default1: T1? = null, default2: T2? = null, default3: T3? = null): Boolean {
+fun <T1, T2, T3> invokeTyped(
+    fct: (T1, T2, T3) -> Boolean,
+    args: Array<out Any>,
+    default1: T1? = null,
+    default2: T2? = null,
+    default3: T3? = null
+): Boolean {
     when (args.size) {
         3 -> {
         }
+
         0, 1, 2 -> throw IllegalArgumentException("invokeTyped called with ${args.size} parameters, but 3 expected")
-        else -> log("invokeTyped called with ${args.size} parameters, but 3 expected")
+        else -> defaultLogger.error("invokeTyped called with ${args.size} parameters, but 3 expected")
     }
     val arg1 = args.getOrNull(0) ?: default1
     val arg2 = args.getOrNull(1) ?: default2
@@ -140,12 +160,18 @@ fun <T1, T2, T3> invokeTyped(fct: (T1, T2, T3) -> Boolean, args: Array<out Any>,
     return fct(arg1 as T1, arg2 as T2, arg3 as T3)
 }
 
-fun <T1, T2> invokeTyped(fct: (T1, T2) -> Boolean, args: Array<out Any>, default1: T1? = null, default2: T2? = null): Boolean {
+fun <T1, T2> invokeTyped(
+    fct: (T1, T2) -> Boolean,
+    args: Array<out Any>,
+    default1: T1? = null,
+    default2: T2? = null
+): Boolean {
     when (args.size) {
         2 -> {
         }
+
         0, 1 -> throw IllegalArgumentException("invokeTyped called with ${args.size} parameters, but 2 expected")
-        else -> log("invokeTyped called with ${args.size} parameters, but 2 expected")
+        else -> defaultLogger.error("invokeTyped called with ${args.size} parameters, but 2 expected")
     }
     val arg1 = args.getOrNull(0) ?: default1
     val arg2 = args.getOrNull(1) ?: default2
@@ -153,21 +179,21 @@ fun <T1, T2> invokeTyped(fct: (T1, T2) -> Boolean, args: Array<out Any>, default
     return fct(arg1 as T1, arg2 as T2)
 }
 
-fun <T1> invokeTyped(fct: (T1) -> Boolean, args: Array<out Any>, default1: T1? = null): Boolean {
+fun <T> invokeTyped(fct: (T) -> Boolean, args: Array<out Any>, default: T? = null): Boolean {
     when (args.size) {
         1 -> {
         }
-        0 -> throw IllegalArgumentException("invokeTyped called with ${args.size} parameters, but 1 expected")
-        else -> log("invokeTyped called with ${args.size} parameters, but 1 expected")
-    }
-    val arg1 = args.getOrNull(0) ?: default1
 
-    return fct(arg1 as T1)
+        0 -> throw IllegalArgumentException("invokeTyped called with 0 parameters, but 1 expected")
+        else -> defaultLogger.error("invokeTyped called with ${args.size} parameters, but 1 expected")
+    }
+    val arg1 = args.getOrNull(0) ?: default
+
+    return fct(arg1 as T)
 }
 
 /**
- * The set of classes that protocols can implement for additional functionality.
- * Each interface also may contain classes which extend this in order to act as callbacks.
+ * A callback attached to a specific type of event.
  */
 interface ChatEvent {
     /**
@@ -176,7 +202,7 @@ interface ChatEvent {
     operator fun invoke(vararg args: Any): Boolean
 }
 
-class ChangedNickname(val fct: (chat: Chat, user: User, oldName: String) -> Boolean): ChatEvent {
+open class ChangedNickname(val fct: (chat: Chat, user: User, oldName: String) -> Boolean): ChatEvent {
     override fun invoke(vararg args: Any) = invokeTyped(fct, args)
     fun invoke(chat: Chat, user: User, oldName: String) = fct(chat, user, oldName)
 }
@@ -189,36 +215,41 @@ interface HasNicknames {
 }
 
 open class Image
-class ReceivedImage(val fct: (chat: Chat, image: Image, sender: User, message: String?) -> Boolean): ChatEvent {
+open class ReceivedImage(val fct: (chat: Chat, image: Image, sender: User, message: String?) -> Boolean): ChatEvent {
     override fun invoke(vararg args: Any): Boolean = invokeTyped(fct, args, default4 = "")
-    fun invoke(chat: Chat, image: Image, sender: User, message: String?): Boolean = fct(chat, image, sender, message
-            ?: "")
+    fun invoke(chat: Chat, image: Image, sender: User, message: String?): Boolean =
+        fct(chat, image, sender, message ?: "")
 }
 
 interface HasImages {
     fun sendImage(chat: Chat, image: Image, sender: User, message: String)
-    fun receivedImage(chat: Chat, image: Image, sender: User, message: String) = runCallbacks<ReceivedImage>(chat, image, sender, message)
+    fun receivedImage(chat: Chat, image: Image, sender: User, message: String) =
+        runCallbacks<ReceivedImage>(chat, image, sender, message)
 }
 
-class EditMessage(val fct: (oldMessage: String, sender: User, newMessage: String) -> Boolean): ChatEvent {
+open class EditMessage(val fct: (oldMessage: String, sender: User, newMessage: String) -> Boolean): ChatEvent {
     override fun invoke(vararg args: Any): Boolean = invokeTyped(fct, args)
     fun invoke(oldMessage: String, sender: User, newMessage: String): Boolean = fct(oldMessage, sender, newMessage)
 }
 
 interface CanEditOtherMessages {
     fun editMessage(message: MessageHistory, oldMessage: String, sender: User, newMessage: String)
-
-
-    fun editedMessage(oldMessage: String, sender: User, newMessage: String) = runCallbacks<EditMessage>(oldMessage, sender, newMessage)
+    fun editedMessage(oldMessage: String, sender: User, newMessage: String) =
+        runCallbacks<EditMessage>(oldMessage, sender, newMessage)
 }
 
 abstract class MessageHistory(var message: String, val timestamp: OffsetDateTime, val sender: User): JsonConvertible
 interface HasMessageHistory {
     fun getMessages(chat: Chat, since: OffsetDateTime? = null, until: OffsetDateTime? = null): List<MessageHistory>
-    fun getUserMessages(chat: Chat, user: User, since: OffsetDateTime? = null, until: OffsetDateTime? = null): List<MessageHistory>
+    fun getUserMessages(
+        chat: Chat,
+        user: User,
+        since: OffsetDateTime? = null,
+        until: OffsetDateTime? = null
+    ): List<MessageHistory>
 }
 
-abstract class MentionedUser(val fct: (chat: Chat, message: String, users: Set<User>) -> Boolean): ChatEvent {
+open class MentionedUser(val fct: (chat: Chat, message: String, users: Set<User>) -> Boolean): ChatEvent {
     override fun invoke(vararg args: Any) = invokeTyped(fct, args)
     fun invoke(chat: Chat, message: String, users: Set<User>) = fct(chat, message, users)
 }
@@ -226,15 +257,16 @@ abstract class MentionedUser(val fct: (chat: Chat, message: String, users: Set<U
 interface CanMentionUsers {
     fun mention(chat: Chat, user: User, message: String?)
     fun mention(chat: Chat, user: User) = mention(chat, user, null)
-    fun mentionedUsers(chat: Chat, message: String, users: Set<User>) = runCallbacks<MentionedUser>(chat, message, users)
+    fun mentionedUsers(chat: Chat, message: String, users: Set<User>) =
+        runCallbacks<MentionedUser>(chat, message, users)
 }
 
-class StartedTyping(val fct: (chat: Chat, user: User) -> Boolean): ChatEvent {
+open class StartedTyping(val fct: (chat: Chat, user: User) -> Boolean): ChatEvent {
     override fun invoke(vararg args: Any): Boolean = invokeTyped(fct, args)
     fun invoke(chat: Chat, user: User): Boolean = fct(chat, user)
 }
 
-class StoppedTyping(val fct: (chat: Chat, user: User) -> Boolean): ChatEvent {
+open class StoppedTyping(val fct: (chat: Chat, user: User) -> Boolean): ChatEvent {
     override fun invoke(vararg args: Any): Boolean = invokeTyped(fct, args)
     fun invoke(chat: Chat, user: User): Boolean = fct(chat, user)
 }
@@ -246,14 +278,15 @@ interface HasTypingStatus {
 }
 
 open class Sticker(val name: String, val URL: String?)
-class ReceivedSticker(val fct: (chat: Chat, sticker: Sticker, user: User) -> Boolean): ChatEvent {
+open class ReceivedSticker(val fct: (chat: Chat, sticker: Sticker, user: User) -> Boolean): ChatEvent {
     override fun invoke(vararg args: Any): Boolean = invokeTyped(fct, args)
     fun invoke(chat: Chat, sticker: Sticker, user: User): Boolean = fct(chat, sticker, user)
 }
 
 interface HasStickers {
     fun sendSticker(chat: Chat, sticker: Sticker)
-    fun receivedSticker(chat: Chat, sticker: Sticker, sender: User) = runCallbacks<ReceivedSticker>(chat, sticker, sender)
+    fun receivedSticker(chat: Chat, sticker: Sticker, sender: User) =
+        runCallbacks<ReceivedSticker>(chat, sticker, sender)
 }
 
 interface HasUserStatus { // Like your status on Skype.
@@ -262,7 +295,7 @@ interface HasUserStatus { // Like your status on Skype.
 }
 
 open class Availability(val description: String)
-class ChangedAvailability(val fct: (chat: Chat, user: User, availability: Availability) -> Boolean): ChatEvent {
+open class ChangedAvailability(val fct: (chat: Chat, user: User, availability: Availability) -> Boolean): ChatEvent {
     override fun invoke(vararg args: Any): Boolean = invokeTyped(fct, args)
     fun invoke(chat: Chat, user: User, availability: Availability): Boolean = fct(chat, user, availability)
 }
@@ -270,10 +303,11 @@ class ChangedAvailability(val fct: (chat: Chat, user: User, availability: Availa
 interface HasUserAvailability {
     fun setBotAvailability(chat: Chat, availability: Availability)
     fun getUserAvailability(chat: Chat, user: User): Availability
-    fun changedAvailability(chat: Chat, user: User, availability: Availability) = runCallbacks<ChangedAvailability>(chat, user, availability)
+    fun changedAvailability(chat: Chat, user: User, availability: Availability) =
+        runCallbacks<ChangedAvailability>(chat, user, availability)
 }
 
-class ReadByUser(val fct: (chat: Chat, message: MessageHistory, user: User) -> Boolean): ChatEvent {
+open class ReadByUser(val fct: (chat: Chat, message: MessageHistory, user: User) -> Boolean): ChatEvent {
     override fun invoke(vararg args: Any): Boolean = invokeTyped(fct, args)
     fun invoke(chat: Chat, message: MessageHistory, user: User): Boolean = fct(chat, message, user)
 }
@@ -301,8 +335,8 @@ open class Format(name: String): JsonConvertible {
     }
 
     override fun toJson() = mapOf(
-            "type" to "Format",
-            "name" to name
+        "type" to "Format",
+        "name" to name
     ).json()
 }
 
@@ -314,14 +348,14 @@ interface CanFormatMessages {
 
     companion object {
         val defaultFormats = mutableSetOf(
-                Format.bold,
-                Format.italics,
-                Format.underline,
-                Format.monospace,
-                Format.code,
-                Format.strikethrough,
-                Format.spoiler,
-                Format.greentext
+            Format.bold,
+            Format.italics,
+            Format.underline,
+            Format.monospace,
+            Format.code,
+            Format.strikethrough,
+            Format.spoiler,
+            Format.greentext
         )
     }
 }
