@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="CompilerConfiguration">
-    <bytecodeTargetLevel target="1.8">
+    <bytecodeTargetLevel target="17">
       <module name="basicPlugin_main" target="1.5" />
       <module name="basicPlugin_test" target="1.5" />
-      <module name="convergence.bot" target="1.8" />
       <module name="convergence.bot.convergence.bot.basicPlugin.main" target="1.8" />
       <module name="convergence.bot.convergence.bot.basicPlugin.test" target="1.8" />
       <module name="convergence.bot.convergence.bot.consolePlugin.main" target="1.8" />
@@ -15,7 +14,6 @@
       <module name="convergence.bot.convergence.bot.messengerPlugin.main" target="1.8" />
       <module name="convergence.bot.convergence.bot.messengerPlugin.test" target="1.8" />
       <module name="convergence.bot.convergence.bot.test" target="1.8" />
-      <module name="convergence.bot.main" target="1.8" />
       <module name="convergence.bot.MessengerJSConnector.main" target="1.8" />
       <module name="convergence.bot.MessengerJSConnector.test" target="1.8" />
       <module name="convergence.bot.messengerPlugin.MessengerJSConnector.main" target="1.8" />
@@ -24,7 +22,6 @@
       <module name="convergence.bot.messengerPlugin_Messenge.test" target="1.8" />
       <module name="convergence.bot.messengerPlugin_MessengerJSConnector.main" target="1.8" />
       <module name="convergence.bot.messengerPlugin_MessengerJSConnector.test" target="1.8" />
-      <module name="convergence.bot.test" target="1.8" />
       <module name="convergence.bot_main" target="1.5" />
       <module name="convergence.bot_test" target="1.5" />
       <module name="convergence.convergence.bot.main" target="1.5" />

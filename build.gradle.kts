@@ -3,23 +3,14 @@ import java.nio.file.Path
 import java.nio.file.Paths
 
 val pluginsDir: Path = Paths.get(System.getProperty("user.home"), ".convergence", "plugins")
-val moshi_version = "1.12.0"
-val mapdb_version = "3.0.8"
-val logback_version = "1.2.6"
-val pf4j_version = "3.6.0"
-val humanize_version = "1.2.2"
-val antlr_version = "4.9.2"
-val argparse4j_version = "0.9.0"
-val natty_version = "0.13"
-val coroutines_version = "1.5.2-native-mt"
 
 plugins {
-    val kotlin_version = "1.5.31"
-    kotlin("jvm") version kotlin_version
+    `version-catalog`
+    alias(libs.plugins.kotlin)
     id("application")
     antlr
-    id("com.github.johnrengelman.shadow") version "5.2.0"
-    kotlin("kapt") version kotlin_version
+    alias(libs.plugins.shadow)
+    alias(libs.plugins.kotlin.kapt)
 }
 
 group = "convergence"
@@ -39,21 +30,32 @@ buildscript {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version")
-    implementation("org.jetbrains.kotlin:kotlin-reflect")
+    implementation(libs.kotlin.coroutines)
+    implementation(libs.kotlin.reflect)
 
-    implementation("com.joestelmach:natty:$natty_version")
-    implementation("net.sourceforge.argparse4j:argparse4j:$argparse4j_version")
-    implementation("com.github.mfornos:humanize-slim:$humanize_version")
-    antlr("org.antlr:antlr4:$antlr_version")
-    implementation("ch.qos.logback:logback-classic:$logback_version")
+    implementation(libs.natty) {
+        exclude("commons-codec:commons-codec")
+    }
+    implementation("commons-codec:commons-codec:1.16.0")
 
-    implementation("com.squareup.moshi:moshi-kotlin:$moshi_version")
-    implementation("com.squareup.moshi:moshi-adapters:$moshi_version")
+    implementation(libs.argparse4j)
 
-    implementation("org.mapdb:mapdb:$mapdb_version")
+    implementation(libs.humanize) {
+        exclude("com.google.guava:guava")
+    }
+    implementation("com.google.guava:guava:32.1.3-jre")
 
-    implementation("org.pf4j:pf4j:$pf4j_version")
+    antlr(libs.antlr)
+    implementation(libs.logback)
+
+    implementation(libs.moshi.kotlin)
+    implementation(libs.moshi.adapters)
+
+    implementation(libs.mapdb)
+
+    implementation(libs.pf4j)
+
+    testImplementation(libs.kotlin.test)
 }
 
 // here we define the tasks which will build the plugins in the subprojects
@@ -93,7 +95,6 @@ subprojects {
                     project.configurations.compileClasspath.get().mapNotNull { originalFile ->
                         if (!rootProject.configurations.compileClasspath.get().contains(originalFile)
                                 && !originalFile.toPath().startsWith(rootProject.projectDir.toPath())) {
-                            println(originalFile)
                             if (originalFile.isDirectory) originalFile else zipTree(originalFile)
                         } else
                             null
@@ -136,55 +137,43 @@ subprojects {
     }
 
     dependencies {
-        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version")
-        implementation("org.jetbrains.kotlin:kotlin-reflect")
+        implementation(rootProject.libs.kotlin.coroutines)
+        implementation(rootProject.libs.kotlin.reflect)
 
-        implementation("com.joestelmach:natty:$natty_version")
-        implementation("net.sourceforge.argparse4j:argparse4j:$argparse4j_version")
-        implementation("com.github.mfornos:humanize-slim:$humanize_version")
-        implementation("ch.qos.logback:logback-classic:$logback_version")
+        implementation(rootProject.libs.natty)
+        implementation(rootProject.libs.argparse4j)
+        implementation(rootProject.libs.humanize)
+        implementation(rootProject.libs.logback)
 
-        implementation("com.squareup.moshi:moshi-kotlin:$moshi_version")
-        implementation("com.squareup.moshi:moshi-adapters:$moshi_version")
+        implementation(rootProject.libs.moshi.kotlin)
+        implementation(rootProject.libs.moshi.adapters)
 
-        implementation("org.mapdb:mapdb:$mapdb_version")
+        implementation(rootProject.libs.mapdb)
 
-        implementation("org.pf4j:pf4j:$pf4j_version")
+        implementation(rootProject.libs.pf4j)
+
+        implementation(rootProject.libs.antlr)
+
         implementation(rootProject)
     }
 }
 
 sourceSets.main {
-    withConvention(org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet::class) {
-        kotlin.srcDirs("src")
-        java.srcDirs("src/main/convergence")
-    }
+    kotlin.srcDirs("src")
+    java.srcDirs("src/main/convergence")
     resources.srcDir("resources")
 }
 
 sourceSets.test {
-    withConvention(org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet::class) {
-        kotlin.srcDirs("test/kotlin")
-    }
+    kotlin.srcDirs("test/kotlin")
 }
 
-tasks.compileTestKotlin {
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
-}
-
-tasks.compileKotlin {
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
+kotlin {
+    jvmToolchain(17)
 }
 
 application {
     mainClass.set("convergence.core")
-    // Shadow requires us to set the main class name this way, which is dumb.
-    @Suppress("DEPRECATION")
-    mainClassName = "convergence.core"
 }
 
 tasks.register<Copy>("assemblePlugins") {
@@ -207,11 +196,11 @@ tasks.named<Task>("buildDependents") {
 }
 
 tasks.wrapper {
-    gradleVersion = "7.0"
+    gradleVersion = "8.2"
 }
 
 tasks {
-    "build" {
+    build {
         dependsOn(named("assemblePlugins"))
     }
 }

@@ -1,0 +1,37 @@
+[versions]
+moshi = "1.15.0"
+mapdb = "3.0.10"
+logback = "1.4.11"
+pf4j = "3.10.0"
+humanize = "1.2.2"
+argparse4j = "0.9.0"
+natty = "0.13"
+coroutines = "1.7.3"
+kotlin = "1.9.10"
+shadow = "8.1.1"
+
+[plugins]
+kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
+shadow = { id = "com.github.johnrengelman.shadow", version.ref = "shadow" }
+antlr = { id = "antlr", version = "+" }
+
+[libraries]
+kotlin-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
+kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
+
+natty = { module = "com.joestelmach:natty", version.ref = "natty" }
+argparse4j = { module = "net.sourceforge.argparse4j:argparse4j", version.ref = "argparse4j" }
+
+humanize = { module = "com.github.mfornos:humanize-slim", version.ref = "humanize" }
+antlr = { module = "org.antlr:antlr4", version = "+" }
+logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
+
+moshi-kotlin = { module = "com.squareup.moshi:moshi-kotlin", version.ref = "moshi" }
+moshi-adapters = { module = "com.squareup.moshi:moshi-adapters", version.ref = "moshi" }
+
+mapdb = { module = "org.mapdb:mapdb", version.ref = "mapdb" }
+
+pf4j = { module = "org.pf4j:pf4j", version.ref = "pf4j" }
+kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+

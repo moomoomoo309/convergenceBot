@@ -8,9 +8,7 @@ dependencies {
 }
 
 sourceSets.main {
-    withConvention(org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet::class) {
-        kotlin.srcDirs("src")
-    }
+    kotlin.srcDirs("src")
     resources.srcDir("resources")
 }
 val pluginClass: String by project
