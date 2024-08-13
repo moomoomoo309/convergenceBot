@@ -45,7 +45,7 @@ object DiscordEmojiAdapter: JsonAdapter<DiscordEmoji>() {
         val emoji = readStringOrThrow("emoji")
         val guild = readStringOrThrow("guild")
         val id = readStringOrThrow("id")
-        val emote = jda.getGuildById(guild)?.getEmoteById(emoji) ?: return null
+        val emote = jda.getGuildById(guild)?.getEmojiById(emoji) ?: return null
         return DiscordEmoji(url, name, emote, id.toLong())
     }
 

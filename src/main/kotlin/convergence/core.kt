@@ -16,8 +16,6 @@ import java.nio.file.Paths
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
-import kotlin.collections.component1
-import kotlin.collections.component2
 import kotlin.collections.set
 
 class CommandDoesNotExist(cmd: String): Exception(cmd)
@@ -160,7 +158,6 @@ fun getUserName(sender: User): String {
         baseInterface.getName(chat, sender)
 }
 
-// TODO: Rewrite this to use a trie
 /**
  * Replaces instances of the keys in [aliasVars] preceded by a percent sign with the result of the functions therein,
  * such as %sender with the name of the user who sent the message.
@@ -374,6 +371,13 @@ class core {
                 .description("Sets the paths used by the bot.")
 
             val paths = argParser.addArgumentGroup("Paths")
+            paths.addArgument("-c", "--convergence-path")
+                .dest("convergencePath")
+                .nargs(1)
+                .type(String::class.java)
+                .default = Paths.get(System.getProperty("user.home"), ".convergence").toString()
+
+
             paths.addArgument("-pp", "--plugin-path")
                 .dest("pluginPath")
                 .nargs("+")
@@ -387,15 +391,22 @@ class core {
                 return
             }
 
+            convergencePath = Paths.get(commandLineArgs.get<String>("convergencePath"))
+            settingsPath = convergencePath.resolve("settings.json")
+
             // It'd be silly to get this list, convert it to a set, then convert it back to a list for the plugin
             // manager, so we'll keep this locally, so we can construct the plugin manager.
             commandLineArgs.get<List<String>>("pluginPath").map { Paths.get(it) }.let {
                 pluginManager = DefaultPluginManager(it)
-                pluginPaths = it.toMutableSet()
+                pluginPaths = it.toMutableList()
             }
 
             // Remove "just now" as an option for time formatting. 5 minutes for "just now" is annoying.
             Humanize.prettyTimeFormat().prettyTime.removeUnit(JustNow::class.java)
+
+            Settings.putAll(initSettings())
+            SharedVariables.putAll(SharedVariable.entries.associate { it.name to it.defaultValue }
+                .filter { it.value != null })
 
             registerProtocol(UniversalProtocol, FakeBaseInterface)
 
@@ -417,13 +428,13 @@ class core {
             }
 
             moshi = moshiBuilder
-                .add(chatAdapterFactory)
-                .add(userAdapterFactory)
-                .add(imageAdapterFactory)
-                .add(messageHistoryAdapterFactory)
-                .add(stickerAdapterFactory)
-                .add(formatAdapterFactory)
-                .add(customEmojiAdapterFactory)
+                .addLast(chatAdapterFactory)
+                .addLast(userAdapterFactory)
+                .addLast(imageAdapterFactory)
+                .addLast(messageHistoryAdapterFactory)
+                .addLast(stickerAdapterFactory)
+                .addLast(formatAdapterFactory)
+                .addLast(customEmojiAdapterFactory)
                 .build()
             for (wrapper in pluginWrappers) {
                 defaultLogger.info("Initializing plugin: ${wrapper.pluginId}")

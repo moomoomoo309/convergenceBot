@@ -1,26 +1,26 @@
 @file:Suppress("LocalVariableName")
 
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.gradle.internal.KaptGenerateStubsTask
 import java.nio.file.Path
 import java.nio.file.Paths
 
 val pluginsDir: Path = Paths.get(System.getProperty("user.home"), ".convergence", "plugins")
-val moshi_version = "1.14.0"
-val mapdb_version = "3.0.8"
-val logback_version = "1.4.4"
-val pf4j_version = "3.8.0"
-val humanize_version = "1.2.2"
-val antlr_version = "4.11.1"
+val antlr_version = "4.13.2"
 val argparse4j_version = "0.9.0"
+val coroutines_version = "1.8.1"
+val humanize_version = "1.2.2"
+val logback_version = "1.5.6"
+val mapdb_version = "3.1.0"
+val moshi_version = "1.15.1"
 val natty_version = "0.13"
-val coroutines_version = "1.6.4"
+val pf4j_version = "3.12.0"
 
 plugins {
-    val kotlin_version = "1.7.20"
+    val kotlin_version = "2.0.10"
     kotlin("jvm") version kotlin_version
     id("application")
     antlr
-    id("com.github.johnrengelman.shadow") version "5.2.0"
+    id("com.gradleup.shadow") version "8.3.0"
     kotlin("kapt") version kotlin_version
 }
 
@@ -37,6 +37,7 @@ repositories {
 buildscript {
     repositories {
         mavenCentral()
+        gradlePluginPortal()
     }
 }
 
@@ -59,7 +60,7 @@ dependencies {
     implementation("org.pf4j:pf4j:$pf4j_version")
     implementation(kotlin("stdlib-jdk8"))
 
-    testImplementation("org.jetbrains.kotlin:kotlin-test:1.7.20")
+    testImplementation("org.jetbrains.kotlin:kotlin-test")
 }
 
 // here we define the tasks which will build the plugins in the subprojects
@@ -148,37 +149,8 @@ subprojects {
     }
 }
 
-sourceSets.main {
-    withConvention(org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet::class) {
-        kotlin.srcDirs("src")
-        java.srcDirs("src/main/convergence")
-    }
-    resources.srcDir("resources")
-}
-
-sourceSets.test {
-    withConvention(org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet::class) {
-        kotlin.srcDirs("test/")
-    }
-}
-
-tasks.compileTestKotlin {
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11.toString()
-    }
-}
-
-tasks.compileKotlin {
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11.toString()
-    }
-}
-
 application {
     mainClass.set("convergence.core")
-    // Shadow requires us to set the main class name this way, which is dumb.
-    @Suppress("DEPRECATION")
-    mainClassName = "convergence.core"
 }
 
 tasks.register<Copy>("assemblePlugins") {
@@ -201,19 +173,18 @@ tasks.named<Task>("buildDependents") {
 }
 
 tasks.wrapper {
-    gradleVersion = "7.0"
+    gradleVersion = "8.9"
 }
 
 tasks {
     build {
         dependsOn(named("assemblePlugins"))
+        dependsOn(named("generateGrammarSource"))
     }
-}
-val compileKotlin: KotlinCompile by tasks
-compileKotlin.kotlinOptions {
-    jvmTarget = JavaVersion.VERSION_11.toString()
-}
-val compileTestKotlin: KotlinCompile by tasks
-compileTestKotlin.kotlinOptions {
-    jvmTarget = JavaVersion.VERSION_11.toString()
+    compileKotlin {
+        dependsOn(named("generateGrammarSource"))
+    }
+    withType<KaptGenerateStubsTask> {
+        dependsOn(named("generateGrammarSource"))
+    }
 }

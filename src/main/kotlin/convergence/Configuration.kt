@@ -8,19 +8,17 @@ import org.pf4j.DefaultPluginManager
 import org.pf4j.PluginManager
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.Paths
 import java.util.concurrent.ConcurrentHashMap
 
 const val defaultCommandDelimiter = "!"
 
 @Suppress("EnumEntryName", "unused")
 enum class ConfigOption(val defaultValue: Any) {
-    protocols(mutableSetOf<Protocol>()),
+    protocols(mutableListOf<Protocol>()),
     baseInterfaceMap(mutableMapOf<Protocol, BaseInterface>()),
     chatMap(mutableMapOf<Int, Chat>()),
     reverseChatMap(mutableMapOf<Chat, Int>()),
-    convergencePath(Paths.get(System.getProperty("user.home"), ".convergence")),
-    pluginPaths(mutableSetOf<Path>()),
+    pluginPaths(mutableListOf<Path>()),
     commandDelimiters(DefaultMap<Chat, String>(defaultCommandDelimiter)),
     aliasVars(
         mutableMapOf(
@@ -118,15 +116,15 @@ fun readSettings(fallbackSettings: Map<String, Any>, initialRun: Boolean): Concu
     ConcurrentHashMap(fallbackSettings)
 }
 
-val protocols: MutableSet<Protocol> by Settings
+val protocols: MutableList<Protocol> by Settings
 val baseInterfaceMap: MutableMap<Protocol, BaseInterface> by Settings
 val chatMap: MutableMap<Int, Chat> by Settings
 val reverseChatMap: MutableMap<Chat, Int> by Settings
 val convergencePath: Path by Settings
-var pluginPaths: MutableSet<Path> by Settings
+var pluginPaths: MutableList<Path> by Settings
 val commandDelimiters: MutableMap<Chat, String> by Settings
 val aliasVars: MutableMap<String, (baseInterface: BaseInterface, chat: Chat, sender: User) -> String> by Settings
-val linkedChats: MutableMap<Chat, MutableSet<Chat>> by Settings
+val linkedChats: MutableMap<Chat, MutableList<Chat>> by Settings
 val delimiters: MutableMap<Chat, String> by Settings
 val commands: MutableMap<Chat, MutableMap<String, Command>> by Settings
 val aliases: MutableMap<Chat, MutableMap<String, Alias>> by Settings

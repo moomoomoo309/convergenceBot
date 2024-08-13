@@ -4,7 +4,7 @@
     <option name="SCOPE_TYPE" value="3" />
   </component>
   <component name="AutoImportSettings">
-    <option name="autoReloadType" value="ALL" />
+    <option name="autoReloadType" value="NONE" />
   </component>
   <component name="BranchesTreeState">
     <expand>
@@ -25,37 +25,28 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="29d84833-fb05-450b-b63e-091fc3136e36" name="Default Changelist" comment="Switch global access to be passed using a map.&#10;&#10;Allows for the globals to be shared across separate classloaders.">
-      <change afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/PolymorphicJsonAdapterFactory.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/logging.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test/SerializationTest.kt" afterDir="false" />
+    <list default="true" id="29d84833-fb05-450b-b63e-091fc3136e36" name="Default Changelist" comment="Temp commit">
       <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/kotlinc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/kotlinc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LICENSE" beforeDir="false" afterPath="$PROJECT_DIR$/LICENSE" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/TODO.md" beforeDir="false" afterPath="$PROJECT_DIR$/TODO.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/basicPlugin/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/basicPlugin/build.gradle.kts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build.gradle.bak" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle.bak" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/basicPlugin/src/BasicPlugin.kt" beforeDir="false" afterPath="$PROJECT_DIR$/basicPlugin/src/main/kotlin/BasicPlugin.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle.kts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/consolePlugin/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/consolePlugin/build.gradle.kts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/consolePlugin/src/Main.kt" beforeDir="false" afterPath="$PROJECT_DIR$/consolePlugin/src/Main.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/consolePlugin/src/Main.kt" beforeDir="false" afterPath="$PROJECT_DIR$/consolePlugin/src/main/kotlin/Main.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/discordPlugin/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/discordPlugin/build.gradle.kts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/discordPlugin/src/Main.kt" beforeDir="false" afterPath="$PROJECT_DIR$/discordPlugin/src/Main.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/discordPlugin/src/TypeAdapters.kt" beforeDir="false" afterPath="$PROJECT_DIR$/discordPlugin/src/TypeAdapters.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/discordPlugin/src/Main.kt" beforeDir="false" afterPath="$PROJECT_DIR$/discordPlugin/src/main/kotlin/Main.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/discordPlugin/src/TypeAdapters.kt" beforeDir="false" afterPath="$PROJECT_DIR$/discordPlugin/src/main/kotlin/TypeAdapters.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.properties" beforeDir="false" afterPath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.properties" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/matterbridgePlugin/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/matterbridgePlugin/build.gradle.kts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/matterbridgePlugin/src/Main.kt" beforeDir="false" afterPath="$PROJECT_DIR$/matterbridgePlugin/src/Main.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/matterbridgePlugin/src/Main.kt" beforeDir="false" afterPath="$PROJECT_DIR$/matterbridgePlugin/src/main/kotlin/Main.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/Configuration.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/Configuration.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/PluginLoader.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/PluginLoader.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/TypeAdapters.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/TypeAdapters.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/command.g4" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/command.g4" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/commandParser.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/commandParser.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/core.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/core.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/defaultCommands.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/defaultCommands.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/kotlin/convergence/interfaces.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/convergence/interfaces.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/CommandParserTest.kt" beforeDir="false" afterPath="$PROJECT_DIR$/test/CommandParserTest.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/DefaultCommandTests.kt" beforeDir="false" afterPath="$PROJECT_DIR$/test/DefaultCommandTests.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/PluginLoaderTest.kt" beforeDir="false" afterPath="$PROJECT_DIR$/test/PluginLoaderTest.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -119,13 +110,25 @@
                 <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
                 <item name="convergence.bot" type="f1a62948:ProjectNode" />
                 <item name="Tasks" type="e4a08cd1:TasksNode" />
-                <item name="build" type="c8890929:TasksNode$1" />
+                <item name="application" type="c8890929:TasksNode$1" />
               </path>
               <path>
                 <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
                 <item name="convergence.bot" type="f1a62948:ProjectNode" />
                 <item name="Tasks" type="e4a08cd1:TasksNode" />
-                <item name="other" type="c8890929:TasksNode$1" />
+                <item name="build setup" type="c8890929:TasksNode$1" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="convergence.bot" type="f1a62948:ProjectNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+                <item name="shadow" type="c8890929:TasksNode$1" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="convergence.bot" type="f1a62948:ProjectNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+                <item name="verification" type="c8890929:TasksNode$1" />
               </path>
             </expand>
             <select />
@@ -153,9 +156,16 @@
         <entry key="$PROJECT_DIR$" value="master" />
       </map>
     </option>
+    <option name="RECENT_COMMON_BRANCH" value="dev" />
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
     <option name="ROOT_SYNC" value="SYNC" />
   </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;moomoomoo309&quot;
+  }
+}</component>
   <component name="GitSEFilterConfiguration">
     <file-type-list>
       <filtered-out-file-type name="LOCAL_BRANCH" />
@@ -170,6 +180,16 @@
   <component name="GithubDefaultAccount">
     <option name="defaultAccountId" value="39f80656-d015-4b39-9d07-31879c6f40d2" />
   </component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/moomoomoo309/ConvergenceBot&quot;,
+    &quot;accountId&quot;: &quot;39f80656-d015-4b39-9d07-31879c6f40d2&quot;
+  }
+}</component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="jar://$PROJECT_DIR$/../.jdks/graalvm-ce-17.0.9/lib/src.zip!/java.base/java/util/concurrent/ConcurrentHashMap.java" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/build.gradle.kts" root0="FORCE_HIGHLIGHTING" />
+  </component>
   <component name="JupyterTrust" id="b5ddd552-37b4-4fb6-b793-f5351a5ed238" />
   <component name="KotlinCodeInsightWorkspaceSettings">
     <option name="optimizeImportsOnTheFly" value="true" />
@@ -180,6 +200,9 @@
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
   </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 6
+}</component>
   <component name="ProjectId" id="1Ngzt17DMMTKWSdUJEz3ILdPPvV" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true">
     <ConfirmationsSetting value="2" id="Add" />
@@ -189,34 +212,45 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "project.structure.last.edited": "Project",
-    "project.structure.proportion": "0.15",
-    "project.structure.side.proportion": "0.38275862",
-    "settings.build.tools.auto.reload": "ALL",
-    "settings.editor.selected.configurable": "preferences.sourceCode.Kotlin",
-    "settings.editor.splitter.proportion": "0.27620968"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Gradle.convergenceBot [runShadow].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.convergenceBot [shadowJar].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.convergenceBot [wrapper].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.convergenceBot::home:nicholasdelello:IntelliJIDEAProjects:convergenceBot [copyBot].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.convergenceBot::home:nicholasdelello:IntelliJIDEAProjects:convergenceBot [runShadow].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.convergenceBot::home:nicholasdelello:IntelliJIDEAProjects:convergenceBot [shadowJar].executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;SONARLINT_PRECOMMIT_ANALYSIS&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;working&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/nicholasdelello/IntelliJIDEAProjects/convergenceBot&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.2780612&quot;,
+    &quot;settings.build.tools.auto.reload&quot;: &quot;ALL&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
+    &quot;settings.editor.splitter.proportion&quot;: &quot;0.27620968&quot;
   }
-}]]></component>
+}</component>
   <component name="ReaderModeSettings">
     <option name="showLigatures" value="true" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
       <recent name="$PROJECT_DIR$/../IntelliJIDEAProjects/convergenceBot/matterbridgePlugin" />
       <recent name="$PROJECT_DIR$/../IntelliJIDEAProjects/convergenceBot/discordPlugin" />
       <recent name="$PROJECT_DIR$/../IntelliJIDEAProjects/convergenceBot/consolePlugin" />
-      <recent name="$PROJECT_DIR$" />
       <recent name="$PROJECT_DIR$/../IntelliJIDEAProjects/convergenceBot" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/matterbridgePlugin/src/main/kotlin" />
+      <recent name="$PROJECT_DIR$/basicPlugin/src/main/kotlin" />
+      <recent name="$PROJECT_DIR$/consolePlugin/src/main/kotlin" />
+      <recent name="$PROJECT_DIR$/discordPlugin/src/main/kotlin" />
       <recent name="$PROJECT_DIR$/src/main/kotlin/convergence" />
-      <recent name="$PROJECT_DIR$/src/main/gen/convergence/convergence" />
-      <recent name="$PROJECT_DIR$/src/main/gen/convergence" />
-      <recent name="$PROJECT_DIR$/../IntelliJIDEAProjects/convergenceBot" />
-      <recent name="$PROJECT_DIR$/../IntelliJIDEAProjects/convergenceBot/src/test" />
     </key>
     <key name="MoveClassesOrPackagesDialog.RECENTS_KEY">
       <recent name="" />
@@ -235,7 +269,7 @@
       <command value="gradle idea" />
     </option>
   </component>
-  <component name="RunManager" selected="Gradle.SerializationTests.scheduledCommand">
+  <component name="RunManager" selected="Gradle.convergenceBot [shadowJar]">
     <configuration default="true" type="AndroidJUnit">
       <option name="TEST_OBJECT" value="class" />
       <option name="WORKING_DIRECTORY" value="$MODULE_DIR$" />
@@ -289,28 +323,6 @@
       <option name="ADDITIONAL_ARGS" value="" />
       <method v="2" />
     </configuration>
-    <configuration default="true" type="PythonConfigurationType" factoryName="Python">
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <module name="" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
     <configuration default="true" type="Python.FlaskServer">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -322,17 +334,6 @@
       <module name="" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="launchJavascriptDebuger" value="false" />
-      <method v="2" />
-    </configuration>
-    <configuration default="true" type="Tox" factoryName="Tox">
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <method v="2" />
     </configuration>
     <configuration default="true" type="ccruntests" factoryName="Run Study Tests">
@@ -358,35 +359,6 @@
       <option name="studyTest" value="" />
       <method v="2" />
     </configuration>
-    <configuration default="true" type="lua.app" factoryName="Lua Application">
-      <option name="program" value="/usr/bin/lua" />
-      <option name="file" value="" />
-      <option name="workingDir" value="$PROJECT_DIR$/../IntelliJIDEAProjects/convergenceBot/src/test/kotlin" />
-      <option name="debuggerType" value="2" />
-      <option name="params" value="" />
-      <option name="charset" value="UTF-8" />
-      <option name="showConsole" value="true" />
-      <method v="2" />
-    </configuration>
-    <configuration default="true" type="tests" factoryName="Doctests">
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <module name="" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="" />
-      <option name="CLASS_NAME" value="" />
-      <option name="METHOD_NAME" value="" />
-      <option name="FOLDER_NAME" value="" />
-      <option name="TEST_TYPE" value="TEST_SCRIPT" />
-      <option name="PATTERN" value="" />
-      <option name="USE_PATTERN" value="false" />
-      <method v="2" />
-    </configuration>
     <configuration name="DefaultCommandTests" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
@@ -408,6 +380,7 @@
       <ExternalSystemDebugServerProcess>false</ExternalSystemDebugServerProcess>
       <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
       <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>true</RunAsTest>
       <method v="2" />
     </configuration>
     <configuration name="SerializationTests.scheduledCommand" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
@@ -431,30 +404,10 @@
       <ExternalSystemDebugServerProcess>false</ExternalSystemDebugServerProcess>
       <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
       <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>true</RunAsTest>
       <method v="2" />
     </configuration>
-    <configuration name="convergenceBot [assemblePlugins]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
-      <ExternalSystemSettings>
-        <option name="executionName" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$" />
-        <option name="externalSystemIdString" value="GRADLE" />
-        <option name="scriptParameters" value="--stacktrace" />
-        <option name="taskDescriptions">
-          <list />
-        </option>
-        <option name="taskNames">
-          <list>
-            <option value="assemblePlugins" />
-          </list>
-        </option>
-        <option name="vmOptions" />
-      </ExternalSystemSettings>
-      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
-      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
-      <DebugAllEnabled>false</DebugAllEnabled>
-      <method v="2" />
-    </configuration>
-    <configuration name="convergenceBot [clean]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+    <configuration name="convergenceBot [runShadow]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -465,7 +418,7 @@
         </option>
         <option name="taskNames">
           <list>
-            <option value="clean" />
+            <option value="runShadow" />
           </list>
         </option>
         <option name="vmOptions" />
@@ -473,9 +426,10 @@
       <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
       <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
       <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>false</RunAsTest>
       <method v="2" />
     </configuration>
-    <configuration name="convergenceBot [copyBot]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+    <configuration name="convergenceBot [shadowJar]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -486,7 +440,7 @@
         </option>
         <option name="taskNames">
           <list>
-            <option value="copyBot" />
+            <option value="shadowJar" />
           </list>
         </option>
         <option name="vmOptions" />
@@ -494,6 +448,29 @@
       <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
       <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
       <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>false</RunAsTest>
+      <method v="2" />
+    </configuration>
+    <configuration name="convergenceBot [wrapper]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="wrapper" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>false</RunAsTest>
       <method v="2" />
     </configuration>
     <configuration name="Jar" type="JarApplication">
@@ -505,27 +482,92 @@
         <option name="Gradle.BeforeRunTask" enabled="true" tasks="shadowJar" externalProjectPath="$PROJECT_DIR$" vmOptions="" scriptParameters="" />
       </method>
     </configuration>
+    <configuration default="true" type="PythonConfigurationType" factoryName="Python">
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="Tox" factoryName="Tox">
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="lua.app" factoryName="Lua Application">
+      <option name="program" value="/usr/bin/lua" />
+      <option name="file" value="" />
+      <option name="workingDir" value="$PROJECT_DIR$/../IntelliJIDEAProjects/convergenceBot/src/test/kotlin" />
+      <option name="debuggerType" value="2" />
+      <option name="params" value="" />
+      <option name="charset" value="UTF-8" />
+      <option name="showConsole" value="true" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="tests" factoryName="Doctests">
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="CLASS_NAME" value="" />
+      <option name="METHOD_NAME" value="" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_SCRIPT" />
+      <option name="PATTERN" value="" />
+      <option name="USE_PATTERN" value="false" />
+      <method v="2" />
+    </configuration>
     <list>
+      <item itemvalue="Gradle.convergenceBot [runShadow]" />
+      <item itemvalue="Gradle.convergenceBot [shadowJar]" />
+      <item itemvalue="Gradle.convergenceBot [wrapper]" />
       <item itemvalue="Gradle.DefaultCommandTests" />
       <item itemvalue="Gradle.SerializationTests.scheduledCommand" />
-      <item itemvalue="Gradle.convergenceBot [copyBot]" />
-      <item itemvalue="Gradle.convergenceBot [assemblePlugins]" />
-      <item itemvalue="Gradle.convergenceBot [clean]" />
       <item itemvalue="JAR Application.Jar" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Gradle.convergenceBot [shadowJar]" />
+        <item itemvalue="Gradle.convergenceBot [runShadow]" />
+        <item itemvalue="Gradle.convergenceBot [wrapper]" />
         <item itemvalue="Gradle.SerializationTests.scheduledCommand" />
         <item itemvalue="Gradle.DefaultCommandTests" />
-        <item itemvalue="Gradle.convergenceBot [clean]" />
-        <item itemvalue="Gradle.convergenceBot [copyBot]" />
-        <item itemvalue="Gradle.convergenceBot [assemblePlugins]" />
       </list>
     </recent_temporary>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="SvnConfiguration">
-    <configuration />
+    <configuration>$PROJECT_DIR$/../.subversion</configuration>
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
@@ -1056,11 +1098,21 @@
       <option name="project" value="LOCAL" />
       <updated>1632882723753</updated>
     </task>
-    <option name="localTasksCounter" value="54" />
+    <task id="LOCAL-00054" summary="BIG commit time:&#10;&#10;- Added config, separated from shared variables. (Both are shared, only one is written to config file)&#10;- Update dependencies&#10;- Start adding PolymorphicJsonAdapterFactories for each open type&#10;- Add logging using logback classic (still need to add logback.xml)&#10;- Bump Java target to 11.">
+      <created>1667404200420</created>
+      <option name="number" value="00054" />
+      <option name="presentableId" value="LOCAL-00054" />
+      <option name="project" value="LOCAL" />
+      <updated>1667404200420</updated>
+    </task>
+    <option name="localTasksCounter" value="55" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="UpdateCopyrightCheckinHandler">
+    <option name="UPDATE_COPYRIGHT" value="true" />
   </component>
   <component name="Vcs.Log.History.Properties">
     <option name="COLUMN_ORDER">
@@ -1073,27 +1125,6 @@
     </option>
   </component>
   <component name="Vcs.Log.Tabs.Properties">
-    <option name="TAB_STATES">
-      <map>
-        <entry key="MAIN">
-          <value>
-            <State>
-              <option name="FILTERS">
-                <map>
-                  <entry key="branch">
-                    <value>
-                      <list>
-                        <option value="dev" />
-                      </list>
-                    </value>
-                  </entry>
-                </map>
-              </option>
-            </State>
-          </value>
-        </entry>
-      </map>
-    </option>
     <option name="RECENT_FILTERS">
       <map>
         <entry key="Branch">
@@ -1108,11 +1139,31 @@
         </entry>
       </map>
     </option>
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="working" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
   <component name="VcsManagerConfiguration">
+    <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
-    <MESSAGE value="Remove serialization stuff, add Klaxon as a library." />
-    <MESSAGE value="Replace serialization with Klaxon, add build instructions." />
     <MESSAGE value="Allow pluginLoader to load more than one plugin." />
     <MESSAGE value="Update documentation to reflect classloader change." />
     <MESSAGE value="Make sure the class loaded is actually a plugin." />
@@ -1136,7 +1187,9 @@
     <MESSAGE value="Remove kotlinx.serialization, replace with a JSON-based serialization method with less magic.&#10;&#10;Less magic means the dynamic class loading mechanisms will cause less issues, plus the code is actually very easy to write, easier than the equivalent kotlinx.serialization code, and to maintain, since this code does not depend on any library besides Klaxon (and switching that out would be simple)" />
     <MESSAGE value="Switch serialization to Moshi, switch gradle to Kotlin." />
     <MESSAGE value="Switch the pluginLoader to use PF4J, switch serialization to Moshi, heavily refactor interfaces.kt, switch all gradle files to the Kotlin DSL." />
-    <option name="LAST_COMMIT_MESSAGE" value="Switch the pluginLoader to use PF4J, switch serialization to Moshi, heavily refactor interfaces.kt, switch all gradle files to the Kotlin DSL." />
+    <MESSAGE value="BIG commit time:&#10;&#10;- Added config, separated from shared variables. (Both are shared, only one is written to config file)&#10;- Update dependencies&#10;- Start adding PolymorphicJsonAdapterFactories for each open type&#10;- Add logging using logback classic (still need to add logback.xml)&#10;- Bump Java target to 11." />
+    <MESSAGE value="Temp commit" />
+    <option name="LAST_COMMIT_MESSAGE" value="Temp commit" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REARRANGE_BEFORE_PROJECT_COMMIT" value="true" />
@@ -1155,6 +1208,10 @@
       </breakpoints>
     </breakpoint-manager>
     <watches-manager>
+      <configuration name="GradleRunConfiguration">
+        <watch expression="Settings" language="kotlin" />
+        <watch expression="protocols" language="kotlin" />
+      </configuration>
       <configuration name="Remote">
         <watch expression="String(ByteArray(500).also{Main.jsOutput!!.read(it, 0, 500)})" language="kotlin" />
       </configuration>

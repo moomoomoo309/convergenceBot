@@ -395,7 +395,7 @@ fun link(args: List<String>, sender: User): String {
     val chatToLink = chatMap[index]
     return if (chatToLink != null) {
         if (sender.chat !in linkedChats)
-            linkedChats[sender.chat] = HashSet()
+            linkedChats[sender.chat] = mutableListOf()
         linkedChats[sender.chat]!!.add(chatToLink)
         "${chatToLink.name} linked to ${sender.chat.name}."
     } else

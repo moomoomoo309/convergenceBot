@@ -6,7 +6,7 @@ import java.time.OffsetDateTime
 import java.util.*
 import kotlin.reflect.KClass
 
-abstract class Protocol(val name: String) {
+abstract class Protocol(val name: String): Comparable<Protocol> {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is Protocol) return false
@@ -16,13 +16,18 @@ abstract class Protocol(val name: String) {
         return true
     }
 
+    override fun compareTo(other: Protocol) = this.name.compareTo(other.name)
+
     override fun hashCode(): Int = name.hashCode()
 }
 
 //Intentionally empty, because it might be represented as an int or a string or whatever.
 abstract class User(val chat: Chat): JsonConvertible
 
-abstract class Chat(val protocol: Protocol, val name: String): JsonConvertible
+abstract class Chat(val protocol: Protocol, val name: String): JsonConvertible, Comparable<Chat> {
+    override fun compareTo(other: Chat) =
+        "${protocol.name}-${this.name}".compareTo("${other.protocol.name}-${other.name}")
+}
 
 object UniversalUser: User(UniversalChat), JsonConvertible {
     override fun toJson() = """{"type":"UniversalUser"}"""
