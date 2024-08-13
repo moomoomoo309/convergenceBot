@@ -2,17 +2,17 @@ package convergence.testPlugins.discordPlugin
 
 import com.squareup.moshi.Moshi
 import convergence.*
-import convergence.MessageHistory
-import convergence.User
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.OnlineStatus
-import net.dv8tion.jda.api.entities.*
+import net.dv8tion.jda.api.entities.Member
+import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.dv8tion.jda.api.requests.GatewayIntent
+import net.dv8tion.jda.api.utils.FileUpload
 import net.dv8tion.jda.api.utils.cache.CacheFlag
 import org.pf4j.PluginWrapper
 import org.slf4j.Logger
@@ -80,12 +80,13 @@ class DiscordUser(chat: Chat,
     }
 }
 
+typealias DCustomEmoji = net.dv8tion.jda.api.entities.emoji.CustomEmoji
 data class DiscordEmoji(
         val url: String,
         override val name: String,
-        val emoji: Emote,
+        val emoji: DCustomEmoji,
         override val id: Long): CustomEmoji(url, name), DiscordObject, JsonConvertible {
-    constructor(emoji: Emote): this(emoji.imageUrl, emoji.name, emoji, emoji.idLong)
+    constructor(emoji: DCustomEmoji): this(emoji.imageUrl, emoji.name, emoji, emoji.idLong)
 }
 
 val formatMap = mapOf(
@@ -120,11 +121,11 @@ object DiscordInterface: BaseInterface, CanFormatMessages, HasNicknames, HasImag
     override fun sendImage(chat: Chat, image: Image, sender: User, message: String) {
         if (chat is DiscordChat && image is DiscordImage)
             if (image.url != null)
-                chat.channel.sendFile(URL(image.url).openStream(), name)
+                chat.channel.sendFiles(FileUpload.fromData(URL(image.url).openStream(), name))
             else {
                 val data = image.data
                 if (data != null)
-                    chat.channel.sendFile(data, name)
+                    chat.channel.sendFiles(FileUpload.fromData(data, name))
             }
     }
 
@@ -184,7 +185,7 @@ object DiscordInterface: BaseInterface, CanFormatMessages, HasNicknames, HasImag
     }
 
     override fun getDelimiters(format: Format): Pair<String, String>? = formatMap[format]
-    override fun getEmojis(chat: Chat): List<CustomEmoji> = jda.emotes.map { DiscordEmoji(it) }
+    override fun getEmojis(chat: Chat): List<CustomEmoji> = jda.emojis.map { DiscordEmoji(it) }
     override fun sendMessage(chat: Chat, message: String): Boolean {
         if (chat !is DiscordChat)
             return false
@@ -210,7 +211,7 @@ object MessageListener: ListenerAdapter() {
     override fun onMessageReceived(event: MessageReceivedEvent) {
         val chat = DiscordChat(event)
         DiscordInterface.receivedMessage(chat, event.message.contentDisplay, DiscordUser(event))
-        val mentionedMembers = event.message.mentionedMembers
+        val mentionedMembers = event.message.mentions.members
         if (mentionedMembers.isNotEmpty())
             DiscordInterface.mentionedUsers(chat, event.message.contentDisplay, mentionedMembers.map { DiscordUser(chat, it) }.toSet())
     }
@@ -242,7 +243,7 @@ class DiscordPlugin(wrapper: PluginWrapper): Plugin(wrapper) {
                                     GatewayIntent.GUILD_MESSAGE_REACTIONS,
                                     GatewayIntent.GUILD_MESSAGES,
                                     GatewayIntent.GUILD_MEMBERS,
-                                    GatewayIntent.GUILD_EMOJIS,
+                                GatewayIntent.GUILD_EMOJIS_AND_STICKERS,
                                     GatewayIntent.DIRECT_MESSAGE_TYPING,
                                     GatewayIntent.DIRECT_MESSAGE_REACTIONS,
                                     GatewayIntent.DIRECT_MESSAGES
