@@ -20,7 +20,6 @@ import org.slf4j.LoggerFactory
 import java.io.FileNotFoundException
 import java.net.URL
 import java.nio.file.Files
-import java.nio.file.Paths
 import java.time.OffsetDateTime
 import javax.security.auth.login.LoginException
 
@@ -31,6 +30,8 @@ val discordLogger: Logger = LoggerFactory.getLogger("convergence.discord")
 interface DiscordObject {
     val id: Long
 }
+typealias DUser = net.dv8tion.jda.api.entities.User
+typealias DCustomEmoji = net.dv8tion.jda.api.entities.emoji.RichCustomEmoji
 
 class DiscordAvailability(val status: OnlineStatus): Availability(status.name)
 
@@ -45,25 +46,26 @@ class DiscordChat(name: String, override val id: Long, val channel: MessageChann
         this === other || (javaClass == other?.javaClass && id == (other as DiscordChat).id)
 }
 
-class DiscordMessageHistory(val msg: Message, override val id: Long): MessageHistory(msg.contentRaw, msg.timeCreated, DiscordUser(DiscordChat(msg), msg.author)), DiscordObject, JsonConvertible {
+class DiscordMessageHistory(val msg: Message, override val id: Long):
+    MessageHistory(msg.contentRaw, msg.timeCreated, DiscordUser(DiscordChat(msg), msg.author)), DiscordObject,
+    JsonConvertible {
     constructor(msg: Message): this(msg, msg.idLong)
 }
 
-class DiscordUser(chat: Chat,
-                  val name: String,
-                  override val id: Long,
-                  val author: net.dv8tion.jda.api.entities.User): User(chat), DiscordObject, JsonConvertible {
+class DiscordUser(chat: Chat, val name: String, override val id: Long, val author: DUser):
+    User(chat), DiscordObject, JsonConvertible {
+
     constructor(msgEvent: MessageReceivedEvent): this(DiscordChat(msgEvent), msgEvent)
     constructor(chat: Chat, msgEvent: MessageReceivedEvent): this(chat, msgEvent.author)
-    constructor(chat: Chat, author: net.dv8tion.jda.api.entities.User): this(chat, author.name, author.idLong, author)
+    constructor(chat: Chat, author: DUser): this(chat, author.name, author.idLong, author)
     constructor(chat: Chat, author: Member): this(chat, author.user)
 
     override fun toJson() = mapOf(
-            "type" to "DiscordUser",
-            "chat" to chat.toJson(),
-            "name" to name,
-            "id" to id,
-            "author" to author.idLong
+        "type" to "DiscordUser",
+        "chat" to chat.toJson(),
+        "name" to name,
+        "id" to id,
+        "author" to author.idLong
     ).json()
 
     override fun equals(other: Any?): Boolean {
@@ -80,12 +82,12 @@ class DiscordUser(chat: Chat,
     }
 }
 
-typealias DCustomEmoji = net.dv8tion.jda.api.entities.emoji.CustomEmoji
 data class DiscordEmoji(
-        val url: String,
-        override val name: String,
-        val emoji: DCustomEmoji,
-        override val id: Long): CustomEmoji(url, name), DiscordObject, JsonConvertible {
+    val url: String,
+    override val name: String,
+    val emoji: DCustomEmoji,
+    override val id: Long
+): CustomEmoji(url, name), DiscordObject, JsonConvertible {
     constructor(emoji: DCustomEmoji): this(emoji.imageUrl, emoji.name, emoji, emoji.idLong)
 }
 
@@ -145,14 +147,16 @@ object DiscordInterface: BaseInterface, CanFormatMessages, HasNicknames, HasImag
                     if (until == null) {
                         for ((i2, msg) in history.retrievedHistory.withIndex())
                             if (msg.timeCreated.isAfter(since))
-                                return history.retrievedHistory.subList(i2, history.size() - 1).map { DiscordMessageHistory(it) }
+                                return history.retrievedHistory.subList(i2, history.size() - 1)
+                                    .map { DiscordMessageHistory(it) }
                     } else {
                         var startIndex = 0
                         for ((i2, msg) in history.retrievedHistory.withIndex()) {
                             if (msg.timeCreated.isAfter(since))
                                 startIndex = i2
                             if (msg.timeCreated.isAfter(until))
-                                return history.retrievedHistory.subList(startIndex, i2).map { DiscordMessageHistory(it) }
+                                return history.retrievedHistory.subList(startIndex, i2)
+                                    .map { DiscordMessageHistory(it) }
                         }
                         if (history.retrievedHistory.first().timeCreated.isAfter(since))
                             return history.retrievedHistory.map { DiscordMessageHistory(it) }
@@ -165,7 +169,12 @@ object DiscordInterface: BaseInterface, CanFormatMessages, HasNicknames, HasImag
             return emptyList()
     }
 
-    override fun getUserMessages(chat: Chat, user: User, since: OffsetDateTime?, until: OffsetDateTime?): List<MessageHistory> {
+    override fun getUserMessages(
+        chat: Chat,
+        user: User,
+        since: OffsetDateTime?,
+        until: OffsetDateTime?
+    ): List<MessageHistory> {
         if (user !is DiscordUser)
             return emptyList()
         return getMessages(chat, since).filter { it.sender == user }
@@ -191,7 +200,7 @@ object DiscordInterface: BaseInterface, CanFormatMessages, HasNicknames, HasImag
             return false
         try {
             chat.channel.sendMessage(message).complete()
-        } catch (e: Exception) {
+        } catch(e: Exception) {
             e.printStackTrace()
         }
         return true
@@ -213,11 +222,15 @@ object MessageListener: ListenerAdapter() {
         DiscordInterface.receivedMessage(chat, event.message.contentDisplay, DiscordUser(event))
         val mentionedMembers = event.message.mentions.members
         if (mentionedMembers.isNotEmpty())
-            DiscordInterface.mentionedUsers(chat, event.message.contentDisplay, mentionedMembers.map { DiscordUser(chat, it) }.toSet())
+            DiscordInterface.mentionedUsers(
+                chat,
+                event.message.contentDisplay,
+                mentionedMembers.map { DiscordUser(chat, it) }.toSet()
+            )
     }
 }
 
-lateinit var _moshi: Moshi
+lateinit var discordMoshi: Moshi
 
 class DiscordPlugin(wrapper: PluginWrapper): Plugin(wrapper) {
     override val name = "DiscordPlugin"
@@ -232,30 +245,30 @@ class DiscordPlugin(wrapper: PluginWrapper): Plugin(wrapper) {
     }
 
     override fun init() {
-        _moshi = this.moshi
+        discordMoshi = this.moshi
         println("Discord Plugin initialized.")
         jda = try {
             val it = JDABuilder
-                    .create(
-                            setOf(
-                                    GatewayIntent.GUILD_PRESENCES,
-                                    GatewayIntent.GUILD_MESSAGE_TYPING,
-                                    GatewayIntent.GUILD_MESSAGE_REACTIONS,
-                                    GatewayIntent.GUILD_MESSAGES,
-                                    GatewayIntent.GUILD_MEMBERS,
-                                GatewayIntent.GUILD_EMOJIS_AND_STICKERS,
-                                    GatewayIntent.DIRECT_MESSAGE_TYPING,
-                                    GatewayIntent.DIRECT_MESSAGE_REACTIONS,
-                                    GatewayIntent.DIRECT_MESSAGES
-                            )
+                .create(
+                    setOf(
+                        GatewayIntent.GUILD_PRESENCES,
+                        GatewayIntent.GUILD_MESSAGE_TYPING,
+                        GatewayIntent.GUILD_MESSAGE_REACTIONS,
+                        GatewayIntent.GUILD_MESSAGES,
+                        GatewayIntent.GUILD_MEMBERS,
+                        GatewayIntent.GUILD_EMOJIS_AND_STICKERS,
+                        GatewayIntent.DIRECT_MESSAGE_TYPING,
+                        GatewayIntent.DIRECT_MESSAGE_REACTIONS,
+                        GatewayIntent.DIRECT_MESSAGES
                     )
-                    .setToken(String(Files.readAllBytes(Paths.get(System.getProperty("user.home"), ".convergence", "discordToken"))).trim())
-                    .disableCache(CacheFlag.VOICE_STATE)
+                )
+                .setToken(Files.readString(convergencePath.resolve("discordToken")).trim())
+                .disableCache(CacheFlag.VOICE_STATE)
             it.build()
-        } catch (e: FileNotFoundException) {
-            discordLogger.error("You need to put your discord token in .convergence/discordToken!")
+        } catch(e: FileNotFoundException) {
+            discordLogger.error("You need to put your discord token in $convergencePath/discordToken!")
             return
-        } catch (e: LoginException) {
+        } catch(e: LoginException) {
             e.printStackTrace()
             return
         }

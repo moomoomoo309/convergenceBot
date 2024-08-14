@@ -61,7 +61,7 @@ object DiscordEmojiAdapter: JsonAdapter<DiscordEmoji>() {
             writer.name("emoji")
             writer.value(it.emoji.id)
             writer.name("guild")
-            writer.value(it.emoji.guild!!.id)
+            writer.value(it.emoji.guild.id)
             writer.name("id")
             writer.value(it.id)
         }
@@ -77,14 +77,14 @@ object DiscordUserAdapter: JsonAdapter<DiscordUser>() {
         if (reader.nextName() != "chat")
             throw JsonDataException("The 2nd field should be chat in DiscordUser!")
         val chatJson = when (val json = reader.readJsonValue()) {
-            is String -> _moshi.toJson(json)
-            is Number -> _moshi.toJson(json)
-            is Boolean -> _moshi.toJson(json)
-            is List<*> -> _moshi.toJson(json)
-            is Map<*, *> -> _moshi.toJson(json)
+            is String -> discordMoshi.toJson(json)
+            is Number -> discordMoshi.toJson(json)
+            is Boolean -> discordMoshi.toJson(json)
+            is List<*> -> discordMoshi.toJson(json)
+            is Map<*, *> -> discordMoshi.toJson(json)
             else -> return null
         }
-        val chat = _moshi.fromJson<DiscordChat>(chatJson)
+        val chat = discordMoshi.fromJson<DiscordChat>(chatJson)
         readStringOrThrow = getReadStringOrThrow(reader, "DiscordUser", 4)
         val name = readStringOrThrow("name")
         val id = readStringOrThrow("id")

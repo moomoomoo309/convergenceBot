@@ -33,7 +33,7 @@ enum class ConfigOption(val defaultValue: Any) {
     ;
 
     companion object {
-        val values = values().toList()
+        val values = entries
         val defaultSettings = values.associate { it.name to it.defaultValue }
     }
 }
@@ -120,7 +120,7 @@ val protocols: MutableList<Protocol> by Settings
 val baseInterfaceMap: MutableMap<Protocol, BaseInterface> by Settings
 val chatMap: MutableMap<Int, Chat> by Settings
 val reverseChatMap: MutableMap<Chat, Int> by Settings
-val convergencePath: Path by Settings
+var convergencePath: Path by Settings
 var pluginPaths: MutableList<Path> by Settings
 val commandDelimiters: MutableMap<Chat, String> by Settings
 val aliasVars: MutableMap<String, (baseInterface: BaseInterface, chat: Chat, sender: User) -> String> by Settings
@@ -130,7 +130,7 @@ val commands: MutableMap<Chat, MutableMap<String, Command>> by Settings
 val aliases: MutableMap<Chat, MutableMap<String, Alias>> by Settings
 
 object SharedVariables: MutableMap<String, Any?> by ConcurrentHashMap(
-    SharedVariable.values().associate { it.name to it.defaultValue }
+    SharedVariable.entries.associate { it.name to it.defaultValue }
 )
 
 @Suppress("unused")
@@ -163,4 +163,4 @@ var currentChatID: Int by SharedVariables
 val moshiBuilder: Moshi.Builder by SharedVariables
 var moshi: Moshi by SharedVariables
 
-val settingsPath: Path = convergencePath.resolve("settings.json")
+var settingsPath: Path = convergencePath.resolve("settings.json")
