@@ -10,10 +10,10 @@ abstract class Plugin(wrapper: PluginWrapper): org.pf4j.Plugin(wrapper) {
     abstract val baseInterface: BaseInterface
 
     val sharedVariables: SharedVariables by lazy {
-        loadClass("convergence.sharedVariables").kotlin.objectInstance!! as SharedVariables
+        loadClass("convergence.SharedVariables").kotlin.objectInstance!! as SharedVariables
     }
     val settings: Settings by lazy {
-        loadClass("convergence.settings").kotlin.objectInstance!! as Settings
+        loadClass("convergence.Settings").kotlin.objectInstance!! as Settings
     }
 
     override fun start() {

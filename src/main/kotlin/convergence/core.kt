@@ -375,14 +375,14 @@ class core {
                 .dest("convergencePath")
                 .nargs(1)
                 .type(String::class.java)
-                .default = Paths.get(System.getProperty("user.home"), ".convergence").toString()
+                .default = listOf(Paths.get(System.getProperty("user.home"), ".convergence").toString())
 
 
             paths.addArgument("-pp", "--plugin-path")
                 .dest("pluginPath")
                 .nargs("+")
-                .type(List::class.java)
-                .default = listOf(convergencePath.resolve("plugins").toString())
+                .type(String::class.java)
+                .default = listOf(Paths.get(System.getProperty("user.home"), ".convergence", "plugins").toString())
             commandLineArgs = try {
                 argParser.parseArgs(args)
             } catch (e: ArgumentParserException) {
@@ -391,8 +391,7 @@ class core {
                 return
             }
 
-            convergencePath = Paths.get(commandLineArgs.get<String>("convergencePath"))
-            settingsPath = convergencePath.resolve("settings.json")
+            convergencePath = Paths.get(commandLineArgs.get<List<String>>("convergencePath").first())
 
             // It'd be silly to get this list, convert it to a set, then convert it back to a list for the plugin
             // manager, so we'll keep this locally, so we can construct the plugin manager.
@@ -406,7 +405,7 @@ class core {
 
             Settings.putAll(initSettings())
             SharedVariables.putAll(SharedVariable.entries.associate { it.name to it.defaultValue }
-                .filter { it.value != null })
+                .filter { it.key !in SharedVariables && it.value != null })
 
             registerProtocol(UniversalProtocol, FakeBaseInterface)
 

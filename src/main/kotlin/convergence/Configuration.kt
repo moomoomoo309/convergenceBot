@@ -13,36 +13,40 @@ import java.util.concurrent.ConcurrentHashMap
 const val defaultCommandDelimiter = "!"
 
 @Suppress("EnumEntryName", "unused")
-enum class ConfigOption(val defaultValue: Any) {
-    protocols(mutableListOf<Protocol>()),
-    baseInterfaceMap(mutableMapOf<Protocol, BaseInterface>()),
-    chatMap(mutableMapOf<Int, Chat>()),
-    reverseChatMap(mutableMapOf<Chat, Int>()),
-    pluginPaths(mutableListOf<Path>()),
-    commandDelimiters(DefaultMap<Chat, String>(defaultCommandDelimiter)),
-    aliasVars(
+enum class ConfigOption(val defaultValueSupplier: () -> Any) {
+    protocols({ mutableListOf<Protocol>() }),
+    baseInterfaceMap({ mutableMapOf<Protocol, BaseInterface>() }),
+    chatMap({ mutableMapOf<Int, Chat>() }),
+    reverseChatMap({ mutableMapOf<Chat, Int>() }),
+    pluginPaths({ mutableListOf<Path>() }),
+    commandDelimiters({ DefaultMap<Chat, String>(defaultCommandDelimiter) }),
+    aliasVars({
         mutableMapOf(
             "sender" to { b: BaseInterface, c: Chat, s: User -> b.getName(c, s) },
             "botname" to { b: BaseInterface, c: Chat, _: User -> b.getName(c, b.getBot(c)) },
             "chatname" to { b: BaseInterface, c: Chat, _: User -> b.getChatName(c) })
-    ),
-    linkedChats(hashMapOf<Chat, MutableSet<Chat>>()),
-    delimiters(hashMapOf<Chat, String>()),
-    commands(mutableMapOf<Chat, MutableMap<String, Command>>()),
-    aliases(mutableMapOf<Chat, MutableMap<String, Alias>>()),
+    }),
+    linkedChats({ hashMapOf<Chat, MutableSet<Chat>>() }),
+    delimiters({ hashMapOf<Chat, String>() }),
+    commands({ mutableMapOf<Chat, MutableMap<String, Command>>() }),
+    aliases({ mutableMapOf<Chat, MutableMap<String, Alias>>() }),
     ;
 
     companion object {
         val values = entries
-        val defaultSettings = values.associate { it.name to it.defaultValue }
+        val defaultSettings = values.associate { it.name to it.defaultValueSupplier }
     }
 }
 
-object Settings: MutableMap<String, Any?> by ConcurrentHashMap(initSettings())
+object Settings: MutableMap<String, Any?> by ConcurrentHashMap()
 
 val initMoshi: Moshi = Moshi.Builder()
     .add(KotlinJsonAdapterFactory())
     .build()
+
+private fun writeLazySettingsToFile(settingsToWrite: Map<String, () -> Any>) =
+    writeSettingsToFile(settingsToWrite.mapValues { it.value() })
+
 
 private fun writeSettingsToFile(settingsToWrite: Map<String, Any>) = Files.write(
     settingsPath,
@@ -55,7 +59,7 @@ fun initSettings(): Map<String, Any> {
     with(settingsLogger) {
         if (Files.notExists(settingsPath)) {
             info("Creating new settings file since one was not found.")
-            writeSettingsToFile(defaultSettings)
+            writeLazySettingsToFile(defaultSettings)
             return defaultSettings
         }
     }
@@ -97,7 +101,7 @@ fun updateSettings(newSettings: ConcurrentHashMap<String, Any>) {
  * Warning: Editing this function can cause initialization errors that are a royal pain to debug. If you see
  * an [ExceptionInInitializerError], it's probably from this function.
  */
-fun readSettings(fallbackSettings: Map<String, Any>, initialRun: Boolean): ConcurrentHashMap<String, Any> = try {
+fun readSettings(fallbackSettings: Map<String, () -> Any>, initialRun: Boolean): ConcurrentHashMap<String, Any> = try {
     val finalSettings = initMoshi.fromJson<MutableMap<String, Any>>(settingsPath.toFile().readText())
     for ((k, v) in defaultSettings) {
         if (!finalSettings.containsKey(k)) {
@@ -113,7 +117,7 @@ fun readSettings(fallbackSettings: Map<String, Any>, initialRun: Boolean): Concu
 } catch (e: Throwable) {
     settingsLogger.error("Error occurred while reading settings from $settingsPath. Returning fallback settings instead.\n\tError: $e")
     e.printStackTrace()
-    ConcurrentHashMap(fallbackSettings)
+    ConcurrentHashMap(fallbackSettings.mapValues { it.value() })
 }
 
 val protocols: MutableList<Protocol> by Settings
@@ -130,7 +134,7 @@ val commands: MutableMap<Chat, MutableMap<String, Command>> by Settings
 val aliases: MutableMap<Chat, MutableMap<String, Alias>> by Settings
 
 object SharedVariables: MutableMap<String, Any?> by ConcurrentHashMap(
-    SharedVariable.entries.associate { it.name to it.defaultValue }
+    SharedVariable.entries.filter { it.defaultValue != null }.associate { it.name to it.defaultValue }
 )
 
 @Suppress("unused")
@@ -163,4 +167,4 @@ var currentChatID: Int by SharedVariables
 val moshiBuilder: Moshi.Builder by SharedVariables
 var moshi: Moshi by SharedVariables
 
-var settingsPath: Path = convergencePath.resolve("settings.json")
+val settingsPath: Path by lazy { convergencePath.resolve("settings.json") }

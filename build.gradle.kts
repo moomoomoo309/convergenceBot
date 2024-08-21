@@ -95,6 +95,14 @@ subprojects {
 
         into("classes") {
             with(tasks.named<Jar>("jar").get())
+            from(configurations.runtimeClasspath.get()
+                .filter {
+                    !rootProject.configurations.runtimeClasspath.get().contains(it)
+                            && rootProject.name !in it.name
+                }
+                .map(::zipTree)
+            )
+            duplicatesStrategy = DuplicatesStrategy.EXCLUDE
         }
         dependsOn(configurations.runtimeClasspath)
 

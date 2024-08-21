@@ -11,9 +11,9 @@ dependencies {
     implementation("net.dv8tion:JDA:5.0.2") {
         exclude(module = "opus-java")
     }
+    implementation("club.minnced:jda-ktx:0.12.0")
     implementation("net.sf.trove4j:trove4j:3.0.3")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.17.2")
-    implementation(kotlin("stdlib-jdk8"))
 }
 
 repositories {
