@@ -2,9 +2,9 @@
 
 package convergence
 
-import com.joestelmach.natty.DateGroup
-import com.joestelmach.natty.Parser
 import convergence.CommandScheduler.getCommands
+import org.natty.DateGroup
+import org.natty.Parser
 import java.io.PrintWriter
 import java.io.StringWriter
 import java.time.Duration
@@ -300,7 +300,7 @@ fun events(args: List<String>, sender: User): String {
             builder.append(": ")
             builder.append(getUserName(it.sender))
             builder.append(" - \"")
-            builder.append(commandDelimiters[sender.chat])
+            builder.append(commandDelimiters.getOrDefault(sender.chat, defaultCommandDelimiter))
             builder.append(it.commandData.command.name)
             builder.append(' ')
             builder.append(it.commandData.args.joinToString(" "))
@@ -338,7 +338,7 @@ fun eventsFromUser(args: List<String>, sender: User): String {
             builder.append("] ")
             builder.append(formatTime(event.time))
             builder.append(": \"")
-            builder.append(commandDelimiters[sender.chat])
+            builder.append(commandDelimiters.getOrDefault(sender.chat, defaultCommandDelimiter))
             builder.append(event.commandData.command.name)
             builder.append(" ")
             builder.append(event.commandData.args.joinToString(" "))
@@ -362,7 +362,7 @@ fun eventsByUser(args: List<String>, sender: User): String {
             builder.append("] ")
             builder.append(formatTime(event.time))
             builder.append(": \"")
-            builder.append(commandDelimiters[sender.chat])
+            builder.append(commandDelimiters.getOrDefault(sender.chat, defaultCommandDelimiter))
             builder.append(event.commandData.command.name)
             builder.append(" ")
             builder.append(event.commandData.args.joinToString(" "))

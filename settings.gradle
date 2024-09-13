@@ -1,3 +1,3 @@
 rootProject.name = "convergence.bot"
 
-include("basicPlugin", "consolePlugin", "discordPlugin", "matterbridgePlugin")
+include("basicPlugin", "consolePlugin", "discordPlugin")

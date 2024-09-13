@@ -53,7 +53,8 @@ fun CommonToken.text() = when (this.type) {
     else -> this.text
 }.toString()
 
-fun parseCommand(command: String, chat: Chat): CommandData? = parseCommand(command, commandDelimiters[chat]!!, chat)
+fun parseCommand(command: String, chat: Chat): CommandData? =
+    parseCommand(command, commandDelimiters.getOrDefault(chat, defaultCommandDelimiter), chat)
 fun parseCommand(command: String, commandDelimiter: String, chat: Chat): CommandData? {
     // Check for the command delimiter, so the grammar doesn't have to worry about it
     if (!command.startsWith(commandDelimiter))

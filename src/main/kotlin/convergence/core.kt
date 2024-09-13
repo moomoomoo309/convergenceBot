@@ -109,10 +109,6 @@ fun registerAlias(alias: Alias): Boolean {
     return true
 }
 
-class DefaultMap<K, V>(var defaultValue: V): HashMap<K, V>() {
-    override operator fun get(key: K): V = super.getOrDefault(key, defaultValue)
-}
-
 /**
  * Sets the Command delimiter used for the bot's commands. (is it !help, |help, @help, or something else?)
  */
@@ -443,25 +439,25 @@ class core {
                 val plugin = wrapper.plugin as Plugin
                 registerProtocols(plugin.baseInterface.protocols, plugin.baseInterface)
             }
+            Thread.sleep(3000L)
 
             // Update the chat map
             for (protocol in protocols) {
-                Thread {
-                    try {
-                        val chats = baseInterfaceMap[protocol]?.getChats()
-                            ?: throw Exception("Protocol ${protocol.name} is not in the base interface map!")
-                        for (chat in chats) {
-                            if (chat !in reverseChatMap) {
-                                while (currentChatID in chatMap)
-                                    currentChatID++
-                                chatMap[currentChatID] = chat
-                                reverseChatMap[chat] = currentChatID
-                            }
+                defaultLogger.info("Initializing ${protocol.name}...")
+                try {
+                    val chats = baseInterfaceMap[protocol]?.getChats()
+                        ?: throw Exception("Protocol ${protocol.name} is not in the base interface map!")
+                    for (chat in chats) {
+                        if (chat !in reverseChatMap) {
+                            while (currentChatID in chatMap)
+                                currentChatID++
+                            chatMap[currentChatID] = chat
+                            reverseChatMap[chat] = currentChatID
                         }
-                    } catch (e: Exception) {
-                        e.printStackTrace()
                     }
-                }.start()
+                } catch(e: Exception) {
+                    e.printStackTrace()
+                }
             }
         }
     }

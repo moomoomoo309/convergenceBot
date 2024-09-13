@@ -12,7 +12,7 @@ val humanize_version = "1.2.2"
 val logback_version = "1.5.6"
 val mapdb_version = "3.1.0"
 val moshi_version = "1.15.1"
-val natty_version = "0.13"
+val natty_version = "1.0.1"
 val pf4j_version = "3.12.0"
 
 plugins {
@@ -45,7 +45,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
 
-    implementation("com.joestelmach:natty:$natty_version")
+    implementation("io.github.natty-parser:natty:$natty_version")
     implementation("net.sourceforge.argparse4j:argparse4j:$argparse4j_version")
     implementation("com.github.mfornos:humanize-slim:$humanize_version")
     antlr("org.antlr:antlr4:$antlr_version")
@@ -113,8 +113,16 @@ subprojects {
         // in the right folder, I grab them from the tmp directory where they live while it's building the jar.
         // This is an ugly hack, but it's gradle's fault for not putting stuff in the root META-INF when I ask it to.
         // Thanks for coming to my TED Talk. - Nick DeLello
+        exclude("classes/META-INF")
+        exclude("META-INF")
         into("META-INF") {
             from("build/tmp/jar", "build/tmp/kapt3/classes/main/META-INF")
+            duplicatesStrategy = DuplicatesStrategy.INCLUDE
+        }
+
+        into("classes/META-INF") {
+            from("build/tmp/jar", "build/tmp/kapt3/classes/main/META-INF")
+            duplicatesStrategy = DuplicatesStrategy.INCLUDE
         }
 
         manifest {
@@ -140,7 +148,7 @@ subprojects {
         implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version")
         implementation("org.jetbrains.kotlin:kotlin-reflect")
 
-        implementation("com.joestelmach:natty:$natty_version")
+        implementation("io.github.natty-parser:natty:$natty_version")
         implementation("net.sourceforge.argparse4j:argparse4j:$argparse4j_version")
         implementation("com.github.mfornos:humanize-slim:$humanize_version")
         implementation("ch.qos.logback:logback-classic:$logback_version")

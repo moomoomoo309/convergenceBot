@@ -259,7 +259,8 @@ class DiscordPlugin(wrapper: PluginWrapper): Plugin(wrapper) {
                         GatewayIntent.GUILD_EMOJIS_AND_STICKERS,
                         GatewayIntent.DIRECT_MESSAGE_TYPING,
                         GatewayIntent.DIRECT_MESSAGE_REACTIONS,
-                        GatewayIntent.DIRECT_MESSAGES
+                        GatewayIntent.DIRECT_MESSAGES,
+                        GatewayIntent.MESSAGE_CONTENT
                     )
                 )
                 .setToken(Files.readString(convergencePath.resolve("discordToken")).trim())
@@ -272,6 +273,7 @@ class DiscordPlugin(wrapper: PluginWrapper): Plugin(wrapper) {
             e.printStackTrace()
             return
         }
+        discordLogger.info("JDA Initialized.")
         jda.addEventListener(MessageListener)
     }
 }

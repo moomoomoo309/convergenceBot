@@ -19,7 +19,7 @@ enum class ConfigOption(val defaultValueSupplier: () -> Any) {
     chatMap({ mutableMapOf<Int, Chat>() }),
     reverseChatMap({ mutableMapOf<Chat, Int>() }),
     pluginPaths({ mutableListOf<Path>() }),
-    commandDelimiters({ DefaultMap<Chat, String>(defaultCommandDelimiter) }),
+    commandDelimiters({ HashMap<Chat, String>() }),
     aliasVars({
         mutableMapOf(
             "sender" to { b: BaseInterface, c: Chat, s: User -> b.getName(c, s) },
