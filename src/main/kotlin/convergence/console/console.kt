@@ -1,17 +1,18 @@
-package convergence.testPlugins.consolePlugin
+package convergence.console
 
-import convergence.*
-import org.pf4j.PluginWrapper
+import convergence.BaseInterface
+import convergence.Chat
+import convergence.Protocol
+import convergence.User
 import java.util.*
 import kotlin.system.exitProcess
 
-class ConsoleUser: User(ConsoleChat)
+class ConsoleUser(val name: String): User(ConsoleChat)
 object ConsoleChat: Chat(ConsoleProtocol, "Console")
 
-val user = ConsoleUser()
-val bot = ConsoleUser()
+val user = ConsoleUser("user")
+val bot = ConsoleUser("bot")
 
-object ConsoleProtocol: Protocol("Console")
 object ConsoleInterface: BaseInterface {
     override val name = "ConsoleInterface"
     override val protocols: List<Protocol> = listOf(ConsoleProtocol)
@@ -47,24 +48,8 @@ object ConsoleInterface: BaseInterface {
 
 }
 
-class ConsolePlugin(wrapper: PluginWrapper): Plugin(wrapper) {
-    override val name = "consolePlugin"
-    override val baseInterface: BaseInterface = ConsoleInterface
-    var currentChatID: Int by sharedVariables
-    val chatMap: MutableMap<Int, Chat> by settings
-    val reverseChatMap: MutableMap<Chat, Int> by settings
-    var chatAdapterFactory: PolymorphicJsonAdapterFactory<Chat> by sharedVariables
-    var userAdapterFactory: PolymorphicJsonAdapterFactory<User> by sharedVariables
+object ConsoleProtocol: Protocol("Console", ConsoleInterface) {
     override fun init() {
-        val id = currentChatID++ // Only one chat, so we can register it right away.
-        chatMap[id] = ConsoleChat
-        reverseChatMap[ConsoleChat] = id
-
-        // The SingletonAdapterFactory should make these work. If not, it's because this plugin is on a different
-        // ClassLoader.
-        chatAdapterFactory = chatAdapterFactory.withSubtype(ConsoleChat::class.java, "ConsoleChat")
-        userAdapterFactory = userAdapterFactory.withSubtype(ConsoleUser::class.java, "ConsoleUser")
-
         print("consolePlugin initialized.\n\n> ")
 
         System.out.flush() // Flush guarantees that the > shows up before stdin. IntelliJ still doesn't listen to it.

@@ -34,7 +34,7 @@ inline fun unregisteredChat(chat: Chat) {
 
 fun getUserFromName(chat: Chat, name: String): User? {
     var alternateOption: User? = null
-    val baseInterface = baseInterfaceMap[chat.protocol]!!
+    val baseInterface = chat.protocol.baseInterface
     for (user in baseInterface.getUsers(chat)) {
         val currentName = baseInterface.getName(chat, user)
         if (currentName == name)
@@ -48,7 +48,7 @@ fun getUserFromName(chat: Chat, name: String): User? {
 fun getFullName(chat: Chat, name: String): String? {
     val user = getUserFromName(chat, name)
     if (chat.protocol in protocols)
-        return user?.let { baseInterfaceMap[chat.protocol]?.getName(chat, user) }
+        return user?.let { chat.protocol.baseInterface.getName(chat, user) }
     unregisteredChat(chat)
     return null
 }
@@ -104,6 +104,7 @@ fun addAlias(args: List<String>, sender: User): String {
         ?: return "Alias does not refer to a valid command!"
     if (!registerAlias(Alias(chat, args[0], command.command, command.args, args[1], command.command.syntaxText)))
         return "An alias with that name is already registered!"
+    Settings.update()
     return "Alias \"${args[0]}\" registered to \"${args[1]}\"."
 }
 
@@ -118,6 +119,7 @@ fun removeAlias(args: List<String>, sender: User): String {
         } else
             anyInvalid = true
     }
+    Settings.update()
     return if (anyInvalid)
         "Aliases \"${args.filterIndexed { i, _ -> validAliases[i] }.joinToString("\", \"")}\" removed, " +
                 "${args.filterIndexed { i, _ -> !validAliases[i] }.joinToString("\", \"")} not removed."
@@ -125,8 +127,8 @@ fun removeAlias(args: List<String>, sender: User): String {
 }
 
 fun me(args: List<String>, sender: User): String {
-    val (boldOpen, boldClose) =
-        (baseInterfaceMap[sender.chat.protocol] as? CanFormatMessages)?.getDelimiters(Format.bold) ?: Pair("", "")
+    val baseInterface = sender.chat.protocol.baseInterface as? CanFormatMessages
+    val (boldOpen, boldClose) = baseInterface?.getDelimiters(Format.bold) ?: Pair("", "")
     return "$boldOpen*${getUserName(sender)} ${args.joinToString(" ")}$boldClose."
 }
 
@@ -134,8 +136,7 @@ fun chats(args: List<String>, sender: User): String {
     val builder = StringBuilder()
     for (protocol in protocols) {
         try {
-            val chats = baseInterfaceMap[protocol]?.getChats()
-                ?: throw Exception("Protocol $protocol not present in baseInterfaceMap!")
+            val chats = protocol.baseInterface.getChats()
             builder.append("${protocol.name}\n\t")
             chats.forEach {
                 if (it !in reverseChatMap) {
@@ -143,14 +144,14 @@ fun chats(args: List<String>, sender: User): String {
                         currentChatID++
                     chatMap[currentChatID] = it
                     reverseChatMap[it] = currentChatID
-                    builder.append(it.name).append(" (").append(currentChatID++).append("), ")
+                    builder.append(it).append(" (").append(currentChatID++).append("), ")
                 } else
-                    builder.append(it.name).append(" (").append(reverseChatMap[it]).append("), ")
+                    builder.append(it).append(" (").append(reverseChatMap[it]).append("), ")
             }
             builder.setLength(builder.length - 2) // Remove the last ", ".
             builder.append('\n')
         } catch (e: Exception) {
-            println("Error getting chats for ${baseInterfaceMap[protocol]!!.name}. Stack Trace:\n${getStackTraceText(e)}")
+            println("Error getting chats for ${protocol.name}. Stack Trace:\n${getStackTraceText(e)}")
         }
     }
     return builder.toString()
@@ -242,12 +243,13 @@ fun setLocation(args: List<String>, sender: User): String {
             }
         }
     }
+    Settings.update()
     return if (builder.isNotEmpty()) builder.toString() else "No events scheduled."
 }
 
 fun target(args: List<String>, sender: User): String {
     val chat = sender.chat
-    val baseInterface = baseInterfaceMap[chat.protocol]!!
+    val baseInterface = chat.protocol.baseInterface
     val user = getUserFromName(chat, args[args.size - 1])
         ?: return "No user by the name \"${args[args.size - 1]}\" found."
     return args.subList(0, -1).joinToString(" ").replace("%target", baseInterface.getName(chat, user))
@@ -279,6 +281,7 @@ fun schedule(args: List<String>, sender: User): String {
         for (group in timeList)
             for (time in group.dates)
                 CommandScheduler.schedule(sender, commandData, dateToOffsetDateTime(time))
+    Settings.update()
     return "Scheduled \"$command\" to run in ${args[0]}."
 }
 
@@ -379,6 +382,7 @@ fun unschedule(args: List<String>, sender: User): String {
         return "${args[0]} is not an event ID!"
     }
 
+    Settings.update()
     return if (CommandScheduler.unschedule(sender, index))
         "Unscheduled event with index $index."
     else
@@ -397,6 +401,7 @@ fun link(args: List<String>, sender: User): String {
         if (sender.chat !in linkedChats)
             linkedChats[sender.chat] = mutableListOf()
         linkedChats[sender.chat]!!.add(chatToLink)
+        Settings.update()
         "${chatToLink.name} linked to ${sender.chat.name}."
     } else
         "No chat with ID $index found."
@@ -412,7 +417,7 @@ fun unlink(args: List<String>, sender: User): String {
 
     return when {
         sender.chat !in linkedChats -> "There are no chats linked to this one!"
-        linkedChats[sender.chat]!!.remove(chat) -> "Removed ${chat.name} from this chat's links."
+        linkedChats[sender.chat]!!.remove(chat) -> "Removed ${chat.name} from this chat's links.".also { Settings.update() }
         else -> "That chat isn't linked to this one!"
     }
 }
@@ -420,17 +425,21 @@ fun unlink(args: List<String>, sender: User): String {
 fun links(args: List<String>, sender: User): String {
     val chat = sender.chat
     return if (chat in linkedChats)
-        "Linked chats: ${linkedChats[chat]!!.joinToString(", ")}"
+        "Linked chats: ${linkedChats[chat]!!.joinToString(", ") { c: Chat -> "$c (${reverseChatMap[c]})" }}"
     else
         "No chats are linked to this one."
 }
 
 fun setDelimiter(args: List<String>, sender: User): String = when {
     args.isEmpty() -> "You need to pass the new delimiter!"
-    setCommandDelimiter(sender.chat, args[0]) -> "Command delimiter set to \"${args[0]}\"."
+    setCommandDelimiter(sender.chat, args[0]) -> "Command delimiter set to \"${args[0]}\".".also { Settings.update() }
     else -> "\"${args[0]}\" is not a valid command delimiter!"
 }
 
+val updateSettingsCommand = Command(
+    UniversalChat, "updateSettings", { _, _ -> updateSettings(Settings.map); "Settings updated." },
+    "Updates the settings file.", "updateSettings (Takes no arguments)"
+)
 fun registerDefaultCommands() {
     registerCommand(
         Command(
@@ -563,6 +572,12 @@ fun registerDefaultCommands() {
             UniversalChat, "setdelimiter", ::setDelimiter,
             "Changes the command delimiter of the current chat (default is !)",
             "setdelimiter (New delimiter)"
+        )
+    )
+    registerCommand(updateSettingsCommand)
+    registerCommand(
+        Command(
+            UniversalChat, "dumpSettings", { _, _ -> Settings.map.toString() }, "", ""
         )
     )
 }

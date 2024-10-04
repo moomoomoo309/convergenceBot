@@ -2,15 +2,15 @@
 
 package convergence
 
-import com.squareup.moshi.JsonDataException
-import com.squareup.moshi.Moshi
+import com.fasterxml.jackson.databind.ObjectMapper
+import convergence.console.ConsoleProtocol
+import convergence.discord.DiscordProtocol
 import humanize.Humanize
 import net.sourceforge.argparse4j.ArgumentParsers
 import net.sourceforge.argparse4j.inf.ArgumentParserException
 import org.ocpsoft.prettytime.units.JustNow
-import org.pf4j.DefaultPluginManager
-import org.pf4j.PluginWrapper
 import java.io.ByteArrayOutputStream
+import java.io.File
 import java.io.PrintStream
 import java.nio.file.Paths
 import java.time.OffsetDateTime
@@ -20,45 +20,12 @@ import kotlin.collections.set
 
 class CommandDoesNotExist(cmd: String): Exception(cmd)
 
-/**
- * Deserializes a JSON string into the type specified in [T].
- */
-inline fun <reified T: Any> Moshi.fromJson(jsonStr: String): T =
-    this.adapter(T::class.java)?.fromJson(jsonStr)
-        ?: throw JsonDataException("Is there an adapter missing for ${T::class.simpleName}?")
-
-fun <T> Moshi.fromJson(jsonStr: String, cls: Class<T>): T = this.adapter(cls)?.fromJson(jsonStr)
-    ?: throw JsonDataException("Is there an adapter missing for ${cls.simpleName}?")
-
-/**
- * Serializes a variable of type [T] into a JSON string. Will serialize null values if they are present.
- */
-inline fun <reified T: Any> Moshi.toJson(obj: T, prettyPrint: Boolean = false): String =
-    this.adapter(T::class.java)?.serializeNulls()?.indent(if (prettyPrint) "    " else "")?.toJson(obj)
-        ?: throw JsonDataException("Is there an adapter missing for ${T::class.simpleName}?")
-
-fun <T> Moshi.toJson(obj: T, cls: Class<T>, prettyPrint: Boolean = false): String =
-    this.adapter(cls)?.serializeNulls()?.indent(if (prettyPrint) "    " else "")?.toJson(obj)
-        ?: throw JsonDataException("Is there an adapter missing for ${cls.simpleName}?")
-
-/**
- * Adds a list of protocol to the protocol registry.
- * @return a list of booleans, true if a protocol with that name does not already exist in the registry, false otherwise.
- */
-fun registerProtocols(protocols: List<Protocol>, baseInterface: BaseInterface) = protocols.map {
-    registerProtocol(it, baseInterface)
+inline fun <reified T> ObjectMapper.readValue(value: String): T {
+    return this.readValue(value, T::class.java)
 }
 
-/**
- * Adds a protocol to the protocol registry.
- * @return true if a protocol with that name does not already exist in the registry, false otherwise.
- */
-fun registerProtocol(protocol: Protocol, baseInterface: BaseInterface): Boolean {
-    if (protocol in protocols)
-        return false
-    protocols.add(protocol)
-    baseInterfaceMap[protocol] = baseInterface
-    return true
+inline fun <reified T> ObjectMapper.readValue(value: File): T {
+    return this.readValue(value, T::class.java)
 }
 
 /**
@@ -123,7 +90,7 @@ fun setCommandDelimiter(chat: Chat, commandDelimiter: String): Boolean {
  * Sends [message] in the chat [sender] is in, forwarding the message to any linked chats.
  */
 fun sendMessage(sender: User, message: String?) {
-    if (sender != baseInterfaceMap[sender.chat.protocol]!!.getBot(sender.chat))
+    if (sender != sender.chat.protocol.baseInterface.getBot(sender.chat))
         sendMessage(sender.chat, message)
     forwardToLinkedChats(message, sender, true)
 }
@@ -138,7 +105,7 @@ fun sendMessage(chat: Chat, message: String?) {
         defaultLogger.error("Protocol \"${chat.protocol.name}\" not properly registered!")
         return
     }
-    val baseInterface = baseInterfaceMap[chat.protocol]!!
+    val baseInterface = chat.protocol.baseInterface
     baseInterface.sendMessage(chat, message)
 }
 
@@ -147,7 +114,7 @@ fun sendMessage(chat: Chat, message: String?) {
  */
 fun getUserName(sender: User): String {
     val chat = sender.chat
-    val baseInterface = baseInterfaceMap[chat.protocol]!!
+    val baseInterface = chat.protocol.baseInterface
     return if (baseInterface is HasNicknames)
         baseInterface.getUserNickname(chat, sender) ?: baseInterface.getName(chat, sender)
     else
@@ -184,7 +151,7 @@ fun replaceAliasVars(message: String?, sender: User): String? {
                 if (possibleMatches[i]) {
                     anyTrue = true
                     if (charIndex == string.length - 1) {
-                        val baseInterface = baseInterfaceMap[chat.protocol]!!
+                        val baseInterface = chat.protocol.baseInterface
                         stringBuilder.setLength(stringBuilder.length - string.length - 1)
                         stringBuilder.append(aliasVar(baseInterface, chat, sender))
                         charIndex = -1
@@ -237,7 +204,7 @@ fun forwardToLinkedChats(message: String?, sender: User, isCommand: Boolean = fa
     val protocol = chat.protocol
     var boldOpen = ""
     var boldClose = ""
-    val baseInterface = baseInterfaceMap[protocol]
+    val baseInterface = protocol.baseInterface
     // Try to get the delimiters for bold, if possible.
     if (baseInterface is CanFormatMessages && Format.bold in baseInterface.supportedFormats) {
         val delimiters = baseInterface.getDelimiters(Format.bold)
@@ -246,7 +213,7 @@ fun forwardToLinkedChats(message: String?, sender: User, isCommand: Boolean = fa
     }
 
     // Send the messages out to the linked chats, if there are any. Don't error if there aren't any.
-    val bot = baseInterfaceMap[sender.chat.protocol]!!.getBot(sender.chat)
+    val bot = sender.chat.protocol.baseInterface.getBot(sender.chat)
     if (isCommand || sender != bot)
         if (chat in linkedChats)
             for (linkedChat in linkedChats[chat]!!)
@@ -261,7 +228,7 @@ data class ScheduledCommand(
     val sender: User,
     val commandData: CommandData,
     val id: Int,
-): JsonConvertible
+)
 
 /**
  * Checks if commands scheduled for later are ready to be run yet. Can give information on the commands in its queue.
@@ -273,11 +240,10 @@ object CommandScheduler: Thread() {
     private val scheduledCommands = sortedMapOf<OffsetDateTime, MutableList<ScheduledCommand>>()
     private val commandsList = sortedMapOf<Int, ScheduledCommand>()
     private var currentId: Int = 0
-    private val serializedCommands = hashMapOf<Int, String>()
 
-    init {
+    fun loadFromFile() {
         serializedCommands.values.forEach {
-            val cmd = moshi.fromJson<ScheduledCommand>(it)
+            val cmd = objectMapper.readValue<ScheduledCommand>(it)
             commandsList[cmd.id] = cmd
             scheduledCommands.getOrPut(cmd.time) { mutableListOf(cmd) }
         }
@@ -288,17 +254,22 @@ object CommandScheduler: Thread() {
             val now = OffsetDateTime.now()
             for ((cmdTime, cmdList) in scheduledCommands) {
                 if (cmdTime.isBefore(now)) {
-                    if (cmdTime.until(now, ChronoUnit.SECONDS) in 0..allowedTimeDifferenceSeconds)
+                    if (cmdTime.until(now, ChronoUnit.SECONDS) in 0..allowedTimeDifferenceSeconds) {
                         for (cmd in cmdList) {
                             runCommand(cmd.sender, cmd.commandData)
                             scheduledCommands.remove(cmd.time)
                             commandsList.remove(cmd.id)
                         }
-                    else
+                        if (cmdList.isNotEmpty() && (cmdList.size > 1 || cmdList.first().commandData.command != updateSettingsCommand))
+                            Settings.update()
+                    } else {
                         for (cmd in cmdList) {
                             scheduledCommands.remove(cmd.time)
                             commandsList.remove(cmd.id)
                         }
+                        if (cmdList.isNotEmpty() && (cmdList.size > 1 || cmdList.first().commandData.command != updateSettingsCommand))
+                            Settings.update()
+                    }
                 } else // It's already sorted chronologically, so all following events are early.
                     break
             }
@@ -320,7 +291,9 @@ object CommandScheduler: Thread() {
         if (cmd.id in commandsList)
             defaultLogger.error("Duplicate IDs in schedulerThread!")
         commandsList[cmd.id] = cmd
-        serializedCommands[cmd.id] = cmd.toJson()
+        serializedCommands[cmd.id] = objectMapper.writeValueAsString(cmd)
+        if (!Settings.updateIsScheduled)
+            Settings.update()
         return "Scheduled ${getUserName(sender)} to run \"$command\" to run at $time."
     }
 
@@ -355,8 +328,6 @@ object CommandScheduler: Thread() {
 fun schedule(sender: User, command: CommandData, time: OffsetDateTime) =
     CommandScheduler.schedule(sender, command, time)
 
-val pluginWrappers: MutableList<PluginWrapper> get() = pluginManager.plugins
-
 class core {
     companion object {
         @JvmStatic
@@ -373,13 +344,7 @@ class core {
                 .type(String::class.java)
                 .default = listOf(Paths.get(System.getProperty("user.home"), ".convergence").toString())
 
-
-            paths.addArgument("-pp", "--plugin-path")
-                .dest("pluginPath")
-                .nargs("+")
-                .type(String::class.java)
-                .default = listOf(Paths.get(System.getProperty("user.home"), ".convergence", "plugins").toString())
-            commandLineArgs = try {
+            val commandLineArgs = try {
                 argParser.parseArgs(args)
             } catch (e: ArgumentParserException) {
                 defaultLogger.error("Failed to parse command line arguments. Printing stack trace:")
@@ -389,64 +354,23 @@ class core {
 
             convergencePath = Paths.get(commandLineArgs.get<List<String>>("convergencePath").first())
 
-            // It'd be silly to get this list, convert it to a set, then convert it back to a list for the plugin
-            // manager, so we'll keep this locally, so we can construct the plugin manager.
-            commandLineArgs.get<List<String>>("pluginPath").map { Paths.get(it) }.let {
-                pluginManager = DefaultPluginManager(it)
-                pluginPaths = it.toMutableList()
-            }
-
             // Remove "just now" as an option for time formatting. 5 minutes for "just now" is annoying.
             Humanize.prettyTimeFormat().prettyTime.removeUnit(JustNow::class.java)
 
             Settings.putAll(initSettings())
-            SharedVariables.putAll(SharedVariable.entries.associate { it.name to it.defaultValue }
-                .filter { it.key !in SharedVariables && it.value != null })
-
-            registerProtocol(UniversalProtocol, FakeBaseInterface)
 
             defaultLogger.info("Registering default commands...")
             registerDefaultCommands()
 
-            defaultLogger.info("Starting command scheduler...")
-            CommandScheduler.start()
-
-            pluginManager.loadPlugins()
-            if (pluginWrappers.isEmpty())
-                defaultLogger.info("No plugins loaded.")
-            else
-                defaultLogger.info("Loaded Plugins:\t${pluginWrappers.joinToString("\t") { it.pluginId }}")
-
-            for (wrapper in pluginWrappers) {
-                defaultLogger.info("Preinitializing plugin: ${wrapper.pluginId}")
-                (wrapper.plugin as Plugin).preinit()
-            }
-
-            moshi = moshiBuilder
-                .addLast(chatAdapterFactory)
-                .addLast(userAdapterFactory)
-                .addLast(imageAdapterFactory)
-                .addLast(messageHistoryAdapterFactory)
-                .addLast(stickerAdapterFactory)
-                .addLast(formatAdapterFactory)
-                .addLast(customEmojiAdapterFactory)
-                .build()
-            for (wrapper in pluginWrappers) {
-                defaultLogger.info("Initializing plugin: ${wrapper.pluginId}")
-                Thread({
-                    wrapper.plugin.start()
-                }, "${wrapper.pluginId}-thread").start()
-                val plugin = wrapper.plugin as Plugin
-                registerProtocols(plugin.baseInterface.protocols, plugin.baseInterface)
-            }
-            Thread.sleep(3000L)
-
+            protocols.add(UniversalProtocol)
+            protocols.add(ConsoleProtocol)
+            protocols.add(DiscordProtocol)
             // Update the chat map
             for (protocol in protocols) {
                 defaultLogger.info("Initializing ${protocol.name}...")
                 try {
-                    val chats = baseInterfaceMap[protocol]?.getChats()
-                        ?: throw Exception("Protocol ${protocol.name} is not in the base interface map!")
+                    protocol.init()
+                    val chats = protocol.baseInterface.getChats()
                     for (chat in chats) {
                         if (chat !in reverseChatMap) {
                             while (currentChatID in chatMap)
@@ -459,6 +383,12 @@ class core {
                     e.printStackTrace()
                 }
             }
+
+            defaultLogger.info("Starting command scheduler...")
+            CommandScheduler.start()
+
+            Settings.updateIsScheduled = false
+            CommandScheduler.loadFromFile()
         }
     }
 }

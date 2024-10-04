@@ -1,6 +1,5 @@
-package convergence.testPlugins.discordPlugin
+package convergence.discord
 
-import com.squareup.moshi.Moshi
 import convergence.*
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
@@ -8,13 +7,13 @@ import net.dv8tion.jda.api.OnlineStatus
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
+import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.dv8tion.jda.api.requests.GatewayIntent
 import net.dv8tion.jda.api.utils.FileUpload
 import net.dv8tion.jda.api.utils.cache.CacheFlag
-import org.pf4j.PluginWrapper
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.FileNotFoundException
@@ -35,8 +34,9 @@ typealias DCustomEmoji = net.dv8tion.jda.api.entities.emoji.RichCustomEmoji
 
 class DiscordAvailability(val status: OnlineStatus): Availability(status.name)
 
-class DiscordChat(name: String, override val id: Long, val channel: MessageChannel): Chat(DiscordProtocol, name),
-    DiscordObject, JsonConvertible {
+class DiscordChat(name: String, override val id: Long, @Transient val channel: MessageChannel):
+    Chat(DiscordProtocol, name),
+    DiscordObject {
     constructor(channel: MessageChannel): this(channel.name, channel.idLong, channel)
     constructor(message: Message): this(message.channel)
     constructor(msgEvent: MessageReceivedEvent): this(msgEvent.message)
@@ -44,29 +44,21 @@ class DiscordChat(name: String, override val id: Long, val channel: MessageChann
     override fun hashCode() = id.hashCode()
     override fun equals(other: Any?) =
         this === other || (javaClass == other?.javaClass && id == (other as DiscordChat).id)
+    override fun toString(): String = "DiscordChat(${(channel as? GuildChannel)?.guild?.name ?: ""}#${channel.name})"
 }
 
 class DiscordMessageHistory(val msg: Message, override val id: Long):
-    MessageHistory(msg.contentRaw, msg.timeCreated, DiscordUser(DiscordChat(msg), msg.author)), DiscordObject,
-    JsonConvertible {
+    MessageHistory(msg.contentRaw, msg.timeCreated, DiscordUser(DiscordChat(msg), msg.author)), DiscordObject {
     constructor(msg: Message): this(msg, msg.idLong)
 }
 
 class DiscordUser(chat: Chat, val name: String, override val id: Long, val author: DUser):
-    User(chat), DiscordObject, JsonConvertible {
+    User(chat), DiscordObject {
 
     constructor(msgEvent: MessageReceivedEvent): this(DiscordChat(msgEvent), msgEvent)
     constructor(chat: Chat, msgEvent: MessageReceivedEvent): this(chat, msgEvent.author)
     constructor(chat: Chat, author: DUser): this(chat, author.name, author.idLong, author)
     constructor(chat: Chat, author: Member): this(chat, author.user)
-
-    override fun toJson() = mapOf(
-        "type" to "DiscordUser",
-        "chat" to chat.toJson(),
-        "name" to name,
-        "id" to id,
-        "author" to author.idLong
-    ).json()
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -80,6 +72,8 @@ class DiscordUser(chat: Chat, val name: String, override val id: Long, val autho
     override fun hashCode(): Int {
         return id.hashCode()
     }
+
+    override fun toString(): String = "DiscordUser($name)"
 }
 
 data class DiscordEmoji(
@@ -87,7 +81,7 @@ data class DiscordEmoji(
     override val name: String,
     val emoji: DCustomEmoji,
     override val id: Long
-): CustomEmoji(url, name), DiscordObject, JsonConvertible {
+): CustomEmoji(url, name), DiscordObject {
     constructor(emoji: DCustomEmoji): this(emoji.imageUrl, emoji.name, emoji, emoji.idLong)
 }
 
@@ -101,10 +95,7 @@ val formatMap = mapOf(
     Format.spoiler to Pair("||", "||")
 )
 
-/** TODO: Use this, then add a [Json Adapter][com.squareup.moshi.JsonAdapter] for it. */
 class DiscordImage(var url: String? = null, var data: ByteArray? = null): Image()
-
-object DiscordProtocol: Protocol("Discord")
 object DiscordInterface: BaseInterface, CanFormatMessages, HasNicknames, HasImages, CanMentionUsers, HasMessageHistory,
     CanEditOtherMessages, HasUserAvailability, HasCustomEmoji {
     override val name: String = "DiscordInterface"
@@ -199,7 +190,7 @@ object DiscordInterface: BaseInterface, CanFormatMessages, HasNicknames, HasImag
         if (chat !is DiscordChat)
             return false
         try {
-            chat.channel.sendMessage(message).complete()
+            chat.channel.sendMessage(message.take(2000)).complete()
         } catch(e: Exception) {
             e.printStackTrace()
         }
@@ -230,22 +221,8 @@ object MessageListener: ListenerAdapter() {
     }
 }
 
-lateinit var discordMoshi: Moshi
-
-class DiscordPlugin(wrapper: PluginWrapper): Plugin(wrapper) {
-    override val name = "DiscordPlugin"
-    override val baseInterface = DiscordInterface
-    val moshi: Moshi by sharedVariables
-    override fun preinit() {
-        val moshiBuilder: Moshi.Builder by sharedVariables
-        moshiBuilder.add(DiscordMessageHistoryAdapter)
-            .add(DiscordEmojiAdapter)
-            .add(DiscordUserAdapter)
-            .add(DiscordChatAdapter)
-    }
-
+object DiscordProtocol: Protocol("Discord", DiscordInterface) {
     override fun init() {
-        discordMoshi = this.moshi
         println("Discord Plugin initialized.")
         jda = try {
             val it = JDABuilder

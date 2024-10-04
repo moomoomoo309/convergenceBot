@@ -7,7 +7,7 @@ import org.antlr.v4.runtime.ParserRuleContext
 
 class InvalidCommandException(msg: String): Exception(msg)
 
-data class CommandData(var command: Command, var args: List<String>): JsonConvertible {
+data class CommandData(var command: Command, var args: List<String>) {
     constructor(alias: Alias, args: List<String>): this(alias.command, alias.args + args)
 
     operator fun invoke(vararg args: String, sender: User): String? = this.command.function(args.toList(), sender)

@@ -6,7 +6,8 @@ import java.time.OffsetDateTime
 import java.util.*
 import kotlin.reflect.KClass
 
-abstract class Protocol(val name: String): Comparable<Protocol> {
+abstract class Protocol(val name: String, val baseInterface: BaseInterface): Comparable<Protocol> {
+    abstract fun init()
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is Protocol) return false
@@ -17,30 +18,32 @@ abstract class Protocol(val name: String): Comparable<Protocol> {
     }
 
     override fun compareTo(other: Protocol) = this.name.compareTo(other.name)
-
+    override fun toString(): String = this::class.java.simpleName
     override fun hashCode(): Int = name.hashCode()
 }
 
 //Intentionally empty, because it might be represented as an int or a string or whatever.
-abstract class User(val chat: Chat): JsonConvertible
+abstract class User(val chat: Chat)
 
-abstract class Chat(val protocol: Protocol, val name: String): JsonConvertible, Comparable<Chat> {
+abstract class Chat(val protocol: Protocol, val name: String): Comparable<Chat> {
     override fun compareTo(other: Chat) =
         "${protocol.name}-${this.name}".compareTo("${other.protocol.name}-${other.name}")
+
+    override fun toString(): String {
+        return "${this::class.java.simpleName}($name)"
+    }
 }
 
-object UniversalUser: User(UniversalChat), JsonConvertible {
-    override fun toJson() = """{"type":"UniversalUser"}"""
-}
+object UniversalUser: User(UniversalChat)
 
-object UniversalProtocol: Protocol("Universal"), JsonConvertible {
-    override fun toJson() = """{"type":"UniversalProtocol"}"""
+object UniversalProtocol: Protocol("Universal", FakeBaseInterface) {
+    override fun init() {
+        // Do nothing
+    }
 }
 
 // Used to represent the universal chat.
-object UniversalChat: Chat(UniversalProtocol, "Universal"), JsonConvertible {
-    override fun toJson() = """{"type":"UniversalChat"}"""
-}
+object UniversalChat: Chat(UniversalProtocol, "Universal")
 
 object FakeBaseInterface: BaseInterface {
     override val protocols: List<Protocol> = listOf(UniversalProtocol)
@@ -60,7 +63,7 @@ sealed class CommandLike(
     open val name: String,
     @Transient open val helpText: String,
     @Transient open val syntaxText: String
-): JsonConvertible, Comparable<CommandLike> {
+): Comparable<CommandLike> {
     override fun compareTo(other: CommandLike) = "$chat.$name".compareTo("${other.chat}.${other.name}")
 
     data class Command(
@@ -84,13 +87,9 @@ typealias Command = CommandLike.Command
 typealias Alias = CommandLike.Alias
 
 
-interface JsonConvertible {
-    fun toJson(): String = moshi.toJson(this)
-}
+fun Map<String, Any>.json(): String = objectMapper.writeValueAsString(this)
 
-fun Map<String, Any>.json(): String = moshi.toJson(this)
-
-interface BaseInterface: JsonConvertible {
+interface BaseInterface {
     val name: String
     val protocols: List<Protocol>
     fun receivedMessage(chat: Chat, message: String, sender: User) = runCommand(message, sender)
@@ -100,7 +99,6 @@ interface BaseInterface: JsonConvertible {
     fun getChats(): List<Chat>
     fun getUsers(chat: Chat): List<User>
     fun getChatName(chat: Chat): String
-    override fun toJson() = mapOf("type" to name).json()
 }
 
 private val callbacks = HashMap<KClass<out ChatEvent>, ArrayList<ChatEvent>>()
@@ -243,7 +241,7 @@ interface CanEditOtherMessages {
         runCallbacks<EditMessage>(oldMessage, sender, newMessage)
 }
 
-abstract class MessageHistory(var message: String, val timestamp: OffsetDateTime, val sender: User): JsonConvertible
+abstract class MessageHistory(var message: String, val timestamp: OffsetDateTime, val sender: User)
 interface HasMessageHistory {
     fun getMessages(chat: Chat, since: OffsetDateTime? = null, until: OffsetDateTime? = null): List<MessageHistory>
     fun getUserMessages(
@@ -325,7 +323,7 @@ interface HasReadStatus {
 
 // If possible, the name would be an enum instead, but I want the ability for protocols to add extra formats
 // beyond the defaults in the companion object, so it's an open class.
-open class Format(name: String): JsonConvertible {
+open class Format(name: String) {
     val name: String = name.uppercase(Locale.getDefault())
 
     companion object {
@@ -338,11 +336,6 @@ open class Format(name: String): JsonConvertible {
         val spoiler = Format("SPOILER")
         val greentext = Format("GREENTEXT")
     }
-
-    override fun toJson() = mapOf(
-        "type" to "Format",
-        "name" to name
-    ).json()
 }
 
 interface CanFormatMessages {
@@ -365,7 +358,7 @@ interface CanFormatMessages {
     }
 }
 
-abstract class CustomEmoji(open val name: String, val URL: String?): JsonConvertible
+abstract class CustomEmoji(open val name: String, val URL: String?)
 interface HasCustomEmoji {
     fun getEmojis(chat: Chat): List<CustomEmoji>
 }

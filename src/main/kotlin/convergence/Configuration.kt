@@ -1,35 +1,22 @@
 package convergence
 
-import com.squareup.moshi.Moshi
-import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.SerializationFeature
 import convergence.ConfigOption.Companion.defaultSettings
-import net.sourceforge.argparse4j.inf.Namespace
-import org.pf4j.DefaultPluginManager
-import org.pf4j.PluginManager
 import java.nio.file.Files
 import java.nio.file.Path
+import java.time.OffsetDateTime
 import java.util.concurrent.ConcurrentHashMap
 
 const val defaultCommandDelimiter = "!"
 
 @Suppress("EnumEntryName", "unused")
 enum class ConfigOption(val defaultValueSupplier: () -> Any) {
-    protocols({ mutableListOf<Protocol>() }),
-    baseInterfaceMap({ mutableMapOf<Protocol, BaseInterface>() }),
-    chatMap({ mutableMapOf<Int, Chat>() }),
-    reverseChatMap({ mutableMapOf<Chat, Int>() }),
-    pluginPaths({ mutableListOf<Path>() }),
     commandDelimiters({ HashMap<Chat, String>() }),
-    aliasVars({
-        mutableMapOf(
-            "sender" to { b: BaseInterface, c: Chat, s: User -> b.getName(c, s) },
-            "botname" to { b: BaseInterface, c: Chat, _: User -> b.getName(c, b.getBot(c)) },
-            "chatname" to { b: BaseInterface, c: Chat, _: User -> b.getChatName(c) })
-    }),
     linkedChats({ hashMapOf<Chat, MutableSet<Chat>>() }),
-    delimiters({ hashMapOf<Chat, String>() }),
     commands({ mutableMapOf<Chat, MutableMap<String, Command>>() }),
     aliases({ mutableMapOf<Chat, MutableMap<String, Alias>>() }),
+    serializedCommands({ mutableMapOf<Int, String>() })
     ;
 
     companion object {
@@ -38,22 +25,46 @@ enum class ConfigOption(val defaultValueSupplier: () -> Any) {
     }
 }
 
-object Settings: MutableMap<String, Any?> by ConcurrentHashMap()
+private val settingsMap = ConcurrentHashMap<String, Any>()
 
-val initMoshi: Moshi = Moshi.Builder()
-    .add(KotlinJsonAdapterFactory())
-    .build()
+object Settings: MutableMap<String, Any> by settingsMap {
+    val map = settingsMap
+    var updateIsScheduled = true
+    fun update() {
+        // Don't update the settings multiple times per second, limit it to one per second
+        if (!updateIsScheduled) {
+            updateIsScheduled = true
+            CommandScheduler.schedule(
+                UniversalUser,
+                CommandData(updateSettingsCommand, emptyList()),
+                OffsetDateTime.now().plusSeconds(1L)
+            )
+            defaultLogger.info("Scheduled settings update.")
+        }
+    }
+
+    override fun put(key: String, value: Any): Any? {
+        val returnValue = settingsMap.put(key, value)
+        update()
+        return returnValue
+    }
+}
 
 private fun writeLazySettingsToFile(settingsToWrite: Map<String, () -> Any>) =
     writeSettingsToFile(settingsToWrite.mapValues { it.value() })
 
 
-private fun writeSettingsToFile(settingsToWrite: Map<String, Any>) = Files.write(
-    settingsPath,
+private fun writeSettingsToFile(settingsToWrite: Map<String, Any>) {
+    settingsLogger.info("Writing settings to ${settingsPath}:")
     // Converting to a [SortedMap] makes the keys go in alphabetical order, but Moshi can't serialize sorted maps,
     // so the SortedMap is converted back into the default map type (toMap() preserves the key ordering).
-    initMoshi.toJson(settingsToWrite.toSortedMap().toMap(), prettyPrint = true).toByteArray(),
-)
+    objectMapper.configure(SerializationFeature.INDENT_OUTPUT, true)
+    val settingsAsString = objectMapper.writeValueAsString(settingsToWrite.toSortedMap().toMap())
+    objectMapper.configure(SerializationFeature.INDENT_OUTPUT, false)
+    settingsLogger.info(settingsAsString)
+    settingsPath.toFile().writeText(settingsAsString)
+    settingsLogger.info("Settings written.")
+}
 
 fun initSettings(): Map<String, Any> {
     with(settingsLogger) {
@@ -68,33 +79,25 @@ fun initSettings(): Map<String, Any> {
     return readSettings(defaultSettings, initialRun = true)
 }
 
-private var settingsFromPreviousUpdate: ConcurrentHashMap<String, Any>? = null
 fun updateSettings(newSettings: ConcurrentHashMap<String, Any>) {
-    var settingsHaveChanged = false
+    settingsLogger.info("Seeing if settings need update...")
     // Make sure all the keys from the default settings exist in the current ones.
     for ((k, v) in defaultSettings)
         if (!newSettings.containsKey(k)) {
-            settingsLogger.error("$k was not in the config file, so its default value of $v is being written to the file")
-            newSettings[k] = v
-            settingsHaveChanged = true
+            val defaultValue = v()
+            settingsLogger.error("$k was not in the config file, so its default value of $defaultValue is being written to the file")
+            newSettings[k] = defaultValue
         }
 
-    // See if the settings have changed at all.
-    if (!settingsHaveChanged)
-        settingsHaveChanged = settingsFromPreviousUpdate == null || settingsFromPreviousUpdate != newSettings
-
-    // If the settings have changed, write them out.
-    if (settingsHaveChanged) {
-        settingsLogger.info("Updating settings file...")
-        writeSettingsToFile(newSettings)
-        for ((k, _) in Settings) {
-            if (!newSettings.containsKey(k)) {
-                Settings.remove(k)
-            }
+    settingsLogger.info("Updating settings file...")
+    writeSettingsToFile(newSettings)
+    for ((k, _) in settingsMap) {
+        if (!newSettings.containsKey(k)) {
+            settingsMap.remove(k)
         }
-        Settings.putAll(newSettings)
-        settingsFromPreviousUpdate = ConcurrentHashMap(newSettings)
     }
+    settingsMap.putAll(newSettings)
+    Settings.updateIsScheduled = false
 }
 
 /**
@@ -102,7 +105,7 @@ fun updateSettings(newSettings: ConcurrentHashMap<String, Any>) {
  * an [ExceptionInInitializerError], it's probably from this function.
  */
 fun readSettings(fallbackSettings: Map<String, () -> Any>, initialRun: Boolean): ConcurrentHashMap<String, Any> = try {
-    val finalSettings = initMoshi.fromJson<MutableMap<String, Any>>(settingsPath.toFile().readText())
+    val finalSettings = objectMapper.readValue<MutableMap<String, Any>>(settingsPath.toFile())
     for ((k, v) in defaultSettings) {
         if (!finalSettings.containsKey(k)) {
             settingsLogger.error("$k was not in the config file initially, so its default value of $v will be written to the file")
@@ -111,60 +114,31 @@ fun readSettings(fallbackSettings: Map<String, () -> Any>, initialRun: Boolean):
     }
     if (initialRun) {
         writeSettingsToFile(finalSettings)
-        settingsFromPreviousUpdate = ConcurrentHashMap(finalSettings)
     }
     ConcurrentHashMap(finalSettings)
-} catch (e: Throwable) {
+} catch(e: Throwable) {
     settingsLogger.error("Error occurred while reading settings from $settingsPath. Returning fallback settings instead.\n\tError: $e")
     e.printStackTrace()
     ConcurrentHashMap(fallbackSettings.mapValues { it.value() })
 }
 
-val protocols: MutableList<Protocol> by Settings
-val baseInterfaceMap: MutableMap<Protocol, BaseInterface> by Settings
-val chatMap: MutableMap<Int, Chat> by Settings
-val reverseChatMap: MutableMap<Chat, Int> by Settings
-var convergencePath: Path by Settings
-var pluginPaths: MutableList<Path> by Settings
 val commandDelimiters: MutableMap<Chat, String> by Settings
-val aliasVars: MutableMap<String, (baseInterface: BaseInterface, chat: Chat, sender: User) -> String> by Settings
 val linkedChats: MutableMap<Chat, MutableList<Chat>> by Settings
-val delimiters: MutableMap<Chat, String> by Settings
-val commands: MutableMap<Chat, MutableMap<String, Command>> by Settings
 val aliases: MutableMap<Chat, MutableMap<String, Alias>> by Settings
+val serializedCommands: MutableMap<Int, String> by Settings
 
-object SharedVariables: MutableMap<String, Any?> by ConcurrentHashMap(
-    SharedVariable.entries.filter { it.defaultValue != null }.associate { it.name to it.defaultValue }
+lateinit var convergencePath: Path
+val chatMap: MutableMap<Int, Chat> = mutableMapOf()
+val reverseChatMap: MutableMap<Chat, Int> = mutableMapOf()
+val commands: MutableMap<Chat, MutableMap<String, Command>> = mutableMapOf()
+val protocols: MutableList<Protocol> = mutableListOf()
+val sortedHelpText: MutableList<CommandLike> = mutableListOf()
+var currentChatID: Int = 0
+val aliasVars: MutableMap<String, (baseInterface: BaseInterface, chat: Chat, sender: User) -> String> = mutableMapOf(
+    "sender" to { b: BaseInterface, c: Chat, s: User -> b.getName(c, s) },
+    "botname" to { b: BaseInterface, c: Chat, _: User -> b.getName(c, b.getBot(c)) },
+    "chatname" to { b: BaseInterface, c: Chat, _: User -> b.getChatName(c) }
 )
-
-@Suppress("unused")
-enum class SharedVariable(val defaultValue: Any?) {
-    sortedHelpText(mutableListOf<CommandLike>()),
-    commandLineArgs(null),
-    pluginManager(DefaultPluginManager()),
-    currentChatID(0),
-    moshiBuilder(
-        Moshi.Builder()
-            .add(SingletonAdapterFactory)
-            .add(OffsetDateTimeAdapter)
-            .add(BaseInterfaceAdapterFactory)
-            .add(KotlinJsonAdapterFactory())!!
-    ),
-    moshi(null),
-    chatAdapterFactory(PolymorphicJsonAdapterFactory.of(Chat::class.java, "type")),
-    userAdapterFactory(PolymorphicJsonAdapterFactory.of(User::class.java, "type")),
-    imageAdapterFactory(PolymorphicJsonAdapterFactory.of(Image::class.java, "type")),
-    messageHistoryAdapterFactory(PolymorphicJsonAdapterFactory.of(MessageHistory::class.java, "type")),
-    stickerAdapterFactory(PolymorphicJsonAdapterFactory.of(Sticker::class.java, "type")),
-    formatAdapterFactory(PolymorphicJsonAdapterFactory.of(Format::class.java, "type")),
-    customEmojiAdapterFactory(PolymorphicJsonAdapterFactory.of(CustomEmoji::class.java, "type")),
-}
-
-val sortedHelpText: MutableList<CommandLike> by SharedVariables
-var commandLineArgs: Namespace by SharedVariables
-var pluginManager: PluginManager by SharedVariables
-var currentChatID: Int by SharedVariables
-val moshiBuilder: Moshi.Builder by SharedVariables
-var moshi: Moshi by SharedVariables
+val objectMapper = ObjectMapper()
 
 val settingsPath: Path by lazy { convergencePath.resolve("settings.json") }
