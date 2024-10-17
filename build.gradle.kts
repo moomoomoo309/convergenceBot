@@ -1,6 +1,5 @@
 @file:Suppress("LocalVariableName")
 
-import org.jetbrains.kotlin.gradle.internal.KaptGenerateStubsTask
 import java.nio.file.Path
 import java.nio.file.Paths
 
@@ -13,6 +12,7 @@ val logback_version = "1.5.6"
 val mapdb_version = "3.1.0"
 val natty_version = "1.0.1"
 val pf4j_version = "3.12.0"
+val jackson_version = "2.18.0"
 
 plugins {
     val kotlin_version = "2.0.10"
@@ -20,7 +20,6 @@ plugins {
     id("application")
     antlr
     id("com.gradleup.shadow") version "8.3.0"
-    kotlin("kapt") version kotlin_version
 }
 
 group = "convergence"
@@ -53,17 +52,14 @@ dependencies {
 
     implementation("org.mapdb:mapdb:$mapdb_version")
 
-    implementation("ch.qos.logback:logback-classic:$logback_version")
-
-    implementation("org.pf4j:pf4j:$pf4j_version")
-    implementation(kotlin("stdlib-jdk8"))
-
     implementation("net.dv8tion:JDA:5.0.2") {
         exclude(module = "opus-java")
     }
     implementation("club.minnced:jda-ktx:0.12.0")
-    implementation("net.sf.trove4j:trove4j:3.0.3")
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.17.2")
+    implementation("com.fasterxml.jackson.core:jackson-databind:$jackson_version")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jackson_version")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jackson_version")
+
 
     testImplementation("org.jetbrains.kotlin:kotlin-test")
 }
@@ -80,7 +76,6 @@ tasks.register<Copy>("copyBot") {
 
 tasks.named<JavaExec>("run") {
     standardInput = System.`in`
-    dependsOn("buildDependents")
 }
 
 tasks.wrapper {
@@ -92,9 +87,6 @@ tasks {
         dependsOn(named("generateGrammarSource"))
     }
     compileKotlin {
-        dependsOn(named("generateGrammarSource"))
-    }
-    withType<KaptGenerateStubsTask> {
         dependsOn(named("generateGrammarSource"))
     }
 }

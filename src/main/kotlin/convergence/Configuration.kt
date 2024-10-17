@@ -139,6 +139,7 @@ val aliasVars: MutableMap<String, (baseInterface: BaseInterface, chat: Chat, sen
     "botname" to { b: BaseInterface, c: Chat, _: User -> b.getName(c, b.getBot(c)) },
     "chatname" to { b: BaseInterface, c: Chat, _: User -> b.getChatName(c) }
 )
-val objectMapper = ObjectMapper()
+val objectMapper: ObjectMapper = ObjectMapper()
+    .findAndRegisterModules()
 
 val settingsPath: Path by lazy { convergencePath.resolve("settings.json") }

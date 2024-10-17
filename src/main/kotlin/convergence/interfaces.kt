@@ -2,6 +2,7 @@
 
 package convergence
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import java.time.OffsetDateTime
 import java.util.*
 import kotlin.reflect.KClass
@@ -36,7 +37,7 @@ abstract class Chat(val protocol: Protocol, val name: String): Comparable<Chat> 
 
 object UniversalUser: User(UniversalChat)
 
-object UniversalProtocol: Protocol("Universal", FakeBaseInterface) {
+object UniversalProtocol: Protocol("Universal", DefaultBaseInterface) {
     override fun init() {
         // Do nothing
     }
@@ -45,9 +46,7 @@ object UniversalProtocol: Protocol("Universal", FakeBaseInterface) {
 // Used to represent the universal chat.
 object UniversalChat: Chat(UniversalProtocol, "Universal")
 
-object FakeBaseInterface: BaseInterface {
-    override val protocols: List<Protocol> = listOf(UniversalProtocol)
-
+object DefaultBaseInterface: BaseInterface {
     override fun sendMessage(chat: Chat, message: String): Boolean = false
     override fun getBot(chat: Chat): User = UniversalUser
     override fun getName(chat: Chat, user: User): String = ""
@@ -91,11 +90,12 @@ fun Map<String, Any>.json(): String = objectMapper.writeValueAsString(this)
 
 interface BaseInterface {
     val name: String
-    val protocols: List<Protocol>
     fun receivedMessage(chat: Chat, message: String, sender: User) = runCommand(message, sender)
     fun sendMessage(chat: Chat, message: String): Boolean
     fun getBot(chat: Chat): User
     fun getName(chat: Chat, user: User): String
+
+    @JsonIgnore
     fun getChats(): List<Chat>
     fun getUsers(chat: Chat): List<User>
     fun getChatName(chat: Chat): String
@@ -225,9 +225,9 @@ open class ReceivedImage(val fct: (chat: Chat, image: Image, sender: User, messa
 }
 
 interface HasImages {
-    fun sendImage(chat: Chat, image: Image, sender: User, message: String)
-    fun receivedImage(chat: Chat, image: Image, sender: User, message: String) =
-        runCallbacks<ReceivedImage>(chat, image, sender, message)
+    fun sendImages(chat: Chat, sender: User, message: String, vararg images: Image)
+    fun receivedImages(chat: Chat, sender: User, message: String, vararg images: Image) =
+        runCallbacks<ReceivedImage>(chat, sender, message, images)
 }
 
 open class EditMessage(val fct: (oldMessage: String, sender: User, newMessage: String) -> Boolean): ChatEvent {
@@ -260,8 +260,8 @@ open class MentionedUser(val fct: (chat: Chat, message: String, users: Set<User>
 interface CanMentionUsers {
     fun mention(chat: Chat, user: User, message: String?)
     fun mention(chat: Chat, user: User) = mention(chat, user, null)
-    fun mentionedUsers(chat: Chat, message: String, users: Set<User>) =
-        runCallbacks<MentionedUser>(chat, message, users)
+    fun mentionedUsers(chat: Chat, message: String, users: Set<User>, sender: User) =
+        runCallbacks<MentionedUser>(chat, message, users, sender)
 }
 
 open class StartedTyping(val fct: (chat: Chat, user: User) -> Boolean): ChatEvent {

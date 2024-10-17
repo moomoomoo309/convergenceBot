@@ -15,7 +15,6 @@ val bot = ConsoleUser("bot")
 
 object ConsoleInterface: BaseInterface {
     override val name = "ConsoleInterface"
-    override val protocols: List<Protocol> = listOf(ConsoleProtocol)
     override fun sendMessage(chat: Chat, message: String): Boolean {
         if (chat is ConsoleChat) {
             println(message)
@@ -50,24 +49,26 @@ object ConsoleInterface: BaseInterface {
 
 object ConsoleProtocol: Protocol("Console", ConsoleInterface) {
     override fun init() {
-        print("consolePlugin initialized.\n\n> ")
+        Thread {
+            print("consolePlugin initialized.\n\n> ")
 
-        System.out.flush() // Flush guarantees that the > shows up before stdin. IntelliJ still doesn't listen to it.
-        try {
-            val stdin = Scanner(System.`in`)
-            val currentLine = stdin.nextLine()
-            ConsoleInterface.receivedMessage(ConsoleChat, currentLine, user)
-            while (true) {
-                print("> ")
-                System.out.flush()
-                while (!stdin.hasNextLine()) stdin.next()
-                ConsoleInterface.receivedMessage(ConsoleChat, stdin.nextLine(), user)
+            System.out.flush() // Flush guarantees that the > shows up before stdin. IntelliJ still doesn't listen to it.
+            try {
+                val stdin = Scanner(System.`in`)
+                val currentLine = stdin.nextLine()
+                ConsoleInterface.receivedMessage(ConsoleChat, currentLine, user)
+                while (true) {
+                    print("> ")
+                    System.out.flush()
+                    while (!stdin.hasNextLine()) stdin.next()
+                    ConsoleInterface.receivedMessage(ConsoleChat, stdin.nextLine(), user)
+                }
+            } catch(e: NoSuchElementException) {
+                // Catch Ctrl-D (EOF). Normally, I wouldn't do this in a plugin, but it's the local console of the bot,
+                // and if the user puts in a Ctrl-D, they probably want to close the bot, just like a SIGTERM.
+                println() // The newline is just to make the output cleaner.
+                exitProcess(0)
             }
-        } catch (e: NoSuchElementException) {
-            // Catch Ctrl-D (EOF). Normally, I wouldn't do this in a plugin, but it's the local console of the bot,
-            // and if the user puts in a Ctrl-D, they probably want to close the bot, just like a SIGTERM.
-            println() // The newline is just to make the output cleaner.
-            exitProcess(0)
-        }
+        }.start()
     }
 }

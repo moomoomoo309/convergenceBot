@@ -1,6 +1,7 @@
 package convergence.discord
 
 import convergence.*
+import dev.minn.jda.ktx.messages.MessageCreate
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.OnlineStatus
@@ -12,12 +13,10 @@ import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.dv8tion.jda.api.requests.GatewayIntent
-import net.dv8tion.jda.api.utils.FileUpload
 import net.dv8tion.jda.api.utils.cache.CacheFlag
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.FileNotFoundException
-import java.net.URL
 import java.nio.file.Files
 import java.time.OffsetDateTime
 import javax.security.auth.login.LoginException
@@ -44,6 +43,7 @@ class DiscordChat(name: String, override val id: Long, @Transient val channel: M
     override fun hashCode() = id.hashCode()
     override fun equals(other: Any?) =
         this === other || (javaClass == other?.javaClass && id == (other as DiscordChat).id)
+
     override fun toString(): String = "DiscordChat(${(channel as? GuildChannel)?.guild?.name ?: ""}#${channel.name})"
 }
 
@@ -95,11 +95,13 @@ val formatMap = mapOf(
     Format.spoiler to Pair("||", "||")
 )
 
-class DiscordImage(var url: String? = null, var data: ByteArray? = null): Image()
+class DiscordImage(val image: Message.Attachment): Image() {
+    val url get() = image.url
+}
+
 object DiscordInterface: BaseInterface, CanFormatMessages, HasNicknames, HasImages, CanMentionUsers, HasMessageHistory,
     CanEditOtherMessages, HasUserAvailability, HasCustomEmoji {
     override val name: String = "DiscordInterface"
-    override val protocols = listOf(DiscordProtocol)
     override val supportedFormats = formatMap.keys
 
     override fun getUserNickname(chat: Chat, user: User): String? {
@@ -111,15 +113,15 @@ object DiscordInterface: BaseInterface, CanFormatMessages, HasNicknames, HasImag
     override fun getBotNickname(chat: Chat): String? = getUserNickname(chat, getBot(chat))
 
 
-    override fun sendImage(chat: Chat, image: Image, sender: User, message: String) {
-        if (chat is DiscordChat && image is DiscordImage)
-            if (image.url != null)
-                chat.channel.sendFiles(FileUpload.fromData(URL(image.url).openStream(), name))
-            else {
-                val data = image.data
-                if (data != null)
-                    chat.channel.sendFiles(FileUpload.fromData(data, name))
-            }
+    override fun sendImages(chat: Chat, sender: User, message: String, vararg images: Image) {
+        if (chat is DiscordChat && images.isArrayOf<DiscordImage>()) {
+            @Suppress("UNCHECKED_CAST")
+            val discordImages = images as Array<DiscordImage>
+            chat.channel.sendMessage(MessageCreate {
+                content = message
+                files += discordImages.map { it.image }
+            })
+        }
     }
 
     override fun editMessage(message: MessageHistory, oldMessage: String, sender: User, newMessage: String) {
@@ -210,14 +212,23 @@ object DiscordInterface: BaseInterface, CanFormatMessages, HasNicknames, HasImag
 object MessageListener: ListenerAdapter() {
     override fun onMessageReceived(event: MessageReceivedEvent) {
         val chat = DiscordChat(event)
-        DiscordInterface.receivedMessage(chat, event.message.contentDisplay, DiscordUser(event))
+        val messageText = event.message.contentDisplay
+        val sender = DiscordUser(event)
+        DiscordInterface.receivedMessage(chat, messageText, sender)
         val mentionedMembers = event.message.mentions.members
         if (mentionedMembers.isNotEmpty())
             DiscordInterface.mentionedUsers(
                 chat,
                 event.message.contentDisplay,
-                mentionedMembers.map { DiscordUser(chat, it) }.toSet()
+                mentionedMembers.map { DiscordUser(chat, it) }.toSet(),
+                sender
             )
+        val images = event.message.attachments
+            .filter { it.isImage }
+            .map { DiscordImage(it) }
+            .toTypedArray()
+        if (images.isNotEmpty())
+            DiscordInterface.receivedImages(chat, sender, messageText, *images)
     }
 }
 
