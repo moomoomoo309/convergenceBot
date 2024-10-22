@@ -1,9 +1,7 @@
 @file:Suppress("LocalVariableName")
 
-import java.nio.file.Path
 import java.nio.file.Paths
 
-val pluginsDir: Path = Paths.get(System.getProperty("user.home"), ".convergence", "plugins")
 val antlr_version = "4.13.2"
 val argparse4j_version = "0.9.0"
 val coroutines_version = "1.8.1"
@@ -69,8 +67,7 @@ application {
 }
 
 tasks.register<Copy>("copyBot") {
-    dependsOn("shadowJar")
-    from("./build/libs/")
+    from(tasks.named("shadowJar"))
     into(Paths.get(System.getProperty("user.home"), ".convergence"))
 }
 

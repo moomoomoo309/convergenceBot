@@ -7,7 +7,7 @@ import convergence.User
 import java.util.*
 import kotlin.system.exitProcess
 
-class ConsoleUser(val name: String): User(ConsoleChat)
+class ConsoleUser(val name: String): User(ConsoleProtocol)
 object ConsoleChat: Chat(ConsoleProtocol, "Console")
 
 val user = ConsoleUser("user")
@@ -35,6 +35,9 @@ object ConsoleInterface: BaseInterface {
 
     override fun getChats(): List<Chat> {
         return listOf(ConsoleChat)
+    }
+    override fun getUsers(): List<User> {
+        return listOf(user)
     }
 
     override fun getUsers(chat: Chat): List<User> {

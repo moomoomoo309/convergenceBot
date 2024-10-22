@@ -24,7 +24,7 @@ inline fun unregisteredChat(chat: Chat) {
     } catch (e: UnregisteredChat) {
         val writer = StringWriter()
         e.printStackTrace(PrintWriter(writer))
-        sendMessage(
+        chat.protocol.baseInterface.sendMessage(
             chat, "Bot error: Chat either is missing a protocol, or its BaseInterface is not" +
                     " registered to that protocol.\nStack Trace:\n$writer"
         )
@@ -55,8 +55,7 @@ fun getFullName(chat: Chat, name: String): String? {
 
 
 const val commandsPerPage = 10
-fun help(args: List<String>, sender: User): String {
-    val chat = sender.chat
+fun help(args: List<String>, chat: Chat, sender: User): String {
     val pageOrCommand = if (args.isEmpty()) 1 else args[0].toIntOrNull() ?: args[0]
     val numPages = (sortedHelpText.size.toDouble() / commandsPerPage).nextUp().toInt()
     return when (pageOrCommand) {
@@ -94,11 +93,10 @@ fun help(args: List<String>, sender: User): String {
     }
 }
 
-fun echo(args: List<String>, sender: User): String = args.joinToString(" ")
-fun ping(args: List<String>, sender: User): String = "Pong!"
+fun echo(args: List<String>, chat: Chat, sender: User): String = args.joinToString(" ")
+fun ping(args: List<String>, chat: Chat, sender: User): String = "Pong!"
 
-fun addAlias(args: List<String>, sender: User): String {
-    val chat = sender.chat
+fun addAlias(args: List<String>, chat: Chat, sender: User): String {
     val commandDelimiter = commandDelimiters.getOrDefault(chat, defaultCommandDelimiter)
     val command = parseCommand(commandDelimiter + args[1], commandDelimiter, chat)
         ?: return "Alias does not refer to a valid command!"
@@ -108,8 +106,7 @@ fun addAlias(args: List<String>, sender: User): String {
     return "Alias \"${args[0]}\" registered to \"${args[1]}\"."
 }
 
-fun removeAlias(args: List<String>, sender: User): String {
-    val chat = sender.chat
+fun removeAlias(args: List<String>, chat: Chat, sender: User): String {
     val validAliases = BitSet(args.size)
     var anyInvalid = false
     for (i in 0..args.size) {
@@ -126,13 +123,13 @@ fun removeAlias(args: List<String>, sender: User): String {
     else "Aliases \"${args.filterIndexed { i, _ -> validAliases[i] }.joinToString("\", \"")}\" removed."
 }
 
-fun me(args: List<String>, sender: User): String {
-    val baseInterface = sender.chat.protocol.baseInterface as? CanFormatMessages
+fun me(args: List<String>, chat: Chat, sender: User): String {
+    val baseInterface = chat.protocol.baseInterface as? CanFormatMessages
     val (boldOpen, boldClose) = baseInterface?.getDelimiters(Format.bold) ?: Pair("", "")
-    return "$boldOpen*${getUserName(sender)} ${args.joinToString(" ")}$boldClose."
+    return "$boldOpen*${getUserName(chat, sender)} ${args.joinToString(" ")}$boldClose."
 }
 
-fun chats(args: List<String>, sender: User): String {
+fun chats(args: List<String>, chat: Chat, sender: User): String {
     val builder = StringBuilder()
     for (protocol in protocols) {
         try {
@@ -167,7 +164,7 @@ fun dateToOffsetDateTime(d: Date, tz: ZoneId? = null): OffsetDateTime = OffsetDa
 val defaultDuration = Duration.ofMinutes(45)!!
 private val locations = HashMap<User, Pair<OffsetDateTime, String>>()
 
-fun setLocation(args: List<String>, sender: User): String {
+fun setLocation(args: List<String>, chat: Chat, sender: User): String {
     val location = StringBuilder(args[0])
     val timeStr = StringBuilder()
     val durationStr = StringBuilder()
@@ -231,7 +228,7 @@ fun setLocation(args: List<String>, sender: User): String {
             group.dates.forEach {
                 builder.append(
                     CommandScheduler.schedule(
-                        sender, CommandData(
+                        chat, sender, CommandData(
                             commands[UniversalChat]!!["goingto"]!!,
                             if (durationStr.isEmpty())
                                 listOf(location.toString())
@@ -247,48 +244,47 @@ fun setLocation(args: List<String>, sender: User): String {
     return if (builder.isNotEmpty()) builder.toString() else "No events scheduled."
 }
 
-fun target(args: List<String>, sender: User): String {
-    val chat = sender.chat
+fun target(args: List<String>, chat: Chat, sender: User): String {
     val baseInterface = chat.protocol.baseInterface
     val user = getUserFromName(chat, args[args.size - 1])
         ?: return "No user by the name \"${args[args.size - 1]}\" found."
     return args.subList(0, -1).joinToString(" ").replace("%target", baseInterface.getName(chat, user))
 }
 
-fun commands(args: List<String>, sender: User): String {
+fun commands(args: List<String>, chat: Chat, sender: User): String {
     val commandList = mutableListOf<String>()
-    commands[sender.chat]?.forEach { commandList.add(it.key) }
+    commands[chat]?.forEach { commandList.add(it.key) }
     commands[UniversalChat]?.forEach { commandList.add(it.key) }
-    linkedChats[sender.chat]?.forEach { chat -> commands[chat]?.forEach { commandList.add(it.key) } }
+    linkedChats[chat]?.forEach { linked -> commands[linked]?.forEach { commandList.add(it.key) } }
     return if (commandList.isNotEmpty()) commandList.joinToString(", ") else "No commands found."
 }
 
-fun aliases(args: List<String>, sender: User): String {
+fun aliases(args: List<String>, chat: Chat, sender: User): String {
     val aliasList = mutableListOf<String>()
-    aliases[sender.chat]?.forEach { aliasList.add(it.key) }
+    aliases[chat]?.forEach { aliasList.add(it.key) }
     aliases[UniversalChat]?.forEach { aliasList.add(it.key) }
-    linkedChats[sender.chat]?.forEach { chat -> aliases[chat]?.forEach { aliasList.add(it.key) } }
+    linkedChats[chat]?.forEach { linked -> aliases[linked]?.forEach { aliasList.add(it.key) } }
     return if (aliasList.isNotEmpty()) aliasList.joinToString(", ") else "No aliases found."
 }
 
-fun schedule(args: List<String>, sender: User): String {
+fun schedule(args: List<String>, chat: Chat, sender: User): String {
     if (args.size != 2)
         return "Expected 2 arguments, got ${args.size} argument${if (args.size != 1) "s" else ""}."
     val timeList = dateTimeParser.parse(args[0])
     val command = args[1]
-    val commandData = getCommandData(command, sender)
+    val commandData = getCommandData(chat, command, sender)
     if (commandData != null)
         for (group in timeList)
             for (time in group.dates)
-                CommandScheduler.schedule(sender, commandData, dateToOffsetDateTime(time))
+                CommandScheduler.schedule(chat, sender, commandData, dateToOffsetDateTime(time))
     Settings.update()
     return "Scheduled \"$command\" to run in ${args[0]}."
 }
 
 /**
- * Gets all of the currently scheduled events sorted by ID.
+ * Gets all the currently scheduled events sorted by ID.
  */
-fun events(args: List<String>, sender: User): String {
+fun events(args: List<String>, chat: Chat, sender: User): String {
     val commands = getCommands()
     if (commands.isEmpty())
         return "No events are currently scheduled."
@@ -301,9 +297,9 @@ fun events(args: List<String>, sender: User): String {
             builder.append("] ")
             builder.append(formatTime(it.time))
             builder.append(": ")
-            builder.append(getUserName(it.sender))
+            builder.append(getUserName(chat, it.sender))
             builder.append(" - \"")
-            builder.append(commandDelimiters.getOrDefault(sender.chat, defaultCommandDelimiter))
+            builder.append(commandDelimiters.getOrDefault(chat, defaultCommandDelimiter))
             builder.append(it.commandData.command.name)
             builder.append(' ')
             builder.append(it.commandData.args.joinToString(" "))
@@ -326,12 +322,12 @@ private fun getUserEvents(sender: User): Map<User, MutableList<ScheduledCommand>
     return eventMap
 }
 
-fun eventsFromUser(args: List<String>, sender: User): String {
+fun eventsFromUser(args: List<String>, chat: Chat, sender: User): String {
     val eventMap = getUserEvents(sender)
     if (eventMap.isEmpty())
         return "No events are currently scheduled."
     val builder = StringBuilder("Your currently scheduled events:\n")
-    builder.append("${getUserName(sender)}:\n")
+    builder.append("${getUserName(chat, sender)}:\n")
     if (sender in eventMap) {
         val events = eventMap[sender] ?: mutableListOf()
         events.sortBy { it.time }
@@ -341,7 +337,7 @@ fun eventsFromUser(args: List<String>, sender: User): String {
             builder.append("] ")
             builder.append(formatTime(event.time))
             builder.append(": \"")
-            builder.append(commandDelimiters.getOrDefault(sender.chat, defaultCommandDelimiter))
+            builder.append(commandDelimiters.getOrDefault(chat, defaultCommandDelimiter))
             builder.append(event.commandData.command.name)
             builder.append(" ")
             builder.append(event.commandData.args.joinToString(" "))
@@ -351,21 +347,21 @@ fun eventsFromUser(args: List<String>, sender: User): String {
     return builder.toString()
 }
 
-fun eventsByUser(args: List<String>, sender: User): String {
+fun eventsByUser(args: List<String>, chat: Chat, sender: User): String {
     val eventMap = getUserEvents(sender)
     if (eventMap.isEmpty())
         return "No events are currently scheduled."
     val builder = StringBuilder("Scheduled events by user:\n")
     for ((user, events) in eventMap) {
         events.sortBy { it.time }
-        builder.append("${getUserName(user)}:\n")
+        builder.append("${getUserName(chat, user)}:\n")
         for (event in events) {
             builder.append("\t[")
             builder.append(event.id)
             builder.append("] ")
             builder.append(formatTime(event.time))
             builder.append(": \"")
-            builder.append(commandDelimiters.getOrDefault(sender.chat, defaultCommandDelimiter))
+            builder.append(commandDelimiters.getOrDefault(chat, defaultCommandDelimiter))
             builder.append(event.commandData.command.name)
             builder.append(" ")
             builder.append(event.commandData.args.joinToString(" "))
@@ -375,7 +371,7 @@ fun eventsByUser(args: List<String>, sender: User): String {
     return builder.toString()
 }
 
-fun unschedule(args: List<String>, sender: User): String {
+fun unschedule(args: List<String>, chat: Chat, sender: User): String {
     val index: Int = try {
         Integer.parseInt(args[0])
     } catch (e: NumberFormatException) {
@@ -389,7 +385,7 @@ fun unschedule(args: List<String>, sender: User): String {
         "No event with index $index found."
 }
 
-fun link(args: List<String>, sender: User): String {
+fun link(args: List<String>, chat: Chat, sender: User): String {
     val index: Int = try {
         Integer.parseInt(args[0])
     } catch (e: NumberFormatException) {
@@ -398,52 +394,51 @@ fun link(args: List<String>, sender: User): String {
 
     val chatToLink = chatMap[index]
     return if (chatToLink != null) {
-        if (sender.chat !in linkedChats)
-            linkedChats[sender.chat] = mutableListOf()
-        linkedChats[sender.chat]!!.add(chatToLink)
+        if (chat !in linkedChats)
+            linkedChats[chat] = mutableListOf()
+        linkedChats[chat]!!.add(chatToLink)
         Settings.update()
-        "${chatToLink.name} linked to ${sender.chat.name}."
+        "${chatToLink.name} linked to ${chat.name}."
     } else
         "No chat with ID $index found."
 }
 
-fun unlink(args: List<String>, sender: User): String {
+fun unlink(args: List<String>, chat: Chat, sender: User): String {
     val index: Int = try {
         Integer.parseInt(args[0])
     } catch (e: NumberFormatException) {
         return "${args[0]} is not a chat ID!"
     }
-    val chat = chatMap[index] ?: return "No chat with ID $index found."
+    val toUnlink = chatMap[index] ?: return "No chat with ID $index found."
 
     return when {
-        sender.chat !in linkedChats -> "There are no chats linked to this one!"
-        linkedChats[sender.chat]!!.remove(chat) -> "Removed ${chat.name} from this chat's links.".also { Settings.update() }
+        toUnlink !in linkedChats -> "There are no chats linked to this one!"
+        linkedChats[toUnlink]!!.remove(toUnlink) -> "Removed ${toUnlink.name} from this chat's links.".also { Settings.update() }
         else -> "That chat isn't linked to this one!"
     }
 }
 
-fun links(args: List<String>, sender: User): String {
-    val chat = sender.chat
+fun links(args: List<String>, chat: Chat, sender: User): String {
     return if (chat in linkedChats)
         "Linked chats: ${linkedChats[chat]!!.joinToString(", ") { c: Chat -> "$c (${reverseChatMap[c]})" }}"
     else
         "No chats are linked to this one."
 }
 
-fun setDelimiter(args: List<String>, sender: User): String = when {
+fun setDelimiter(args: List<String>, chat: Chat, sender: User): String = when {
     args.isEmpty() -> "You need to pass the new delimiter!"
-    setCommandDelimiter(sender.chat, args[0]) -> "Command delimiter set to \"${args[0]}\".".also { Settings.update() }
+    setCommandDelimiter(chat, args[0]) -> "Command delimiter set to \"${args[0]}\".".also { Settings.update() }
     else -> "\"${args[0]}\" is not a valid command delimiter!"
 }
 
 val updateSettingsCommand = Command(
-    UniversalChat, "updateSettings", { _, _ -> updateSettings(Settings.map); "Settings updated." },
+    UniversalChat, "updateSettings", { _, _, _ -> updateSettings(Settings.map); "Settings updated." },
     "Updates the settings file.", "updateSettings (Takes no arguments)"
 )
 fun registerDefaultCommands() {
     registerCommand(
         Command(
-            UniversalChat, "exit", { _, _ -> exitProcess(0) },
+            UniversalChat, "exit", { _, _, _ -> exitProcess(0) },
             "Exits the bot.",
             "exit (Takes no arguments)"
         )
@@ -577,7 +572,7 @@ fun registerDefaultCommands() {
     registerCommand(updateSettingsCommand)
     registerCommand(
         Command(
-            UniversalChat, "dumpSettings", { _, _ -> Settings.map.toString() }, "", ""
+            UniversalChat, "dumpSettings", { _, _, _ -> Settings.map.toString() }, "", ""
         )
     )
 }

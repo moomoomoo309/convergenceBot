@@ -9,6 +9,7 @@ import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel
+import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
@@ -48,17 +49,16 @@ class DiscordChat(name: String, override val id: Long, @Transient val channel: M
 }
 
 class DiscordMessageHistory(val msg: Message, override val id: Long):
-    MessageHistory(msg.contentRaw, msg.timeCreated, DiscordUser(DiscordChat(msg), msg.author)), DiscordObject {
+    MessageHistory(msg.contentRaw, msg.timeCreated, DiscordUser(msg.author)), DiscordObject {
     constructor(msg: Message): this(msg, msg.idLong)
 }
 
-class DiscordUser(chat: Chat, val name: String, override val id: Long, val author: DUser):
-    User(chat), DiscordObject {
+class DiscordUser(val name: String, override val id: Long, val author: DUser):
+    User(DiscordProtocol), DiscordObject {
 
-    constructor(msgEvent: MessageReceivedEvent): this(DiscordChat(msgEvent), msgEvent)
-    constructor(chat: Chat, msgEvent: MessageReceivedEvent): this(chat, msgEvent.author)
-    constructor(chat: Chat, author: DUser): this(chat, author.name, author.idLong, author)
-    constructor(chat: Chat, author: Member): this(chat, author.user)
+    constructor(msgEvent: MessageReceivedEvent): this(msgEvent.author)
+    constructor(author: DUser): this(author.name, author.idLong, author)
+    constructor(author: Member): this(author.user)
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -113,7 +113,7 @@ object DiscordInterface: BaseInterface, CanFormatMessages, HasNicknames, HasImag
     override fun getBotNickname(chat: Chat): String? = getUserNickname(chat, getBot(chat))
 
 
-    override fun sendImages(chat: Chat, sender: User, message: String, vararg images: Image) {
+    override fun sendImages(chat: Chat, message: String, sender: User, vararg images: Image) {
         if (chat is DiscordChat && images.isArrayOf<DiscordImage>()) {
             @Suppress("UNCHECKED_CAST")
             val discordImages = images as Array<DiscordImage>
@@ -132,34 +132,32 @@ object DiscordInterface: BaseInterface, CanFormatMessages, HasNicknames, HasImag
     override fun getMessages(chat: Chat, since: OffsetDateTime?, until: OffsetDateTime?): List<MessageHistory> {
         if (chat !is DiscordChat || (since != null && (since.isAfter(OffsetDateTime.now()) || since.isBefore(until))))
             return emptyList()
-        val history = chat.channel.history
-        if (history != null) {
-            for (i in 0..9) { // Get the last 1000 messages, 100 at a time.
-                history.retrievePast(100)
-                if (since != null && history.retrievedHistory.last().timeCreated.isBefore(since)) {
-                    if (until == null) {
-                        for ((i2, msg) in history.retrievedHistory.withIndex())
-                            if (msg.timeCreated.isAfter(since))
-                                return history.retrievedHistory.subList(i2, history.size() - 1)
-                                    .map { DiscordMessageHistory(it) }
-                    } else {
-                        var startIndex = 0
-                        for ((i2, msg) in history.retrievedHistory.withIndex()) {
-                            if (msg.timeCreated.isAfter(since))
-                                startIndex = i2
-                            if (msg.timeCreated.isAfter(until))
-                                return history.retrievedHistory.subList(startIndex, i2)
-                                    .map { DiscordMessageHistory(it) }
-                        }
-                        if (history.retrievedHistory.first().timeCreated.isAfter(since))
-                            return history.retrievedHistory.map { DiscordMessageHistory(it) }
-                        return emptyList()
+        val history = chat.channel.history ?: return emptyList()
+
+        for (i in 0..9) { // Get the last 1000 messages, 100 at a time.
+            history.retrievePast(100)
+            if (since != null && history.retrievedHistory.last().timeCreated.isBefore(since)) {
+                if (until == null) {
+                    for ((i2, msg) in history.retrievedHistory.withIndex())
+                        if (msg.timeCreated.isAfter(since))
+                            return history.retrievedHistory.subList(i2, history.size() - 1)
+                                .map { DiscordMessageHistory(it) }
+                } else {
+                    var startIndex = 0
+                    for ((i2, msg) in history.retrievedHistory.withIndex()) {
+                        if (msg.timeCreated.isAfter(since))
+                            startIndex = i2
+                        if (msg.timeCreated.isAfter(until))
+                            return history.retrievedHistory.subList(startIndex, i2)
+                                .map { DiscordMessageHistory(it) }
                     }
+                    if (history.retrievedHistory.first().timeCreated.isAfter(since))
+                        return history.retrievedHistory.map { DiscordMessageHistory(it) }
+                    return emptyList()
                 }
             }
-            return history.retrievedHistory.map { DiscordMessageHistory(it) }
-        } else
-            return emptyList()
+        }
+        return history.retrievedHistory.map { DiscordMessageHistory(it) }
     }
 
     override fun getUserMessages(
@@ -199,10 +197,16 @@ object DiscordInterface: BaseInterface, CanFormatMessages, HasNicknames, HasImag
         return true
     }
 
-    override fun getBot(chat: Chat): User = DiscordUser(chat, jda.selfUser)
+    override fun getBot(chat: Chat): User = DiscordUser(jda.selfUser)
     override fun getName(chat: Chat, user: User): String = if (user is DiscordUser) user.name else ""
     override fun getChats(): List<Chat> = jda.textChannels.map { DiscordChat(it) }
-    override fun getUsers(chat: Chat): List<User> = jda.users.map { DiscordUser(chat, it) }
+    override fun getUsers(): List<User> = jda.users.map { DiscordUser(it) }
+    override fun getUsers(chat: Chat): List<User> {
+        val channel = ((chat as DiscordChat).channel as GuildMessageChannel)
+        return jda.users.filter {
+            channel.canTalk(channel.guild.getMember(it) ?: return@filter false)
+        }.map { DiscordUser(it) }
+    }
     override fun getChatName(chat: Chat): String = if (chat is DiscordChat) chat.name else ""
     override fun mention(chat: Chat, user: User, message: String?) {
         sendMessage(chat, jda.retrieveUserById((user as DiscordUser).id).complete().asMention + message?.let { " $it" })
@@ -214,13 +218,12 @@ object MessageListener: ListenerAdapter() {
         val chat = DiscordChat(event)
         val messageText = event.message.contentDisplay
         val sender = DiscordUser(event)
-        DiscordInterface.receivedMessage(chat, messageText, sender)
         val mentionedMembers = event.message.mentions.members
         if (mentionedMembers.isNotEmpty())
             DiscordInterface.mentionedUsers(
                 chat,
                 event.message.contentDisplay,
-                mentionedMembers.map { DiscordUser(chat, it) }.toSet(),
+                mentionedMembers.map { DiscordUser(it) }.toSet(),
                 sender
             )
         val images = event.message.attachments
@@ -228,7 +231,9 @@ object MessageListener: ListenerAdapter() {
             .map { DiscordImage(it) }
             .toTypedArray()
         if (images.isNotEmpty())
-            DiscordInterface.receivedImages(chat, sender, messageText, *images)
+            DiscordInterface.receivedImages(chat, messageText, sender, *images)
+        else
+            DiscordInterface.receivedMessage(chat, messageText, sender)
     }
 }
 

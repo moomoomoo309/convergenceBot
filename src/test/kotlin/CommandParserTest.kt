@@ -1,12 +1,14 @@
-package convergence
-
+import convergence.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 
 class TestChat: Chat(TestProtocol(), "Test")
-class TestProtocol: Protocol("Test")
+class TestProtocol: Protocol("Test", DefaultBaseInterface) {
+    override fun init() {
+    }
+}
 
 fun doNothing(unused: List<String>, unused2: User): String? {
     unused.run { unused2.run {} }

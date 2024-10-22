@@ -89,10 +89,10 @@ fun setCommandDelimiter(chat: Chat, commandDelimiter: String): Boolean {
 /**
  * Sends [message] in the chat [sender] is in, forwarding the message to any linked chats.
  */
-fun sendMessage(sender: User, message: String?) {
-    if (sender != sender.chat.protocol.baseInterface.getBot(sender.chat))
-        sendMessage(sender.chat, message)
-    forwardToLinkedChats(message, sender, true)
+fun sendMessage(chat: Chat, sender: User, message: String?) {
+    if (sender != chat.protocol.baseInterface.getBot(chat))
+        sendMessage(chat, message)
+    forwardToLinkedChats(chat, message, sender, true)
 }
 
 /**
@@ -101,10 +101,6 @@ fun sendMessage(sender: User, message: String?) {
 fun sendMessage(chat: Chat, message: String?) {
     if (message == null)
         return
-    if (chat.protocol !in protocols) {
-        defaultLogger.error("Protocol \"${chat.protocol.name}\" not properly registered!")
-        return
-    }
     val baseInterface = chat.protocol.baseInterface
     baseInterface.sendMessage(chat, message)
 }
@@ -112,8 +108,7 @@ fun sendMessage(chat: Chat, message: String?) {
 /**
  * Gets the nickname (if applicable) or name of a user.
  */
-fun getUserName(sender: User): String {
-    val chat = sender.chat
+fun getUserName(chat: Chat, sender: User): String {
     val baseInterface = chat.protocol.baseInterface
     return if (baseInterface is HasNicknames)
         baseInterface.getUserNickname(chat, sender) ?: baseInterface.getName(chat, sender)
@@ -125,10 +120,9 @@ fun getUserName(sender: User): String {
  * Replaces instances of the keys in [aliasVars] preceded by a percent sign with the result of the functions therein,
  * such as %sender with the name of the user who sent the message.
  */
-fun replaceAliasVars(message: String?, sender: User): String? {
+fun replaceAliasVars(chat: Chat, message: String?, sender: User): String? {
     if (message == null)
         return null
-    val chat = sender.chat
     // Used as a mutable string, since this function does a lot of string appending.
     val stringBuilder = StringBuilder((message.length * 1.5).toInt())
 
@@ -167,23 +161,23 @@ fun replaceAliasVars(message: String?, sender: User): String? {
     return stringBuilder.toString()
 }
 
-fun getCommandData(message: String, sender: User): CommandData? = try {
-    parseCommand(message, sender.chat)
+fun getCommandData(chat: Chat, message: String, sender: User): CommandData? = try {
+    parseCommand(message, chat)
 } catch (e: CommandDoesNotExist) {
-    sendMessage(sender, "No command exists with name \"${e.message}\".")
+    sendMessage(chat, sender, "No command exists with name \"${e.message}\".")
     null
 } catch (e: InvalidEscapeSequence) {
-    sendMessage(sender, "Invalid escape sequence \"${e.message}\" passed. Are your backslashes correct?")
+    sendMessage(chat, sender, "Invalid escape sequence \"${e.message}\" passed. Are your backslashes correct?")
     null
 }
 
 /**
  * Run the Command in the given message, or do nothing if none exists.
  */
-fun runCommand(message: String, sender: User) {
-    defaultLogger.info("[${getUserName(sender)}]: $message")
-    forwardToLinkedChats(message, sender)
-    getCommandData(message, sender)?.let { runCommand(sender, it) }
+fun runCommand(chat: Chat, message: String, sender: User, images: Array<Image> = emptyArray()) {
+    defaultLogger.info("[${getUserName(chat, sender)}]: $message")
+    forwardToLinkedChats(chat, message, sender, images)
+    getCommandData(chat, message, sender)?.let { runCommand(chat, sender, it) }
 }
 
 fun getStackTraceText(e: Exception): String = ByteArrayOutputStream().let {
@@ -191,16 +185,24 @@ fun getStackTraceText(e: Exception): String = ByteArrayOutputStream().let {
     it.toString("UTF8")
 }
 
-fun runCommand(sender: User, command: CommandData) = try {
-    sendMessage(sender, replaceAliasVars(command(sender), sender))
+fun runCommand(chat: Chat, sender: User, command: CommandData) = try {
+    sendMessage(chat, sender, replaceAliasVars(chat, command(sender), sender))
 } catch (e: Exception) {
-    sendMessage(sender, "Error while running command! Stack trace:\n${getStackTraceText(e)}")
+    sendMessage(chat, sender, "Error while running command! Stack trace:\n${getStackTraceText(e)}")
 }
 
-fun forwardToLinkedChats(message: String?, sender: User, isCommand: Boolean = false) {
+fun forwardToLinkedChats(chat: Chat, message: String?, sender: User, isCommand: Boolean = false) =
+    forwardToLinkedChats(chat, message, sender, emptyArray(), isCommand)
+
+fun forwardToLinkedChats(
+    chat: Chat,
+    message: String?,
+    sender: User,
+    images: Array<Image> = emptyArray(),
+    isCommand: Boolean = false
+) {
     if (message == null)
         return
-    val chat = sender.chat
     val protocol = chat.protocol
     var boldOpen = ""
     var boldClose = ""
@@ -213,11 +215,16 @@ fun forwardToLinkedChats(message: String?, sender: User, isCommand: Boolean = fa
     }
 
     // Send the messages out to the linked chats, if there are any. Don't error if there aren't any.
-    val bot = sender.chat.protocol.baseInterface.getBot(sender.chat)
+    val bot = chat.protocol.baseInterface.getBot(chat)
     if (isCommand || sender != bot)
         if (chat in linkedChats)
-            for (linkedChat in linkedChats[chat]!!)
-                sendMessage(linkedChat, "$boldOpen${getUserName(if (isCommand) bot else sender)}:$boldClose $message")
+            for (linkedChat in linkedChats[chat]!!) {
+                val msg = "$boldOpen${getUserName(chat, if (isCommand) bot else sender)}:$boldClose $message"
+                if (linkedChat.protocol is HasImages)
+                    linkedChat.protocol.sendImages(linkedChat, msg, sender, *images)
+                else
+                    sendMessage(linkedChat, msg)
+            }
 }
 
 fun offsetDateTimeToDate(time: OffsetDateTime): Date = Date.from(time.toInstant())
@@ -225,6 +232,7 @@ fun formatTime(time: OffsetDateTime): String = Humanize.naturalTime(offsetDateTi
 
 data class ScheduledCommand(
     val time: OffsetDateTime,
+    val chat: Chat,
     val sender: User,
     val commandData: CommandData,
     val id: Int,
@@ -256,7 +264,7 @@ object CommandScheduler: Thread() {
                 if (cmdTime.isBefore(now)) {
                     if (cmdTime.until(now, ChronoUnit.SECONDS) in 0..allowedTimeDifferenceSeconds) {
                         for (cmd in cmdList) {
-                            runCommand(cmd.sender, cmd.commandData)
+                            runCommand(cmd.chat, cmd.sender, cmd.commandData)
                             scheduledCommands.remove(cmd.time)
                             commandsList.remove(cmd.id)
                         }
@@ -281,10 +289,10 @@ object CommandScheduler: Thread() {
      * Schedules [command] sent by [sender] to run at [time].
      * @return The response the user will get from the command.
      */
-    fun schedule(sender: User, command: CommandData, time: OffsetDateTime): String {
+    fun schedule(chat: Chat, sender: User, command: CommandData, time: OffsetDateTime): String {
         if (time !in scheduledCommands)
             scheduledCommands[time] = mutableListOf()
-        val cmd = ScheduledCommand(time, sender, command, currentId)
+        val cmd = ScheduledCommand(time, chat, sender, command, currentId)
         while (commandsList.containsKey(currentId))
             currentId++
         scheduledCommands[time]!!.add(cmd)
@@ -294,10 +302,11 @@ object CommandScheduler: Thread() {
         serializedCommands[cmd.id] = objectMapper.writeValueAsString(cmd)
         if (!Settings.updateIsScheduled)
             Settings.update()
-        return "Scheduled ${getUserName(sender)} to run \"$command\" to run at $time."
+        return "Scheduled ${getUserName(chat, sender)} to run \"$command\" to run at $time."
     }
 
-    fun schedule(scheduled: ScheduledCommand) = schedule(scheduled.sender, scheduled.commandData, scheduled.time)
+    fun schedule(scheduled: ScheduledCommand) =
+        schedule(scheduled.chat, scheduled.sender, scheduled.commandData, scheduled.time)
 
     /**
      * Gets all the commands scheduled by [sender].
@@ -325,8 +334,8 @@ object CommandScheduler: Thread() {
 /**
  * Schedules [command] to run at [time] from [sender].
  */
-fun schedule(sender: User, command: CommandData, time: OffsetDateTime) =
-    CommandScheduler.schedule(sender, command, time)
+fun schedule(chat: Chat, sender: User, command: CommandData, time: OffsetDateTime) =
+    CommandScheduler.schedule(chat, sender, command, time)
 
 class core {
     companion object {

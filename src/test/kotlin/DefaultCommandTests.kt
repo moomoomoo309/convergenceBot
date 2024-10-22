@@ -1,5 +1,6 @@
-package convergence
-
+import convergence.User
+import convergence.echo
+import convergence.ping
 import org.junit.Test
 import kotlin.test.assertEquals
 

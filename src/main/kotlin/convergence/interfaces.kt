@@ -24,7 +24,7 @@ abstract class Protocol(val name: String, val baseInterface: BaseInterface): Com
 }
 
 //Intentionally empty, because it might be represented as an int or a string or whatever.
-abstract class User(val chat: Chat)
+abstract class User(val protocol: Protocol)
 
 abstract class Chat(val protocol: Protocol, val name: String): Comparable<Chat> {
     override fun compareTo(other: Chat) =
@@ -35,7 +35,7 @@ abstract class Chat(val protocol: Protocol, val name: String): Comparable<Chat> 
     }
 }
 
-object UniversalUser: User(UniversalChat)
+object UniversalUser: User(UniversalProtocol)
 
 object UniversalProtocol: Protocol("Universal", DefaultBaseInterface) {
     override fun init() {
@@ -51,6 +51,7 @@ object DefaultBaseInterface: BaseInterface {
     override fun getBot(chat: Chat): User = UniversalUser
     override fun getName(chat: Chat, user: User): String = ""
     override fun getChats(): List<Chat> = listOf(UniversalChat)
+    override fun getUsers(): List<User> = listOf(UniversalUser)
     override fun getUsers(chat: Chat): List<User> = listOf(UniversalUser)
     override fun getChatName(chat: Chat): String = ""
 
@@ -68,7 +69,7 @@ sealed class CommandLike(
     data class Command(
         override val chat: Chat,
         override val name: String,
-        @Transient val function: (List<String>, User) -> String?,
+        @Transient val function: (List<String>, Chat, User) -> String?,
         @Transient override val helpText: String,
         @Transient override val syntaxText: String
     ): CommandLike(chat, name, helpText, syntaxText)
@@ -90,18 +91,24 @@ fun Map<String, Any>.json(): String = objectMapper.writeValueAsString(this)
 
 interface BaseInterface {
     val name: String
-    fun receivedMessage(chat: Chat, message: String, sender: User) = runCommand(message, sender)
+    fun receivedMessage(chat: Chat, message: String, sender: User) = runCommand(chat, message, sender)
     fun sendMessage(chat: Chat, message: String): Boolean
     fun getBot(chat: Chat): User
     fun getName(chat: Chat, user: User): String
 
     @JsonIgnore
     fun getChats(): List<Chat>
+    fun getUsers(): List<User>
     fun getUsers(chat: Chat): List<User>
     fun getChatName(chat: Chat): String
 }
 
-private val callbacks = HashMap<KClass<out ChatEvent>, ArrayList<ChatEvent>>()
+private val callbacks = mutableMapOf<KClass<out ChatEvent>, MutableList<ChatEvent>>(
+    ReceivedImages::class to mutableListOf(ReceivedImages { chat: Chat, message: String?, sender: User, images: Array<Image> ->
+        runCommand(chat, message ?: return@ReceivedImages false, sender, images)
+        true
+    })
+)
 
 fun registerCallback(event: ChatEvent) {
     callbacks.putIfAbsent(event::class, ArrayList())
@@ -218,16 +225,17 @@ interface HasNicknames {
 }
 
 open class Image
-open class ReceivedImage(val fct: (chat: Chat, image: Image, sender: User, message: String?) -> Boolean): ChatEvent {
-    override fun invoke(vararg args: Any): Boolean = invokeTyped(fct, args, default4 = "")
-    fun invoke(chat: Chat, image: Image, sender: User, message: String?): Boolean =
-        fct(chat, image, sender, message ?: "")
+open class ReceivedImages(val fct: (chat: Chat, message: String?, sender: User, image: Array<Image>) -> Boolean):
+    ChatEvent {
+    override fun invoke(vararg args: Any): Boolean = invokeTyped(fct, args)
+    fun invoke(chat: Chat, message: String?, sender: User, image: Array<Image>): Boolean =
+        fct(chat, message ?: "", sender, image)
 }
 
 interface HasImages {
-    fun sendImages(chat: Chat, sender: User, message: String, vararg images: Image)
-    fun receivedImages(chat: Chat, sender: User, message: String, vararg images: Image) =
-        runCallbacks<ReceivedImage>(chat, sender, message, images)
+    fun sendImages(chat: Chat, message: String, sender: User, vararg images: Image)
+    fun receivedImages(chat: Chat, message: String, sender: User, vararg images: Image) =
+        runCallbacks<ReceivedImages>(chat, message, sender, images)
 }
 
 open class EditMessage(val fct: (oldMessage: String, sender: User, newMessage: String) -> Boolean): ChatEvent {

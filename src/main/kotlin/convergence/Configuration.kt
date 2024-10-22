@@ -35,6 +35,7 @@ object Settings: MutableMap<String, Any> by settingsMap {
         if (!updateIsScheduled) {
             updateIsScheduled = true
             CommandScheduler.schedule(
+                UniversalChat,
                 UniversalUser,
                 CommandData(updateSettingsCommand, emptyList()),
                 OffsetDateTime.now().plusSeconds(1L)
@@ -56,10 +57,8 @@ private fun writeLazySettingsToFile(settingsToWrite: Map<String, () -> Any>) =
 
 private fun writeSettingsToFile(settingsToWrite: Map<String, Any>) {
     settingsLogger.info("Writing settings to ${settingsPath}:")
-    // Converting to a [SortedMap] makes the keys go in alphabetical order, but Moshi can't serialize sorted maps,
-    // so the SortedMap is converted back into the default map type (toMap() preserves the key ordering).
     objectMapper.configure(SerializationFeature.INDENT_OUTPUT, true)
-    val settingsAsString = objectMapper.writeValueAsString(settingsToWrite.toSortedMap().toMap())
+    val settingsAsString = objectMapper.writeValueAsString(settingsToWrite.toSortedMap())
     objectMapper.configure(SerializationFeature.INDENT_OUTPUT, false)
     settingsLogger.info(settingsAsString)
     settingsPath.toFile().writeText(settingsAsString)
@@ -100,10 +99,6 @@ fun updateSettings(newSettings: ConcurrentHashMap<String, Any>) {
     Settings.updateIsScheduled = false
 }
 
-/**
- * Warning: Editing this function can cause initialization errors that are a royal pain to debug. If you see
- * an [ExceptionInInitializerError], it's probably from this function.
- */
 fun readSettings(fallbackSettings: Map<String, () -> Any>, initialRun: Boolean): ConcurrentHashMap<String, Any> = try {
     val finalSettings = objectMapper.readValue<MutableMap<String, Any>>(settingsPath.toFile())
     for ((k, v) in defaultSettings) {
