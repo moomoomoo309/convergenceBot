@@ -24,9 +24,8 @@ inline fun unregisteredChat(chat: Chat) {
     } catch (e: UnregisteredChat) {
         val writer = StringWriter()
         e.printStackTrace(PrintWriter(writer))
-        chat.protocol.baseInterface.sendMessage(
-            chat, "Bot error: Chat either is missing a protocol, or its BaseInterface is not" +
-                    " registered to that protocol.\nStack Trace:\n$writer"
+        chat.protocol.sendMessage(
+            chat, "Bot error: Chat is missing a protocol.\nStack Trace:\n$writer"
         )
         writer.close()
     }
@@ -34,9 +33,9 @@ inline fun unregisteredChat(chat: Chat) {
 
 fun getUserFromName(chat: Chat, name: String): User? {
     var alternateOption: User? = null
-    val baseInterface = chat.protocol.baseInterface
-    for (user in baseInterface.getUsers(chat)) {
-        val currentName = baseInterface.getName(chat, user)
+    val protocol = chat.protocol
+    for (user in protocol.getUsers(chat)) {
+        val currentName = protocol.getName(chat, user)
         if (currentName == name)
             return user
         else if (alternateOption == null && name in currentName)
@@ -48,7 +47,7 @@ fun getUserFromName(chat: Chat, name: String): User? {
 fun getFullName(chat: Chat, name: String): String? {
     val user = getUserFromName(chat, name)
     if (chat.protocol in protocols)
-        return user?.let { chat.protocol.baseInterface.getName(chat, user) }
+        return user?.let { chat.protocol.getName(chat, user) }
     unregisteredChat(chat)
     return null
 }
@@ -124,8 +123,8 @@ fun removeAlias(args: List<String>, chat: Chat, sender: User): String {
 }
 
 fun me(args: List<String>, chat: Chat, sender: User): String {
-    val baseInterface = chat.protocol.baseInterface as? CanFormatMessages
-    val (boldOpen, boldClose) = baseInterface?.getDelimiters(Format.bold) ?: Pair("", "")
+    val protocol = chat.protocol as? CanFormatMessages
+    val (boldOpen, boldClose) = protocol?.getDelimiters(Format.bold) ?: Pair("", "")
     return "$boldOpen*${getUserName(chat, sender)} ${args.joinToString(" ")}$boldClose."
 }
 
@@ -133,7 +132,7 @@ fun chats(args: List<String>, chat: Chat, sender: User): String {
     val builder = StringBuilder()
     for (protocol in protocols) {
         try {
-            val chats = protocol.baseInterface.getChats()
+            val chats = protocol.getChats()
             builder.append("${protocol.name}\n\t")
             chats.forEach {
                 if (it !in reverseChatMap) {
@@ -245,10 +244,9 @@ fun setLocation(args: List<String>, chat: Chat, sender: User): String {
 }
 
 fun target(args: List<String>, chat: Chat, sender: User): String {
-    val baseInterface = chat.protocol.baseInterface
     val user = getUserFromName(chat, args[args.size - 1])
         ?: return "No user by the name \"${args[args.size - 1]}\" found."
-    return args.subList(0, -1).joinToString(" ").replace("%target", baseInterface.getName(chat, user))
+    return args.subList(0, -1).joinToString(" ").replace("%target", chat.protocol.getName(chat, user))
 }
 
 fun commands(args: List<String>, chat: Chat, sender: User): String {

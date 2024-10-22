@@ -4,14 +4,10 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 
-class TestChat: Chat(TestProtocol(), "Test")
-class TestProtocol: Protocol("Test", DefaultBaseInterface) {
-    override fun init() {
-    }
-}
+class TestChat: Chat(UniversalProtocol, "Test")
 
-fun doNothing(unused: List<String>, unused2: User): String? {
-    unused.run { unused2.run {} }
+fun doNothing(unused: List<String>, unused2: Chat, unused3: User): String? {
+    unused.run { unused2.run { unused3.run {} } }
     return null
 }
 

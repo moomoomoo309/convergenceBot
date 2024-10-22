@@ -7,7 +7,7 @@ import java.time.OffsetDateTime
 import java.util.*
 import kotlin.reflect.KClass
 
-abstract class Protocol(val name: String, val baseInterface: BaseInterface): Comparable<Protocol> {
+abstract class Protocol(val name: String): Comparable<Protocol> {
     abstract fun init()
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -21,6 +21,19 @@ abstract class Protocol(val name: String, val baseInterface: BaseInterface): Com
     override fun compareTo(other: Protocol) = this.name.compareTo(other.name)
     override fun toString(): String = this::class.java.simpleName
     override fun hashCode(): Int = name.hashCode()
+
+    fun receivedMessage(chat: Chat, message: String, sender: User) = runCommand(chat, message, sender)
+    abstract fun sendMessage(chat: Chat, message: String): Boolean
+    abstract fun getBot(chat: Chat): User
+    abstract fun getName(chat: Chat, user: User): String
+
+    @JsonIgnore
+    abstract fun getChats(): List<Chat>
+
+    @JsonIgnore
+    abstract fun getUsers(): List<User>
+    abstract fun getUsers(chat: Chat): List<User>
+    abstract fun getChatName(chat: Chat): String
 }
 
 //Intentionally empty, because it might be represented as an int or a string or whatever.
@@ -37,16 +50,7 @@ abstract class Chat(val protocol: Protocol, val name: String): Comparable<Chat> 
 
 object UniversalUser: User(UniversalProtocol)
 
-object UniversalProtocol: Protocol("Universal", DefaultBaseInterface) {
-    override fun init() {
-        // Do nothing
-    }
-}
-
-// Used to represent the universal chat.
-object UniversalChat: Chat(UniversalProtocol, "Universal")
-
-object DefaultBaseInterface: BaseInterface {
+object UniversalProtocol: Protocol("Universal") {
     override fun sendMessage(chat: Chat, message: String): Boolean = false
     override fun getBot(chat: Chat): User = UniversalUser
     override fun getName(chat: Chat, user: User): String = ""
@@ -55,8 +59,13 @@ object DefaultBaseInterface: BaseInterface {
     override fun getUsers(chat: Chat): List<User> = listOf(UniversalUser)
     override fun getChatName(chat: Chat): String = ""
 
-    override val name: String = "FakeBaseInterface"
+    override fun init() {
+        // Do nothing
+    }
 }
+
+// Used to represent the universal chat.
+object UniversalChat: Chat(UniversalProtocol, "Universal")
 
 sealed class CommandLike(
     open val chat: Chat,
@@ -88,20 +97,6 @@ typealias Alias = CommandLike.Alias
 
 
 fun Map<String, Any>.json(): String = objectMapper.writeValueAsString(this)
-
-interface BaseInterface {
-    val name: String
-    fun receivedMessage(chat: Chat, message: String, sender: User) = runCommand(chat, message, sender)
-    fun sendMessage(chat: Chat, message: String): Boolean
-    fun getBot(chat: Chat): User
-    fun getName(chat: Chat, user: User): String
-
-    @JsonIgnore
-    fun getChats(): List<Chat>
-    fun getUsers(): List<User>
-    fun getUsers(chat: Chat): List<User>
-    fun getChatName(chat: Chat): String
-}
 
 private val callbacks = mutableMapOf<KClass<out ChatEvent>, MutableList<ChatEvent>>(
     ReceivedImages::class to mutableListOf(ReceivedImages { chat: Chat, message: String?, sender: User, images: Array<Image> ->

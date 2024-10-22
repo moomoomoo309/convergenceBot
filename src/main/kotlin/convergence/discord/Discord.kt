@@ -99,9 +99,40 @@ class DiscordImage(val image: Message.Attachment): Image() {
     val url get() = image.url
 }
 
-object DiscordInterface: BaseInterface, CanFormatMessages, HasNicknames, HasImages, CanMentionUsers, HasMessageHistory,
-    CanEditOtherMessages, HasUserAvailability, HasCustomEmoji {
-    override val name: String = "DiscordInterface"
+object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, HasImages, CanMentionUsers,
+    HasMessageHistory, CanEditOtherMessages, HasUserAvailability, HasCustomEmoji {
+    override fun init() {
+        println("Discord Plugin initialized.")
+        jda = try {
+            val it = JDABuilder
+                .create(
+                    setOf(
+                        GatewayIntent.GUILD_PRESENCES,
+                        GatewayIntent.GUILD_MESSAGE_TYPING,
+                        GatewayIntent.GUILD_MESSAGE_REACTIONS,
+                        GatewayIntent.GUILD_MESSAGES,
+                        GatewayIntent.GUILD_MEMBERS,
+                        GatewayIntent.GUILD_EMOJIS_AND_STICKERS,
+                        GatewayIntent.DIRECT_MESSAGE_TYPING,
+                        GatewayIntent.DIRECT_MESSAGE_REACTIONS,
+                        GatewayIntent.DIRECT_MESSAGES,
+                        GatewayIntent.MESSAGE_CONTENT
+                    )
+                )
+                .setToken(Files.readString(convergencePath.resolve("discordToken")).trim())
+                .disableCache(CacheFlag.VOICE_STATE)
+            it.build()
+        } catch(e: FileNotFoundException) {
+            discordLogger.error("You need to put your discord token in $convergencePath/discordToken!")
+            return
+        } catch(e: LoginException) {
+            e.printStackTrace()
+            return
+        }
+        discordLogger.info("JDA Initialized.")
+        jda.addEventListener(MessageListener)
+    }
+
     override val supportedFormats = formatMap.keys
 
     override fun getUserNickname(chat: Chat, user: User): String? {
@@ -220,7 +251,7 @@ object MessageListener: ListenerAdapter() {
         val sender = DiscordUser(event)
         val mentionedMembers = event.message.mentions.members
         if (mentionedMembers.isNotEmpty())
-            DiscordInterface.mentionedUsers(
+            DiscordProtocol.mentionedUsers(
                 chat,
                 event.message.contentDisplay,
                 mentionedMembers.map { DiscordUser(it) }.toSet(),
@@ -231,42 +262,8 @@ object MessageListener: ListenerAdapter() {
             .map { DiscordImage(it) }
             .toTypedArray()
         if (images.isNotEmpty())
-            DiscordInterface.receivedImages(chat, messageText, sender, *images)
+            DiscordProtocol.receivedImages(chat, messageText, sender, *images)
         else
-            DiscordInterface.receivedMessage(chat, messageText, sender)
-    }
-}
-
-object DiscordProtocol: Protocol("Discord", DiscordInterface) {
-    override fun init() {
-        println("Discord Plugin initialized.")
-        jda = try {
-            val it = JDABuilder
-                .create(
-                    setOf(
-                        GatewayIntent.GUILD_PRESENCES,
-                        GatewayIntent.GUILD_MESSAGE_TYPING,
-                        GatewayIntent.GUILD_MESSAGE_REACTIONS,
-                        GatewayIntent.GUILD_MESSAGES,
-                        GatewayIntent.GUILD_MEMBERS,
-                        GatewayIntent.GUILD_EMOJIS_AND_STICKERS,
-                        GatewayIntent.DIRECT_MESSAGE_TYPING,
-                        GatewayIntent.DIRECT_MESSAGE_REACTIONS,
-                        GatewayIntent.DIRECT_MESSAGES,
-                        GatewayIntent.MESSAGE_CONTENT
-                    )
-                )
-                .setToken(Files.readString(convergencePath.resolve("discordToken")).trim())
-                .disableCache(CacheFlag.VOICE_STATE)
-            it.build()
-        } catch(e: FileNotFoundException) {
-            discordLogger.error("You need to put your discord token in $convergencePath/discordToken!")
-            return
-        } catch(e: LoginException) {
-            e.printStackTrace()
-            return
-        }
-        discordLogger.info("JDA Initialized.")
-        jda.addEventListener(MessageListener)
+            DiscordProtocol.receivedMessage(chat, messageText, sender)
     }
 }

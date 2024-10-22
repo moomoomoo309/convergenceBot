@@ -90,7 +90,7 @@ fun setCommandDelimiter(chat: Chat, commandDelimiter: String): Boolean {
  * Sends [message] in the chat [sender] is in, forwarding the message to any linked chats.
  */
 fun sendMessage(chat: Chat, sender: User, message: String?) {
-    if (sender != chat.protocol.baseInterface.getBot(chat))
+    if (sender != chat.protocol.getBot(chat))
         sendMessage(chat, message)
     forwardToLinkedChats(chat, message, sender, true)
 }
@@ -101,19 +101,18 @@ fun sendMessage(chat: Chat, sender: User, message: String?) {
 fun sendMessage(chat: Chat, message: String?) {
     if (message == null)
         return
-    val baseInterface = chat.protocol.baseInterface
-    baseInterface.sendMessage(chat, message)
+    chat.protocol.sendMessage(chat, message)
 }
 
 /**
  * Gets the nickname (if applicable) or name of a user.
  */
 fun getUserName(chat: Chat, sender: User): String {
-    val baseInterface = chat.protocol.baseInterface
-    return if (baseInterface is HasNicknames)
-        baseInterface.getUserNickname(chat, sender) ?: baseInterface.getName(chat, sender)
+    val protocol = chat.protocol
+    return if (protocol is HasNicknames)
+        protocol.getUserNickname(chat, sender) ?: protocol.getName(chat, sender)
     else
-        baseInterface.getName(chat, sender)
+        protocol.getName(chat, sender)
 }
 
 /**
@@ -145,9 +144,8 @@ fun replaceAliasVars(chat: Chat, message: String?, sender: User): String? {
                 if (possibleMatches[i]) {
                     anyTrue = true
                     if (charIndex == string.length - 1) {
-                        val baseInterface = chat.protocol.baseInterface
                         stringBuilder.setLength(stringBuilder.length - string.length - 1)
-                        stringBuilder.append(aliasVar(baseInterface, chat, sender))
+                        stringBuilder.append(aliasVar(chat, sender))
                         charIndex = -1
                         break
                     }
@@ -206,16 +204,15 @@ fun forwardToLinkedChats(
     val protocol = chat.protocol
     var boldOpen = ""
     var boldClose = ""
-    val baseInterface = protocol.baseInterface
     // Try to get the delimiters for bold, if possible.
-    if (baseInterface is CanFormatMessages && Format.bold in baseInterface.supportedFormats) {
-        val delimiters = baseInterface.getDelimiters(Format.bold)
+    if (protocol is CanFormatMessages && Format.bold in protocol.supportedFormats) {
+        val delimiters = protocol.getDelimiters(Format.bold)
         boldOpen = delimiters?.first ?: boldOpen
         boldClose = delimiters?.second ?: boldClose
     }
 
     // Send the messages out to the linked chats, if there are any. Don't error if there aren't any.
-    val bot = chat.protocol.baseInterface.getBot(chat)
+    val bot = chat.protocol.getBot(chat)
     if (isCommand || sender != bot)
         if (chat in linkedChats)
             for (linkedChat in linkedChats[chat]!!) {
@@ -379,7 +376,7 @@ class core {
                 defaultLogger.info("Initializing ${protocol.name}...")
                 try {
                     protocol.init()
-                    val chats = protocol.baseInterface.getChats()
+                    val chats = protocol.getChats()
                     for (chat in chats) {
                         if (chat !in reverseChatMap) {
                             while (currentChatID in chatMap)

@@ -129,10 +129,10 @@ val commands: MutableMap<Chat, MutableMap<String, Command>> = mutableMapOf()
 val protocols: MutableList<Protocol> = mutableListOf()
 val sortedHelpText: MutableList<CommandLike> = mutableListOf()
 var currentChatID: Int = 0
-val aliasVars: MutableMap<String, (baseInterface: BaseInterface, chat: Chat, sender: User) -> String> = mutableMapOf(
-    "sender" to { b: BaseInterface, c: Chat, s: User -> b.getName(c, s) },
-    "botname" to { b: BaseInterface, c: Chat, _: User -> b.getName(c, b.getBot(c)) },
-    "chatname" to { b: BaseInterface, c: Chat, _: User -> b.getChatName(c) }
+val aliasVars: MutableMap<String, (chat: Chat, sender: User) -> String> = mutableMapOf(
+    "sender" to { c: Chat, s: User -> c.protocol.getName(c, s) },
+    "botname" to { c: Chat, _: User -> c.protocol.getName(c, c.protocol.getBot(c)) },
+    "chatname" to { c: Chat, _: User -> c.protocol.getChatName(c) }
 )
 val objectMapper: ObjectMapper = ObjectMapper()
     .findAndRegisterModules()

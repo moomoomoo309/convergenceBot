@@ -1,6 +1,5 @@
 package convergence.console
 
-import convergence.BaseInterface
 import convergence.Chat
 import convergence.Protocol
 import convergence.User
@@ -13,8 +12,7 @@ object ConsoleChat: Chat(ConsoleProtocol, "Console")
 val user = ConsoleUser("user")
 val bot = ConsoleUser("bot")
 
-object ConsoleInterface: BaseInterface {
-    override val name = "ConsoleInterface"
+object ConsoleProtocol: Protocol("Console") {
     override fun sendMessage(chat: Chat, message: String): Boolean {
         if (chat is ConsoleChat) {
             println(message)
@@ -48,9 +46,6 @@ object ConsoleInterface: BaseInterface {
         return "Console"
     }
 
-}
-
-object ConsoleProtocol: Protocol("Console", ConsoleInterface) {
     override fun init() {
         Thread {
             print("consolePlugin initialized.\n\n> ")
@@ -59,12 +54,12 @@ object ConsoleProtocol: Protocol("Console", ConsoleInterface) {
             try {
                 val stdin = Scanner(System.`in`)
                 val currentLine = stdin.nextLine()
-                ConsoleInterface.receivedMessage(ConsoleChat, currentLine, user)
+                ConsoleProtocol.receivedMessage(ConsoleChat, currentLine, user)
                 while (true) {
                     print("> ")
                     System.out.flush()
                     while (!stdin.hasNextLine()) stdin.next()
-                    ConsoleInterface.receivedMessage(ConsoleChat, stdin.nextLine(), user)
+                    ConsoleProtocol.receivedMessage(ConsoleChat, stdin.nextLine(), user)
                 }
             } catch(e: NoSuchElementException) {
                 // Catch Ctrl-D (EOF). Normally, I wouldn't do this in a plugin, but it's the local console of the bot,
