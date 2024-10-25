@@ -10,9 +10,13 @@ class InvalidCommandException(msg: String): Exception(msg)
 data class CommandData(var command: Command, var args: List<String>) {
     constructor(alias: Alias, args: List<String>): this(alias.command, alias.args + args)
 
-    operator fun invoke(vararg args: String, sender: User): String? = this.command.function(args.toList(), sender)
-    operator fun invoke(args: List<String>, sender: User): String? = this.command.function(args, sender)
-    operator fun invoke(sender: User): String? = invoke(args, sender)
+    operator fun invoke(vararg args: String, chat: Chat, sender: User): String? =
+        this.command.function(args.toList(), chat, sender)
+
+    operator fun invoke(args: List<String>, chat: Chat, sender: User): String? =
+        this.command.function(args, chat, sender)
+
+    operator fun invoke(chat: Chat, sender: User): String? = invoke(args, chat, sender)
 }
 
 class InvalidEscapeSequence(message: String): Exception(message)

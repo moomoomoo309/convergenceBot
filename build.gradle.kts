@@ -53,7 +53,6 @@ dependencies {
     implementation("net.dv8tion:JDA:5.0.2") {
         exclude(module = "opus-java")
     }
-    implementation("club.minnced:jda-ktx:0.12.0")
     implementation("com.fasterxml.jackson.core:jackson-databind:$jackson_version")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jackson_version")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jackson_version")

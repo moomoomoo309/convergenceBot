@@ -393,7 +393,7 @@ fun link(args: List<String>, chat: Chat, sender: User): String {
     val chatToLink = chatMap[index]
     return if (chatToLink != null) {
         if (chat !in linkedChats)
-            linkedChats[chat] = mutableListOf()
+            linkedChats[chat] = mutableSetOf()
         linkedChats[chat]!!.add(chatToLink)
         Settings.update()
         "${chatToLink.name} linked to ${chat.name}."
@@ -410,8 +410,13 @@ fun unlink(args: List<String>, chat: Chat, sender: User): String {
     val toUnlink = chatMap[index] ?: return "No chat with ID $index found."
 
     return when {
-        toUnlink !in linkedChats -> "There are no chats linked to this one!"
-        linkedChats[toUnlink]!!.remove(toUnlink) -> "Removed ${toUnlink.name} from this chat's links.".also { Settings.update() }
+        chat !in linkedChats -> "There are no chats linked to this one!"
+        linkedChats[chat]!!.remove(toUnlink) -> {
+            Settings.update()
+            if (linkedChats[chat]!!.isEmpty())
+                linkedChats.remove(chat)
+            "Removed ${toUnlink.name} from this chat's links."
+        }
         else -> "That chat isn't linked to this one!"
     }
 }
@@ -429,10 +434,6 @@ fun setDelimiter(args: List<String>, chat: Chat, sender: User): String = when {
     else -> "\"${args[0]}\" is not a valid command delimiter!"
 }
 
-val updateSettingsCommand = Command(
-    UniversalChat, "updateSettings", { _, _, _ -> updateSettings(Settings.map); "Settings updated." },
-    "Updates the settings file.", "updateSettings (Takes no arguments)"
-)
 fun registerDefaultCommands() {
     registerCommand(
         Command(
@@ -567,10 +568,9 @@ fun registerDefaultCommands() {
             "setdelimiter (New delimiter)"
         )
     )
-    registerCommand(updateSettingsCommand)
     registerCommand(
         Command(
-            UniversalChat, "dumpSettings", { _, _, _ -> Settings.map.toString() }, "", ""
+            UniversalChat, "dumpSettings", { _, _, _ -> Settings.toString() }, "", ""
         )
     )
 }

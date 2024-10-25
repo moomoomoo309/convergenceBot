@@ -173,7 +173,14 @@ fun getCommandData(chat: Chat, message: String, sender: User): CommandData? = tr
  * Run the Command in the given message, or do nothing if none exists.
  */
 fun runCommand(chat: Chat, message: String, sender: User, images: Array<Image> = emptyArray()) {
-    defaultLogger.info("[${getUserName(chat, sender)}]: $message")
+    defaultLogger.info(
+        "[${
+            getUserName(
+                chat,
+                sender
+            )
+        }]: $message ${if (images.isNotEmpty()) "+${images.size} images" else ""}"
+    )
     forwardToLinkedChats(chat, message, sender, images)
     getCommandData(chat, message, sender)?.let { runCommand(chat, sender, it) }
 }
@@ -184,7 +191,7 @@ fun getStackTraceText(e: Exception): String = ByteArrayOutputStream().let {
 }
 
 fun runCommand(chat: Chat, sender: User, command: CommandData) = try {
-    sendMessage(chat, sender, replaceAliasVars(chat, command(sender), sender))
+    sendMessage(chat, sender, replaceAliasVars(chat, command(chat, sender), sender))
 } catch (e: Exception) {
     sendMessage(chat, sender, "Error while running command! Stack trace:\n${getStackTraceText(e)}")
 }
@@ -217,7 +224,7 @@ fun forwardToLinkedChats(
         if (chat in linkedChats)
             for (linkedChat in linkedChats[chat]!!) {
                 val msg = "$boldOpen${getUserName(chat, if (isCommand) bot else sender)}:$boldClose $message"
-                if (linkedChat.protocol is HasImages)
+                if (linkedChat.protocol is HasImages && images.isNotEmpty())
                     linkedChat.protocol.sendImages(linkedChat, msg, sender, *images)
                 else
                     sendMessage(linkedChat, msg)
@@ -265,15 +272,11 @@ object CommandScheduler: Thread() {
                             scheduledCommands.remove(cmd.time)
                             commandsList.remove(cmd.id)
                         }
-                        if (cmdList.isNotEmpty() && (cmdList.size > 1 || cmdList.first().commandData.command != updateSettingsCommand))
-                            Settings.update()
                     } else {
                         for (cmd in cmdList) {
                             scheduledCommands.remove(cmd.time)
                             commandsList.remove(cmd.id)
                         }
-                        if (cmdList.isNotEmpty() && (cmdList.size > 1 || cmdList.first().commandData.command != updateSettingsCommand))
-                            Settings.update()
                     }
                 } else // It's already sorted chronologically, so all following events are early.
                     break
@@ -297,8 +300,7 @@ object CommandScheduler: Thread() {
             defaultLogger.error("Duplicate IDs in schedulerThread!")
         commandsList[cmd.id] = cmd
         serializedCommands[cmd.id] = objectMapper.writeValueAsString(cmd)
-        if (!Settings.updateIsScheduled)
-            Settings.update()
+        Settings.update()
         return "Scheduled ${getUserName(chat, sender)} to run \"$command\" to run at $time."
     }
 
@@ -352,7 +354,7 @@ class core {
 
             val commandLineArgs = try {
                 argParser.parseArgs(args)
-            } catch (e: ArgumentParserException) {
+            } catch(e: ArgumentParserException) {
                 defaultLogger.error("Failed to parse command line arguments. Printing stack trace:")
                 defaultLogger.error(getStackTraceText(e))
                 return
@@ -363,7 +365,7 @@ class core {
             // Remove "just now" as an option for time formatting. 5 minutes for "just now" is annoying.
             Humanize.prettyTimeFormat().prettyTime.removeUnit(JustNow::class.java)
 
-            Settings.putAll(initSettings())
+            readSettings()
 
             defaultLogger.info("Registering default commands...")
             registerDefaultCommands()
@@ -393,7 +395,6 @@ class core {
             defaultLogger.info("Starting command scheduler...")
             CommandScheduler.start()
 
-            Settings.updateIsScheduled = false
             CommandScheduler.loadFromFile()
         }
     }
