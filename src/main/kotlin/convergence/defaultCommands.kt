@@ -21,7 +21,7 @@ class UnregisteredChat: Exception()
 inline fun unregisteredChat(chat: Chat) {
     try {
         throw UnregisteredChat()
-    } catch (e: UnregisteredChat) {
+    } catch(e: UnregisteredChat) {
         val writer = StringWriter()
         e.printStackTrace(PrintWriter(writer))
         chat.protocol.sendMessage(
@@ -57,7 +57,7 @@ const val commandsPerPage = 10
 fun help(args: List<String>, chat: Chat, sender: User): String {
     val pageOrCommand = if (args.isEmpty()) 1 else args[0].toIntOrNull() ?: args[0]
     val numPages = (sortedHelpText.size.toDouble() / commandsPerPage).nextUp().toInt()
-    return when (pageOrCommand) {
+    return when(pageOrCommand) {
         is Int -> {
             val helpText = StringBuilder("Help page $pageOrCommand/$numPages:\n")
             for (i in 0..commandsPerPage) {
@@ -65,13 +65,8 @@ fun help(args: List<String>, chat: Chat, sender: User): String {
                 if (index >= sortedHelpText.size)
                     break
                 val currentCommand = sortedHelpText[index]
-                helpText.append("(")
-                helpText.append(if (currentCommand is Command) 'C' else 'A')
-                helpText.append(") ")
-                helpText.append(currentCommand.name)
-                helpText.append(" - ")
-                helpText.append(currentCommand.helpText)
-                helpText.append("\n")
+                val indicator = if (currentCommand is Command) 'C' else 'A'
+                helpText.append("($indicator) ${currentCommand.name} - ${currentCommand.helpText}\n")
             }
             helpText.toString()
         }
@@ -146,7 +141,7 @@ fun chats(args: List<String>, chat: Chat, sender: User): String {
             }
             builder.setLength(builder.length - 2) // Remove the last ", ".
             builder.append('\n')
-        } catch (e: Exception) {
+        } catch(e: Exception) {
             println("Error getting chats for ${protocol.name}. Stack Trace:\n${getStackTraceText(e)}")
         }
     }
@@ -174,7 +169,7 @@ fun setLocation(args: List<String>, chat: Chat, sender: User): String {
     for (i in 1 until args.size) {
         if (continueUntil > i)
             continue
-        when (args[i]) {
+        when(args[i]) {
             "at", "on", "in" -> {
                 if (hasAtInOn)
                     return "You can't put multiple times in!"
@@ -287,23 +282,8 @@ fun events(args: List<String>, chat: Chat, sender: User): String {
     if (commands.isEmpty())
         return "No events are currently scheduled."
     val builder = StringBuilder()
-    return commands
-        .sortedBy { it.time }
-        .forEach {
-            builder.append('[')
-            builder.append(it.id)
-            builder.append("] ")
-            builder.append(formatTime(it.time))
-            builder.append(": ")
-            builder.append(getUserName(chat, it.sender))
-            builder.append(" - \"")
-            builder.append(commandDelimiters.getOrDefault(chat, defaultCommandDelimiter))
-            builder.append(it.commandData.command.name)
-            builder.append(' ')
-            builder.append(it.commandData.args.joinToString(" "))
-            builder.append("\"")
-            builder.append('\n')
-        }.toString()
+    addEventToBuilder(commands.sortedBy { it.time } as MutableList<ScheduledCommand>, chat, builder)
+    return builder.toString()
 }
 
 /**
@@ -329,18 +309,7 @@ fun eventsFromUser(args: List<String>, chat: Chat, sender: User): String {
     if (sender in eventMap) {
         val events = eventMap[sender] ?: mutableListOf()
         events.sortBy { it.time }
-        for (event in events) {
-            builder.append("\t[")
-            builder.append(event.id)
-            builder.append("] ")
-            builder.append(formatTime(event.time))
-            builder.append(": \"")
-            builder.append(commandDelimiters.getOrDefault(chat, defaultCommandDelimiter))
-            builder.append(event.commandData.command.name)
-            builder.append(" ")
-            builder.append(event.commandData.args.joinToString(" "))
-            builder.append("\"")
-        }
+        addEventToBuilder(events, chat, builder)
     }
     return builder.toString()
 }
@@ -353,26 +322,30 @@ fun eventsByUser(args: List<String>, chat: Chat, sender: User): String {
     for ((user, events) in eventMap) {
         events.sortBy { it.time }
         builder.append("${getUserName(chat, user)}:\n")
-        for (event in events) {
-            builder.append("\t[")
-            builder.append(event.id)
-            builder.append("] ")
-            builder.append(formatTime(event.time))
-            builder.append(": \"")
-            builder.append(commandDelimiters.getOrDefault(chat, defaultCommandDelimiter))
-            builder.append(event.commandData.command.name)
-            builder.append(" ")
-            builder.append(event.commandData.args.joinToString(" "))
-            builder.append("\"")
-        }
+        addEventToBuilder(events, chat, builder)
     }
     return builder.toString()
+}
+
+private fun addEventToBuilder(
+    events: MutableList<ScheduledCommand>,
+    chat: Chat,
+    builder: StringBuilder
+) {
+    for (event in events) {
+        val id = event.id
+        val time = formatTime(event.time)
+        val commandDelimiter = commandDelimiters.getOrDefault(chat, defaultCommandDelimiter)
+        val name = event.commandData.command.name
+        val argsStr = event.commandData.args.joinToString(" ")
+        builder.append("\t[$id] $time: \"$commandDelimiter$name $argsStr\"")
+    }
 }
 
 fun unschedule(args: List<String>, chat: Chat, sender: User): String {
     val index: Int = try {
         Integer.parseInt(args[0])
-    } catch (e: NumberFormatException) {
+    } catch(e: NumberFormatException) {
         return "${args[0]} is not an event ID!"
     }
 
@@ -386,7 +359,7 @@ fun unschedule(args: List<String>, chat: Chat, sender: User): String {
 fun link(args: List<String>, chat: Chat, sender: User): String {
     val index: Int = try {
         Integer.parseInt(args[0])
-    } catch (e: NumberFormatException) {
+    } catch(e: NumberFormatException) {
         return "${args[0]} is not a chat ID!"
     }
 
@@ -404,7 +377,7 @@ fun link(args: List<String>, chat: Chat, sender: User): String {
 fun unlink(args: List<String>, chat: Chat, sender: User): String {
     val index: Int = try {
         Integer.parseInt(args[0])
-    } catch (e: NumberFormatException) {
+    } catch(e: NumberFormatException) {
         return "${args[0]} is not a chat ID!"
     }
     val toUnlink = chatMap[index] ?: return "No chat with ID $index found."
@@ -412,11 +385,12 @@ fun unlink(args: List<String>, chat: Chat, sender: User): String {
     return when {
         chat !in linkedChats -> "There are no chats linked to this one!"
         linkedChats[chat]!!.remove(toUnlink) -> {
-            Settings.update()
             if (linkedChats[chat]!!.isEmpty())
                 linkedChats.remove(chat)
+            Settings.update()
             "Removed ${toUnlink.name} from this chat's links."
         }
+
         else -> "That chat isn't linked to this one!"
     }
 }
