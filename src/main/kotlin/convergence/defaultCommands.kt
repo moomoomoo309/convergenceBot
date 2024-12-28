@@ -11,7 +11,7 @@ import java.time.Duration
 import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.util.*
-import kotlin.math.nextUp
+import kotlin.math.ceil
 import kotlin.reflect.jvm.jvmName
 import kotlin.system.exitProcess
 
@@ -55,8 +55,8 @@ fun getFullName(chat: Chat, name: String): String? {
 
 const val commandsPerPage = 10
 fun help(args: List<String>, chat: Chat, sender: User): String {
-    val pageOrCommand = if (args.isEmpty()) 1 else args[0].toIntOrNull() ?: args[0]
-    val numPages = (sortedHelpText.size.toDouble() / commandsPerPage).nextUp().toInt()
+    val numPages = ceil(sortedHelpText.size.toDouble() / commandsPerPage).toInt()
+    val pageOrCommand = if (args.isEmpty()) 1 else args[0].toIntOrNull()?.coerceIn(1..numPages) ?: args[0]
     return when(pageOrCommand) {
         is Int -> {
             val helpText = StringBuilder("Help page $pageOrCommand/$numPages:\n")
@@ -72,7 +72,11 @@ fun help(args: List<String>, chat: Chat, sender: User): String {
         }
 
         is String -> {
-            val currentCommand = getCommand(pageOrCommand, chat)
+            val currentCommand = try {
+                getCommand(pageOrCommand, chat)
+            } catch(_: CommandDoesNotExist) {
+                return "There is no command with the name \"$pageOrCommand\"."
+            }
             buildString {
                 append("(")
                 append(if (currentCommand is Command) 'C' else 'A')
@@ -544,7 +548,7 @@ fun registerDefaultCommands() {
     )
     registerCommand(
         Command(
-            UniversalChat, "dumpSettings", { _, _, _ -> Settings.toString() }, "", ""
+            UniversalChat, "dumpSettings", { _, _, _ -> Settings.toDTO().toString() }, "", ""
         )
     )
 }

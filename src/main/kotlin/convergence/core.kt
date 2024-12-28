@@ -64,13 +64,10 @@ fun registerAlias(alias: Alias): Boolean {
     if (alias.name in aliasesInChat)
         return false
 
-    if (sortedHelpText.isNotEmpty())
-        for ((i, commandLike) in sortedHelpText.withIndex())
-            if (alias.name < commandLike.name || i == sortedHelpText.size - 1) {
-                sortedHelpText.add(i, alias)
-                break
-            } else
-                sortedHelpText[0] = alias
+    if (sortedHelpText.isEmpty())
+        sortedHelpText.add(alias)
+    else
+        sortedHelpText.add(-sortedHelpText.binarySearch(alias) - 1, alias)
 
     aliasesInChat[alias.name] = alias
     return true
@@ -254,8 +251,7 @@ object CommandScheduler: Thread() {
     private var currentId: Int = 0
 
     fun loadFromFile() {
-        serializedCommands.values.forEach {
-            val cmd = objectMapper.readValue<ScheduledCommand>(it)
+        serializedCommands.values.forEach { cmd ->
             commandsList[cmd.id] = cmd
             scheduledCommands.getOrPut(cmd.time) { mutableListOf(cmd) }
         }
@@ -299,7 +295,7 @@ object CommandScheduler: Thread() {
         if (cmd.id in commandsList)
             defaultLogger.error("Duplicate IDs in schedulerThread!")
         commandsList[cmd.id] = cmd
-        serializedCommands[cmd.id] = objectMapper.writeValueAsString(cmd)
+        serializedCommands[cmd.id] = cmd
         Settings.update()
         return "Scheduled ${getUserName(chat, sender)} to run \"$command\" to run at $time."
     }

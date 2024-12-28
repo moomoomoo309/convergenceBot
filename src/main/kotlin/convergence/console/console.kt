@@ -7,7 +7,9 @@ import java.util.*
 import kotlin.system.exitProcess
 
 class ConsoleUser(val name: String): User(ConsoleProtocol)
-object ConsoleChat: Chat(ConsoleProtocol, "Console")
+object ConsoleChat: Chat(ConsoleProtocol, "Console") {
+    override fun toKey() = "ConsoleChat(Console)"
+}
 
 val user = ConsoleUser("user")
 val bot = ConsoleUser("bot")
@@ -20,6 +22,8 @@ object ConsoleProtocol: Protocol("Console") {
         }
         throw InputMismatchException("Invalid chat or user passed. Can only be ConsoleChat and ConsoleUser.")
     }
+
+    override fun chatFromKey(key: String) = if (key == "ConsoleChat(Console)") ConsoleChat else null
 
     override fun getBot(chat: Chat): User {
         return bot

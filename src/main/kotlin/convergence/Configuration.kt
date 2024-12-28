@@ -10,15 +10,15 @@ const val defaultCommandDelimiter = "!"
 data class SettingsDTO(
     var aliases: MutableMap<String, MutableMap<String, Alias>> = mutableMapOf(),
     var commandDelimiters: MutableMap<String, String> = mutableMapOf(),
-    var linkedChats: MutableMap<String, MutableSet<Chat>> = mutableMapOf(),
-    var serializedCommands: MutableMap<Int, String> = mutableMapOf()
+    var linkedChats: MutableMap<String, MutableSet<String>> = mutableMapOf(),
+    var serializedCommands: MutableMap<Int, ScheduledCommand> = mutableMapOf()
 )
 
 object Settings {
     var commandDelimiters: MutableMap<Chat, String> = mutableMapOf()
     var linkedChats: MutableMap<Chat, MutableSet<Chat>> = mutableMapOf()
     var aliases: MutableMap<Chat, MutableMap<String, Alias>> = mutableMapOf()
-    var serializedCommands: MutableMap<Int, String> = mutableMapOf()
+    var serializedCommands: MutableMap<Int, ScheduledCommand> = mutableMapOf()
 
     @JsonIgnore
     var updateIsScheduled = false
@@ -36,11 +36,19 @@ object Settings {
         }
     }
 
+    private fun strToChat(s: String): Chat? =
+        protocols.firstOrNull { it.name == s.substringBefore("(") }?.chatFromKey(s)
+
     private fun <T> mapFromDTO(map: Map<String, T>): Map<Chat, T> {
         return map.mapNotNull { (k, v) ->
-            val protocol = protocols.firstOrNull { it.name == k.substringBefore("(") }
-            protocol?.chatFromKey(k)?.to(v)
+            strToChat(k)?.to(v)
         }.toMap()
+    }
+
+    private fun linkedChatsFromDTO(linkedChats: MutableMap<String, MutableSet<String>>): MutableMap<Chat, MutableSet<Chat>> {
+        return mutableMapOf(*linkedChats.mapNotNull { (k, v) ->
+            strToChat(k)?.to(v.mapNotNull { strToChat(it) }.toMutableSet())
+        }.toTypedArray())
     }
 
     private fun <T> mapToDTO(map: Map<Chat, T>): MutableMap<String, T> {
@@ -52,14 +60,14 @@ object Settings {
     fun updateFrom(settingsDTO: SettingsDTO) {
         this.aliases.apply { clear() }.putAll(mapFromDTO(settingsDTO.aliases))
         this.commandDelimiters.apply { clear() }.putAll(mapFromDTO(settingsDTO.commandDelimiters))
-        this.linkedChats.apply { clear() }.putAll(mapFromDTO(settingsDTO.linkedChats))
+        this.linkedChats.apply { clear() }.putAll(linkedChatsFromDTO(settingsDTO.linkedChats))
         this.serializedCommands.apply { clear() }.putAll(settingsDTO.serializedCommands)
     }
 
     fun toDTO() = SettingsDTO(
         mapToDTO(aliases),
         mapToDTO(commandDelimiters),
-        mapToDTO(linkedChats),
+        mapToDTO(linkedChats.mapValues { (_, v) -> v.map { it.toKey() }.toMutableSet() }),
         serializedCommands
     )
 }
@@ -80,6 +88,7 @@ fun readSettings() {
         writeSettingsToFile()
     } catch(e: Throwable) {
         settingsLogger.error("Error occurred while reading settings from $settingsPath. Returning fallback settings instead.\n\tError: $e")
+        writeSettingsToFile()
         e.printStackTrace()
     }
 }

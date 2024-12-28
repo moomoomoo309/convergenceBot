@@ -33,7 +33,7 @@ fun getCommand(command: String, chat: Chat): CommandLike {
         commandAvailable(commands, chat, command) -> commands[chat]!![command]
         commandAvailable(aliases, chat, command) -> aliases[chat]!![command]
         commandAvailable(commands, UniversalChat, command) -> commands[UniversalChat]!![command]
-        else -> throw CommandDoesNotExist(command)
+        else -> null
     } ?: throw CommandDoesNotExist(command)
 }
 
@@ -99,6 +99,9 @@ fun parseCommand(command: String, commandDelimiter: String, chat: Chat): Command
     }
 
     // Return the command or alias object
-    val cmd = if (commandName != null) getCommand(commandName, chat) else return null
-    return if (cmd is Command) CommandData(cmd, args) else CommandData(cmd as Alias, args)
+    val cmd = commandName?.let { getCommand(it, chat) } ?: return null
+    return when(cmd) {
+        is Command -> CommandData(cmd, args)
+        is Alias -> CommandData(cmd, args)
+    }
 }
