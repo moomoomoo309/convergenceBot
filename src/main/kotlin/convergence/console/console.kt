@@ -38,6 +38,7 @@ object ConsoleProtocol: Protocol("Console") {
     override fun getChats(): List<Chat> {
         return listOf(ConsoleChat)
     }
+
     override fun getUsers(): List<User> {
         return listOf(user)
     }

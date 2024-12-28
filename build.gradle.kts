@@ -4,16 +4,16 @@ import java.nio.file.Paths
 
 val antlr_version = "4.13.2"
 val argparse4j_version = "0.9.0"
-val coroutines_version = "1.8.1"
-val humanize_version = "1.2.2"
-val logback_version = "1.5.6"
-val mapdb_version = "3.1.0"
+val coroutines_version = "1.10.1"
+val humanize_version = "0.1.2"
+val jackson_version = "2.18.2"
+val jda_version = "5.2.2"
+val logback_version = "1.5.15"
 val natty_version = "1.0.1"
 val pf4j_version = "3.12.0"
-val jackson_version = "2.18.0"
 
 plugins {
-    val kotlin_version = "2.0.10"
+    val kotlin_version = "2.1.0"
     kotlin("jvm") version kotlin_version
     id("application")
     antlr
@@ -44,13 +44,11 @@ dependencies {
 
     implementation("io.github.natty-parser:natty:$natty_version")
     implementation("net.sourceforge.argparse4j:argparse4j:$argparse4j_version")
-    implementation("com.github.mfornos:humanize-slim:$humanize_version")
+    implementation("to.lova.humanize:humanize-time:$humanize_version")
     antlr("org.antlr:antlr4:$antlr_version")
     implementation("ch.qos.logback:logback-classic:$logback_version")
 
-    implementation("org.mapdb:mapdb:$mapdb_version")
-
-    implementation("net.dv8tion:JDA:5.0.2") {
+    implementation("net.dv8tion:JDA:$jda_version") {
         exclude(module = "opus-java")
     }
     implementation("com.fasterxml.jackson.core:jackson-databind:$jackson_version")

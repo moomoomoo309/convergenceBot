@@ -149,7 +149,7 @@ fun <T1, T2, T3, T4> invokeTyped(
     default3: T3? = null,
     default4: T4? = null
 ): Boolean {
-    when (args.size) {
+    when(args.size) {
         4 -> {
         }
 
@@ -171,7 +171,7 @@ fun <T1, T2, T3> invokeTyped(
     default2: T2? = null,
     default3: T3? = null
 ): Boolean {
-    when (args.size) {
+    when(args.size) {
         3 -> {
         }
 
@@ -191,7 +191,7 @@ fun <T1, T2> invokeTyped(
     default1: T1? = null,
     default2: T2? = null
 ): Boolean {
-    when (args.size) {
+    when(args.size) {
         2 -> {
         }
 
@@ -205,7 +205,7 @@ fun <T1, T2> invokeTyped(
 }
 
 fun <T> invokeTyped(fct: (T) -> Boolean, args: Array<out Any>, default: T? = null): Boolean {
-    when (args.size) {
+    when(args.size) {
         1 -> {
         }
 

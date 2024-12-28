@@ -39,10 +39,10 @@ fun getCommand(command: String, chat: Chat): CommandLike {
 
 // This function replaces the escape sequences with their replaced variants, and ignores quotes, so the quotes don't
 // show up in the argument text.
-fun CommonToken.text() = when (this.type) {
+fun CommonToken.text() = when(this.type) {
     commandLexer.OctalEscape -> Integer.parseInt(this.text.substring(1), 8).toChar()
     commandLexer.UnicodeEscape -> Integer.parseInt(this.text.substring(2), 16).toChar()
-    commandLexer.RegularEscape -> when (this.text[1]) {
+    commandLexer.RegularEscape -> when(this.text[1]) {
         'r' -> '\r'
         'n' -> '\n'
         'b' -> '\b'
@@ -59,6 +59,7 @@ fun CommonToken.text() = when (this.type) {
 
 fun parseCommand(command: String, chat: Chat): CommandData? =
     parseCommand(command, commandDelimiters.getOrDefault(chat, defaultCommandDelimiter), chat)
+
 fun parseCommand(command: String, commandDelimiter: String, chat: Chat): CommandData? {
     // Check for the command delimiter, so the grammar doesn't have to worry about it
     if (!command.startsWith(commandDelimiter))

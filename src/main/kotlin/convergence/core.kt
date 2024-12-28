@@ -5,17 +5,15 @@ package convergence
 import com.fasterxml.jackson.databind.ObjectMapper
 import convergence.console.ConsoleProtocol
 import convergence.discord.DiscordProtocol
-import humanize.Humanize
 import net.sourceforge.argparse4j.ArgumentParsers
 import net.sourceforge.argparse4j.inf.ArgumentParserException
-import org.ocpsoft.prettytime.units.JustNow
+import to.lova.humanize.time.HumanizeTime
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.PrintStream
 import java.nio.file.Paths
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
-import java.util.*
 import kotlin.collections.set
 
 class CommandDoesNotExist(cmd: String): Exception(cmd)
@@ -158,10 +156,10 @@ fun replaceAliasVars(chat: Chat, message: String?, sender: User): String? {
 
 fun getCommandData(chat: Chat, message: String, sender: User): CommandData? = try {
     parseCommand(message, chat)
-} catch (e: CommandDoesNotExist) {
+} catch(e: CommandDoesNotExist) {
     sendMessage(chat, sender, "No command exists with name \"${e.message}\".")
     null
-} catch (e: InvalidEscapeSequence) {
+} catch(e: InvalidEscapeSequence) {
     sendMessage(chat, sender, "Invalid escape sequence \"${e.message}\" passed. Are your backslashes correct?")
     null
 }
@@ -189,7 +187,7 @@ fun getStackTraceText(e: Exception): String = ByteArrayOutputStream().let {
 
 fun runCommand(chat: Chat, sender: User, command: CommandData) = try {
     sendMessage(chat, sender, replaceAliasVars(chat, command(chat, sender), sender))
-} catch (e: Exception) {
+} catch(e: Exception) {
     sendMessage(chat, sender, "Error while running command! Stack trace:\n${getStackTraceText(e)}")
 }
 
@@ -228,8 +226,7 @@ fun forwardToLinkedChats(
             }
 }
 
-fun offsetDateTimeToDate(time: OffsetDateTime): Date = Date.from(time.toInstant())
-fun formatTime(time: OffsetDateTime): String = Humanize.naturalTime(offsetDateTimeToDate(time))
+fun formatTime(time: OffsetDateTime): String = HumanizeTime.fromNow(time)
 
 data class ScheduledCommand(
     val time: OffsetDateTime,
@@ -357,10 +354,6 @@ class core {
             }
 
             convergencePath = Paths.get(commandLineArgs.get<List<String>>("convergencePath").first())
-
-            // Remove "just now" as an option for time formatting. 5 minutes for "just now" is annoying.
-            Humanize.prettyTimeFormat().prettyTime.removeUnit(JustNow::class.java)
-
             readSettings()
 
             defaultLogger.info("Registering default commands...")

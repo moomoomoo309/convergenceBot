@@ -10,7 +10,7 @@ import org.antlr.v4.runtime.dfa.DFA;
 
 @SuppressWarnings({"all", "warnings", "unchecked", "unused", "cast", "CheckReturnValue", "this-escape"})
 public class commandLexer extends Lexer {
-	public static final int
+    public static final int
             RegularEscape = 1, UnicodeEscape = 2, OctalEscape = 3, InvalidEscape = 4, Alnum = 5,
             Whitespace = 6, NotWhitespaceOrQuote = 7, Quote = 8;
     public static final String[] ruleNames = makeRuleNames();
@@ -136,12 +136,12 @@ public class commandLexer extends Lexer {
     private static final String[] _LITERAL_NAMES = makeLiteralNames();
     private static final String[] _SYMBOLIC_NAMES = makeSymbolicNames();
     public static final Vocabulary VOCABULARY = new VocabularyImpl(_LITERAL_NAMES, _SYMBOLIC_NAMES);
-	public static String[] channelNames = {
+    public static String[] channelNames = {
             "DEFAULT_TOKEN_CHANNEL", "HIDDEN"
-	};
-	public static String[] modeNames = {
+    };
+    public static String[] modeNames = {
             "DEFAULT_MODE"
-	};
+    };
 
     static {
         RuntimeMetaData.checkVersion("4.13.1", RuntimeMetaData.VERSION);
@@ -166,20 +166,20 @@ public class commandLexer extends Lexer {
         for (int i = 0; i < _ATN.getNumberOfDecisions(); i++) {
             _decisionToDFA[i] = new DFA(_ATN.getDecisionState(i), i);
         }
-	}
+    }
 
-	@Override
-	@Deprecated
-	public String[] getTokenNames() {
-		return tokenNames;
-	}
+    @Override
+    @Deprecated
+    public String[] getTokenNames() {
+        return tokenNames;
+    }
 
     public commandLexer(CharStream input) {
         super(input);
         _interp = new LexerATNSimulator(this, _ATN, _decisionToDFA, _sharedContextCache);
-	}
+    }
 
-	private static String[] makeRuleNames() {
+    private static String[] makeRuleNames() {
         return new String[]{
                 "RegularEscape", "UnicodeEscape", "OctalEscape", "ThreeHundredAndOver",
                 "TwoHundredOrLess", "InvalidEscape", "InvalidRegularEscape", "InvalidUnicodeEscape",
@@ -187,49 +187,54 @@ public class commandLexer extends Lexer {
                 "Quote", "THREE", "SEVEN", "ZeroToTwo", "ZeroToSix", "ZeroToSeven", "FourToNine",
                 "EightOrNine", "OneToNine", "Number", "Backslash", "U", "UnicodeDigit",
                 "NotUnicodeDigit"
-		};
-	}
+        };
+    }
 
-	private static String[] makeLiteralNames() {
+    private static String[] makeLiteralNames() {
         return new String[]{
                 null, null, null, null, null, null, null, null, "'\"'"
-		};
-	}
+        };
+    }
 
-	private static String[] makeSymbolicNames() {
+    private static String[] makeSymbolicNames() {
         return new String[]{
                 null, "RegularEscape", "UnicodeEscape", "OctalEscape", "InvalidEscape",
                 "Alnum", "Whitespace", "NotWhitespaceOrQuote", "Quote"
-		};
-	}
-
-	@Override
-
-	public Vocabulary getVocabulary() {
-		return VOCABULARY;
+        };
     }
 
-	@Override
+    @Override
+
+    public Vocabulary getVocabulary() {
+        return VOCABULARY;
+    }
+
+    @Override
     public String getGrammarFileName() {
-        return "command.g4"; }
+        return "command.g4";
+    }
 
-	@Override
+    @Override
     public String[] getRuleNames() {
-        return ruleNames; }
+        return ruleNames;
+    }
 
-	@Override
+    @Override
     public String getSerializedATN() {
-        return _serializedATN; }
+        return _serializedATN;
+    }
 
-	@Override
+    @Override
     public String[] getChannelNames() {
-        return channelNames; }
+        return channelNames;
+    }
 
-	@Override
+    @Override
     public String[] getModeNames() {
-        return modeNames; }
+        return modeNames;
+    }
 
-	@Override
+    @Override
     public ATN getATN() {
         return _ATN;
     }

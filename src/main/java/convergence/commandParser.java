@@ -15,10 +15,10 @@ import java.util.List;
 
 @SuppressWarnings({"all", "warnings", "unchecked", "unused", "cast", "CheckReturnValue"})
 public class commandParser extends Parser {
-	public static final int
+    public static final int
             RegularEscape = 1, UnicodeEscape = 2, OctalEscape = 3, InvalidEscape = 4, Alnum = 5,
             Whitespace = 6, NotWhitespaceOrQuote = 7, Quote = 8;
-	public static final int
+    public static final int
             RULE_command = 0, RULE_argument = 1, RULE_nonQuoteArgument = 2, RULE_quoteArgument = 3,
             RULE_notQuote = 4, RULE_commandName = 5;
     /**
@@ -69,48 +69,50 @@ public class commandParser extends Parser {
     public static final ATN _ATN =
             new ATNDeserializer().deserialize(_serializedATN.toCharArray());
     protected static final DFA[] _decisionToDFA;
-	public static final String[] ruleNames = makeRuleNames();
+    public static final String[] ruleNames = makeRuleNames();
     protected static final PredictionContextCache _sharedContextCache =
             new PredictionContextCache();
-	private static final String[] _LITERAL_NAMES = makeLiteralNames();
+    private static final String[] _LITERAL_NAMES = makeLiteralNames();
 
     static {
         RuntimeMetaData.checkVersion("4.13.1", RuntimeMetaData.VERSION);
     }
-	private static final String[] _SYMBOLIC_NAMES = makeSymbolicNames();
-	public static final Vocabulary VOCABULARY = new VocabularyImpl(_LITERAL_NAMES, _SYMBOLIC_NAMES);
+
+    private static final String[] _SYMBOLIC_NAMES = makeSymbolicNames();
+    public static final Vocabulary VOCABULARY = new VocabularyImpl(_LITERAL_NAMES, _SYMBOLIC_NAMES);
 
     static {
         _decisionToDFA = new DFA[_ATN.getNumberOfDecisions()];
         for (int i = 0; i < _ATN.getNumberOfDecisions(); i++) {
             _decisionToDFA[i] = new DFA(_ATN.getDecisionState(i), i);
         }
-	}
-	static {
-		tokenNames = new String[_SYMBOLIC_NAMES.length];
-		for (int i = 0; i < tokenNames.length; i++) {
-			tokenNames[i] = VOCABULARY.getLiteralName(i);
-			if (tokenNames[i] == null) {
-				tokenNames[i] = VOCABULARY.getSymbolicName(i);
-			}
+    }
 
-			if (tokenNames[i] == null) {
-				tokenNames[i] = "<INVALID>";
-			}
-		}
-	}
+    static {
+        tokenNames = new String[_SYMBOLIC_NAMES.length];
+        for (int i = 0; i < tokenNames.length; i++) {
+            tokenNames[i] = VOCABULARY.getLiteralName(i);
+            if (tokenNames[i] == null) {
+                tokenNames[i] = VOCABULARY.getSymbolicName(i);
+            }
 
-	@Override
-	@Deprecated
-	public String[] getTokenNames() {
-		return tokenNames;
-	}
+            if (tokenNames[i] == null) {
+                tokenNames[i] = "<INVALID>";
+            }
+        }
+    }
 
-	@Override
+    @Override
+    @Deprecated
+    public String[] getTokenNames() {
+        return tokenNames;
+    }
 
-	public Vocabulary getVocabulary() {
-		return VOCABULARY;
-	}
+    @Override
+
+    public Vocabulary getVocabulary() {
+        return VOCABULARY;
+    }
 
     public commandParser(TokenStream input) {
         super(input);
@@ -137,7 +139,7 @@ public class commandParser extends Parser {
         };
     }
 
-	@Override
+    @Override
     public String getGrammarFileName() {
         return "command.g4";
     }
@@ -157,12 +159,12 @@ public class commandParser extends Parser {
         return _ATN;
     }
 
-	public final CommandContext command() throws RecognitionException {
-		CommandContext _localctx = new CommandContext(_ctx, getState());
-		enterRule(_localctx, 0, RULE_command);
-		int _la;
-		try {
-			enterOuterAlt(_localctx, 1);
+    public final CommandContext command() throws RecognitionException {
+        CommandContext _localctx = new CommandContext(_ctx, getState());
+        enterRule(_localctx, 0, RULE_command);
+        int _la;
+        try {
+            enterOuterAlt(_localctx, 1);
             {
                 setState(12);
                 commandName();
@@ -226,29 +228,29 @@ public class commandParser extends Parser {
                 match(EOF);
             }
         } catch (RecognitionException re) {
-			_localctx.exception = re;
-			_errHandler.reportError(this, re);
-			_errHandler.recover(this, re);
+            _localctx.exception = re;
+            _errHandler.reportError(this, re);
+            _errHandler.recover(this, re);
         } finally {
-			exitRule();
-		}
-		return _localctx;
+            exitRule();
+        }
+        return _localctx;
     }
 
-	public final ArgumentContext argument() throws RecognitionException {
-		ArgumentContext _localctx = new ArgumentContext(_ctx, getState());
-		enterRule(_localctx, 2, RULE_argument);
-		try {
-			setState(37);
-			_errHandler.sync(this);
-			switch (_input.LA(1)) {
+    public final ArgumentContext argument() throws RecognitionException {
+        ArgumentContext _localctx = new ArgumentContext(_ctx, getState());
+        enterRule(_localctx, 2, RULE_argument);
+        try {
+            setState(37);
+            _errHandler.sync(this);
+            switch (_input.LA(1)) {
                 case Quote:
                     enterOuterAlt(_localctx, 1);
                 {
                     setState(35);
                     quoteArgument();
-				}
-				break;
+                }
+                break;
                 case RegularEscape:
                 case UnicodeEscape:
                 case OctalEscape:
@@ -259,27 +261,27 @@ public class commandParser extends Parser {
                 {
                     setState(36);
                     nonQuoteArgument();
-				}
-				break;
+                }
+                break;
                 default:
                     throw new NoViableAltException(this);
             }
         } catch (RecognitionException re) {
-			_localctx.exception = re;
-			_errHandler.reportError(this, re);
-			_errHandler.recover(this, re);
+            _localctx.exception = re;
+            _errHandler.reportError(this, re);
+            _errHandler.recover(this, re);
         } finally {
-			exitRule();
-		}
-		return _localctx;
+            exitRule();
+        }
+        return _localctx;
     }
 
-	public final NonQuoteArgumentContext nonQuoteArgument() throws RecognitionException {
-		NonQuoteArgumentContext _localctx = new NonQuoteArgumentContext(_ctx, getState());
-		enterRule(_localctx, 4, RULE_nonQuoteArgument);
-		int _la;
-		try {
-			enterOuterAlt(_localctx, 1);
+    public final NonQuoteArgumentContext nonQuoteArgument() throws RecognitionException {
+        NonQuoteArgumentContext _localctx = new NonQuoteArgumentContext(_ctx, getState());
+        enterRule(_localctx, 4, RULE_nonQuoteArgument);
+        int _la;
+        try {
+            enterOuterAlt(_localctx, 1);
             {
                 setState(40);
                 _errHandler.sync(this);
@@ -301,24 +303,24 @@ public class commandParser extends Parser {
                     setState(42);
                     _errHandler.sync(this);
                     _la = _input.LA(1);
-                } while ((((_la) & ~0x3f) == 0 && ((1L << _la) & 190L) != 0) );
+                } while ((((_la) & ~0x3f) == 0 && ((1L << _la) & 190L) != 0));
             }
         } catch (RecognitionException re) {
-			_localctx.exception = re;
-			_errHandler.reportError(this, re);
-			_errHandler.recover(this, re);
+            _localctx.exception = re;
+            _errHandler.reportError(this, re);
+            _errHandler.recover(this, re);
         } finally {
-			exitRule();
-		}
-		return _localctx;
+            exitRule();
+        }
+        return _localctx;
     }
 
-	public final QuoteArgumentContext quoteArgument() throws RecognitionException {
-		QuoteArgumentContext _localctx = new QuoteArgumentContext(_ctx, getState());
-		enterRule(_localctx, 6, RULE_quoteArgument);
-		int _la;
-		try {
-			enterOuterAlt(_localctx, 1);
+    public final QuoteArgumentContext quoteArgument() throws RecognitionException {
+        QuoteArgumentContext _localctx = new QuoteArgumentContext(_ctx, getState());
+        enterRule(_localctx, 6, RULE_quoteArgument);
+        int _la;
+        try {
+            enterOuterAlt(_localctx, 1);
             {
                 setState(44);
                 match(Quote);
@@ -340,21 +342,21 @@ public class commandParser extends Parser {
                 match(Quote);
             }
         } catch (RecognitionException re) {
-			_localctx.exception = re;
-			_errHandler.reportError(this, re);
-			_errHandler.recover(this, re);
+            _localctx.exception = re;
+            _errHandler.reportError(this, re);
+            _errHandler.recover(this, re);
         } finally {
-			exitRule();
-		}
-		return _localctx;
+            exitRule();
+        }
+        return _localctx;
     }
 
-	public final NotQuoteContext notQuote() throws RecognitionException {
-		NotQuoteContext _localctx = new NotQuoteContext(_ctx, getState());
-		enterRule(_localctx, 8, RULE_notQuote);
-		int _la;
-		try {
-			enterOuterAlt(_localctx, 1);
+    public final NotQuoteContext notQuote() throws RecognitionException {
+        NotQuoteContext _localctx = new NotQuoteContext(_ctx, getState());
+        enterRule(_localctx, 8, RULE_notQuote);
+        int _la;
+        try {
+            enterOuterAlt(_localctx, 1);
             {
                 setState(53);
                 _la = _input.LA(1);
@@ -364,24 +366,24 @@ public class commandParser extends Parser {
                     if (_input.LA(1) == Token.EOF) matchedEOF = true;
                     _errHandler.reportMatch(this);
                     consume();
-			}
+                }
             }
         } catch (RecognitionException re) {
-			_localctx.exception = re;
-			_errHandler.reportError(this, re);
-			_errHandler.recover(this, re);
+            _localctx.exception = re;
+            _errHandler.reportError(this, re);
+            _errHandler.recover(this, re);
         } finally {
-			exitRule();
-		}
-		return _localctx;
+            exitRule();
+        }
+        return _localctx;
     }
 
-	public final CommandNameContext commandName() throws RecognitionException {
-		CommandNameContext _localctx = new CommandNameContext(_ctx, getState());
-		enterRule(_localctx, 10, RULE_commandName);
-		try {
-			int _alt;
-			enterOuterAlt(_localctx, 1);
+    public final CommandNameContext commandName() throws RecognitionException {
+        CommandNameContext _localctx = new CommandNameContext(_ctx, getState());
+        enterRule(_localctx, 10, RULE_commandName);
+        try {
+            int _alt;
+            enterOuterAlt(_localctx, 1);
             {
                 setState(56);
                 _errHandler.sync(this);
@@ -401,16 +403,16 @@ public class commandParser extends Parser {
                     setState(58);
                     _errHandler.sync(this);
                     _alt = getInterpreter().adaptivePredict(_input, 7, _ctx);
-                } while (_alt != 2 && _alt != org.antlr.v4.runtime.atn.ATN.INVALID_ALT_NUMBER );
+                } while (_alt != 2 && _alt != org.antlr.v4.runtime.atn.ATN.INVALID_ALT_NUMBER);
             }
         } catch (RecognitionException re) {
-			_localctx.exception = re;
-			_errHandler.reportError(this, re);
-			_errHandler.recover(this, re);
+            _localctx.exception = re;
+            _errHandler.reportError(this, re);
+            _errHandler.recover(this, re);
         } finally {
-			exitRule();
-		}
-		return _localctx;
+            exitRule();
+        }
+        return _localctx;
     }
 
     @SuppressWarnings("CheckReturnValue")
@@ -466,8 +468,8 @@ public class commandParser extends Parser {
         public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
             if (visitor instanceof commandVisitor) return ((commandVisitor<? extends T>) visitor).visitCommand(this);
             else return visitor.visitChildren(this);
-		}
-	}
+        }
+    }
 
     @SuppressWarnings("CheckReturnValue")
     public static class ArgumentContext extends ParserRuleContext {
@@ -503,7 +505,7 @@ public class commandParser extends Parser {
             if (visitor instanceof commandVisitor) return ((commandVisitor<? extends T>) visitor).visitArgument(this);
             else return visitor.visitChildren(this);
         }
-	}
+    }
 
     @SuppressWarnings("CheckReturnValue")
     public static class NonQuoteArgumentContext extends ParserRuleContext {
@@ -580,7 +582,7 @@ public class commandParser extends Parser {
                 return ((commandVisitor<? extends T>) visitor).visitNonQuoteArgument(this);
             else return visitor.visitChildren(this);
         }
-	}
+    }
 
     @SuppressWarnings("CheckReturnValue")
     public static class QuoteArgumentContext extends ParserRuleContext {
@@ -625,7 +627,7 @@ public class commandParser extends Parser {
                 return ((commandVisitor<? extends T>) visitor).visitQuoteArgument(this);
             else return visitor.visitChildren(this);
         }
-	}
+    }
 
     @SuppressWarnings("CheckReturnValue")
     public static class NotQuoteContext extends ParserRuleContext {
@@ -681,7 +683,7 @@ public class commandParser extends Parser {
             if (visitor instanceof commandVisitor) return ((commandVisitor<? extends T>) visitor).visitNotQuote(this);
             else return visitor.visitChildren(this);
         }
-	}
+    }
 
     @SuppressWarnings("CheckReturnValue")
     public static class CommandNameContext extends ParserRuleContext {
@@ -718,5 +720,5 @@ public class commandParser extends Parser {
                 return ((commandVisitor<? extends T>) visitor).visitCommandName(this);
             else return visitor.visitChildren(this);
         }
-	}
+    }
 }
