@@ -1,0 +1,23 @@
+[versions]
+antlr = "4.13.2"
+argparse4j = "0.9.0"
+coroutines = "1.10.1"
+kotlin = "2.1.0"
+humanize = "0.1.2"
+jackson = "2.18.2"
+jda = "5.2.2"
+logback = "1.5.15"
+natty = "1.0.1"
+
+[libraries]
+coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
+kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
+natty = { module = "io.github.natty-parser:natty", version.ref = "natty" }
+argparse4j = { module = "net.sourceforge.argparse4j:argparse4j", version.ref = "argparse4j" }
+humanize = { module = "to.lova.humanize:humanize-time", version.ref = "humanize" }
+antlr = { module = "org.antlr:antlr4", version.ref = "antlr" }
+logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
+jda = { module = "net.dv8tion:JDA", version.ref = "jda" }
+jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
+jackson-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson" }
+jackson-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
