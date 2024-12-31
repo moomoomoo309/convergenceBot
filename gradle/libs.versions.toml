@@ -8,6 +8,7 @@ jackson = "2.18.2"
 jda = "5.2.2"
 logback = "1.5.15"
 natty = "1.0.1"
+shadow = "8.3.0"
 
 [libraries]
 coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
@@ -21,3 +22,7 @@ jda = { module = "net.dv8tion:JDA", version.ref = "jda" }
 jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
 jackson-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson" }
 jackson-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
+
+[plugins]
+kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+shadow = { id = "com.gradleup.shadow", version.ref = "shadow"}

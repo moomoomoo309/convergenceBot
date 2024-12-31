@@ -3,11 +3,10 @@
 import java.nio.file.Paths
 
 plugins {
-    val kotlin_version = "2.1.0"
-    kotlin("jvm") version kotlin_version
-    id("application")
+    alias(libs.plugins.kotlin)
+    alias(libs.plugins.shadow)
+    application
     antlr
-    id("com.gradleup.shadow") version "8.3.0"
 }
 
 group = "convergence"
