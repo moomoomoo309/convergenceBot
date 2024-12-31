@@ -5,28 +5,27 @@ import org.antlr.v4.runtime.CommonToken
 import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.ParserRuleContext
 
-class InvalidCommandException(msg: String): Exception(msg)
+class InvalidCommandParseException(msg: String): Exception(msg)
 
 data class CommandData(var command: Command, var args: List<String>) {
     constructor(alias: Alias, args: List<String>): this(alias.command, alias.args + args)
 
-    operator fun invoke(vararg args: String, chat: Chat, sender: User): String? =
-        this.command.function(args.toList(), chat, sender)
-
     operator fun invoke(args: List<String>, chat: Chat, sender: User): String? =
         this.command.function(args, chat, sender)
+
+    operator fun invoke(vararg args: String, chat: Chat, sender: User): String? =
+        invoke(args.toList(), chat, sender)
 
     operator fun invoke(chat: Chat, sender: User): String? = invoke(args, chat, sender)
 }
 
-class InvalidEscapeSequence(message: String): Exception(message)
+class InvalidEscapeSequenceException(message: String): Exception(message)
 
 private fun <T: CommandLike> commandAvailable(
     list: MutableMap<Chat, MutableMap<String, T>>,
     chat: Chat,
     command: String
-) =
-    chat in list && list[chat] is MutableMap<String, *> && command in list[chat]!!
+) = chat in list && list[chat] is MutableMap<String, *> && command in list[chat]!!
 
 fun getCommand(command: String, chat: Chat): CommandLike {
     return when {
@@ -40,9 +39,9 @@ fun getCommand(command: String, chat: Chat): CommandLike {
 // This function replaces the escape sequences with their replaced variants, and ignores quotes, so the quotes don't
 // show up in the argument text.
 fun CommonToken.text() = when(this.type) {
-    commandLexer.OctalEscape -> Integer.parseInt(this.text.substring(1), 8).toChar()
-    commandLexer.UnicodeEscape -> Integer.parseInt(this.text.substring(2), 16).toChar()
-    commandLexer.RegularEscape -> when(this.text[1]) {
+    CommandLexer.OctalEscape -> Integer.parseInt(this.text.substring(1), 8).toChar()
+    CommandLexer.UnicodeEscape -> Integer.parseInt(this.text.substring(2), 16).toChar()
+    CommandLexer.RegularEscape -> when(this.text[1]) {
         'r' -> '\r'
         'n' -> '\n'
         'b' -> '\b'
@@ -51,9 +50,10 @@ fun CommonToken.text() = when(this.type) {
         '\'' -> '\''
         '"' -> '"'
         '\\' -> '\\'
-        else -> throw InvalidEscapeSequence(this.text)
+        else -> throw InvalidEscapeSequenceException(this.text)
     }
-    commandLexer.Quote -> "" // This prevents quoted arguments from having the quotes around the text.
+
+    CommandLexer.Quote -> "" // This prevents quoted arguments from having the quotes around the text.
     else -> this.text
 }.toString()
 
@@ -67,21 +67,27 @@ fun parseCommand(command: String, commandDelimiter: String, chat: Chat): Command
     // Set up antlr
     val input = command.substring(commandDelimiter.length)
     val chars = CharStreams.fromString(input, chat.name)
-    val lexer = commandLexer(chars)
+    val lexer = CommandLexer(chars)
     val tokens = CommonTokenStream(lexer)
-    val parser = commandParser(tokens)
+    val parser = CommandParser(tokens)
     parser.buildParseTree = true
     // Read a command
     val tree = parser.command()
 
     // Check if there were any invalid escape sequences, and error if there were.
-    val invalidEscapes = tokens.tokens.filter { it.type == commandParser.InvalidEscape }
+    val invalidEscapes = tokens.tokens.filter { it.type == CommandParser.InvalidEscape }
     if (invalidEscapes.isNotEmpty())
-        throw InvalidEscapeSequence("Command \"$command\" contains the following invalid escape sequences: \"${invalidEscapes.joinToString("\", \"") { it.text }}\".")
+        throw InvalidEscapeSequenceException(
+            "Command \"$command\" contains the following invalid escape sequences: \"${
+                invalidEscapes.joinToString(
+                    "\", \""
+                ) { it.text }
+            }\"."
+        )
 
     // See if the command was actually parsed successfully, and error if it wasn't.
     if (!tree.exception?.message.isNullOrBlank())
-        throw InvalidCommandException(tree.exception?.message ?: "")
+        throw InvalidCommandParseException(tree.exception?.message ?: "")
     else if (tree.exception != null)
         throw tree.exception
 

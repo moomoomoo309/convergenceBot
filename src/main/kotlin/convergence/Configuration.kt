@@ -3,9 +3,18 @@ package convergence
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
+import java.io.File
 import java.nio.file.Path
 
 const val defaultCommandDelimiter = "!"
+
+inline fun <reified T> ObjectMapper.readValue(value: String): T {
+    return this.readValue(value, T::class.java)
+}
+
+inline fun <reified T> ObjectMapper.readValue(value: File): T {
+    return this.readValue(value, T::class.java)
+}
 
 data class SettingsDTO(
     var aliases: MutableMap<String, MutableMap<String, Alias>> = mutableMapOf(),

@@ -5,57 +5,57 @@ import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 
 /**
  * This interface defines a complete generic visitor for a parse tree produced
- * by {@link commandParser}.
+ * by {@link CommandParser}.
  *
  * @param <T> The return type of the visit operation. Use {@link Void} for
  *            operations with no return type.
  */
-public interface commandVisitor<T> extends ParseTreeVisitor<T> {
+public interface CommandVisitor<T> extends ParseTreeVisitor<T> {
     /**
-     * Visit a parse tree produced by {@link commandParser#command}.
+     * Visit a parse tree produced by {@link CommandParser#command}.
      *
      * @param ctx the parse tree
      * @return the visitor result
      */
-    T visitCommand(commandParser.CommandContext ctx);
+    T visitCommand(CommandParser.CommandContext ctx);
 
     /**
-     * Visit a parse tree produced by {@link commandParser#argument}.
+     * Visit a parse tree produced by {@link CommandParser#argument}.
      *
      * @param ctx the parse tree
      * @return the visitor result
      */
-    T visitArgument(commandParser.ArgumentContext ctx);
+    T visitArgument(CommandParser.ArgumentContext ctx);
 
     /**
-     * Visit a parse tree produced by {@link commandParser#nonQuoteArgument}.
+     * Visit a parse tree produced by {@link CommandParser#nonQuoteArgument}.
      *
      * @param ctx the parse tree
      * @return the visitor result
      */
-    T visitNonQuoteArgument(commandParser.NonQuoteArgumentContext ctx);
+    T visitNonQuoteArgument(CommandParser.NonQuoteArgumentContext ctx);
 
     /**
-     * Visit a parse tree produced by {@link commandParser#quoteArgument}.
+     * Visit a parse tree produced by {@link CommandParser#quoteArgument}.
      *
      * @param ctx the parse tree
      * @return the visitor result
      */
-    T visitQuoteArgument(commandParser.QuoteArgumentContext ctx);
+    T visitQuoteArgument(CommandParser.QuoteArgumentContext ctx);
 
     /**
-     * Visit a parse tree produced by {@link commandParser#notQuote}.
+     * Visit a parse tree produced by {@link CommandParser#notQuote}.
      *
      * @param ctx the parse tree
      * @return the visitor result
      */
-    T visitNotQuote(commandParser.NotQuoteContext ctx);
+    T visitNotQuote(CommandParser.NotQuoteContext ctx);
 
     /**
-     * Visit a parse tree produced by {@link commandParser#commandName}.
+     * Visit a parse tree produced by {@link CommandParser#commandName}.
      *
      * @param ctx the parse tree
      * @return the visitor result
      */
-    T visitCommandName(commandParser.CommandNameContext ctx);
+    T visitCommandName(CommandParser.CommandNameContext ctx);
 }

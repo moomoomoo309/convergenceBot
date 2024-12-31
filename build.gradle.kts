@@ -60,7 +60,7 @@ dependencies {
 }
 
 application {
-    mainClass.set("convergence.core")
+    mainClass.set("convergence.ConvergenceBot")
 }
 
 tasks.register<Copy>("copyBot") {

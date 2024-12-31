@@ -40,24 +40,24 @@ class CommandParserTest {
 
     @Test
     fun invalidEscape() {
-        assertFailsWith<InvalidEscapeSequence>("Did not fail on empty escape.") {
+        assertFailsWith<InvalidEscapeSequenceException>("Did not fail on empty escape.") {
             loadCommandData("!test2 \\")
         }
     }
 
     @Test
     fun invalidCommand() {
-        assertFailsWith<InvalidCommandException>("Did not fail on invalid command.") {
+        assertFailsWith<InvalidCommandParseException>("Did not fail on invalid command.") {
             loadCommandData("!test2.5 abc\"def")
         }
     }
 
     @Test
     fun invalidUnicodeEscapes() {
-        assertFailsWith<InvalidEscapeSequence>("Did not fail on empty unicode escape.") {
+        assertFailsWith<InvalidEscapeSequenceException>("Did not fail on empty unicode escape.") {
             loadCommandData("!test3 \\u")
         }
-        assertFailsWith<InvalidEscapeSequence>("Did not fail on partial unicode escape.") {
+        assertFailsWith<InvalidEscapeSequenceException>("Did not fail on partial unicode escape.") {
             loadCommandData("!test4 \\u0")
         }
     }
@@ -73,7 +73,7 @@ class CommandParserTest {
 
     @Test
     fun invalidOctalEscape() {
-        assertFailsWith<InvalidEscapeSequence>("Did not fail on out of range octal escape.") {
+        assertFailsWith<InvalidEscapeSequenceException>("Did not fail on out of range octal escape.") {
             loadCommandData("!test6 \\400")
         }
     }

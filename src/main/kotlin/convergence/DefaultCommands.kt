@@ -406,6 +406,16 @@ fun links(args: List<String>, chat: Chat, sender: User): String {
         "No chats are linked to this one."
 }
 
+/**
+ * Sets the Command delimiter used for the bot's commands. (is it !help, |help, @help, or something else?)
+ */
+fun setCommandDelimiter(chat: Chat, commandDelimiter: String): Boolean {
+    if (commandDelimiter.any { it.isWhitespace() || it == '"' })
+        return false
+    commandDelimiters[chat] = commandDelimiter
+    return true
+}
+
 fun setDelimiter(args: List<String>, chat: Chat, sender: User): String = when {
     args.isEmpty() -> "You need to pass the new delimiter!"
     setCommandDelimiter(chat, args[0]) -> "Command delimiter set to \"${args[0]}\".".also { Settings.update() }

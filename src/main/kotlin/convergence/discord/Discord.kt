@@ -116,7 +116,7 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
                         GatewayIntent.GUILD_MESSAGE_REACTIONS,
                         GatewayIntent.GUILD_MESSAGES,
                         GatewayIntent.GUILD_MEMBERS,
-                        GatewayIntent.GUILD_EMOJIS_AND_STICKERS,
+                        GatewayIntent.GUILD_EXPRESSIONS,
                         GatewayIntent.DIRECT_MESSAGE_TYPING,
                         GatewayIntent.DIRECT_MESSAGE_REACTIONS,
                         GatewayIntent.DIRECT_MESSAGES,
@@ -187,7 +187,7 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
     override fun getMessages(chat: Chat, since: OffsetDateTime?, until: OffsetDateTime?): List<MessageHistory> {
         if (chat !is DiscordChat || (since != null && (since.isAfter(OffsetDateTime.now()) || since.isBefore(until))))
             return emptyList()
-        val history = chat.channel.history ?: return emptyList()
+        val history = chat.channel.history
 
         for (i in 0..9) { // Get the last 1000 messages, 100 at a time.
             history.retrievePast(100)

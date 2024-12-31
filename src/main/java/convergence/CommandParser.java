@@ -14,7 +14,7 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import java.util.List;
 
 @SuppressWarnings({"all", "warnings", "unchecked", "unused", "cast", "CheckReturnValue"})
-public class commandParser extends Parser {
+public class CommandParser extends Parser {
     public static final int
             RegularEscape = 1, UnicodeEscape = 2, OctalEscape = 3, InvalidEscape = 4, Alnum = 5,
             Whitespace = 6, NotWhitespaceOrQuote = 7, Quote = 8;
@@ -114,7 +114,7 @@ public class commandParser extends Parser {
         return VOCABULARY;
     }
 
-    public commandParser(TokenStream input) {
+    public CommandParser(TokenStream input) {
         super(input);
         _interp = new ParserATNSimulator(this, _ATN, _decisionToDFA, _sharedContextCache);
     }
@@ -426,19 +426,19 @@ public class commandParser extends Parser {
         }
 
         public List<TerminalNode> EOF() {
-            return getTokens(commandParser.EOF);
+            return getTokens(CommandParser.EOF);
         }
 
         public TerminalNode EOF(int i) {
-            return getToken(commandParser.EOF, i);
+            return getToken(CommandParser.EOF, i);
         }
 
         public List<TerminalNode> Whitespace() {
-            return getTokens(commandParser.Whitespace);
+            return getTokens(CommandParser.Whitespace);
         }
 
         public TerminalNode Whitespace(int i) {
-            return getToken(commandParser.Whitespace, i);
+            return getToken(CommandParser.Whitespace, i);
         }
 
         public List<ArgumentContext> argument() {
@@ -456,17 +456,17 @@ public class commandParser extends Parser {
 
         @Override
         public void enterRule(ParseTreeListener listener) {
-            if (listener instanceof commandListener) ((commandListener) listener).enterCommand(this);
+            if (listener instanceof CommandListener) ((CommandListener) listener).enterCommand(this);
         }
 
         @Override
         public void exitRule(ParseTreeListener listener) {
-            if (listener instanceof commandListener) ((commandListener) listener).exitCommand(this);
+            if (listener instanceof CommandListener) ((CommandListener) listener).exitCommand(this);
         }
 
         @Override
         public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-            if (visitor instanceof commandVisitor) return ((commandVisitor<? extends T>) visitor).visitCommand(this);
+            if (visitor instanceof CommandVisitor) return ((CommandVisitor<? extends T>) visitor).visitCommand(this);
             else return visitor.visitChildren(this);
         }
     }
@@ -492,17 +492,17 @@ public class commandParser extends Parser {
 
         @Override
         public void enterRule(ParseTreeListener listener) {
-            if (listener instanceof commandListener) ((commandListener) listener).enterArgument(this);
+            if (listener instanceof CommandListener) ((CommandListener) listener).enterArgument(this);
         }
 
         @Override
         public void exitRule(ParseTreeListener listener) {
-            if (listener instanceof commandListener) ((commandListener) listener).exitArgument(this);
+            if (listener instanceof CommandListener) ((CommandListener) listener).exitArgument(this);
         }
 
         @Override
         public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-            if (visitor instanceof commandVisitor) return ((commandVisitor<? extends T>) visitor).visitArgument(this);
+            if (visitor instanceof CommandVisitor) return ((CommandVisitor<? extends T>) visitor).visitArgument(this);
             else return visitor.visitChildren(this);
         }
     }
@@ -514,51 +514,51 @@ public class commandParser extends Parser {
         }
 
         public List<TerminalNode> Alnum() {
-            return getTokens(commandParser.Alnum);
+            return getTokens(CommandParser.Alnum);
         }
 
         public TerminalNode Alnum(int i) {
-            return getToken(commandParser.Alnum, i);
+            return getToken(CommandParser.Alnum, i);
         }
 
         public List<TerminalNode> RegularEscape() {
-            return getTokens(commandParser.RegularEscape);
+            return getTokens(CommandParser.RegularEscape);
         }
 
         public TerminalNode RegularEscape(int i) {
-            return getToken(commandParser.RegularEscape, i);
+            return getToken(CommandParser.RegularEscape, i);
         }
 
         public List<TerminalNode> UnicodeEscape() {
-            return getTokens(commandParser.UnicodeEscape);
+            return getTokens(CommandParser.UnicodeEscape);
         }
 
         public TerminalNode UnicodeEscape(int i) {
-            return getToken(commandParser.UnicodeEscape, i);
+            return getToken(CommandParser.UnicodeEscape, i);
         }
 
         public List<TerminalNode> OctalEscape() {
-            return getTokens(commandParser.OctalEscape);
+            return getTokens(CommandParser.OctalEscape);
         }
 
         public TerminalNode OctalEscape(int i) {
-            return getToken(commandParser.OctalEscape, i);
+            return getToken(CommandParser.OctalEscape, i);
         }
 
         public List<TerminalNode> InvalidEscape() {
-            return getTokens(commandParser.InvalidEscape);
+            return getTokens(CommandParser.InvalidEscape);
         }
 
         public TerminalNode InvalidEscape(int i) {
-            return getToken(commandParser.InvalidEscape, i);
+            return getToken(CommandParser.InvalidEscape, i);
         }
 
         public List<TerminalNode> NotWhitespaceOrQuote() {
-            return getTokens(commandParser.NotWhitespaceOrQuote);
+            return getTokens(CommandParser.NotWhitespaceOrQuote);
         }
 
         public TerminalNode NotWhitespaceOrQuote(int i) {
-            return getToken(commandParser.NotWhitespaceOrQuote, i);
+            return getToken(CommandParser.NotWhitespaceOrQuote, i);
         }
 
         @Override
@@ -568,18 +568,18 @@ public class commandParser extends Parser {
 
         @Override
         public void enterRule(ParseTreeListener listener) {
-            if (listener instanceof commandListener) ((commandListener) listener).enterNonQuoteArgument(this);
+            if (listener instanceof CommandListener) ((CommandListener) listener).enterNonQuoteArgument(this);
         }
 
         @Override
         public void exitRule(ParseTreeListener listener) {
-            if (listener instanceof commandListener) ((commandListener) listener).exitNonQuoteArgument(this);
+            if (listener instanceof CommandListener) ((CommandListener) listener).exitNonQuoteArgument(this);
         }
 
         @Override
         public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-            if (visitor instanceof commandVisitor)
-                return ((commandVisitor<? extends T>) visitor).visitNonQuoteArgument(this);
+            if (visitor instanceof CommandVisitor)
+                return ((CommandVisitor<? extends T>) visitor).visitNonQuoteArgument(this);
             else return visitor.visitChildren(this);
         }
     }
@@ -591,11 +591,11 @@ public class commandParser extends Parser {
         }
 
         public List<TerminalNode> Quote() {
-            return getTokens(commandParser.Quote);
+            return getTokens(CommandParser.Quote);
         }
 
         public TerminalNode Quote(int i) {
-            return getToken(commandParser.Quote, i);
+            return getToken(CommandParser.Quote, i);
         }
 
         public List<NotQuoteContext> notQuote() {
@@ -613,18 +613,18 @@ public class commandParser extends Parser {
 
         @Override
         public void enterRule(ParseTreeListener listener) {
-            if (listener instanceof commandListener) ((commandListener) listener).enterQuoteArgument(this);
+            if (listener instanceof CommandListener) ((CommandListener) listener).enterQuoteArgument(this);
         }
 
         @Override
         public void exitRule(ParseTreeListener listener) {
-            if (listener instanceof commandListener) ((commandListener) listener).exitQuoteArgument(this);
+            if (listener instanceof CommandListener) ((CommandListener) listener).exitQuoteArgument(this);
         }
 
         @Override
         public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-            if (visitor instanceof commandVisitor)
-                return ((commandVisitor<? extends T>) visitor).visitQuoteArgument(this);
+            if (visitor instanceof CommandVisitor)
+                return ((CommandVisitor<? extends T>) visitor).visitQuoteArgument(this);
             else return visitor.visitChildren(this);
         }
     }
@@ -636,31 +636,31 @@ public class commandParser extends Parser {
         }
 
         public TerminalNode RegularEscape() {
-            return getToken(commandParser.RegularEscape, 0);
+            return getToken(CommandParser.RegularEscape, 0);
         }
 
         public TerminalNode UnicodeEscape() {
-            return getToken(commandParser.UnicodeEscape, 0);
+            return getToken(CommandParser.UnicodeEscape, 0);
         }
 
         public TerminalNode OctalEscape() {
-            return getToken(commandParser.OctalEscape, 0);
+            return getToken(CommandParser.OctalEscape, 0);
         }
 
         public TerminalNode InvalidEscape() {
-            return getToken(commandParser.InvalidEscape, 0);
+            return getToken(CommandParser.InvalidEscape, 0);
         }
 
         public TerminalNode Alnum() {
-            return getToken(commandParser.Alnum, 0);
+            return getToken(CommandParser.Alnum, 0);
         }
 
         public TerminalNode Whitespace() {
-            return getToken(commandParser.Whitespace, 0);
+            return getToken(CommandParser.Whitespace, 0);
         }
 
         public TerminalNode NotWhitespaceOrQuote() {
-            return getToken(commandParser.NotWhitespaceOrQuote, 0);
+            return getToken(CommandParser.NotWhitespaceOrQuote, 0);
         }
 
         @Override
@@ -670,17 +670,17 @@ public class commandParser extends Parser {
 
         @Override
         public void enterRule(ParseTreeListener listener) {
-            if (listener instanceof commandListener) ((commandListener) listener).enterNotQuote(this);
+            if (listener instanceof CommandListener) ((CommandListener) listener).enterNotQuote(this);
         }
 
         @Override
         public void exitRule(ParseTreeListener listener) {
-            if (listener instanceof commandListener) ((commandListener) listener).exitNotQuote(this);
+            if (listener instanceof CommandListener) ((CommandListener) listener).exitNotQuote(this);
         }
 
         @Override
         public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-            if (visitor instanceof commandVisitor) return ((commandVisitor<? extends T>) visitor).visitNotQuote(this);
+            if (visitor instanceof CommandVisitor) return ((CommandVisitor<? extends T>) visitor).visitNotQuote(this);
             else return visitor.visitChildren(this);
         }
     }
@@ -692,11 +692,11 @@ public class commandParser extends Parser {
         }
 
         public List<TerminalNode> Alnum() {
-            return getTokens(commandParser.Alnum);
+            return getTokens(CommandParser.Alnum);
         }
 
         public TerminalNode Alnum(int i) {
-            return getToken(commandParser.Alnum, i);
+            return getToken(CommandParser.Alnum, i);
         }
 
         @Override
@@ -706,18 +706,18 @@ public class commandParser extends Parser {
 
         @Override
         public void enterRule(ParseTreeListener listener) {
-            if (listener instanceof commandListener) ((commandListener) listener).enterCommandName(this);
+            if (listener instanceof CommandListener) ((CommandListener) listener).enterCommandName(this);
         }
 
         @Override
         public void exitRule(ParseTreeListener listener) {
-            if (listener instanceof commandListener) ((commandListener) listener).exitCommandName(this);
+            if (listener instanceof CommandListener) ((CommandListener) listener).exitCommandName(this);
         }
 
         @Override
         public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-            if (visitor instanceof commandVisitor)
-                return ((commandVisitor<? extends T>) visitor).visitCommandName(this);
+            if (visitor instanceof CommandVisitor)
+                return ((CommandVisitor<? extends T>) visitor).visitCommandName(this);
             else return visitor.visitChildren(this);
         }
     }

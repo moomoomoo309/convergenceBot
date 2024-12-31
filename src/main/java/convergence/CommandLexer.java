@@ -9,7 +9,7 @@ import org.antlr.v4.runtime.atn.PredictionContextCache;
 import org.antlr.v4.runtime.dfa.DFA;
 
 @SuppressWarnings({"all", "warnings", "unchecked", "unused", "cast", "CheckReturnValue", "this-escape"})
-public class commandLexer extends Lexer {
+public class CommandLexer extends Lexer {
     public static final int
             RegularEscape = 1, UnicodeEscape = 2, OctalEscape = 3, InvalidEscape = 4, Alnum = 5,
             Whitespace = 6, NotWhitespaceOrQuote = 7, Quote = 8;
@@ -174,7 +174,7 @@ public class commandLexer extends Lexer {
         return tokenNames;
     }
 
-    public commandLexer(CharStream input) {
+    public CommandLexer(CharStream input) {
         super(input);
         _interp = new LexerATNSimulator(this, _ATN, _decisionToDFA, _sharedContextCache);
     }
