@@ -184,7 +184,7 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
             message.msg.editMessage(newMessage).queue()
     }
 
-    override fun getMessages(chat: Chat, since: OffsetDateTime?, until: OffsetDateTime?): List<MessageHistory> {
+    override fun getMessages(chat: Chat, since: OffsetDateTime?, until: OffsetDateTime?): List<DiscordMessageHistory> {
         if (chat !is DiscordChat || (since != null && (since.isAfter(OffsetDateTime.now()) || since.isBefore(until))))
             return emptyList()
         val history = chat.channel.history
@@ -220,7 +220,7 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
         user: User,
         since: OffsetDateTime?,
         until: OffsetDateTime?
-    ): List<MessageHistory> {
+    ): List<DiscordMessageHistory> {
         if (user !is DiscordUser)
             return emptyList()
         return getMessages(chat, since).filter { it.sender == user }
@@ -231,7 +231,7 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
             jda.presence.setPresence(availability.status, true)
     }
 
-    override fun getUserAvailability(chat: Chat, user: User): Availability {
+    override fun getUserAvailability(chat: Chat, user: User): DiscordAvailability {
         if (user is DiscordUser && chat is DiscordChat && chat.channel is TextChannel) {
             val member = chat.channel.guild.getMember(user.author) ?: return DiscordAvailability(OnlineStatus.UNKNOWN)
             return DiscordAvailability(member.onlineStatus)

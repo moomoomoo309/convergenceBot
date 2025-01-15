@@ -8,6 +8,43 @@ class TestChat: Chat(UniversalProtocol, "Test") {
     override fun toKey() = "TestChat(Test)"
 }
 
+object TestProtocol: Protocol("Test") {
+    override fun init() {
+    }
+
+    override fun sendMessage(chat: Chat, message: String): Boolean {
+        TODO("Not yet implemented")
+    }
+
+    override fun getBot(chat: Chat): User {
+        TODO("Not yet implemented")
+    }
+
+    override fun getName(chat: Chat, user: User): String {
+        TODO("Not yet implemented")
+    }
+
+    override fun getChats(): List<Chat> {
+        TODO("Not yet implemented")
+    }
+
+    override fun getUsers(): List<User> {
+        TODO("Not yet implemented")
+    }
+
+    override fun getUsers(chat: Chat): List<User> {
+        TODO("Not yet implemented")
+    }
+
+    override fun getChatName(chat: Chat): String {
+        TODO("Not yet implemented")
+    }
+
+    override fun chatFromKey(key: String): Chat? {
+        TODO("Not yet implemented")
+    }
+}
+
 fun doNothing(unused: List<String>, unused2: Chat, unused3: User): String? {
     unused.run { unused2.run { unused3.run {} } }
     return null

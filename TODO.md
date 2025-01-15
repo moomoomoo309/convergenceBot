@@ -1,4 +1,5 @@
 # TODO
+## Replace CalDav4j with dav4jvm
 ## Add the concept of servers
 - Currently, only chats (in discord, channels) and protocols (Discord, Messenger, etc.) exist
 - Add the ability to register commands per-protocol and per-server
@@ -11,16 +12,6 @@
         - This will mean most chats will need to have a property to get the server they come from (which may return
           itself if it's a server already)
         - It could also be a super class, which could make that simpler.
-## Some kind of logging system?
-- Should probably say the thread it came from.
-- log and logErr methods exist for ease of switching the logging system.
-## Serialization of Users, Chats, Aliases, ScheduledCommands
-- Code written, needs testing.
-## Discord Bot rich integration
-- Make help command embed its contents?
-- Make it actually handle emojis and formatted text correctly (might need some kind of parser?)
-## Testing and bug fixing of existing commands
-- Help definitely has a bug in it
 ## New commands to be implemented
 - Mimic: Runs a command as another user. Should be able to mimic any user from any chat linked to the current one.
 - At: Says who went where. (It's the companion command to goingto)

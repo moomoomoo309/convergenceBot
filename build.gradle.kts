@@ -1,5 +1,6 @@
 @file:Suppress("LocalVariableName")
 
+import org.gradle.internal.impldep.org.junit.experimental.categories.Categories.CategoryFilter.exclude
 import java.nio.file.Paths
 
 plugins {
@@ -17,7 +18,8 @@ description = """Convergence Bot"""
 
 repositories {
     mavenCentral()
-    maven(url = "https://m2.dv8tion.net/releases")
+    maven("https://m2.dv8tion.net/releases")
+    maven("https://jitpack.io")
 }
 
 buildscript {
@@ -28,22 +30,20 @@ buildscript {
 }
 
 dependencies {
-    implementation(libs.coroutines)
-    implementation(libs.kotlin.reflect)
-
-    implementation(libs.natty)
-    implementation(libs.argparse4j)
-    implementation(libs.humanize)
     antlr(libs.antlr)
-    implementation(libs.logback)
-
-    implementation(libs.jda) {
-        exclude(module = "opus-java")
-    }
+    implementation(libs.argparse4j)
+    implementation("com.github.caldav4j:caldav4j:1.0.4")
+    implementation(libs.coroutines)
+    implementation(libs.humanize)
     implementation(libs.jackson.databind)
     implementation(libs.jackson.jsr310)
     implementation(libs.jackson.kotlin)
-
+    implementation(libs.jda) {
+        exclude(module = "opus-java")
+    }
+    implementation(libs.kotlin.reflect)
+    implementation(libs.logback)
+    implementation(libs.natty)
     testImplementation("org.jetbrains.kotlin:kotlin-test")
 }
 
@@ -61,7 +61,7 @@ tasks.named<JavaExec>("run") {
 }
 
 tasks.wrapper {
-    gradleVersion = "8.9"
+    gradleVersion = libs.versions.gradle.get()
 }
 
 tasks {
@@ -70,5 +70,8 @@ tasks {
     }
     compileKotlin {
         dependsOn(named("generateGrammarSource"))
+    }
+    compileTestKotlin {
+        dependsOn(named("generateTestGrammarSource"))
     }
 }
