@@ -120,7 +120,8 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
                         GatewayIntent.DIRECT_MESSAGE_TYPING,
                         GatewayIntent.DIRECT_MESSAGE_REACTIONS,
                         GatewayIntent.DIRECT_MESSAGES,
-                        GatewayIntent.MESSAGE_CONTENT
+                        GatewayIntent.MESSAGE_CONTENT,
+                        GatewayIntent.SCHEDULED_EVENTS
                     )
                 )
                 .setToken(Files.readString(convergencePath.resolve("discordToken")).trim())
@@ -133,6 +134,7 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
             e.printStackTrace()
             return
         }
+        registerDiscordCommands()
         discordLogger.info("JDA Initialized.")
         jda.addEventListener(MessageListener)
     }

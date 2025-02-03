@@ -60,23 +60,27 @@ object CalendarProcessor {
     fun syncToDiscord(jda: JDA, guild: Guild, calEvents: List<VEvent>, discordEvents: List<ScheduledEvent>) {
         val uidMap = mutableMapOf<String, Long>()
         val discordIterator = discordEvents.listIterator()
+        val calEventsById = mutableMapOf<String, VEvent>()
         var currentDiscordEvent = discordIterator.next()
         for (event in calEvents) {
-            while (event.startDate.date.toInstant().isBefore(currentDiscordEvent.startTime.toInstant())) {
+            calEventsById[event.uid.value] = event
+            while (event.startDate.toInstant().isBefore(currentDiscordEvent.startTime.toInstant())) {
                 currentDiscordEvent = discordIterator.next()
             }
-            if (event.startDate.date.toInstant() == currentDiscordEvent.startTime.toInstant()) {
+            if (event.equalEnough(currentDiscordEvent)) {
                 uidMap[event.uid.value] = currentDiscordEvent.idLong
             } else {
-                addCalendarEventToDiscord(uidMap, jda, guild, event)
+                addCalendarEventToDiscord(uidMap, guild, event)
             }
         }
         for (discordEvent in discordEvents) {
-            uidMap[decodeUID(discordEvent.description?.takeLast(UID_LENGTH))] ?: discordEvent.delete().queue()
+            val uid = decodeUID(discordEvent.description?.takeLast(UID_LENGTH))
+            if (uidMap[uid] != null || calEventsById[uid]?.equalEnough(discordEvent) != true)
+                discordEvent.delete().queue()
         }
     }
 
-    fun addCalendarEventToDiscord(uidMap: MutableMap<String, Long>, jda: JDA, guild: Guild, event: VEvent) {
+    fun addCalendarEventToDiscord(uidMap: MutableMap<String, Long>, guild: Guild, event: VEvent) {
         guild.createScheduledEvent(
             event.name,
             event.location.value,
@@ -98,18 +102,48 @@ object CalendarProcessor {
     }
 
     private fun encodeUID(uid: String): String {
-        return uid
+        return String(CharArray(uid.length) {
+            uid[it].toInvisibleUnicodeEquivalent()
+        })
     }
 
     private fun decodeUID(encodedUID: String?): String? {
         if (encodedUID == null)
             return null
-        return encodedUID
+        return String(CharArray(encodedUID.length) {
+            encodedUID[it].fromInvisibleUnicodeEquivalent()
+        })
     }
 }
-fun DateProperty.toOffsetDateTime(): OffsetDateTime = this.date.toInstant().atOffset(defaultZoneOffset)
+fun DateProperty.toInstant(): Instant = this.date.toInstant()
+fun DateProperty.toOffsetDateTime(): OffsetDateTime = this.toInstant().atOffset(defaultZoneOffset)
 private val defaultZoneOffset = OffsetDateTime.now().offset
 
 fun Instant.toIDate(): Date {
     return Date(Date.from(this))
+}
+
+fun Char.toInvisibleUnicodeEquivalent(): Char {
+    return when (this) {
+        '-' -> '\u2063' // Invisible separator
+        in '0'..'9' -> (this.code - '0'.code + '\uFE00'.code).toChar() // Variation selector 1-10
+        in 'a'..'f' -> (this.code - 'a'.code + '\uFE0A'.code).toChar() // Variation selector 11-16
+        else -> this
+    }
+}
+
+fun Char.fromInvisibleUnicodeEquivalent(): Char {
+    return when(this) {
+        '\u2063' -> '-'
+        in '\uFE00'..'\uFE09' -> (this.code - '\uFE00'.code + '0'.code).toChar()
+        in '\uFE0A'..'\uFE0F' -> (this.code - '\uFE0A'.code + 'a'.code).toChar()
+        else -> this
+    }
+}
+
+fun VEvent.equalEnough(dEvent: ScheduledEvent): Boolean {
+    // More fields can be added here if needed, but this should be alright
+    return this.startDate.toInstant() == dEvent.startTime.toInstant()
+            && this.endDate?.toInstant() == dEvent.endTime?.toInstant()
+            && this.name == dEvent.name
 }

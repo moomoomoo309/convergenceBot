@@ -88,29 +88,29 @@ object UniversalChat: Chat(UniversalProtocol, "Universal") {
 }
 
 sealed class CommandLike(
-    open val chat: Chat,
+    open val protocol: Protocol,
     open val name: String,
     @JsonIgnore open val helpText: String,
     @JsonIgnore open val syntaxText: String
 ): Comparable<CommandLike> {
-    override fun compareTo(other: CommandLike) = "$chat.$name".compareTo("${other.chat}.${other.name}")
+    override fun compareTo(other: CommandLike) = "$protocol.$name".compareTo("${other.protocol}.${other.name}")
 
     data class Command(
-        override val chat: Chat,
+        override val protocol: Protocol,
         override val name: String,
         @JsonIgnore val function: (List<String>, Chat, User) -> String?,
         @JsonIgnore override val helpText: String,
         @JsonIgnore override val syntaxText: String
-    ): CommandLike(chat, name, helpText, syntaxText)
+    ): CommandLike(protocol, name, helpText, syntaxText)
 
     data class Alias(
-        override val chat: Chat,
+        val chat: Chat,
         override val name: String,
         val command: Command,
         val args: List<String>,
         @JsonIgnore override val helpText: String,
         @JsonIgnore override val syntaxText: String
-    ): CommandLike(chat, name, helpText, syntaxText)
+    ): CommandLike(chat.protocol, name, helpText, syntaxText)
 }
 typealias Command = CommandLike.Command
 typealias Alias = CommandLike.Alias

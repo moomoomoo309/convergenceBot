@@ -110,7 +110,7 @@ val serializedCommands = Settings.serializedCommands
 lateinit var convergencePath: Path
 val chatMap: MutableMap<Int, Chat> = mutableMapOf()
 val reverseChatMap: MutableMap<Chat, Int> = mutableMapOf()
-val commands: MutableMap<Chat, MutableMap<String, Command>> = mutableMapOf()
+val commands: MutableMap<Protocol, MutableMap<String, Command>> = mutableMapOf()
 val protocols: MutableList<Protocol> = mutableListOf()
 val sortedHelpText: MutableList<CommandLike> = mutableListOf()
 var currentChatID: Int = 0

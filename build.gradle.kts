@@ -1,6 +1,5 @@
 @file:Suppress("LocalVariableName")
 
-import org.gradle.internal.impldep.org.junit.experimental.categories.Categories.CategoryFilter.exclude
 import java.nio.file.Paths
 
 plugins {
@@ -32,7 +31,7 @@ buildscript {
 dependencies {
     antlr(libs.antlr)
     implementation(libs.argparse4j)
-    implementation("com.github.caldav4j:caldav4j:1.0.4")
+    implementation(libs.caldav4j)
     implementation(libs.coroutines)
     implementation(libs.humanize)
     implementation(libs.jackson.databind)

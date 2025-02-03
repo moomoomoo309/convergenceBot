@@ -22,16 +22,16 @@ data class CommandData(var command: Command, var args: List<String>) {
 class InvalidEscapeSequenceException(message: String): Exception(message)
 
 private fun <T: CommandLike> commandAvailable(
-    list: MutableMap<Chat, MutableMap<String, T>>,
+    list: MutableMap<*, MutableMap<String, T>>,
     chat: Chat,
     command: String
 ) = chat in list && list[chat] is MutableMap<String, *> && command in list[chat]!!
 
 fun getCommand(command: String, chat: Chat): CommandLike {
     return when {
-        commandAvailable(commands, chat, command) -> commands[chat]!![command]
+        commandAvailable(commands, chat, command) -> commands[chat.protocol]!![command]
         commandAvailable(aliases, chat, command) -> aliases[chat]!![command]
-        commandAvailable(commands, UniversalChat, command) -> commands[UniversalChat]!![command]
+        commandAvailable(commands, UniversalChat, command) -> commands[UniversalProtocol]!![command]
         else -> null
     } ?: throw CommandDoesNotExist(command)
 }

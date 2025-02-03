@@ -227,7 +227,7 @@ fun setLocation(args: List<String>, chat: Chat, sender: User): String {
                 builder.append(
                     CommandScheduler.schedule(
                         chat, sender, CommandData(
-                            commands[UniversalChat]!!["goingto"]!!,
+                            commands[UniversalProtocol]!!["goingto"]!!,
                             if (durationStr.isEmpty())
                                 listOf(location.toString())
                             else
@@ -250,9 +250,9 @@ fun target(args: List<String>, chat: Chat, sender: User): String {
 
 fun commands(args: List<String>, chat: Chat, sender: User): String {
     val commandList = mutableListOf<String>()
-    commands[chat]?.forEach { commandList.add(it.key) }
-    commands[UniversalChat]?.forEach { commandList.add(it.key) }
-    linkedChats[chat]?.forEach { linked -> commands[linked]?.forEach { commandList.add(it.key) } }
+    commands[chat.protocol]?.forEach { commandList.add(it.key) }
+    commands[UniversalProtocol]?.forEach { commandList.add(it.key) }
+    linkedChats[chat]?.forEach { linked -> commands[linked.protocol]?.forEach { commandList.add(it.key) } }
     return if (commandList.isNotEmpty()) commandList.joinToString(", ") else "No commands found."
 }
 
@@ -425,140 +425,140 @@ fun setDelimiter(args: List<String>, chat: Chat, sender: User): String = when {
 fun registerDefaultCommands() {
     registerCommand(
         Command(
-            UniversalChat, "exit", { _, _, _ -> exitProcess(0) },
+            UniversalProtocol, "exit", { _, _, _ -> exitProcess(0) },
             "Exits the bot.",
             "exit (Takes no arguments)"
         )
     )
     registerCommand(
         Command(
-            UniversalChat, "help", ::help,
+            UniversalProtocol, "help", ::help,
             "Provides a paginated list of commands and their syntax, or specific help on a single command.",
             "help [command] or help [page number]"
         )
     )
     registerCommand(
         Command(
-            UniversalChat, "echo", ::echo,
+            UniversalProtocol, "echo", ::echo,
             "Replies with the string passed to it.",
             "echo [message...] (All arguments are appended to each other with spaces)"
         )
     )
     registerCommand(
         Command(
-            UniversalChat, "ping", ::ping,
+            UniversalProtocol, "ping", ::ping,
             "Replies with \"Pong!\".",
             "ping (Takes no arguments)"
         )
     )
     registerCommand(
         Command(
-            UniversalChat, "alias", ::addAlias,
+            UniversalProtocol, "alias", ::addAlias,
             "Registers an alias to an existing command.",
             "alias (commandName) \"commandName [arguments...]\" (Command inside parentheses takes however many parameters that command takes)"
         )
     )
     registerCommand(
         Command(
-            UniversalChat, "me", ::me,
+            UniversalProtocol, "me", ::me,
             "Replied \"*(username) (message)\" e.g. \"*Gian Laput is French.\"",
             "me [message...] (All arguments are appended to each other with spaces)"
         )
     )
     registerCommand(
         Command(
-            UniversalChat, "chats", ::chats,
+            UniversalProtocol, "chats", ::chats,
             "Lists all chats the bot knows of by name.",
             "chats (Takes no arguments)"
         )
     )
     registerCommand(
         Command(
-            UniversalChat, "goingto", ::setLocation,
+            UniversalProtocol, "goingto", ::setLocation,
             "Tells the chat you're going somewhere for some time.",
             "goingto \"location\" [for (duration)] [at (time)/in (timedelta)/on (datetime)] (Note: Order does not matter with for/at/in/on)"
         )
     )
     registerCommand(
         Command(
-            UniversalChat, "commands", ::commands,
+            UniversalProtocol, "commands", ::commands,
             "Lists all of the commands in this chat.",
             "commands (Takes no arguments)"
         )
     )
     registerCommand(
         Command(
-            UniversalChat, "aliases", ::aliases,
+            UniversalProtocol, "aliases", ::aliases,
             "Lists all of the aliases in this chat.",
             "aliases (Takes no arguments)"
         )
     )
     registerCommand(
         Command(
-            UniversalChat, "schedule", ::schedule,
+            UniversalProtocol, "schedule", ::schedule,
             "Schedules a command to run later.",
             "schedule \"time\" \"command (with delimiter and arguments)\""
         )
     )
     registerCommand(
         Command(
-            UniversalChat, "unschedule", ::unschedule,
+            UniversalProtocol, "unschedule", ::unschedule,
             "Unschedules a command, so it will not be run later. The ID can be obtained from the events command.",
             "unschedule (ID)"
         )
     )
     registerCommand(
         Command(
-            UniversalChat, "events", ::eventsFromUser,
+            UniversalProtocol, "events", ::eventsFromUser,
             "Lists all of the events you've made.",
             "events (Takes no arguments)"
         )
     )
     registerCommand(
         Command(
-            UniversalChat, "allevents", ::events,
+            UniversalProtocol, "allevents", ::events,
             "Lists all of the events in chronological order.",
             "allevents (Takes no arguments)"
         )
     )
     registerCommand(
         Command(
-            UniversalChat, "eventsbyuser", ::eventsByUser,
+            UniversalProtocol, "eventsbyuser", ::eventsByUser,
             "Lists all events by user, then in chronological order.",
             "eventsbyuser (Takes no arguments)"
         )
     )
     registerCommand(
         Command(
-            UniversalChat, "link", ::link,
+            UniversalProtocol, "link", ::link,
             "Links a chat to this one. The ID can be obtained from the chats command.",
             "link (ID)"
         )
     )
     registerCommand(
         Command(
-            UniversalChat, "unlink", ::unlink,
+            UniversalProtocol, "unlink", ::unlink,
             "Unlinks a chat from this one. The ID can be obtained from the chats command.",
             "unlink (ID)"
         )
     )
     registerCommand(
         Command(
-            UniversalChat, "links", ::links,
+            UniversalProtocol, "links", ::links,
             "Lists all of the chats linked to this one.",
             "links (Takes no arguments)"
         )
     )
     registerCommand(
         Command(
-            UniversalChat, "setdelimiter", ::setDelimiter,
+            UniversalProtocol, "setdelimiter", ::setDelimiter,
             "Changes the command delimiter of the current chat (default is !)",
             "setdelimiter (New delimiter)"
         )
     )
     registerCommand(
         Command(
-            UniversalChat, "dumpSettings", { _, _, _ -> Settings.toDTO().toString() }, "", ""
+            UniversalProtocol, "dumpSettings", { _, _, _ -> Settings.toDTO().toString() }, "", ""
         )
     )
 }

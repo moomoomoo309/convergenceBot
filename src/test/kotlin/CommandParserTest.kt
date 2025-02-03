@@ -55,8 +55,8 @@ class CommandParserTest {
         val testChat = TestChat()
         val testIndex = command.indexOf(" ")
         val testCommandStr = command.substring(1, if (testIndex == -1) command.length else testIndex)
-        val testCommand = Command(testChat, testCommandStr, ::doNothing, "test", "test")
-        commands[testChat] = mutableMapOf(testCommandStr to testCommand)
+        val testCommand = Command(testChat.protocol, testCommandStr, ::doNothing, "test", "test")
+        commands[testChat.protocol] = mutableMapOf(testCommandStr to testCommand)
         return parseCommand(command, testChat)
     }
 
@@ -126,10 +126,10 @@ class CommandParserTest {
         val testChat = TestChat()
         val testIndex = command.indexOf(" ")
         val testAliasStr = command.substring(1, if (testIndex == -1) command.length else testIndex)
-        val testCommand = Command(testChat, "test", ::doNothing, "test", "test")
+        val testCommand = Command(testChat.protocol, "test", ::doNothing, "test", "test")
         val testAlias =
             Alias(testChat, testAliasStr, testCommand, listOf("testArg1", "testArg2"), "testAlias", "testAlias")
-        commands[testChat] = mutableMapOf("test" to testCommand)
+        commands[testChat.protocol] = mutableMapOf("test" to testCommand)
         aliases[testChat] = mutableMapOf(testAliasStr to testAlias)
         return parseCommand(command, testChat)
     }

@@ -10,20 +10,19 @@ class CommandDoesNotExist(cmd: String): Exception(cmd)
  * @return true if a command with that name does not already exist in the registry, false otherwise.
  */
 fun registerCommand(command: Command): Boolean {
-    val chat = command.chat
-    val commands = commands
-    if (chat !in commands || commands[chat] !is MutableMap)
-        commands[chat] = mutableMapOf(command.name to command)
-    val commandsInChat = commands[chat] ?: return false
+    val protocol = command.protocol
+    if (protocol !in commands || commands[protocol] !is MutableMap)
+        commands[protocol] = mutableMapOf(command.name to command)
+    val commandsInProtocol = commands[protocol] ?: return false
 
-    if (command.name in commandsInChat)
+    if (command.name in commandsInProtocol)
         return false
 
     if (sortedHelpText.isEmpty())
         sortedHelpText.add(command)
     else
         sortedHelpText.add(-sortedHelpText.binarySearch(command) - 1, command)
-    commandsInChat[command.name] = command
+    commandsInProtocol[command.name] = command
     return true
 }
 
