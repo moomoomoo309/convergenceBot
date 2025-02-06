@@ -1,7 +1,9 @@
 package convergence.discord
 
 import com.github.caldav4j.CalDAVCollection
+import com.github.caldav4j.exceptions.CalDAV4JException
 import com.github.caldav4j.util.GenerateQuery
+import convergence.*
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.ScheduledEvent
@@ -28,12 +30,18 @@ val httpClient: CloseableHttpClient = HttpClients.custom().setDefaultHeaders(
 
 const val UID_LENGTH = 36
 
+
 object CalendarProcessor {
-    fun getAndCacheCalendar(url: String): CalDAVCollection {
+    fun getAndCacheCalendar(url: String): CalDAVCollection? {
         calendarCache[url]?.let {
             return it
         }
         val cal = CalDAVCollection(url)
+        try {
+            cal.testConnection(httpClient)
+        } catch(e: CalDAV4JException) {
+            return null
+        }
         calendarCache[url] = cal
         return cal
     }
@@ -50,14 +58,42 @@ object CalendarProcessor {
         }.sortedBy { it.startDate.date }
     }
 
-    fun getDiscordEvents(jda: JDA, withinNextDays: Long): List<ScheduledEvent> {
+    private fun getDiscordEvents(jda: JDA, withinNextDays: Long): List<ScheduledEvent> {
         return jda.scheduledEvents.filter {
             it.startTime.isAfter(OffsetDateTime.now())
                     && it.startTime.isBefore(OffsetDateTime.now().plus(withinNextDays, ChronoUnit.DAYS))
         }.sortedBy { it.startTime }
     }
 
-    fun syncToDiscord(jda: JDA, guild: Guild, calEvents: List<VEvent>, discordEvents: List<ScheduledEvent>) {
+    private fun removeCalendarSync(cal: SyncedCalendar): String {
+        syncedCalendars.remove(cal)
+        Settings.update()
+        return "Could not find guild with ID ${cal.guildId}"
+    }
+
+    @Suppress("UNUSED_PARAMETER")
+    fun syncCommand(args: List<String>, chat: Chat, unused: User): String? {
+        if (args.size != 1)
+            return "Expected 1 argument, got ${args.size}."
+        if (chat !is DiscordChat)
+            return "Can only be ran on a Discord chat. How did you run this on a different chat?"
+        if (getAndCacheCalendar(args[0]) == null)
+            return "No calendar found at URL \"${args[0]}\"."
+        val syncedCalendar = SyncedCalendar(chat.channel.guild.idLong, args[0])
+        syncedCalendars.add(syncedCalendar)
+        Settings.update()
+        return syncToDiscord(syncedCalendar)
+    }
+
+    fun syncToDiscord(cal: SyncedCalendar): String {
+        val calCollection = getAndCacheCalendar(cal.calURL) ?: return "No calendar found at URL \"${cal.calURL}\"."
+        val calendarEvents = getEventsNextDays(calCollection, 30)
+        val discordEvents = getDiscordEvents(jda, 30L)
+        val guild = jda.getGuildById(cal.guildId) ?: return removeCalendarSync(cal)
+        return syncToDiscord(guild, calendarEvents, discordEvents)
+    }
+
+    private fun syncToDiscord(guild: Guild, calEvents: List<VEvent>, discordEvents: List<ScheduledEvent>): String {
         val uidMap = mutableMapOf<String, Long>()
         val discordIterator = discordEvents.listIterator()
         val calEventsById = mutableMapOf<String, VEvent>()
@@ -78,9 +114,10 @@ object CalendarProcessor {
             if (uidMap[uid] != null || calEventsById[uid]?.equalEnough(discordEvent) != true)
                 discordEvent.delete().queue()
         }
+        return "Calendar synced successfully."
     }
 
-    fun addCalendarEventToDiscord(uidMap: MutableMap<String, Long>, guild: Guild, event: VEvent) {
+    private fun addCalendarEventToDiscord(uidMap: MutableMap<String, Long>, guild: Guild, event: VEvent) {
         guild.createScheduledEvent(
             event.name,
             event.location.value,

@@ -5,12 +5,12 @@ import convergence.*
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.OnlineStatus
+import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel
 import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel
-import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.dv8tion.jda.api.requests.GatewayIntent
@@ -35,12 +35,27 @@ typealias DUser = net.dv8tion.jda.api.entities.User
 typealias DCustomEmoji = net.dv8tion.jda.api.entities.emoji.RichCustomEmoji
 
 class DiscordAvailability(val status: OnlineStatus): Availability(status.name)
+class DiscordServer(name: String, val guild: Guild): Server(name, DiscordProtocol) {
+    constructor(guild: Guild): this(guild.name, guild)
+    override fun compareTo(other: Server): Int {
+        if (other !is DiscordServer) {
+            return name.compareTo(other.name)
+        }
+        return guild.idLong.compareTo(other.guild.idLong)
+    }
 
-class DiscordChat(name: String, override val id: Long, @JsonIgnore val channel: MessageChannel):
+    override fun toKey(): String {
+        TODO("Not yet implemented")
+    }
+}
+val serverCache = mutableMapOf<Long, DiscordServer>()
+
+class DiscordChat(name: String, override val id: Long, @JsonIgnore val channel: GuildMessageChannel):
     Chat(DiscordProtocol, name), DiscordObject {
-    constructor(channel: MessageChannel): this(channel.name, channel.idLong, channel)
-    constructor(message: Message): this(message.channel)
+    constructor(channel: GuildMessageChannel): this(channel.name, channel.idLong, channel)
+    constructor(message: Message): this(message.channel.asGuildMessageChannel())
     constructor(msgEvent: MessageReceivedEvent): this(msgEvent.message)
+    val server = serverCache.getOrPut(id) { DiscordServer(channel.guild) }
 
     override fun hashCode() = id.hashCode()
     override fun equals(other: Any?) =
@@ -142,7 +157,7 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
     @JsonIgnore
     override val supportedFormats = formatMap.keys
 
-    override fun chatFromKey(key: String): Chat? {
+    override fun commandScopeFromKey(key: String): Chat? {
         val id = key.substringBetween("${this.name}(", ")").toLongOrNull() ?: return null
         return chatCache[id] ?: DiscordChat(
             jda.getGuildChannelById(id) as? GuildMessageChannel ?: return null
@@ -150,6 +165,8 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
             chatCache[id] = chat
         }
     }
+
+    override fun toKey() = "DiscordProtocol"
 
     override fun getUserNickname(chat: Chat, user: User): String? {
         if (user is DiscordUser && chat is DiscordChat && chat.channel is TextChannel)
@@ -272,7 +289,7 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
     }
 
     override fun getUsers(chat: Chat): List<User> {
-        val channel = ((chat as DiscordChat).channel as GuildMessageChannel)
+        val channel = (chat as DiscordChat).channel
         return jda.users.filter {
             channel.canTalk(channel.guild.getMember(it) ?: return@filter false)
         }.map { userCache[it.idLong] ?: DiscordUser(it).also { user -> userCache[it.idLong] = user } }

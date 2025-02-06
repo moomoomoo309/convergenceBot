@@ -40,7 +40,11 @@ object TestProtocol: Protocol("Test") {
         TODO("Not yet implemented")
     }
 
-    override fun chatFromKey(key: String): Chat? {
+    override fun commandScopeFromKey(key: String): Chat? {
+        TODO("Not yet implemented")
+    }
+
+    override fun toKey(): String {
         TODO("Not yet implemented")
     }
 }

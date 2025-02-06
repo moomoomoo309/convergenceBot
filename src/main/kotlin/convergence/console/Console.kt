@@ -23,7 +23,8 @@ object ConsoleProtocol: Protocol("Console") {
         throw InputMismatchException("Invalid chat or user passed. Can only be ConsoleChat and ConsoleUser.")
     }
 
-    override fun chatFromKey(key: String) = if (key == "ConsoleChat(Console)") ConsoleChat else null
+    override fun commandScopeFromKey(key: String) = if (key == "ConsoleChat(Console)") ConsoleChat else null
+    override fun toKey() = "ConsoleProtocol"
 
     override fun getBot(chat: Chat): User {
         return bot

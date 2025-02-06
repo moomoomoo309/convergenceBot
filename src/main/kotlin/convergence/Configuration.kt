@@ -7,7 +7,7 @@ import java.io.File
 import java.nio.file.Path
 
 const val defaultCommandDelimiter = "!"
-
+data class SyncedCalendar(val guildId: Long, val calURL: String)
 inline fun <reified T> ObjectMapper.readValue(value: String): T {
     return this.readValue(value, T::class.java)
 }
@@ -20,14 +20,16 @@ data class SettingsDTO(
     var aliases: MutableMap<String, MutableMap<String, Alias>> = mutableMapOf(),
     var commandDelimiters: MutableMap<String, String> = mutableMapOf(),
     var linkedChats: MutableMap<String, MutableSet<String>> = mutableMapOf(),
-    var serializedCommands: MutableMap<Int, ScheduledCommand> = mutableMapOf()
+    var serializedCommands: MutableMap<Int, ScheduledCommand> = mutableMapOf(),
+    var syncedCalendars: MutableList<SyncedCalendar> = mutableListOf()
 )
 
 object Settings {
-    var commandDelimiters: MutableMap<Chat, String> = mutableMapOf()
+    var commandDelimiters: MutableMap<CommandScope, String> = mutableMapOf()
     var linkedChats: MutableMap<Chat, MutableSet<Chat>> = mutableMapOf()
-    var aliases: MutableMap<Chat, MutableMap<String, Alias>> = mutableMapOf()
+    var aliases: MutableMap<CommandScope, MutableMap<String, Alias>> = mutableMapOf()
     var serializedCommands: MutableMap<Int, ScheduledCommand> = mutableMapOf()
+    var syncedCalendars: MutableList<SyncedCalendar> = mutableListOf()
 
     @JsonIgnore
     var updateIsScheduled = false
@@ -45,10 +47,10 @@ object Settings {
         }
     }
 
-    private fun strToChat(s: String): Chat? =
-        protocols.firstOrNull { it.name == s.substringBefore("(") }?.chatFromKey(s)
+    private fun strToChat(s: String): CommandScope? =
+        protocols.firstOrNull { it.name == s.substringBefore("(") }?.commandScopeFromKey(s)
 
-    private fun <T> mapFromDTO(map: Map<String, T>): Map<Chat, T> {
+    private fun <T> mapFromDTO(map: Map<String, T>): Map<out CommandScope, T> {
         return map.mapNotNull { (k, v) ->
             strToChat(k)?.to(v)
         }.toMap()
@@ -56,11 +58,11 @@ object Settings {
 
     private fun linkedChatsFromDTO(linkedChats: MutableMap<String, MutableSet<String>>): MutableMap<Chat, MutableSet<Chat>> {
         return mutableMapOf(*linkedChats.mapNotNull { (k, v) ->
-            strToChat(k)?.to(v.mapNotNull { strToChat(it) }.toMutableSet())
+            (strToChat(k) as? Chat)?.to(v.mapNotNull { strToChat(it) as? Chat }.toMutableSet())
         }.toTypedArray())
     }
 
-    private fun <T> mapToDTO(map: Map<Chat, T>): MutableMap<String, T> {
+    private fun <T> mapToDTO(map: Map<out CommandScope, T>): MutableMap<String, T> {
         return map.mapKeys { (k, _) ->
             k.toKey()
         } as MutableMap<String, T>
@@ -71,13 +73,15 @@ object Settings {
         this.commandDelimiters.apply { clear() }.putAll(mapFromDTO(settingsDTO.commandDelimiters))
         this.linkedChats.apply { clear() }.putAll(linkedChatsFromDTO(settingsDTO.linkedChats))
         this.serializedCommands.apply { clear() }.putAll(settingsDTO.serializedCommands)
+        this.syncedCalendars.apply { clear() }.addAll(settingsDTO.syncedCalendars)
     }
 
     fun toDTO() = SettingsDTO(
         mapToDTO(aliases),
         mapToDTO(commandDelimiters),
         mapToDTO(linkedChats.mapValues { (_, v) -> v.map { it.toKey() }.toMutableSet() }),
-        serializedCommands
+        serializedCommands,
+        syncedCalendars
     )
 }
 
@@ -106,6 +110,7 @@ val commandDelimiters = Settings.commandDelimiters
 val linkedChats = Settings.linkedChats
 val aliases = Settings.aliases
 val serializedCommands = Settings.serializedCommands
+val syncedCalendars = Settings.syncedCalendars
 
 lateinit var convergencePath: Path
 val chatMap: MutableMap<Int, Chat> = mutableMapOf()
@@ -122,5 +127,4 @@ val aliasVars: MutableMap<String, (chat: Chat, sender: User) -> String> = mutabl
 val objectMapper: ObjectMapper = ObjectMapper()
     .configure(SerializationFeature.INDENT_OUTPUT, true)
     .findAndRegisterModules()
-
 val settingsPath: Path by lazy { convergencePath.resolve("settings.json") }

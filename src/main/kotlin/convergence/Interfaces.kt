@@ -16,7 +16,14 @@ fun String.substringBetween(startDelimiter: String, endDelimiter: String): Strin
     return this.substring(startIndex, endIndex)
 }
 
-abstract class Protocol(val name: String): Comparable<Protocol> {
+
+sealed interface CommandScope {
+    val protocol: Protocol
+    fun toKey(): String
+}
+
+abstract class Server(val name: String, override val protocol: Protocol): Comparable<Server>, CommandScope
+abstract class Protocol(val name: String): Comparable<Protocol>, CommandScope {
     abstract fun init()
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -44,21 +51,21 @@ abstract class Protocol(val name: String): Comparable<Protocol> {
     abstract fun getUsers(chat: Chat): List<User>
     abstract fun getChatName(chat: Chat): String
 
-    abstract fun chatFromKey(key: String): Chat?
+    abstract fun commandScopeFromKey(key: String): CommandScope?
+    override val protocol: Protocol
+        get() = this
 }
 
 //Intentionally empty, because it might be represented as an int or a string or whatever.
 abstract class User(val protocol: Protocol)
 
-abstract class Chat(val protocol: Protocol, val name: String): Comparable<Chat> {
+abstract class Chat(override val protocol: Protocol, val name: String): Comparable<Chat>, CommandScope {
     override fun compareTo(other: Chat) =
         "${protocol.name}-${this.name}".compareTo("${other.protocol.name}-${other.name}")
 
     override fun toString(): String {
         return "${this::class.java.simpleName}($name)"
     }
-
-    abstract fun toKey(): String
 }
 
 object UniversalUser: User(UniversalProtocol)
@@ -71,11 +78,13 @@ object UniversalProtocol: Protocol("Universal") {
     override fun getUsers(): List<User> = listOf(UniversalUser)
     override fun getUsers(chat: Chat): List<User> = listOf(UniversalUser)
     override fun getChatName(chat: Chat): String = ""
-    override fun chatFromKey(key: String): Chat? {
+    override fun commandScopeFromKey(key: String): Chat? {
         if (key == "UniversalChat")
             return UniversalChat
         return null
     }
+
+    override fun toKey() = "UniversalChat"
 
     override fun init() {
         // Do nothing
@@ -384,4 +393,8 @@ interface CanFormatMessages {
 abstract class CustomEmoji(open val name: String, val URL: String?)
 interface HasCustomEmoji {
     fun getEmojis(chat: Chat): List<CustomEmoji>
+}
+
+interface HasServers {
+    fun getServers(): List<Server>
 }

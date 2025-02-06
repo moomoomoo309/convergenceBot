@@ -59,25 +59,20 @@ fun getCommandData(chat: Chat, message: String, sender: User): CommandData? = tr
     null
 }
 
+fun getStackTraceText(e: Exception): String = ByteArrayOutputStream().let {
+    e.printStackTrace(PrintStream(it))
+    it.toString("UTF8")
+}
+
 /**
  * Run the Command in the given message, or do nothing if none exists.
  */
 fun runCommand(chat: Chat, message: String, sender: User, images: Array<Image> = emptyArray()) {
     defaultLogger.info(
-        "[${
-            getUserName(
-                chat,
-                sender
-            )
-        }]: $message ${if (images.isNotEmpty()) "+${images.size} images" else ""}"
+        "[${getUserName(chat, sender)}]: $message ${if (images.isNotEmpty()) "+${images.size} images" else ""}"
     )
     forwardToLinkedChats(chat, message, sender, images)
     getCommandData(chat, message, sender)?.let { runCommand(chat, sender, it) }
-}
-
-fun getStackTraceText(e: Exception): String = ByteArrayOutputStream().let {
-    e.printStackTrace(PrintStream(it))
-    it.toString("UTF8")
 }
 
 fun runCommand(chat: Chat, sender: User, command: CommandData) = try {

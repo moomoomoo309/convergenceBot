@@ -354,7 +354,7 @@ fun unschedule(args: List<String>, chat: Chat, sender: User): String {
     }
 
     Settings.update()
-    return if (CommandScheduler.unschedule(sender, index))
+    return if (CommandScheduler.unschedule(index))
         "Unscheduled event with index $index."
     else
         "No event with index $index found."

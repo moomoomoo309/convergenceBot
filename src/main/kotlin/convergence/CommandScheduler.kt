@@ -1,19 +1,25 @@
 package convergence
 
+import convergence.discord.CalendarProcessor
 import to.lova.humanize.time.HumanizeTime
+import java.time.Duration
+import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
 
 /**
  * Checks if commands scheduled for later are ready to be run yet. Can give information on the commands in its queue.
  */
+@Suppress("ConstPropertyName")
 object CommandScheduler: Thread() {
     private const val allowedTimeDifferenceSeconds = 30
     private const val updatesPerSecond = 1
+    private val calendarUpdateFrequency = Duration.ofMinutes(15L)
 
     private val scheduledCommands = sortedMapOf<OffsetDateTime, MutableList<ScheduledCommand>>()
     private val commandsList = sortedMapOf<Int, ScheduledCommand>()
     private var currentId: Int = 0
+    private var lastCalendarUpdateTime = Instant.MIN
 
     fun loadFromFile() {
         serializedCommands.values.forEach { cmd ->
@@ -41,6 +47,14 @@ object CommandScheduler: Thread() {
                     }
                 } else // It's already sorted chronologically, so all following events are early.
                     break
+            }
+            if ((lastCalendarUpdateTime + calendarUpdateFrequency).isBefore(Instant.now())) {
+                defaultLogger.info("Syncing calendars...")
+                for (calendar in syncedCalendars)
+                    Thread {
+                        CalendarProcessor.syncToDiscord(calendar)
+                    }.start()
+                lastCalendarUpdateTime = Instant.now()
             }
             sleep((1000.0 / updatesPerSecond).toLong())
         }
@@ -85,7 +99,7 @@ object CommandScheduler: Thread() {
     /**
      * Removes a command from the queue.
      */
-    fun unschedule(sender: User, index: Int) = commandsList.remove(index)?.let {
+    fun unschedule(index: Int) = commandsList.remove(index)?.let {
         serializedCommands.remove(it.id)
         scheduledCommands[it.time]?.remove(it)
     } != null

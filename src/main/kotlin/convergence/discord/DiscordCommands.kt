@@ -7,7 +7,7 @@ fun registerDiscordCommands() {
     registerCommand(Command(
         DiscordProtocol,
         "syncCalendar",
-        {_,_,_-> ""},
+        CalendarProcessor::syncCommand,
         "Sync a CalDAV calendar to discord events.",
         "syncCalendar (URL)"
     ))

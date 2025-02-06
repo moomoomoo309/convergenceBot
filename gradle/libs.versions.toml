@@ -1,14 +1,14 @@
 [versions]
 antlr = "4.13.2"
 argparse4j = "0.9.0"
-caldav4j = "1.0.4"
+caldav4j = "1.0.5"
 coroutines = "1.10.1"
 gradle = "8.12"
 humanize = "0.1.2"
 jackson = "2.18.2"
-jda = "5.2.2"
-kotlin = "2.1.0"
-logback = "1.5.15"
+jda = "5.3.0"
+kotlin = "2.1.10"
+logback = "1.5.16"
 natty = "1.0.1"
 shadow = "8.3.0"
 

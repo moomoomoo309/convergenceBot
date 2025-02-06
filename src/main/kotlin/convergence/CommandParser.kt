@@ -23,14 +23,14 @@ class InvalidEscapeSequenceException(message: String): Exception(message)
 
 private fun <T: CommandLike> commandAvailable(
     list: MutableMap<*, MutableMap<String, T>>,
-    chat: Chat,
+    chat: CommandScope,
     command: String
 ) = chat in list && list[chat] is MutableMap<String, *> && command in list[chat]!!
 
-fun getCommand(command: String, chat: Chat): CommandLike {
+fun getCommand(command: String, commandScope: CommandScope): CommandLike {
     return when {
-        commandAvailable(commands, chat, command) -> commands[chat.protocol]!![command]
-        commandAvailable(aliases, chat, command) -> aliases[chat]!![command]
+        commandAvailable(aliases, commandScope, command) -> aliases[commandScope]!![command]
+        commandAvailable(commands, commandScope, command) -> commands[commandScope.protocol]!![command]
         commandAvailable(commands, UniversalChat, command) -> commands[UniversalProtocol]!![command]
         else -> null
     } ?: throw CommandDoesNotExist(command)
