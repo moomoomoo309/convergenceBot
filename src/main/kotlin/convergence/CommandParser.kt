@@ -27,10 +27,11 @@ private fun <T: CommandLike> commandAvailable(
     command: String
 ) = chat in list && list[chat] is MutableMap<String, *> && command in list[chat]!!
 
-fun getCommand(command: String, commandScope: CommandScope): CommandLike {
+fun getCommand(command: String, chat: Chat): CommandLike {
     return when {
-        commandAvailable(aliases, commandScope, command) -> aliases[commandScope]!![command]
-        commandAvailable(commands, commandScope, command) -> commands[commandScope.protocol]!![command]
+        commandAvailable(aliases, chat, command) -> aliases[chat]!![command]
+        chat is HasServer && commandAvailable(aliases, chat.server, command) -> aliases[chat]!![command]
+        commandAvailable(commands, chat, command) -> commands[chat.protocol]!![command]
         commandAvailable(commands, UniversalChat, command) -> commands[UniversalProtocol]!![command]
         else -> null
     } ?: throw CommandDoesNotExist(command)

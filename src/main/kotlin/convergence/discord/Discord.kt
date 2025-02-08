@@ -51,11 +51,11 @@ class DiscordServer(name: String, val guild: Guild): Server(name, DiscordProtoco
 val serverCache = mutableMapOf<Long, DiscordServer>()
 
 class DiscordChat(name: String, override val id: Long, @JsonIgnore val channel: GuildMessageChannel):
-    Chat(DiscordProtocol, name), DiscordObject {
+    Chat(DiscordProtocol, name), DiscordObject, HasServer {
     constructor(channel: GuildMessageChannel): this(channel.name, channel.idLong, channel)
     constructor(message: Message): this(message.channel.asGuildMessageChannel())
     constructor(msgEvent: MessageReceivedEvent): this(msgEvent.message)
-    val server = serverCache.getOrPut(id) { DiscordServer(channel.guild) }
+    override val server = serverCache.getOrPut(id) { DiscordServer(channel.guild) }
 
     override fun hashCode() = id.hashCode()
     override fun equals(other: Any?) =
@@ -165,8 +165,6 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
             chatCache[id] = chat
         }
     }
-
-    override fun toKey() = "DiscordProtocol"
 
     override fun getUserNickname(chat: Chat, user: User): String? {
         if (user is DiscordUser && chat is DiscordChat && chat.channel is TextChannel)

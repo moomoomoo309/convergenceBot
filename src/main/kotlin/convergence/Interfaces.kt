@@ -23,7 +23,7 @@ sealed interface CommandScope {
 }
 
 abstract class Server(val name: String, override val protocol: Protocol): Comparable<Server>, CommandScope
-abstract class Protocol(val name: String): Comparable<Protocol>, CommandScope {
+abstract class Protocol(val name: String): Comparable<Protocol> {
     abstract fun init()
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -52,8 +52,6 @@ abstract class Protocol(val name: String): Comparable<Protocol>, CommandScope {
     abstract fun getChatName(chat: Chat): String
 
     abstract fun commandScopeFromKey(key: String): CommandScope?
-    override val protocol: Protocol
-        get() = this
 }
 
 //Intentionally empty, because it might be represented as an int or a string or whatever.
@@ -83,8 +81,6 @@ object UniversalProtocol: Protocol("Universal") {
             return UniversalChat
         return null
     }
-
-    override fun toKey() = "UniversalChat"
 
     override fun init() {
         // Do nothing
@@ -395,6 +391,6 @@ interface HasCustomEmoji {
     fun getEmojis(chat: Chat): List<CustomEmoji>
 }
 
-interface HasServers {
-    fun getServers(): List<Server>
+interface HasServer {
+    val server: Server
 }

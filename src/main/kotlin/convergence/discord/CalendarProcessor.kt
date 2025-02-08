@@ -46,7 +46,7 @@ object CalendarProcessor {
         return cal
     }
 
-    fun getEventsNextDays(calCollection: CalDAVCollection, days: Number): List<VEvent> {
+    fun getCalDAVEventsNextDays(calCollection: CalDAVCollection, days: Long = 30L): List<VEvent> {
         val cals = calCollection.queryCalendars(httpClient, GenerateQuery().generate())
         val eventList = mutableSetOf<VEvent>()
         for (cal in cals) {
@@ -54,25 +54,25 @@ object CalendarProcessor {
         }
         val now = Instant.now()
         return eventList.filter {
-            it.getConsumedTime(now.toIDate(), now.plus(days.toLong(), ChronoUnit.DAYS).toIDate()).isNotEmpty()
+            it.getConsumedTime(now.toIDate(), now.plus(days, ChronoUnit.DAYS).toIDate()).isNotEmpty()
         }.sortedBy { it.startDate.date }
     }
 
-    private fun getDiscordEvents(jda: JDA, withinNextDays: Long): List<ScheduledEvent> {
+    private fun getDiscordEventsNextDays(jda: JDA, days: Long = 30L): List<ScheduledEvent> {
         return jda.scheduledEvents.filter {
             it.startTime.isAfter(OffsetDateTime.now())
-                    && it.startTime.isBefore(OffsetDateTime.now().plus(withinNextDays, ChronoUnit.DAYS))
+                    && it.startTime.isBefore(OffsetDateTime.now().plus(days, ChronoUnit.DAYS))
         }.sortedBy { it.startTime }
     }
 
-    private fun removeCalendarSync(cal: SyncedCalendar): String {
-        syncedCalendars.remove(cal)
+    private fun removeCalendarSync(calendar: SyncedCalendar): String {
+        syncedCalendars.remove(calendar)
         Settings.update()
-        return "Could not find guild with ID ${cal.guildId}"
+        return "Could not find guild with ID ${calendar.guildId}"
     }
 
     @Suppress("UNUSED_PARAMETER")
-    fun syncCommand(args: List<String>, chat: Chat, unused: User): String? {
+    fun syncCommand(args: List<String>, chat: Chat, sender: User): String {
         if (args.size != 1)
             return "Expected 1 argument, got ${args.size}."
         if (chat !is DiscordChat)
@@ -87,8 +87,8 @@ object CalendarProcessor {
 
     fun syncToDiscord(cal: SyncedCalendar): String {
         val calCollection = getAndCacheCalendar(cal.calURL) ?: return "No calendar found at URL \"${cal.calURL}\"."
-        val calendarEvents = getEventsNextDays(calCollection, 30)
-        val discordEvents = getDiscordEvents(jda, 30L)
+        val calendarEvents = getCalDAVEventsNextDays(calCollection)
+        val discordEvents = getDiscordEventsNextDays(jda)
         val guild = jda.getGuildById(cal.guildId) ?: return removeCalendarSync(cal)
         return syncToDiscord(guild, calendarEvents, discordEvents)
     }

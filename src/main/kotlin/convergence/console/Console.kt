@@ -24,8 +24,6 @@ object ConsoleProtocol: Protocol("Console") {
     }
 
     override fun commandScopeFromKey(key: String) = if (key == "ConsoleChat(Console)") ConsoleChat else null
-    override fun toKey() = "ConsoleProtocol"
-
     override fun getBot(chat: Chat): User {
         return bot
     }
