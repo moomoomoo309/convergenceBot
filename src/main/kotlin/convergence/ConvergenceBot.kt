@@ -10,6 +10,7 @@ import java.nio.file.Paths
 import kotlin.collections.set
 
 object ConvergenceBot {
+    @JvmStatic
     fun main(args: Array<String>) {
         // Parse command line arguments.
         val argParser = ArgumentParsers.newFor("Convergence Bot").build()

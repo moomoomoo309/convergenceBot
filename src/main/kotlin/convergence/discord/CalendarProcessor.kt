@@ -8,6 +8,7 @@ import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.ScheduledEvent
 import net.fortuna.ical4j.model.Date
+import net.fortuna.ical4j.model.DateTime
 import net.fortuna.ical4j.model.component.VEvent
 import net.fortuna.ical4j.model.property.DateProperty
 import org.apache.http.impl.client.CloseableHttpClient
@@ -17,6 +18,8 @@ import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
 
 val base64Encoder: Base64.Encoder = Base64.getEncoder()
 val calendarCache = hashMapOf<String, CalDAVCollection>()
@@ -40,6 +43,7 @@ object CalendarProcessor {
         try {
             cal.testConnection(httpClient)
         } catch(e: CalDAV4JException) {
+            e.printStackTrace()
             return null
         }
         calendarCache[url] = cal
@@ -54,7 +58,8 @@ object CalendarProcessor {
         }
         val now = Instant.now()
         return eventList.filter {
-            it.getConsumedTime(now.toIDate(), now.plus(days, ChronoUnit.DAYS).toIDate()).isNotEmpty()
+            val duration = it.getConsumedTime(now.toIDate(), now.plus(days, ChronoUnit.DAYS).toIDate())
+            duration.isNotEmpty() && duration.first().start.toInstant().isAfter(now)
         }.sortedBy { it.startDate.date }
     }
 
@@ -90,19 +95,25 @@ object CalendarProcessor {
         val calendarEvents = getCalDAVEventsNextDays(calCollection)
         val discordEvents = getDiscordEventsNextDays(jda)
         val guild = jda.getGuildById(cal.guildId) ?: return removeCalendarSync(cal)
-        return syncToDiscord(guild, calendarEvents, discordEvents)
+        return syncToDiscord(
+            guild,
+            calendarEvents,
+            discordEvents
+        )
     }
 
     private fun syncToDiscord(guild: Guild, calEvents: List<VEvent>, discordEvents: List<ScheduledEvent>): String {
         val uidMap = mutableMapOf<String, Long>()
         val discordIterator = discordEvents.listIterator()
         val calEventsById = mutableMapOf<String, VEvent>()
-        var currentDiscordEvent = discordIterator.next()
+        var currentDiscordEvent = discordIterator.nextOrNull()
         for (event in calEvents) {
             calEventsById[event.uid.value] = event
-            while (event.startDate.toInstant().isBefore(currentDiscordEvent.startTime.toInstant())) {
-                currentDiscordEvent = discordIterator.next()
-            }
+            if (currentDiscordEvent != null)
+                while (event.startDate.toInstant().isBefore(currentDiscordEvent!!.startTime.toInstant()))
+                    currentDiscordEvent = discordIterator.nextOrNull()
+
+            println("${event.name} @ ${event.startDate.toInstant()}")
             if (event.equalEnough(currentDiscordEvent)) {
                 uidMap[event.uid.value] = currentDiscordEvent.idLong
             } else {
@@ -118,12 +129,16 @@ object CalendarProcessor {
     }
 
     private fun addCalendarEventToDiscord(uidMap: MutableMap<String, Long>, guild: Guild, event: VEvent) {
+        println("Added ${event.name} @ ${event.startDate.toInstant()}")
+        val now = Instant.now()
+        val nextOccurrence = event.getConsumedTime(now.toIDate(), now.plus(30, ChronoUnit.DAYS).toIDate(), true)
+        val duration = nextOccurrence.first()
         guild.createScheduledEvent(
-            event.name,
-            event.location.value,
-            event.startDate.toOffsetDateTime(),
-            event.endDate.toOffsetDateTime()
-        ).setDescription(addUIDToDescription(event.description.value, event.uid.value)).queue {
+            event.summary?.value ?: "Unnamed event",
+            if (event.location?.value.isNullOrBlank()) "No Location" else event.location.value,
+            duration.start.toOffsetDateTime(),
+            duration.end.toOffsetDateTime()
+        ).setDescription(addUIDToDescription(event.description?.value ?: "", event.uid.value)).queue {
             uidMap[event.uid.value] = it.idLong
         }
     }
@@ -152,8 +167,10 @@ object CalendarProcessor {
         })
     }
 }
+
 fun DateProperty.toInstant(): Instant = this.date.toInstant()
 fun DateProperty.toOffsetDateTime(): OffsetDateTime = this.toInstant().atOffset(defaultZoneOffset)
+fun DateTime.toOffsetDateTime(): OffsetDateTime = this.toInstant().atOffset(defaultZoneOffset)
 private val defaultZoneOffset = OffsetDateTime.now().offset
 
 fun Instant.toIDate(): Date {
@@ -161,7 +178,7 @@ fun Instant.toIDate(): Date {
 }
 
 fun Char.toInvisibleUnicodeEquivalent(): Char {
-    return when (this) {
+    return when(this) {
         '-' -> '\u2063' // Invisible separator
         in '0'..'9' -> (this.code - '0'.code + '\uFE00'.code).toChar() // Variation selector 1-10
         in 'a'..'f' -> (this.code - 'a'.code + '\uFE0A'.code).toChar() // Variation selector 11-16
@@ -178,9 +195,16 @@ fun Char.fromInvisibleUnicodeEquivalent(): Char {
     }
 }
 
-fun VEvent.equalEnough(dEvent: ScheduledEvent): Boolean {
+@OptIn(ExperimentalContracts::class)
+fun VEvent.equalEnough(dEvent: ScheduledEvent?): Boolean {
+    contract {
+        returns(true) implies (dEvent != null)
+    }
     // More fields can be added here if needed, but this should be alright
-    return this.startDate.toInstant() == dEvent.startTime.toInstant()
+    return dEvent != null
+            && this.startDate.toInstant() == dEvent.startTime.toInstant()
             && this.endDate?.toInstant() == dEvent.endTime?.toInstant()
             && this.name == dEvent.name
 }
+
+fun <T> Iterator<T>.nextOrNull(): T? = if (hasNext()) next() else null

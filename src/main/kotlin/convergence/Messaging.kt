@@ -103,7 +103,7 @@ fun forwardToLinkedChats(
             for (linkedChat in linkedChats[chat]!!) {
                 val msg = "$boldOpen${getUserName(chat, if (isCommand) bot else sender)}:$boldClose $message"
                 if (linkedChat.protocol is HasImages && images.isNotEmpty())
-                    linkedChat.protocol.sendImages(linkedChat, msg, sender, *images)
+                    (linkedChat.protocol as HasImages).sendImages(linkedChat, msg, sender, *images)
                 else
                     sendMessage(linkedChat, msg)
             }
