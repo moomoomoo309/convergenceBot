@@ -31,7 +31,7 @@ fun registerCommand(command: Command): Boolean {
  * @return true if an alias with that name does not already exist in the registry, false otherwise.
  */
 fun registerAlias(alias: Alias): Boolean {
-    val chat = alias.chat
+    val chat = alias.scope
     val aliases = aliases
     if (chat !in aliases || aliases[chat] !is MutableMap<String, Alias>)
         aliases[chat] = mutableMapOf(alias.name to alias)
@@ -72,11 +72,16 @@ fun runCommand(chat: Chat, message: String, sender: User, images: Array<Image> =
         "[${getUserName(chat, sender)}]: $message ${if (images.isNotEmpty()) "+${images.size} images" else ""}"
     )
     forwardToLinkedChats(chat, message, sender, images)
-    getCommandData(chat, message, sender)?.let { runCommand(chat, sender, it) }
+    getCommandData(chat, message, sender)?.let { (command, args) -> runCommand(chat, sender, command, args) }
 }
 
-fun runCommand(chat: Chat, sender: User, command: CommandData) = try {
-    sendMessage(chat, sender, replaceAliasVars(chat, command(chat, sender), sender))
+fun runCommand(chat: Chat, sender: User, command: Command, args: List<String>) = try {
+    sendMessage(chat, sender, replaceAliasVars(chat, command.function(args, chat, sender), sender))
 } catch(e: Exception) {
     sendMessage(chat, sender, "Error while running command! Stack trace:\n${getStackTraceText(e)}")
+}
+
+fun runCommand(scheduledCommand: ScheduledCommand) {
+    runCommand(scheduledCommand.chat, scheduledCommand.sender,
+        commands[scheduledCommand.chat.protocol]!![scheduledCommand.commandName]!!, scheduledCommand.args)
 }

@@ -35,7 +35,7 @@ object CommandScheduler: Thread() {
                 if (cmdTime.isBefore(now)) {
                     if (cmdTime.until(now, ChronoUnit.SECONDS) in 0..allowedTimeDifferenceSeconds) {
                         for (cmd in cmdList) {
-                            runCommand(cmd.chat, cmd.sender, cmd.commandData)
+                            runCommand(cmd)
                             scheduledCommands.remove(cmd.time)
                             commandsList.remove(cmd.id)
                         }
@@ -49,25 +49,29 @@ object CommandScheduler: Thread() {
                     break
             }
             if ((lastCalendarUpdateTime + calendarUpdateFrequency).isBefore(Instant.now())) {
-                defaultLogger.info("Syncing calendars...")
-                for (calendar in syncedCalendars)
-                    Thread {
-                        CalendarProcessor.syncToDiscord(calendar)
-                    }.start()
-                lastCalendarUpdateTime = Instant.now()
+                syncCalendars()
             }
             sleep((1000.0 / updatesPerSecond).toLong())
         }
     }
 
+    fun syncCalendars() {
+        defaultLogger.info("Syncing calendars...")
+        for (calendar in syncedCalendars)
+            Thread {
+                CalendarProcessor.syncToDiscord(calendar)
+            }.start()
+        lastCalendarUpdateTime = Instant.now()
+    }
+
     /**
-     * Schedules [command] sent by [sender] to run at [time].
+     * Schedules [commandName] sent by [sender] to run at [time] with [args] as its arguments.
      * @return The response the user will get from the command.
      */
-    fun schedule(chat: Chat, sender: User, command: CommandData, time: OffsetDateTime): String {
+    fun schedule(chat: Chat, sender: User, commandName: String, args: List<String>, time: OffsetDateTime): String {
         if (time !in scheduledCommands)
             scheduledCommands[time] = mutableListOf()
-        val cmd = ScheduledCommand(time, chat, sender, command, currentId)
+        val cmd = ScheduledCommand(time, chat, sender, chat.protocol.name, commandName, args, currentId)
         while (commandsList.containsKey(currentId))
             currentId++
         scheduledCommands[time]!!.add(cmd)
@@ -76,11 +80,8 @@ object CommandScheduler: Thread() {
         commandsList[cmd.id] = cmd
         serializedCommands[cmd.id] = cmd
         Settings.update()
-        return "Scheduled ${getUserName(chat, sender)} to run \"$command\" to run at $time."
+        return "Scheduled ${getUserName(chat, sender)} to run \"$commandName ${args.joinToString(" ")}\" to run at $time."
     }
-
-    fun schedule(scheduled: ScheduledCommand) =
-        schedule(scheduled.chat, scheduled.sender, scheduled.commandData, scheduled.time)
 
     /**
      * Gets all the commands scheduled by [sender].
@@ -111,12 +112,8 @@ data class ScheduledCommand(
     val time: OffsetDateTime,
     val chat: Chat,
     val sender: User,
-    val commandData: CommandData,
+    val protocolName: String,
+    val commandName: String,
+    val args: List<String>,
     val id: Int,
 )
-
-/**
- * Schedules [command] to run at [time] from [sender].
- */
-fun schedule(chat: Chat, sender: User, command: CommandData, time: OffsetDateTime) =
-    CommandScheduler.schedule(chat, sender, command, time)

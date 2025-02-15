@@ -8,7 +8,6 @@ import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.ScheduledEvent
 import net.fortuna.ical4j.model.Date
-import net.fortuna.ical4j.model.DateTime
 import net.fortuna.ical4j.model.component.VEvent
 import net.fortuna.ical4j.model.property.DateProperty
 import org.apache.http.impl.client.CloseableHttpClient
@@ -109,11 +108,11 @@ object CalendarProcessor {
         var currentDiscordEvent = discordIterator.nextOrNull()
         for (event in calEvents) {
             calEventsById[event.uid.value] = event
-            if (currentDiscordEvent != null)
-                while (event.startDate.toInstant().isBefore(currentDiscordEvent!!.startTime.toInstant()))
-                    currentDiscordEvent = discordIterator.nextOrNull()
+            while (currentDiscordEvent != null && event.startDate.toInstant()
+                    .isBefore(currentDiscordEvent.startTime.toInstant())
+            )
+                currentDiscordEvent = discordIterator.nextOrNull()
 
-            println("${event.name} @ ${event.startDate.toInstant()}")
             if (event.equalEnough(currentDiscordEvent)) {
                 uidMap[event.uid.value] = currentDiscordEvent.idLong
             } else {
@@ -129,7 +128,6 @@ object CalendarProcessor {
     }
 
     private fun addCalendarEventToDiscord(uidMap: MutableMap<String, Long>, guild: Guild, event: VEvent) {
-        println("Added ${event.name} @ ${event.startDate.toInstant()}")
         val now = Instant.now()
         val nextOccurrence = event.getConsumedTime(now.toIDate(), now.plus(30, ChronoUnit.DAYS).toIDate(), true)
         val duration = nextOccurrence.first()
@@ -170,7 +168,7 @@ object CalendarProcessor {
 
 fun DateProperty.toInstant(): Instant = this.date.toInstant()
 fun DateProperty.toOffsetDateTime(): OffsetDateTime = this.toInstant().atOffset(defaultZoneOffset)
-fun DateTime.toOffsetDateTime(): OffsetDateTime = this.toInstant().atOffset(defaultZoneOffset)
+fun Date.toOffsetDateTime(): OffsetDateTime = this.toInstant().atOffset(defaultZoneOffset)
 private val defaultZoneOffset = OffsetDateTime.now().offset
 
 fun Instant.toIDate(): Date {

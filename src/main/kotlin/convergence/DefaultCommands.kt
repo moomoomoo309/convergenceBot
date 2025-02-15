@@ -66,7 +66,7 @@ fun help(args: List<String>, chat: Chat, sender: User): String {
                     break
                 val currentCommand = sortedHelpText[index]
                 val indicator = if (currentCommand is Command) 'C' else 'A'
-                helpText.append("($indicator) ${currentCommand.name} - ${currentCommand.helpText}\n")
+                helpText.append("($indicator) ${currentCommand.name}${if (currentCommand is Command) " - " + (currentCommand.helpText) else ""}\n")
             }
             helpText.toString()
         }
@@ -79,11 +79,13 @@ fun help(args: List<String>, chat: Chat, sender: User): String {
             }
             buildString {
                 append("(")
-                append(if (currentCommand is Command) 'C' else 'A')
-                append(") - ")
-                append(currentCommand.helpText)
-                append("\nUsage: ")
-                append(currentCommand.syntaxText)
+                if (currentCommand is Command) {
+                    append("C) - ")
+                    append(currentCommand.helpText)
+                    append("\nUsage: ")
+                    append(currentCommand.syntaxText)
+                } else
+                    append("A)")
             }
         }
 
@@ -98,10 +100,42 @@ fun addAlias(args: List<String>, chat: Chat, sender: User): String {
     val commandDelimiter = commandDelimiters.getOrDefault(chat, defaultCommandDelimiter)
     val command = parseCommand(commandDelimiter + args[1], commandDelimiter, chat)
         ?: return "Alias does not refer to a valid command!"
-    if (!registerAlias(Alias(chat, args[0], command.command, command.args, args[1], command.command.syntaxText)))
+    if (!registerAlias(Alias(chat, args[0], command.command, command.args)))
         return "An alias with that name is already registered!"
     Settings.update()
     return "Alias \"${args[0]}\" registered to \"${args[1]}\"."
+}
+
+fun addServerAlias(args: List<String>, chat: Chat, sender: User): String {
+    if (chat !is HasServer)
+        return "This protocol doesn't support servers!"
+    val commandDelimiter = commandDelimiters.getOrDefault(chat, defaultCommandDelimiter)
+    val command = parseCommand(commandDelimiter + args[1], commandDelimiter, chat)
+        ?: return "Alias does not refer to a valid command!"
+    if (!registerAlias(Alias(chat.server, args[0], command.command, command.args)))
+        return "An alias with that name is already registered!"
+    Settings.update()
+    return "Alias \"${args[0]}\" registered to \"${args[1]}\"."
+}
+
+fun removeServerAlias(args: List<String>, chat: Chat, sender: User): String {
+    if (chat !is HasServer)
+        return "This protocol doesn't support servers!"
+    val validAliases = BitSet(args.size)
+    var anyInvalid = false
+    val server = chat.server
+    for (i in 0..args.size) {
+        if (server in aliases && aliases[server] is MutableMap && args[i] in aliases[server]!!) {
+            aliases[server]!!.remove(args[i])
+            validAliases[i] = true
+        } else
+            anyInvalid = true
+    }
+    Settings.update()
+    return if (anyInvalid)
+        "Aliases \"${args.filterIndexed { i, _ -> validAliases[i] }.joinToString("\", \"")}\" removed, " +
+                "${args.filterIndexed { i, _ -> !validAliases[i] }.joinToString("\", \"")} not removed."
+    else "Aliases \"${args.filterIndexed { i, _ -> validAliases[i] }.joinToString("\", \"")}\" removed."
 }
 
 fun removeAlias(args: List<String>, chat: Chat, sender: User): String {
@@ -226,13 +260,12 @@ fun setLocation(args: List<String>, chat: Chat, sender: User): String {
             group.dates.forEach {
                 builder.append(
                     CommandScheduler.schedule(
-                        chat, sender, CommandData(
-                            commands[UniversalProtocol]!!["goingto"]!!,
+                        chat, sender, "goingto",
                             if (durationStr.isEmpty())
                                 listOf(location.toString())
                             else
-                                listOf(location.toString(), "for", durationStr.toString())
-                        ), dateToOffsetDateTime(it)
+                                listOf(location.toString(), "for", durationStr.toString()),
+                        dateToOffsetDateTime(it)
                     )
                 )
             }
@@ -273,7 +306,7 @@ fun schedule(args: List<String>, chat: Chat, sender: User): String {
     if (commandData != null)
         for (group in timeList)
             for (time in group.dates)
-                CommandScheduler.schedule(chat, sender, commandData, dateToOffsetDateTime(time))
+                CommandScheduler.schedule(chat, sender, commandData.command.name, commandData.args, dateToOffsetDateTime(time))
     Settings.update()
     return "Scheduled \"$command\" to run in ${args[0]}."
 }
@@ -340,8 +373,8 @@ private fun addEventToBuilder(
         val id = event.id
         val time = formatTime(event.time)
         val commandDelimiter = commandDelimiters.getOrDefault(chat, defaultCommandDelimiter)
-        val name = event.commandData.command.name
-        val argsStr = event.commandData.args.joinToString(" ")
+        val name = event.commandName
+        val argsStr = event.args.joinToString(" ")
         builder.append("\t[$id] $time: \"$commandDelimiter$name $argsStr\"")
     }
 }
@@ -454,8 +487,29 @@ fun registerDefaultCommands() {
     registerCommand(
         Command(
             UniversalProtocol, "alias", ::addAlias,
-            "Registers an alias to an existing command.",
+            "Registers an alias to an existing command in this channel.",
             "alias (commandName) \"commandName [arguments...]\" (Command inside parentheses takes however many parameters that command takes)"
+        )
+    )
+    registerCommand(
+        Command(
+            UniversalProtocol, "removeAlias", ::removeAlias,
+            "Removes an existing alias by its name.",
+            "removeAlias (aliasName)"
+        )
+    )
+    registerCommand(
+        Command(
+            UniversalProtocol, "serverAlias", ::addServerAlias,
+            "Registers an alias to an existing command in this server.",
+            "serverAlias (commandName) \"commandName [arguments...]\" (Command inside parentheses takes however many parameters that command takes)"
+        )
+    )
+    registerCommand(
+        Command(
+            UniversalProtocol, "removeServerAlias", ::removeServerAlias,
+            "Removes an existing alias by its name.",
+            "removeServerAlias (aliasName)"
         )
     )
     registerCommand(

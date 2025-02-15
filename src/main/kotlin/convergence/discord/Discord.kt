@@ -44,9 +44,7 @@ class DiscordServer(name: String, val guild: Guild): Server(name, DiscordProtoco
         return guild.idLong.compareTo(other.guild.idLong)
     }
 
-    override fun toKey(): String {
-        TODO("Not yet implemented")
-    }
+    override fun toKey() = "DiscordServer(${guild.idLong})"
 }
 val serverCache = mutableMapOf<Long, DiscordServer>()
 
@@ -119,7 +117,7 @@ class DiscordImage(val image: Message.Attachment): Image() {
 }
 
 object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, HasImages, CanMentionUsers,
-    HasMessageHistory, CanEditOtherMessages, HasUserAvailability, HasCustomEmoji {
+    HasMessageHistory, CanEditOtherMessages, HasUserAvailability, HasCustomEmoji, HasServers {
     override fun init() {
         println("Discord Plugin initialized.")
         jda = try {
@@ -157,13 +155,30 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
     @JsonIgnore
     override val supportedFormats = formatMap.keys
 
-    override fun commandScopeFromKey(key: String): Chat? {
-        val id = key.substringBetween("${this.name}(", ")").toLongOrNull() ?: return null
-        return chatCache[id] ?: DiscordChat(
-            jda.getGuildChannelById(id) as? GuildMessageChannel ?: return null
-        ).also { chat ->
-            chatCache[id] = chat
+    override fun commandScopeFromKey(key: String): CommandScope? {
+        if (!key.startsWith(this.name))
+            return null
+        val scopeType = key.substringBetween(this.name, "(")
+        return when(scopeType) {
+            "Chat" -> {
+                val id = key.substringBetween("(", ")").toLongOrNull() ?: return null
+                return chatCache[id] ?: DiscordChat(
+                    jda.getGuildChannelById(id) as? GuildMessageChannel ?: return null
+                ).also { chat ->
+                    chatCache[id] = chat
+                }
+            }
+            "Server" -> {
+                val id = key.substringBetween("(", ")").toLongOrNull() ?: return null
+                return serverCache[id] ?: DiscordServer(
+                    jda.getGuildById(id) ?: return null
+                ).also { server ->
+                    serverCache[id] = server
+                }
+            }
+            else -> null
         }
+
     }
 
     override fun getUserNickname(chat: Chat, user: User): String? {
@@ -273,6 +288,14 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
     override fun getBot(chat: Chat): User = botUser
     override fun getName(chat: Chat, user: User): String = if (user is DiscordUser) user.name else ""
     private val chatCache = mutableMapOf<Long, DiscordChat>()
+    private val serverCache = mutableMapOf<Long, DiscordServer>()
+
+    override fun getServers(): List<Server> = jda.guilds.map {
+        serverCache[it.idLong] ?: DiscordServer(it).also { server ->
+            serverCache[it.idLong] = server
+        }
+    }
+
     override fun getChats(): List<Chat> = jda.textChannels.map {
         chatCache[it.idLong] ?: DiscordChat(it).also { chat ->
             chatCache[it.idLong] = chat

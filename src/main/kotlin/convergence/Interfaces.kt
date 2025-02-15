@@ -16,13 +16,13 @@ fun String.substringBetween(startDelimiter: String, endDelimiter: String): Strin
     return this.substring(startIndex, endIndex)
 }
 
-
 sealed interface CommandScope {
     val protocol: Protocol
     fun toKey(): String
 }
 
 abstract class Server(val name: String, override val protocol: Protocol): Comparable<Server>, CommandScope
+
 abstract class Protocol(val name: String): Comparable<Protocol> {
     abstract fun init()
     override fun equals(other: Any?): Boolean {
@@ -42,11 +42,7 @@ abstract class Protocol(val name: String): Comparable<Protocol> {
     abstract fun sendMessage(chat: Chat, message: String): Boolean
     abstract fun getBot(chat: Chat): User
     abstract fun getName(chat: Chat, user: User): String
-
-    @JsonIgnore
     abstract fun getChats(): List<Chat>
-
-    @JsonIgnore
     abstract fun getUsers(): List<User>
     abstract fun getUsers(chat: Chat): List<User>
     abstract fun getChatName(chat: Chat): String
@@ -54,7 +50,6 @@ abstract class Protocol(val name: String): Comparable<Protocol> {
     abstract fun commandScopeFromKey(key: String): CommandScope?
 }
 
-//Intentionally empty, because it might be represented as an int or a string or whatever.
 abstract class User(val protocol: Protocol)
 
 abstract class Chat(override val protocol: Protocol, val name: String): Comparable<Chat>, CommandScope {
@@ -94,9 +89,7 @@ object UniversalChat: Chat(UniversalProtocol, "Universal") {
 
 sealed class CommandLike(
     open val protocol: Protocol,
-    open val name: String,
-    @JsonIgnore open val helpText: String,
-    @JsonIgnore open val syntaxText: String
+    open val name: String
 ): Comparable<CommandLike> {
     override fun compareTo(other: CommandLike) = "$protocol.$name".compareTo("${other.protocol}.${other.name}")
 
@@ -104,22 +97,27 @@ sealed class CommandLike(
         override val protocol: Protocol,
         override val name: String,
         @JsonIgnore val function: (List<String>, Chat, User) -> String?,
-        @JsonIgnore override val helpText: String,
-        @JsonIgnore override val syntaxText: String
-    ): CommandLike(protocol, name, helpText, syntaxText)
+        @JsonIgnore val helpText: String,
+        @JsonIgnore val syntaxText: String
+    ): CommandLike(protocol, name)
 
     data class Alias(
-        val chat: Chat,
+        val scope: CommandScope,
         override val name: String,
         val command: Command,
-        val args: List<String>,
-        @JsonIgnore override val helpText: String,
-        @JsonIgnore override val syntaxText: String
-    ): CommandLike(chat.protocol, name, helpText, syntaxText)
+        val args: List<String>
+    ): CommandLike(scope.protocol, name) {
+        fun toDTO() = AliasDTO(
+            scope.toKey(),
+            name,
+            command.name,
+            command.protocol.name,
+            args
+        )
+    }
 }
 typealias Command = CommandLike.Command
 typealias Alias = CommandLike.Alias
-
 
 fun Map<String, Any>.json(): String = objectMapper.writeValueAsString(this)
 
@@ -393,4 +391,8 @@ interface HasCustomEmoji {
 
 interface HasServer {
     val server: Server
+}
+
+interface HasServers {
+    fun getServers(): List<Server>
 }
