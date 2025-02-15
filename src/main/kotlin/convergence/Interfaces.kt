@@ -13,7 +13,7 @@ fun String.substringBetween(startDelimiter: String, endDelimiter: String): Strin
     if (startIndex == -1 || endIndex == -1) {
         return ""
     }
-    return this.substring(startIndex, endIndex)
+    return this.substring(startIndex + startDelimiter.length, endIndex)
 }
 
 sealed interface CommandScope {
@@ -48,9 +48,12 @@ abstract class Protocol(val name: String): Comparable<Protocol> {
     abstract fun getChatName(chat: Chat): String
 
     abstract fun commandScopeFromKey(key: String): CommandScope?
+    abstract fun userFromKey(key: String): User?
 }
 
-abstract class User(val protocol: Protocol)
+abstract class User(val protocol: Protocol) {
+    abstract fun toKey(): String
+}
 
 abstract class Chat(override val protocol: Protocol, val name: String): Comparable<Chat>, CommandScope {
     override fun compareTo(other: Chat) =
@@ -61,7 +64,9 @@ abstract class Chat(override val protocol: Protocol, val name: String): Comparab
     }
 }
 
-object UniversalUser: User(UniversalProtocol)
+object UniversalUser: User(UniversalProtocol) {
+    override fun toKey() = "UniversalUser()"
+}
 
 object UniversalProtocol: Protocol("Universal") {
     override fun sendMessage(chat: Chat, message: String): Boolean = false
@@ -74,6 +79,12 @@ object UniversalProtocol: Protocol("Universal") {
     override fun commandScopeFromKey(key: String): Chat? {
         if (key == "UniversalChat")
             return UniversalChat
+        return null
+    }
+
+    override fun userFromKey(key: String): User? {
+        if (key == "UniversalUser")
+            return UniversalUser
         return null
     }
 

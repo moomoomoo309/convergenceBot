@@ -83,5 +83,5 @@ fun runCommand(chat: Chat, sender: User, command: Command, args: List<String>) =
 
 fun runCommand(scheduledCommand: ScheduledCommand) {
     runCommand(scheduledCommand.chat, scheduledCommand.sender,
-        commands[scheduledCommand.chat.protocol]!![scheduledCommand.commandName]!!, scheduledCommand.args)
+        getCommand(scheduledCommand.commandName, scheduledCommand.chat) as Command, scheduledCommand.args)
 }

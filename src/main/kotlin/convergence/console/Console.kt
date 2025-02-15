@@ -3,10 +3,13 @@ package convergence.console
 import convergence.Chat
 import convergence.Protocol
 import convergence.User
+import convergence.substringBetween
 import java.util.*
 import kotlin.system.exitProcess
 
-class ConsoleUser(val name: String): User(ConsoleProtocol)
+class ConsoleUser(val name: String): User(ConsoleProtocol) {
+    override fun toKey() = "ConsoleUser($name)"
+}
 object ConsoleChat: Chat(ConsoleProtocol, "Console") {
     override fun toKey() = "ConsoleChat(Console)"
 }
@@ -21,6 +24,12 @@ object ConsoleProtocol: Protocol("Console") {
             return true
         }
         throw InputMismatchException("Invalid chat or user passed. Can only be ConsoleChat and ConsoleUser.")
+    }
+
+    override fun userFromKey(key: String): User? {
+        if (key.startsWith("ConsoleUser"))
+            return ConsoleUser(key.substringBetween("ConsoleUser(", ")"))
+        return null
     }
 
     override fun commandScopeFromKey(key: String) = if (key == "ConsoleChat(Console)") ConsoleChat else null

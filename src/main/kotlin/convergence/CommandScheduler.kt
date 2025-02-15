@@ -19,7 +19,7 @@ object CommandScheduler: Thread() {
     private val scheduledCommands = sortedMapOf<OffsetDateTime, MutableList<ScheduledCommand>>()
     private val commandsList = sortedMapOf<Int, ScheduledCommand>()
     private var currentId: Int = 0
-    private var lastCalendarUpdateTime = Instant.MIN
+    private var lastCalendarUpdateTime = Instant.now().plusSeconds(10)
 
     fun loadFromFile() {
         serializedCommands.values.forEach { cmd ->
@@ -38,12 +38,18 @@ object CommandScheduler: Thread() {
                             runCommand(cmd)
                             scheduledCommands.remove(cmd.time)
                             commandsList.remove(cmd.id)
+                            Settings.serializedCommands.remove(cmd.id)
                         }
+                        if (cmdList.isNotEmpty())
+                            Settings.update()
                     } else {
                         for (cmd in cmdList) {
                             scheduledCommands.remove(cmd.time)
                             commandsList.remove(cmd.id)
+                            Settings.serializedCommands.remove(cmd.id)
                         }
+                        if (cmdList.isNotEmpty())
+                            Settings.update()
                     }
                 } else // It's already sorted chronologically, so all following events are early.
                     break
@@ -116,4 +122,8 @@ data class ScheduledCommand(
     val commandName: String,
     val args: List<String>,
     val id: Int,
-)
+) {
+    fun toDTO() = ScheduledCommandDTO(
+        time, chat.toKey(), sender.toKey(), protocolName, commandName, args, id
+    )
+}

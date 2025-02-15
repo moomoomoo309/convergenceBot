@@ -32,15 +32,15 @@ object ConvergenceBot {
             return
         }
 
+        protocols.add(UniversalProtocol)
+        protocols.add(ConsoleProtocol)
+        protocols.add(DiscordProtocol)
+
         convergencePath = Paths.get(commandLineArgs.get<List<String>>("convergencePath").first())
-        readSettings()
 
         defaultLogger.info("Registering default commands...")
         registerDefaultCommands()
 
-        protocols.add(UniversalProtocol)
-        protocols.add(ConsoleProtocol)
-        protocols.add(DiscordProtocol)
         // Update the chat map
         for (protocol in protocols) {
             defaultLogger.info("Initializing ${protocol.name}...")
@@ -60,9 +60,11 @@ object ConvergenceBot {
             }
         }
 
-        defaultLogger.info("Starting command scheduler...")
-        CommandScheduler.start()
+        Thread.sleep(3000L)
+        readSettings()
 
+        defaultLogger.info("Starting command scheduler...")
         CommandScheduler.loadFromFile()
+        CommandScheduler.start()
     }
 }

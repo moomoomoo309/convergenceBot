@@ -74,8 +74,11 @@ class DiscordUser(val name: String, override val id: Long, val author: DUser):
     User(DiscordProtocol), DiscordObject {
 
     constructor(msgEvent: MessageReceivedEvent): this(msgEvent.author)
+    constructor(id: Long): this(jda.getUserById(id)!!)
     constructor(author: DUser): this(author.name, author.idLong, author)
     constructor(author: Member): this(author.user)
+
+    override fun toKey() = "DiscordUser($id)"
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -154,6 +157,12 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
 
     @JsonIgnore
     override val supportedFormats = formatMap.keys
+
+    override fun userFromKey(key: String): User? {
+        if (key.startsWith("DiscordUser("))
+            return DiscordUser(key.substringBetween("DiscordUser(", ")").toLong())
+        return null
+    }
 
     override fun commandScopeFromKey(key: String): CommandScope? {
         if (!key.startsWith(this.name))
