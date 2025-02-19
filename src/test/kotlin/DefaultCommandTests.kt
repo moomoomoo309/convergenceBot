@@ -7,7 +7,11 @@ import kotlin.test.assertEquals
 
 val testChat = TestChat()
 
-class TestUser: User(TestProtocol)
+class TestUser: User(TestProtocol) {
+    override fun toKey(): String {
+        TODO("Not yet implemented")
+    }
+}
 
 val testUser = TestUser()
 

@@ -11,9 +11,11 @@ kotlin = "2.1.10"
 logback = "1.5.16"
 natty = "1.0.1"
 shadow = "8.3.0"
+commonstext = "1.13.0"
 
 [libraries]
 caldav4j = { module = "com.github.caldav4j:caldav4j", version.ref = "caldav4j" }
+commonstext = { module = "org.apache.commons:commons-text", version.ref = "commonstext" }
 coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
 kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
 natty = { module = "io.github.natty-parser:natty", version.ref = "natty" }

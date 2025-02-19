@@ -151,6 +151,7 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
             return
         }
         registerDiscordCommands()
+        registerFratCommands()
         discordLogger.info("JDA Initialized.")
         jda.addEventListener(MessageListener)
     }
@@ -296,15 +297,15 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
     private val botUser: DiscordUser by lazy { DiscordUser(jda.selfUser) }
     override fun getBot(chat: Chat): User = botUser
     override fun getName(chat: Chat, user: User): String = if (user is DiscordUser) user.name else ""
-    private val chatCache = mutableMapOf<Long, DiscordChat>()
-    private val serverCache = mutableMapOf<Long, DiscordServer>()
 
+    private val serverCache = mutableMapOf<Long, DiscordServer>()
     override fun getServers(): List<Server> = jda.guilds.map {
         serverCache[it.idLong] ?: DiscordServer(it).also { server ->
             serverCache[it.idLong] = server
         }
     }
 
+    private val chatCache = mutableMapOf<Long, DiscordChat>()
     override fun getChats(): List<Chat> = jda.textChannels.map {
         chatCache[it.idLong] ?: DiscordChat(it).also { chat ->
             chatCache[it.idLong] = chat

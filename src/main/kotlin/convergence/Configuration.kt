@@ -3,23 +3,17 @@ package convergence
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.module.kotlin.readValue
 import convergence.discord.jda
-import java.io.File
 import java.nio.file.Path
 import java.time.OffsetDateTime
 
 const val defaultCommandDelimiter = "!"
+
 data class SyncedCalendar(val guildId: Long, val calURL: String) {
     override fun toString(): String {
         return "SyncedCalendar(guild=${jda.getGuildById(guildId)?.name ?: guildId}, calURL=$calURL)"
     }
-}
-inline fun <reified T> ObjectMapper.readValue(value: String): T {
-    return this.readValue(value, T::class.java)
-}
-
-inline fun <reified T> ObjectMapper.readValue(value: File): T {
-    return this.readValue(value, T::class.java)
 }
 
 data class AliasDTO(val scopeName: String, val name: String, val commandName: String, val protocolName: String, val args: List<String>) {
@@ -52,11 +46,10 @@ data class ScheduledCommandDTO(
         )
     }
 }
-private fun strToChat(s: String): CommandScope? = scopeStrToProtocol(s)?.commandScopeFromKey(s)
-
-private fun scopeStrToProtocol(s: String) = protocols.firstOrNull { it.name == s.substringBefore("(") }
 
 private fun strToProtocol(s: String) = protocols.firstOrNull { it.name == s }
+private fun scopeStrToProtocol(s: String) = protocols.firstOrNull { it.name == s.substringBefore("(") }
+private fun strToChat(s: String): CommandScope? = scopeStrToProtocol(s)?.commandScopeFromKey(s)
 
 data class SettingsDTO(
     var aliases: MutableMap<String, MutableMap<String, AliasDTO>> = mutableMapOf(),
@@ -107,16 +100,14 @@ object Settings {
         } as MutableMap<String, T>
     }
 
-    private fun mapAliasesToDTO(aliases: MutableMap<CommandScope, MutableMap<String, Alias>>):
-            MutableMap<String, MutableMap<String, AliasDTO>> {
+    private fun mapAliasesToDTO(aliases: MutableMap<CommandScope, MutableMap<String, Alias>>): MutableMap<String, MutableMap<String, AliasDTO>> {
         return aliases.map { (k, v) ->
             k.toKey() to v.mapValues { (_, alias) -> alias.toDTO() }.toMutableMap()
         }.toMap().toMutableMap()
     }
 
-    private fun mapAliasesFromDTO(aliasesDTO: MutableMap<String, MutableMap<String, AliasDTO>>):
-            MutableMap<CommandScope, MutableMap<String, Alias>> {
-        return aliasesDTO.map { (k,v) ->
+    private fun mapAliasesFromDTO(aliasesDTO: MutableMap<String, MutableMap<String, AliasDTO>>): MutableMap<CommandScope, MutableMap<String, Alias>> {
+        return aliasesDTO.map { (k, v) ->
             val protocol = scopeStrToProtocol(k)!!
             protocol.commandScopeFromKey(k)!! to v.mapValues { (_, aliasDTO) -> aliasDTO.toAlias() }.toMutableMap()
         }.toMap().toMutableMap()
@@ -126,7 +117,8 @@ object Settings {
         this.aliases.apply { clear() }.putAll(mapAliasesFromDTO(settingsDTO.aliases))
         this.commandDelimiters.apply { clear() }.putAll(mapFromDTO(settingsDTO.commandDelimiters))
         this.linkedChats.apply { clear() }.putAll(linkedChatsFromDTO(settingsDTO.linkedChats))
-        this.serializedCommands.apply { clear() }.putAll(settingsDTO.serializedCommands.mapValues {(_, dto) -> dto.toScheduledCommand()!! }.toMutableMap())
+        this.serializedCommands.apply { clear() }
+            .putAll(settingsDTO.serializedCommands.mapValues { (_, dto) -> dto.toScheduledCommand()!! }.toMutableMap())
         this.syncedCalendars.apply { clear() }.addAll(settingsDTO.syncedCalendars)
     }
 

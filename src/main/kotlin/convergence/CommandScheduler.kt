@@ -1,6 +1,7 @@
 package convergence
 
 import convergence.discord.CalendarProcessor
+import kotlinx.coroutines.*
 import to.lova.humanize.time.HumanizeTime
 import java.time.Duration
 import java.time.Instant
@@ -63,10 +64,14 @@ object CommandScheduler: Thread() {
 
     fun syncCalendars() {
         defaultLogger.info("Syncing calendars...")
-        for (calendar in syncedCalendars)
-            Thread {
-                CalendarProcessor.syncToDiscord(calendar)
-            }.start()
+        Thread {
+            runBlocking {
+                for (calendar in syncedCalendars)
+                    launch {
+                        CalendarProcessor.syncToDiscord(calendar)
+                    }
+            }
+        }.start()
         lastCalendarUpdateTime = Instant.now()
     }
 

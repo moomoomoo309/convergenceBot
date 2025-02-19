@@ -103,32 +103,30 @@ sealed class CommandLike(
     open val name: String
 ): Comparable<CommandLike> {
     override fun compareTo(other: CommandLike) = "$protocol.$name".compareTo("${other.protocol}.${other.name}")
-
-    data class Command(
-        override val protocol: Protocol,
-        override val name: String,
-        @JsonIgnore val function: (List<String>, Chat, User) -> String?,
-        @JsonIgnore val helpText: String,
-        @JsonIgnore val syntaxText: String
-    ): CommandLike(protocol, name)
-
-    data class Alias(
-        val scope: CommandScope,
-        override val name: String,
-        val command: Command,
-        val args: List<String>
-    ): CommandLike(scope.protocol, name) {
-        fun toDTO() = AliasDTO(
-            scope.toKey(),
-            name,
-            command.name,
-            command.protocol.name,
-            args
-        )
-    }
 }
-typealias Command = CommandLike.Command
-typealias Alias = CommandLike.Alias
+
+data class Command(
+    override val protocol: Protocol,
+    override val name: String,
+    @JsonIgnore val function: (List<String>, Chat, User) -> String?,
+    @JsonIgnore val helpText: String,
+    @JsonIgnore val syntaxText: String
+): CommandLike(protocol, name)
+
+data class Alias(
+    val scope: CommandScope,
+    override val name: String,
+    val command: Command,
+    val args: List<String>
+): CommandLike(scope.protocol, name) {
+    fun toDTO() = AliasDTO(
+        scope.toKey(),
+        name,
+        command.name,
+        command.protocol.name,
+        args
+    )
+}
 
 fun Map<String, Any>.json(): String = objectMapper.writeValueAsString(this)
 
@@ -235,9 +233,6 @@ fun <T> invokeTyped(fct: (T) -> Boolean, args: Array<out Any>, default: T? = nul
  * A callback attached to a specific type of event.
  */
 interface ChatEvent {
-    /**
-     * Callback functionality
-     */
     operator fun invoke(vararg args: Any): Boolean
 }
 

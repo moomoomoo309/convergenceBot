@@ -44,6 +44,7 @@ dependencies {
     implementation(libs.logback)
     implementation(libs.natty)
     testImplementation("org.jetbrains.kotlin:kotlin-test")
+    implementation(libs.commonstext)
 }
 
 application {
