@@ -109,6 +109,7 @@ object CalendarProcessor {
         )
     }
 
+    private val uidRegex = Regex("[a-z0-9-]{36}")
     private fun syncToDiscord(guild: Guild, calEvents: List<VEvent>, discordEvents: List<ScheduledEvent>): String {
         val uidMap = mutableMapOf<String, Long>()
         val calEventsById = mutableMapOf<String, VEvent>()
@@ -124,6 +125,8 @@ object CalendarProcessor {
         }
         for (discordEvent in discordEvents) {
             val uid = discordEvent.description?.takeLast(UID_LENGTH)?.trim()
+            if (uid == null || !uidRegex.matches(uid))
+                continue
             if (uidMap[uid] == null || calEventsById[uid]?.equalEnough(discordEvent) != true) {
                 discordEvent.delete().queue()
             }
