@@ -60,26 +60,28 @@ object ConsoleProtocol: Protocol("Console") {
     }
 
     override fun init() {
-        Thread {
-            print("consolePlugin initialized.\n\n> ")
+        if (System.console() != null) {
+            Thread {
+                print("consolePlugin initialized.\n\n> ")
 
-            System.out.flush() // Flush guarantees that the > shows up before stdin. IntelliJ still doesn't listen to it.
-            try {
-                val stdin = Scanner(System.`in`)
-                val currentLine = stdin.nextLine()
-                ConsoleProtocol.receivedMessage(ConsoleChat, currentLine, user)
-                while (true) {
-                    print("> ")
-                    System.out.flush()
-                    while (!stdin.hasNextLine()) stdin.next()
-                    ConsoleProtocol.receivedMessage(ConsoleChat, stdin.nextLine(), user)
+                System.out.flush() // Flush guarantees that the > shows up before stdin. IntelliJ still doesn't listen to it.
+                try {
+                    val stdin = Scanner(System.`in`)
+                    val currentLine = stdin.nextLine()
+                    ConsoleProtocol.receivedMessage(ConsoleChat, currentLine, user)
+                    while (true) {
+                        print("> ")
+                        System.out.flush()
+                        while (!stdin.hasNextLine()) stdin.next()
+                        ConsoleProtocol.receivedMessage(ConsoleChat, stdin.nextLine(), user)
+                    }
+                } catch(e: NoSuchElementException) {
+                    // Catch Ctrl-D (EOF). Normally, I wouldn't do this in a plugin, but it's the local console of the bot,
+                    // and if the user puts in a Ctrl-D, they probably want to close the bot, just like a SIGTERM.
+                    println() // The newline is just to make the output cleaner.
+                    exitProcess(0)
                 }
-            } catch(e: NoSuchElementException) {
-                // Catch Ctrl-D (EOF). Normally, I wouldn't do this in a plugin, but it's the local console of the bot,
-                // and if the user puts in a Ctrl-D, they probably want to close the bot, just like a SIGTERM.
-                println() // The newline is just to make the output cleaner.
-                exitProcess(0)
-            }
-        }.start()
+            }.start()
+        }
     }
 }

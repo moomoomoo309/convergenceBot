@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import convergence.discord.jda
 import java.nio.file.Path
 import java.time.OffsetDateTime
@@ -172,5 +173,6 @@ val aliasVars: MutableMap<String, (chat: Chat, sender: User) -> String> = mutabl
 )
 val objectMapper: ObjectMapper = ObjectMapper()
     .configure(SerializationFeature.INDENT_OUTPUT, true)
+    .registerKotlinModule()
     .findAndRegisterModules()
 val settingsPath: Path by lazy { convergencePath.resolve("settings.json") }

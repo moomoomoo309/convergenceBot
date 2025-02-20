@@ -146,7 +146,7 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
         } catch(e: FileNotFoundException) {
             discordLogger.error("You need to put your discord token in $convergencePath/discordToken!")
             return
-        } catch(e: LoginException) {
+        } catch(e: Exception) {
             e.printStackTrace()
             return
         }

@@ -65,12 +65,9 @@ object CommandScheduler: Thread() {
     fun syncCalendars() {
         defaultLogger.info("Syncing calendars...")
         Thread {
-            runBlocking {
-                for (calendar in syncedCalendars)
-                    launch {
-                        CalendarProcessor.syncToDiscord(calendar)
-                    }
-            }
+            val serverIDs = syncedCalendars.map { it.guildId }.toSet()
+            for (serverId in serverIDs)
+                CalendarProcessor.syncToDiscord(syncedCalendars.filter { it.guildId == serverId })
         }.start()
         lastCalendarUpdateTime = Instant.now()
     }

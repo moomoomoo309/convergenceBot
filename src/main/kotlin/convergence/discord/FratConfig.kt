@@ -4,10 +4,10 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import convergence.Command
 import convergence.objectMapper
 import convergence.registerCommand
-import org.apache.commons.text.similarity.LevenshteinDistance
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 class CurrentSemester(val year: String, val season: String)
 
@@ -75,6 +75,7 @@ val englishToGreek = mapOf(
     "Y" to "Ψ",
 )
 
+private val dateFormatter = DateTimeFormatter.ofPattern("LLLL dd yyyy")
 fun registerFratCommands() {
     registerCommand(Command(
         DiscordProtocol,
@@ -85,9 +86,10 @@ fun registerFratCommands() {
                     ?: return@Command "No brother with roster number ${args.first().substring(1)} found."
             } else {
                 val name = args.joinToString(" ")
-                brotherInfo.minBy { LevenshteinDistance.getDefaultInstance().apply(name, it.firstName + " " + it.lastName) }
+                brotherInfo.firstOrNull { (it.firstName + " " + it.lastName).startsWith(name) } ?: return@Command "No brother's name found starting with \"$name\"."
             }
-            "Info for Brother #${info.rosterNumber} ${info.firstName} ${info.lastName}: Pledge Class ${englishToGreek.getOrDefault(info.pledgeClass, info.pledgeClass)}, Crossing date ${info.crossingDate ?: "Unknown"}, Big ${info.bigBrother}, Nickname ${if (info.nickName != null) "\"${info.nickName}\"" else "not listed in roster sheet"}"
+            "Info for Brother #${info.rosterNumber} ${info.firstName} ${info.lastName}: Pledge Class ${info.pledgeClass.map { englishToGreek[it.toString()] }.joinToString("")}, Crossing date ${info.crossingDate?.format(
+                dateFormatter) ?: "not listed"}, Big ${info.bigBrother}, Nickname ${if (info.nickName != null) "\"${info.nickName}\"" else "not listed in roster sheet"}"
         },
         "Gets information about a particular brother based on their name or roster number.",
         "brotherInfo (Roster or name, if it starts with # it's assumed to be a roster number)"

@@ -8,6 +8,7 @@ import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.ScheduledEvent
 import net.fortuna.ical4j.model.Date
+import net.fortuna.ical4j.model.Period
 import net.fortuna.ical4j.model.component.VEvent
 import net.fortuna.ical4j.model.property.DateProperty
 import org.apache.http.impl.client.CloseableHttpClient
@@ -31,7 +32,7 @@ val httpClient: CloseableHttpClient = HttpClients.custom().setDefaultHeaders(
 ).build()
 
 const val UID_LENGTH = 36
-
+const val DAYS = 30L
 
 object CalendarProcessor {
     fun getAndCacheCalendar(url: String): CalDAVCollection? {
@@ -49,7 +50,7 @@ object CalendarProcessor {
         return cal
     }
 
-    fun getCalDAVEventsNextDays(calCollection: CalDAVCollection, days: Long = 30L): List<VEvent> {
+    fun getCalDAVEventsNextDays(calCollection: CalDAVCollection): List<VEvent> {
         val cals = calCollection.queryCalendars(httpClient, GenerateQuery().generate())
         val eventList = mutableSetOf<VEvent>()
         for (cal in cals) {
@@ -57,15 +58,16 @@ object CalendarProcessor {
         }
         val now = Instant.now()
         return eventList.filter {
-            val duration = it.getConsumedTime(now.toIDate(), now.plus(days, ChronoUnit.DAYS).toIDate())
+            val duration = it.getConsumedTime(now.toIDate(), now.plus(DAYS, ChronoUnit.DAYS).toIDate())
             duration.isNotEmpty() && duration.first().start.toInstant().isAfter(now)
         }.sortedBy { it.startDate.date }
     }
 
-    private fun getDiscordEventsNextDays(jda: JDA, days: Long = 30L): List<ScheduledEvent> {
+    private fun getDiscordEventsNextDays(jda: JDA, guildId: Long): List<ScheduledEvent> {
         return jda.scheduledEvents.filter {
             it.startTime.isAfter(OffsetDateTime.now())
-                    && it.startTime.isBefore(OffsetDateTime.now().plus(days, ChronoUnit.DAYS))
+                    && it.startTime.isBefore(OffsetDateTime.now().plus(DAYS, ChronoUnit.DAYS))
+                    && it.guild.idLong == guildId
         }.sortedBy { it.startTime }
     }
 
@@ -86,83 +88,68 @@ object CalendarProcessor {
         val syncedCalendar = SyncedCalendar(chat.channel.guild.idLong, args[0])
         syncedCalendars.add(syncedCalendar)
         Settings.update()
-        return syncToDiscord(syncedCalendar)
+        return syncToDiscord(syncedCalendars.filter { it.guildId == chat.channel.guild.idLong })
     }
 
-    fun syncToDiscord(cal: SyncedCalendar): String {
-        val calCollection = getAndCacheCalendar(cal.calURL) ?: return "No calendar found at URL \"${cal.calURL}\"."
-        val calendarEvents = getCalDAVEventsNextDays(calCollection)
-        val discordEvents = getDiscordEventsNextDays(jda)
-        val guild = jda.getGuildById(cal.guildId) ?: return removeCalendarSync(cal)
+    fun syncToDiscord(cals: List<SyncedCalendar>): String {
+        val calendarEvents = mutableListOf<VEvent>()
+        val guildId = cals.first().guildId
+        for (cal in cals) {
+            val calCollection = getAndCacheCalendar(cal.calURL) ?: return "No calendar found at URL \"${cal.calURL}\"."
+            calendarEvents.addAll(getCalDAVEventsNextDays(calCollection))
+            if (cal.guildId != guildId)
+                return "The guild IDs of each calendar don't match!"
+        }
+        val discordEvents = getDiscordEventsNextDays(jda, guildId)
+        val guild = jda.getGuildById(guildId) ?: return "No guild found with ID $guildId."
         return syncToDiscord(
             guild,
-            calendarEvents,
+            calendarEvents.sortedBy { it.getNextOccurrence().start },
             discordEvents
         )
     }
 
     private fun syncToDiscord(guild: Guild, calEvents: List<VEvent>, discordEvents: List<ScheduledEvent>): String {
         val uidMap = mutableMapOf<String, Long>()
-        val discordIterator = discordEvents.listIterator()
         val calEventsById = mutableMapOf<String, VEvent>()
-        var currentDiscordEvent = discordIterator.nextOrNull()
-        for (event in calEvents) {
+        outer@for (event in calEvents) {
             calEventsById[event.uid.value] = event
-            while (currentDiscordEvent != null && event.startDate.toInstant()
-                    .isBefore(currentDiscordEvent.startTime.toInstant())
-            )
-                currentDiscordEvent = discordIterator.nextOrNull()
-
-            if (event.equalEnough(currentDiscordEvent)) {
-                uidMap[event.uid.value] = currentDiscordEvent.idLong
-            } else {
-                addCalendarEventToDiscord(uidMap, guild, event)
+            for (currentDiscordEvent in discordEvents) {
+                if (event.equalEnough(currentDiscordEvent)) {
+                    uidMap[event.uid.value] = currentDiscordEvent.idLong
+                    continue@outer
+                }
             }
+            addCalendarEventToDiscord(uidMap, guild, event)
         }
         for (discordEvent in discordEvents) {
-            val uid = decodeUID(discordEvent.description?.takeLast(UID_LENGTH))
-            if (uidMap[uid] != null || calEventsById[uid]?.equalEnough(discordEvent) != true)
+            val uid = discordEvent.description?.takeLast(UID_LENGTH)?.trim()
+            if (uidMap[uid] == null || calEventsById[uid]?.equalEnough(discordEvent) != true) {
                 discordEvent.delete().queue()
+            }
         }
         return "Calendar synced successfully."
     }
 
     private fun addCalendarEventToDiscord(uidMap: MutableMap<String, Long>, guild: Guild, event: VEvent) {
-        val now = Instant.now()
-        val nextOccurrence = event.getConsumedTime(now.toIDate(), now.plus(30, ChronoUnit.DAYS).toIDate(), true)
-        val duration = nextOccurrence.first()
+        val nextOccurrence = event.getNextOccurrence()
         guild.createScheduledEvent(
             event.summary?.value ?: "Unnamed event",
             if (event.location?.value.isNullOrBlank()) "No Location" else event.location.value,
-            duration.start.toOffsetDateTime(),
-            duration.end.toOffsetDateTime()
+            nextOccurrence.start.toOffsetDateTime(),
+            nextOccurrence.end.toOffsetDateTime()
         ).setDescription(addUIDToDescription(event.description?.value ?: "", event.uid.value)).queue {
             uidMap[event.uid.value] = it.idLong
         }
     }
 
     private fun addUIDToDescription(description: String?, uid: String): String {
-        val encodedUID = encodeUID(uid)
         if (description.isNullOrEmpty()) {
-            return encodedUID
-        } else if (description.endsWith(encodedUID)) {
+            return uid
+        } else if (description.endsWith(uid)) {
             return description
         }
-        return description + "\n" + encodedUID
-    }
-
-    private fun encodeUID(uid: String): String {
-        return String(CharArray(uid.length) {
-            uid[it].toInvisibleUnicodeEquivalent()
-        })
-    }
-
-    private fun decodeUID(encodedUID: String?): String? {
-        if (encodedUID == null)
-            return null
-        return String(CharArray(encodedUID.length) {
-            encodedUID[it].fromInvisibleUnicodeEquivalent()
-        })
+        return description + "\n" + uid
     }
 }
 
@@ -175,34 +162,20 @@ fun Instant.toIDate(): Date {
     return Date(Date.from(this))
 }
 
-fun Char.toInvisibleUnicodeEquivalent(): Char {
-    return when(this) {
-        '-' -> '\u2063' // Invisible separator
-        in '0'..'9' -> (this.code - '0'.code + '\uFE00'.code).toChar() // Variation selector 1-10
-        in 'a'..'f' -> (this.code - 'a'.code + '\uFE0A'.code).toChar() // Variation selector 11-16
-        else -> this
-    }
-}
-
-fun Char.fromInvisibleUnicodeEquivalent(): Char {
-    return when(this) {
-        '\u2063' -> '-'
-        in '\uFE00'..'\uFE09' -> (this.code - '\uFE00'.code + '0'.code).toChar()
-        in '\uFE0A'..'\uFE0F' -> (this.code - '\uFE0A'.code + 'a'.code).toChar()
-        else -> this
-    }
-}
-
 @OptIn(ExperimentalContracts::class)
 fun VEvent.equalEnough(dEvent: ScheduledEvent?): Boolean {
     contract {
         returns(true) implies (dEvent != null)
     }
+    val period = this.getNextOccurrence()
     // More fields can be added here if needed, but this should be alright
     return dEvent != null
-            && this.startDate.toInstant() == dEvent.startTime.toInstant()
-            && this.endDate?.toInstant() == dEvent.endTime?.toInstant()
-            && this.name == dEvent.name
+            && period.start.toInstant() == dEvent.startTime.toInstant()
+            && period.end.toInstant() == dEvent.endTime?.toInstant()
+            && (this.summary?.value ?: "Unnamed event") == dEvent.name
 }
 
-fun <T> Iterator<T>.nextOrNull(): T? = if (hasNext()) next() else null
+fun VEvent.getNextOccurrence(): Period {
+    val now = Instant.now()
+    return this.getConsumedTime(now.toIDate(), now.plus(DAYS, ChronoUnit.DAYS).toIDate(), true).first()
+}
