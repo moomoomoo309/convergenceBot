@@ -1,8 +1,8 @@
 package convergence
 
 import convergence.discord.CalendarProcessor
-import kotlinx.coroutines.*
-import to.lova.humanize.time.HumanizeTime
+import org.ocpsoft.prettytime.PrettyTime
+import org.ocpsoft.prettytime.units.JustNow
 import java.time.Duration
 import java.time.Instant
 import java.time.OffsetDateTime
@@ -88,7 +88,7 @@ object CommandScheduler: Thread() {
         commandsList[cmd.id] = cmd
         serializedCommands[cmd.id] = cmd
         Settings.update()
-        return "Scheduled ${getUserName(chat, sender)} to run \"$commandName ${args.joinToString(" ")}\" to run at $time."
+        return "Scheduled ${getUserName(chat, sender)} to run \"$commandName ${args.joinToString(" ")}\" ${formatTime(time)}."
     }
 
     /**
@@ -114,7 +114,8 @@ object CommandScheduler: Thread() {
     } != null
 }
 
-fun formatTime(time: OffsetDateTime): String = HumanizeTime.fromNow(time)
+private val prettyTime = PrettyTime().also { it.removeUnit(JustNow::class.java) }
+fun formatTime(time: OffsetDateTime): String = prettyTime.format(time)
 
 data class ScheduledCommand(
     val time: OffsetDateTime,

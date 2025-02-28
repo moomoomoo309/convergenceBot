@@ -32,8 +32,8 @@ dependencies {
     antlr(libs.antlr)
     implementation(libs.argparse4j)
     implementation(libs.caldav4j)
+    implementation(libs.commonstext)
     implementation(libs.coroutines)
-    implementation(libs.humanize)
     implementation(libs.jackson.databind)
     implementation(libs.jackson.jsr310)
     implementation(libs.jackson.kotlin)
@@ -43,8 +43,8 @@ dependencies {
     implementation(libs.kotlin.reflect)
     implementation(libs.logback)
     implementation(libs.natty)
+    implementation(libs.prettytime)
     testImplementation("org.jetbrains.kotlin:kotlin-test")
-    implementation(libs.commonstext)
 }
 
 application {

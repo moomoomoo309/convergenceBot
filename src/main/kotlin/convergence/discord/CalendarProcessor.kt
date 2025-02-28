@@ -159,7 +159,7 @@ object CalendarProcessor {
 fun DateProperty.toInstant(): Instant = this.date.toInstant()
 fun DateProperty.toOffsetDateTime(): OffsetDateTime = this.toInstant().atOffset(defaultZoneOffset)
 fun Date.toOffsetDateTime(): OffsetDateTime = this.toInstant().atOffset(defaultZoneOffset)
-private val defaultZoneOffset = OffsetDateTime.now().offset
+val defaultZoneOffset = OffsetDateTime.now().offset
 
 fun Instant.toIDate(): Date {
     return Date(Date.from(this))

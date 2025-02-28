@@ -7,6 +7,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import convergence.discord.jda
 import java.nio.file.Path
+import java.time.Instant
 import java.time.OffsetDateTime
 
 const val defaultCommandDelimiter = "!"
@@ -57,7 +58,8 @@ data class SettingsDTO(
     var commandDelimiters: MutableMap<String, String> = mutableMapOf(),
     var linkedChats: MutableMap<String, MutableSet<String>> = mutableMapOf(),
     var serializedCommands: MutableMap<Int, ScheduledCommandDTO> = mutableMapOf(),
-    var syncedCalendars: MutableList<SyncedCalendar> = mutableListOf()
+    var syncedCalendars: MutableList<SyncedCalendar> = mutableListOf(),
+    var timers: MutableMap<String, Instant> = mutableMapOf()
 )
 
 object Settings {
@@ -66,6 +68,7 @@ object Settings {
     var linkedChats: MutableMap<Chat, MutableSet<Chat>> = mutableMapOf()
     var serializedCommands: MutableMap<Int, ScheduledCommand> = mutableMapOf()
     var syncedCalendars: MutableList<SyncedCalendar> = mutableListOf()
+    var timers: MutableMap<String, Instant> = mutableMapOf()
 
     @JsonIgnore
     var updateIsScheduled = false
@@ -121,6 +124,7 @@ object Settings {
         this.serializedCommands.apply { clear() }
             .putAll(settingsDTO.serializedCommands.mapValues { (_, dto) -> dto.toScheduledCommand()!! }.toMutableMap())
         this.syncedCalendars.apply { clear() }.addAll(settingsDTO.syncedCalendars)
+        this.timers.apply { clear() }.putAll(settingsDTO.timers)
     }
 
     fun toDTO() = SettingsDTO(
@@ -128,7 +132,8 @@ object Settings {
         mapToDTO(commandDelimiters),
         mapToDTO(linkedChats.mapValues { (_, v) -> v.map { it.toKey() }.toMutableSet() }),
         serializedCommands.mapValues { (_, serializedCommands) -> serializedCommands.toDTO() }.toMutableMap(),
-        syncedCalendars
+        syncedCalendars,
+        timers
     )
 }
 
@@ -158,6 +163,7 @@ val linkedChats = Settings.linkedChats
 val aliases = Settings.aliases
 val serializedCommands = Settings.serializedCommands
 val syncedCalendars = Settings.syncedCalendars
+val timers = Settings.timers
 
 lateinit var convergencePath: Path
 val chatMap: MutableMap<Int, Chat> = mutableMapOf()

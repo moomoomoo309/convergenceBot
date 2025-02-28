@@ -6,7 +6,6 @@ import convergence.objectMapper
 import convergence.registerCommand
 import java.nio.file.Path
 import java.nio.file.Paths
-import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 class CurrentSemester(val year: String, val season: String)
@@ -37,16 +36,15 @@ data class BrotherInfo(
     val firstName: String,
     val lastName: String,
     val pledgeClass: String,
-    val crossingDate: LocalDate?,
+    val crossingDate: String,
     val bigBrother: String,
-    val nickName: String?,
+    val nickName: String,
+    val major: String
 )
 
 val fratConfigPath: Path = Paths.get("/", "opt", "bots", "config.json")
-//val fratConfigPath: Path = Paths.get("/", "home", "nicholasdelello", "config.json")
 val fratConfig: FratConfig by lazy { objectMapper.readValue(fratConfigPath.toFile()) }
 val brotherInfoPath: Path = Paths.get("/", "opt", "bots", "convergence", "brotherInfo.json")
-//val brotherInfoPath: Path = Paths.get("/", "home", "nicholasdelello", "brotherInfo.json")
 val brotherInfo: List<BrotherInfo> by lazy { objectMapper.readValue(brotherInfoPath.toFile()) }
 
 val englishToGreek = mapOf(
@@ -76,22 +74,40 @@ val englishToGreek = mapOf(
 )
 
 private val dateFormatter = DateTimeFormatter.ofPattern("LLLL dd yyyy")
+fun brotherInfo(args: List<String>, searchCriteria: (BrotherInfo) -> String?): String {
+    val name = args.joinToString(" ").lowercase()
+    val info = brotherInfo.firstOrNull { searchCriteria(it)?.lowercase() == name }
+        ?: brotherInfo.firstOrNull { searchCriteria(it)?.lowercase()?.startsWith(name) == true }
+        ?: brotherInfo.firstOrNull { searchCriteria(it)?.lowercase()?.contains(name) == true }
+        ?: return "No brothers found searching for \"$name\"."
+    return "Info for Brother #${info.rosterNumber} ${info.firstName} ${info.lastName}:" +
+            "\nPledge Class ${info.pledgeClass.map { englishToGreek[it.toString()] }.joinToString("").ifEmpty { "not listed" }}" +
+            "\nCrossing date ${info.crossingDate.format(dateFormatter).ifBlank { "not listed" }}" +
+            "\nBig ${info.bigBrother.ifBlank { "not listed" }}" +
+            "\nNickname ${if (info.nickName.isNotBlank()) "\"${info.nickName}\"" else "not listed"}" +
+            "\nMajor ${info.major.ifBlank { "not listed" }}"
+}
+
 fun registerFratCommands() {
     registerCommand(Command(
         DiscordProtocol,
-        "brotherInfo",
-        { args, _, _ ->
-            val info = if (args.size == 1 && args.first().startsWith("#")) {
-                brotherInfo.firstOrNull { it.rosterNumber == args.first().substring(1) }
-                    ?: return@Command "No brother with roster number ${args.first().substring(1)} found."
-            } else {
-                val name = args.joinToString(" ")
-                brotherInfo.firstOrNull { (it.firstName + " " + it.lastName).startsWith(name) } ?: return@Command "No brother's name found starting with \"$name\"."
-            }
-            "Info for Brother #${info.rosterNumber} ${info.firstName} ${info.lastName}: Pledge Class ${info.pledgeClass.map { englishToGreek[it.toString()] }.joinToString("")}, Crossing date ${info.crossingDate?.format(
-                dateFormatter) ?: "not listed"}, Big ${info.bigBrother}, Nickname ${if (info.nickName != null) "\"${info.nickName}\"" else "not listed in roster sheet"}"
-        },
-        "Gets information about a particular brother based on their name or roster number.",
-        "brotherInfo (Roster or name, if it starts with # it's assumed to be a roster number)"
+        "brotherbyroster",
+        { args, _, _ -> brotherInfo(args) { it.rosterNumber } },
+        "Gets information about a particular brother based on their roster number.",
+        "brotherbyroster (roster number)"
+    ))
+    registerCommand(Command(
+        DiscordProtocol,
+        "brotherbyname",
+        { args, _, _ -> brotherInfo(args) { it.firstName + " " + it.lastName } },
+        "Gets information about a particular brother based on their first and last name.",
+        "brotherbyname (name)"
+    ))
+    registerCommand(Command(
+        DiscordProtocol,
+        "brotherbynickname",
+        { args, _, _ -> brotherInfo(args) { it.nickName } },
+        "Gets information about a particular brother based on their nickname.",
+        "brotherbynickname (nickname)"
     ))
 }

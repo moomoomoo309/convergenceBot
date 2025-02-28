@@ -2,16 +2,16 @@
 antlr = "4.13.2"
 argparse4j = "0.9.0"
 caldav4j = "1.0.5"
+commonstext = "1.13.0"
 coroutines = "1.10.1"
 gradle = "8.12"
-humanize = "0.1.2"
 jackson = "2.18.2"
 jda = "5.3.0"
 kotlin = "2.1.10"
 logback = "1.5.16"
 natty = "1.0.1"
+prettytime = "5.0.9.Final"
 shadow = "8.3.0"
-commonstext = "1.13.0"
 
 [libraries]
 caldav4j = { module = "com.github.caldav4j:caldav4j", version.ref = "caldav4j" }
@@ -20,13 +20,13 @@ coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version
 kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
 natty = { module = "io.github.natty-parser:natty", version.ref = "natty" }
 argparse4j = { module = "net.sourceforge.argparse4j:argparse4j", version.ref = "argparse4j" }
-humanize = { module = "to.lova.humanize:humanize-time", version.ref = "humanize" }
 antlr = { module = "org.antlr:antlr4", version.ref = "antlr" }
 logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 jda = { module = "net.dv8tion:JDA", version.ref = "jda" }
 jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
 jackson-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson" }
 jackson-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
+prettytime = { module = "org.ocpsoft.prettytime:prettytime", version.ref="prettytime"}
 
 [plugins]
 kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }

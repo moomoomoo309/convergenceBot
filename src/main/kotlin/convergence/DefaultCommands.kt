@@ -3,13 +3,12 @@
 package convergence
 
 import convergence.CommandScheduler.getCommands
+import convergence.discord.defaultZoneOffset
 import org.natty.DateGroup
 import org.natty.Parser
 import java.io.PrintWriter
 import java.io.StringWriter
-import java.time.Duration
-import java.time.OffsetDateTime
-import java.time.ZoneId
+import java.time.*
 import java.util.*
 import kotlin.math.ceil
 import kotlin.reflect.jvm.jvmName
@@ -93,12 +92,12 @@ fun help(args: List<String>, chat: Chat, sender: User): String {
     }
 }
 
-fun echo(args: List<String>, chat: Chat, sender: User): String = args.joinToString(" ")
-fun ping(args: List<String>, chat: Chat, sender: User): String = "Pong!"
+fun echo(args: List<String>, chat: Chat, sender: User) = args.joinToString(" ")
+fun ping(args: List<String>, chat: Chat, sender: User) = "Pong!"
 
 fun addAlias(args: List<String>, chat: Chat, sender: User): String {
     val commandDelimiter = commandDelimiters.getOrDefault(chat, defaultCommandDelimiter)
-    val command = parseCommand(commandDelimiter + args[1], commandDelimiter, chat)
+    val command = parseCommand((if (args[1].startsWith(commandDelimiter)) "" else commandDelimiter) + args[1], commandDelimiter, chat)
         ?: return "Alias does not refer to a valid command!"
     if (!registerAlias(Alias(chat, args[0], command.command, command.args)))
         return "An alias with that name is already registered!"
@@ -196,7 +195,7 @@ fun dateToOffsetDateTime(d: Date, tz: ZoneId? = null): OffsetDateTime = OffsetDa
 val defaultDuration = Duration.ofMinutes(45)!!
 private val locations = HashMap<User, Pair<OffsetDateTime, String>>()
 
-fun setLocation(args: List<String>, chat: Chat, sender: User): String {
+fun goingto(args: List<String>, chat: Chat, sender: User): String {
     val location = StringBuilder(args[0])
     val timeStr = StringBuilder()
     val durationStr = StringBuilder()
@@ -220,8 +219,10 @@ fun setLocation(args: List<String>, chat: Chat, sender: User): String {
                         if (i2 == i + 1)
                             return "You can't just put \"at\" and not put a time after it!"
                         break
-                    } else
+                    } else {
                         timeStr.append(args[i2]).append(' ')
+                        continueUntil = continueUntil.coerceAtLeast(i2 + 1)
+                    }
                 timeStr.setLength(timeStr.length - 1)
                 timeGroups = dateTimeParser.parse(timeStr.toString())
             }
@@ -236,8 +237,10 @@ fun setLocation(args: List<String>, chat: Chat, sender: User): String {
                         if (i2 == i + 1)
                             return "You can't just put \"for\" and not put a time after it!"
                         break
-                    } else
+                    } else {
                         durationStr.append(args[i2]).append(' ')
+                        continueUntil = continueUntil.coerceAtLeast(i2 + 1)
+                    }
                 durationStr.setLength(durationStr.length - 1)
                 val groups = dateTimeParser.parse(durationStr.toString())
                 if (groups.size > 1 || groups[0].dates.size > 1)
@@ -253,25 +256,29 @@ fun setLocation(args: List<String>, chat: Chat, sender: User): String {
     }
 
     val builder = StringBuilder()
-    for (group in timeGroups) {
-        if (group.isRecurring) {
-            return "Sorry, the bot doesn't support recurring events."
-        } else {
-            group.dates.forEach {
-                builder.append(
-                    CommandScheduler.schedule(
-                        chat, sender, "goingto",
+    if (timeGroups.isNotEmpty()) {
+        for (group in timeGroups) {
+            if (group.isRecurring) {
+                return "Sorry, the bot doesn't support recurring events."
+            } else {
+                group.dates.forEach {
+                    builder.append(
+                        CommandScheduler.schedule(
+                            chat, sender, "goingto",
                             if (durationStr.isEmpty())
                                 listOf(location.toString())
                             else
                                 listOf(location.toString(), "for", durationStr.toString()),
-                        dateToOffsetDateTime(it)
+                            dateToOffsetDateTime(it)
+                        )
                     )
-                )
+                }
+                Settings.update()
             }
         }
+    } else {
+        return "${getUserName(chat, sender)} is going to $location${if (durationStr.isEmpty()) "" else " for $durationStr"}."
     }
-    Settings.update()
     return if (builder.isNotEmpty()) builder.toString() else "No events scheduled."
 }
 
@@ -455,6 +462,43 @@ fun setDelimiter(args: List<String>, chat: Chat, sender: User): String = when {
     else -> "\"${args[0]}\" is not a valid command delimiter!"
 }
 
+fun createTimer(args: List<String>, chat: Chat, sender: User): String {
+    if (args.isEmpty()) {
+        return "A name has to be provided."
+    }
+    val name = args.joinToString(" ")
+    if (name in timers)
+        return "That timer already exists!"
+    timers[name] = Instant.now()
+    Settings.update()
+    return "New timer \"$name\" created."
+}
+
+fun resetTimer(args: List<String>, chat: Chat, sender: User): String {
+    if (args.isEmpty()) {
+        return "A name has to be provided."
+    }
+    val name = args.joinToString(" ")
+    if (name !in timers)
+        return "That timer doesn't exist!"
+    val oldVal = timers[name]
+    timers[name] = Instant.now()
+    Settings.update()
+    return "Timer reset. The time it was created or last time the timer was reset was ${formatTime(oldVal!!.atOffset(defaultZoneOffset))}."
+}
+
+fun checkTimer(args: List<String>, chat: Chat, sender: User): String {
+    if (args.isEmpty()) {
+        return "A name has to be provided."
+    }
+    val name = args.joinToString(" ")
+    if (name !in timers)
+        return "That timer doesn't exist!"
+    val oldVal = timers[name]
+    Settings.update()
+    return "The time it was created or last time the timer was reset was ${formatTime(oldVal!!.atOffset(defaultZoneOffset))}."
+}
+
 fun registerDefaultCommands() {
     registerCommand(
         Command(
@@ -528,7 +572,7 @@ fun registerDefaultCommands() {
     )
     registerCommand(
         Command(
-            UniversalProtocol, "goingto", ::setLocation,
+            UniversalProtocol, "goingto", ::goingto,
             "Tells the chat you're going somewhere for some time.",
             "goingto \"location\" [for (duration)] [at (time)/in (timedelta)/on (datetime)] (Note: Order does not matter with for/at/in/on)"
         )
@@ -613,6 +657,33 @@ fun registerDefaultCommands() {
     registerCommand(
         Command(
             UniversalProtocol, "dumpSettings", { _, _, _ -> Settings.toDTO().toString() }, "", ""
+        )
+    )
+    registerCommand(
+        Command(
+            UniversalProtocol,
+            "createTimer",
+            ::createTimer,
+            "Creates a named timer, which you can reset later to see how long it's been since the last time.",
+            "createTimer (name)"
+        )
+    )
+    registerCommand(
+        Command(
+            UniversalProtocol,
+            "resetTimer",
+            ::resetTimer,
+            "Resets a timer created by createTimer and tells you how long it was running for.",
+            "resetTimer (name)"
+        )
+    )
+    registerCommand(
+        Command(
+            UniversalProtocol,
+            "checkTimer",
+            ::checkTimer,
+            "Tells you how long a timer created by createTimer was running for.",
+            "resetTimer (name)"
         )
     )
 }
