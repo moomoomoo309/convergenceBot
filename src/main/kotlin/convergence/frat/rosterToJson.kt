@@ -1,6 +1,5 @@
 package convergence.frat
 
-import convergence.objectMapper
 import org.apache.poi.ss.usermodel.*
 import org.apache.poi.xssf.usermodel.XSSFFormulaEvaluator
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
@@ -9,7 +8,7 @@ import java.net.URI
 
 val illegalRosters = setOf("823")
 
-fun rosterToJson(): String {
+fun getNewRoster(): List<BrotherInfo> {
     val workbook = WorkbookFactory.create(URI(fratConfig.rosterURL).toURL().openStream())
     val worksheet = workbook.getSheet("Rosters 350+")
     var i = 0
@@ -30,7 +29,7 @@ fun rosterToJson(): String {
         i += 1
         row = worksheet.getRow(i)
     }
-    return objectMapper.writeValueAsString(brotherInfoList.filter { it.rosterNumber !in illegalRosters })
+    return brotherInfoList.filter { it.rosterNumber !in illegalRosters }
 }
 
 private fun getOrdinal(day: Int): String {

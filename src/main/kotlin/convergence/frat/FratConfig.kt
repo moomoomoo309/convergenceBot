@@ -47,7 +47,7 @@ data class BrotherInfo(
 val fratConfigPath: Path = Paths.get("/", "opt", "bots", "config.json")
 val fratConfig: FratConfig by lazy { objectMapper.readValue(fratConfigPath.toFile()) }
 val brotherInfoPath: Path = Paths.get("/", "opt", "bots", "convergence", "brotherInfo.json")
-val brotherInfo: List<BrotherInfo> by lazy { objectMapper.readValue(brotherInfoPath.toFile()) }
+val brotherInfo: MutableList<BrotherInfo> by lazy { objectMapper.readValue(brotherInfoPath.toFile()) }
 
 val englishToGreek = mapOf(
     "A" to "Α",
@@ -114,7 +114,13 @@ fun registerFratCommands() {
     registerCommand(Command.of(
         DiscordProtocol,
         "updateRoster",
-        { -> Files.write(brotherInfoPath, rosterToJson().toByteArray()); "Roster updated." },
+        { ->
+            val newRoster = getNewRoster()
+            brotherInfo.clear()
+            brotherInfo.addAll(newRoster)
+            Files.write(brotherInfoPath, objectMapper.writeValueAsBytes(newRoster))
+            "Roster updated."
+        },
         "Updates the brother roster list.",
         "updateRoster (takes no arguments)"
     ))
