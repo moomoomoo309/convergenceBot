@@ -12,17 +12,17 @@ class CommandDoesNotExist(cmd: String): Exception(cmd)
 fun registerCommand(command: Command): Boolean {
     val protocol = command.protocol
     if (protocol !in commands || commands[protocol] !is MutableMap)
-        commands[protocol] = mutableMapOf(command.name to command)
+        commands[protocol] = mutableMapOf(command.name.lowercase() to command)
     val commandsInProtocol = commands[protocol] ?: return false
 
-    if (command.name in commandsInProtocol)
+    if (command.name.lowercase() in commandsInProtocol)
         return false
 
     if (sortedHelpText.isEmpty())
         sortedHelpText.add(command)
     else
         sortedHelpText.add(-sortedHelpText.binarySearch(command) - 1, command)
-    commandsInProtocol[command.name] = command
+    commandsInProtocol[command.name.lowercase()] = command
     return true
 }
 
@@ -34,10 +34,10 @@ fun registerAlias(alias: Alias): Boolean {
     val chat = alias.scope
     val aliases = aliases
     if (chat !in aliases || aliases[chat] !is MutableMap<String, Alias>)
-        aliases[chat] = mutableMapOf(alias.name to alias)
+        aliases[chat] = mutableMapOf(alias.name.lowercase() to alias)
     val aliasesInChat = aliases[chat]!!
 
-    if (alias.name in aliasesInChat)
+    if (alias.name.lowercase() in aliasesInChat)
         return false
 
     if (sortedHelpText.isEmpty())
@@ -45,7 +45,7 @@ fun registerAlias(alias: Alias): Boolean {
     else
         sortedHelpText.add(-sortedHelpText.binarySearch(alias) - 1, alias)
 
-    aliasesInChat[alias.name] = alias
+    aliasesInChat[alias.name.lowercase()] = alias
     return true
 }
 
@@ -71,7 +71,7 @@ fun runCommand(chat: Chat, message: String, sender: User, images: Array<Image> =
     defaultLogger.info(
         "[${getUserName(chat, sender)}]: $message ${if (images.isNotEmpty()) "+${images.size} images" else ""}"
     )
-    forwardToLinkedChats(chat, message, sender, images)
+    forwardToLinkedChats(chat, SimpleMessage(message), sender, images)
     getCommandData(chat, message, sender)?.let { (command, args) -> runCommand(chat, sender, command, args) }
 }
 
@@ -82,6 +82,6 @@ fun runCommand(chat: Chat, sender: User, command: Command, args: List<String>) =
 }
 
 fun runCommand(scheduledCommand: ScheduledCommand) {
-    runCommand(scheduledCommand.chat, scheduledCommand.sender,
-        getCommand(scheduledCommand.commandName, scheduledCommand.chat) as Command, scheduledCommand.args)
+    val command = getCommand(scheduledCommand.commandName.lowercase(), scheduledCommand.chat) as Command
+    runCommand(scheduledCommand.chat, scheduledCommand.sender, command, scheduledCommand.args)
 }

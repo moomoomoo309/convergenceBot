@@ -44,6 +44,9 @@ dependencies {
     implementation(libs.logback)
     implementation(libs.natty)
     implementation(libs.prettytime)
+    implementation(libs.sardine)
+    implementation(libs.poi)
+    implementation(libs.poi.ooxml)
     testImplementation("org.jetbrains.kotlin:kotlin-test")
 }
 

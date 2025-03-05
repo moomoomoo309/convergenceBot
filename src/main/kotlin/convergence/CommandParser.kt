@@ -10,13 +10,13 @@ class InvalidCommandParseException(msg: String): Exception(msg)
 data class CommandData(var command: Command, var args: List<String>) {
     constructor(alias: Alias, args: List<String>): this(alias.command, alias.args + args)
 
-    operator fun invoke(args: List<String>, chat: Chat, sender: User): String? =
+    operator fun invoke(args: List<String>, chat: Chat, sender: User): Message? =
         this.command.function(args, chat, sender)
 
-    operator fun invoke(vararg args: String, chat: Chat, sender: User): String? =
+    operator fun invoke(vararg args: String, chat: Chat, sender: User): Message? =
         invoke(args.toList(), chat, sender)
 
-    operator fun invoke(chat: Chat, sender: User): String? = invoke(args, chat, sender)
+    operator fun invoke(chat: Chat, sender: User): Message? = invoke(args, chat, sender)
 }
 
 class InvalidEscapeSequenceException(message: String): Exception(message)
@@ -113,7 +113,7 @@ fun parseCommand(command: String, commandDelimiter: String, chat: Chat): Command
     }
 
     // Return the command or alias object
-    val cmd = commandName?.let { getCommand(it, chat) } ?: return null
+    val cmd = commandName?.let { getCommand(it.lowercase(), chat) } ?: return null
     return when(cmd) {
         is Command -> CommandData(cmd, args)
         is Alias -> CommandData(cmd, args)

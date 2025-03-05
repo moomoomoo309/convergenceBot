@@ -1,12 +1,13 @@
-package convergence.discord
+package convergence.frat
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import convergence.Command
+import convergence.discord.DiscordProtocol
 import convergence.objectMapper
 import convergence.registerCommand
+import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
-import java.time.format.DateTimeFormatter
 
 class CurrentSemester(val year: String, val season: String)
 
@@ -28,7 +29,8 @@ class FratConfig(
     val aaMinutesFolder: String,
     val aaFolder: String,
     val attendanceFolder: String,
-    val debugMode: Boolean
+    val debugMode: Boolean,
+    val rosterURL: String
 )
 
 data class BrotherInfo(
@@ -73,7 +75,6 @@ val englishToGreek = mapOf(
     "Y" to "Ψ",
 )
 
-private val dateFormatter = DateTimeFormatter.ofPattern("LLLL dd yyyy")
 fun brotherInfo(args: List<String>, searchCriteria: (BrotherInfo) -> String?): String {
     val name = args.joinToString(" ").lowercase()
     val info = brotherInfo.firstOrNull { searchCriteria(it)?.lowercase() == name }
@@ -82,32 +83,39 @@ fun brotherInfo(args: List<String>, searchCriteria: (BrotherInfo) -> String?): S
         ?: return "No brothers found searching for \"$name\"."
     return "Info for Brother #${info.rosterNumber} ${info.firstName} ${info.lastName}:" +
             "\nPledge Class ${info.pledgeClass.map { englishToGreek[it.toString()] }.joinToString("").ifEmpty { "not listed" }}" +
-            "\nCrossing date ${info.crossingDate.format(dateFormatter).ifBlank { "not listed" }}" +
+            "\nCrossing date ${info.crossingDate.ifBlank { "not listed" }}" +
             "\nBig ${info.bigBrother.ifBlank { "not listed" }}" +
             "\nNickname ${if (info.nickName.isNotBlank()) "\"${info.nickName}\"" else "not listed"}" +
             "\nMajor ${info.major.ifBlank { "not listed" }}"
 }
 
 fun registerFratCommands() {
-    registerCommand(Command(
+    registerCommand(Command.of(
         DiscordProtocol,
         "brotherbyroster",
-        { args, _, _ -> brotherInfo(args) { it.rosterNumber } },
+        { args: List<String> -> brotherInfo(args) { it.rosterNumber } },
         "Gets information about a particular brother based on their roster number.",
         "brotherbyroster (roster number)"
     ))
-    registerCommand(Command(
+    registerCommand(Command.of(
         DiscordProtocol,
         "brotherbyname",
-        { args, _, _ -> brotherInfo(args) { it.firstName + " " + it.lastName } },
+        { args -> brotherInfo(args) { it.firstName + " " + it.lastName } },
         "Gets information about a particular brother based on their first and last name.",
         "brotherbyname (name)"
     ))
-    registerCommand(Command(
+    registerCommand(Command.of(
         DiscordProtocol,
         "brotherbynickname",
-        { args, _, _ -> brotherInfo(args) { it.nickName } },
+        { args -> brotherInfo(args) { it.nickName } },
         "Gets information about a particular brother based on their nickname.",
         "brotherbynickname (nickname)"
+    ))
+    registerCommand(Command.of(
+        DiscordProtocol,
+        "updateRoster",
+        { -> Files.write(brotherInfoPath, rosterToJson().toByteArray()); "Roster updated." },
+        "Updates the brother roster list.",
+        "updateRoster (takes no arguments)"
     ))
 }

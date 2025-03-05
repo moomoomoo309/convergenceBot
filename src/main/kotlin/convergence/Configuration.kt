@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import convergence.discord.jda
+import java.net.URI
 import java.nio.file.Path
 import java.time.Instant
 import java.time.OffsetDateTime
@@ -22,7 +23,7 @@ data class AliasDTO(val scopeName: String, val name: String, val commandName: St
     fun toAlias(): Alias {
         val protocol = protocols.first { protocolName == it.name }
         val scope = protocol.commandScopeFromKey(scopeName) as Chat
-        val command = getCommand(commandName, scope) as Command
+        val command = getCommand(commandName.lowercase(), scope) as Command
         return Alias(scope, name, command, args)
     }
 }
@@ -59,7 +60,8 @@ data class SettingsDTO(
     var linkedChats: MutableMap<String, MutableSet<String>> = mutableMapOf(),
     var serializedCommands: MutableMap<Int, ScheduledCommandDTO> = mutableMapOf(),
     var syncedCalendars: MutableList<SyncedCalendar> = mutableListOf(),
-    var timers: MutableMap<String, Instant> = mutableMapOf()
+    var timers: MutableMap<String, Instant> = mutableMapOf(),
+    var imageUploadChannels: MutableMap<String, String> = mutableMapOf()
 )
 
 object Settings {
@@ -69,6 +71,7 @@ object Settings {
     var serializedCommands: MutableMap<Int, ScheduledCommand> = mutableMapOf()
     var syncedCalendars: MutableList<SyncedCalendar> = mutableListOf()
     var timers: MutableMap<String, Instant> = mutableMapOf()
+    var imageUploadChannels: MutableMap<Chat, URI> = mutableMapOf()
 
     @JsonIgnore
     var updateIsScheduled = false
@@ -105,35 +108,45 @@ object Settings {
     }
 
     private fun mapAliasesToDTO(aliases: MutableMap<CommandScope, MutableMap<String, Alias>>): MutableMap<String, MutableMap<String, AliasDTO>> {
-        return aliases.map { (k, v) ->
+        return aliases.mutableMapEntries { (k, v) ->
             k.toKey() to v.mapValues { (_, alias) -> alias.toDTO() }.toMutableMap()
-        }.toMap().toMutableMap()
+        }
     }
 
     private fun mapAliasesFromDTO(aliasesDTO: MutableMap<String, MutableMap<String, AliasDTO>>): MutableMap<CommandScope, MutableMap<String, Alias>> {
-        return aliasesDTO.map { (k, v) ->
+        return aliasesDTO.mutableMapEntries { (k, v) ->
             val protocol = scopeStrToProtocol(k)!!
             protocol.commandScopeFromKey(k)!! to v.mapValues { (_, aliasDTO) -> aliasDTO.toAlias() }.toMutableMap()
-        }.toMap().toMutableMap()
+        }
     }
 
     fun updateFrom(settingsDTO: SettingsDTO) {
         this.aliases.apply { clear() }.putAll(mapAliasesFromDTO(settingsDTO.aliases))
         this.commandDelimiters.apply { clear() }.putAll(mapFromDTO(settingsDTO.commandDelimiters))
         this.linkedChats.apply { clear() }.putAll(linkedChatsFromDTO(settingsDTO.linkedChats))
-        this.serializedCommands.apply { clear() }
-            .putAll(settingsDTO.serializedCommands.mapValues { (_, dto) -> dto.toScheduledCommand()!! }.toMutableMap())
+        this.serializedCommands.apply { clear() }.putAll(settingsDTO.serializedCommands.mapValues { (_, dto) ->
+            dto.toScheduledCommand()!!
+        } as MutableMap<Int, ScheduledCommand>)
         this.syncedCalendars.apply { clear() }.addAll(settingsDTO.syncedCalendars)
         this.timers.apply { clear() }.putAll(settingsDTO.timers)
+        this.imageUploadChannels.apply { clear() }.putAll(settingsDTO.imageUploadChannels.map { (k,v) ->
+            val protocol = scopeStrToProtocol(k)!!
+            protocol.commandScopeFromKey(k) as Chat to URI(v)
+        })
     }
 
     fun toDTO() = SettingsDTO(
         mapAliasesToDTO(aliases),
         mapToDTO(commandDelimiters),
         mapToDTO(linkedChats.mapValues { (_, v) -> v.map { it.toKey() }.toMutableSet() }),
-        serializedCommands.mapValues { (_, serializedCommands) -> serializedCommands.toDTO() }.toMutableMap(),
+        serializedCommands.mapValues { (_, serializedCommands) ->
+            serializedCommands.toDTO()
+        } as MutableMap<Int, ScheduledCommandDTO>,
         syncedCalendars,
-        timers
+        timers,
+        imageUploadChannels.mutableMapEntries { (k,v) ->
+            k.toKey() to v.toString()
+        }
     )
 }
 
@@ -164,6 +177,7 @@ val aliases = Settings.aliases
 val serializedCommands = Settings.serializedCommands
 val syncedCalendars = Settings.syncedCalendars
 val timers = Settings.timers
+val imageUploadChannels: MutableMap<Chat, URI> = Settings.imageUploadChannels
 
 lateinit var convergencePath: Path
 val chatMap: MutableMap<Int, Chat> = mutableMapOf()

@@ -7,15 +7,6 @@ import java.time.OffsetDateTime
 import java.util.*
 import kotlin.reflect.KClass
 
-fun String.substringBetween(startDelimiter: String, endDelimiter: String): String {
-    val startIndex = this.indexOf(startDelimiter)
-    val endIndex = this.lastIndexOf(endDelimiter)
-    if (startIndex == -1 || endIndex == -1) {
-        return ""
-    }
-    return this.substring(startIndex + startDelimiter.length, endIndex)
-}
-
 sealed interface CommandScope {
     val protocol: Protocol
     fun toKey(): String
@@ -39,7 +30,8 @@ abstract class Protocol(val name: String): Comparable<Protocol> {
     override fun hashCode(): Int = name.hashCode()
 
     fun receivedMessage(chat: Chat, message: String, sender: User) = runCommand(chat, message, sender)
-    abstract fun sendMessage(chat: Chat, message: String): Boolean
+    abstract fun sendMessage(chat: Chat, message: Message): Boolean
+    fun sendMessage(chat: Chat, message: String) = sendMessage(chat, SimpleMessage(message))
     abstract fun getBot(chat: Chat): User
     abstract fun getName(chat: Chat, user: User): String
     abstract fun getChats(): List<Chat>
@@ -69,7 +61,7 @@ object UniversalUser: User(UniversalProtocol) {
 }
 
 object UniversalProtocol: Protocol("Universal") {
-    override fun sendMessage(chat: Chat, message: String): Boolean = false
+    override fun sendMessage(chat: Chat, message: Message): Boolean = false
     override fun getBot(chat: Chat): User = UniversalUser
     override fun getName(chat: Chat, user: User): String = ""
     override fun getChats(): List<Chat> = listOf(UniversalChat)
@@ -108,10 +100,90 @@ sealed class CommandLike(
 data class Command(
     override val protocol: Protocol,
     override val name: String,
-    @JsonIgnore val function: (List<String>, Chat, User) -> String?,
+    @JsonIgnore val function: (List<String>, Chat, User) -> Message?,
     @JsonIgnore val helpText: String,
     @JsonIgnore val syntaxText: String
-): CommandLike(protocol, name)
+): CommandLike(protocol, name) {
+    constructor(
+        protocol: Protocol,
+        name: String,
+        function: () -> Message?,
+        helpText: String,
+        syntaxText: String
+    ): this(protocol, name, { _: List<String>, _: Chat, _: User -> function() }, helpText, syntaxText)
+
+    constructor(
+        protocol: Protocol,
+        name: String,
+        function: (args: List<String>) -> Message?,
+        helpText: String,
+        syntaxText: String
+    ): this(protocol, name, { args: List<String>, _: Chat, _: User -> function(args) }, helpText, syntaxText)
+
+    constructor(
+        protocol: Protocol,
+        name: String,
+        function: (args: List<String>, chat: Chat) -> Message?,
+        helpText: String,
+        syntaxText: String
+    ): this(protocol, name, { args: List<String>, chat: Chat, _: User -> function(args, chat) }, helpText, syntaxText)
+
+
+    companion object {
+        fun of(
+            protocol: Protocol,
+            name: String,
+            function: (args: List<String>, chat: Chat, sender: User) -> String?,
+            helpText: String,
+            syntaxText: String
+        ) = Command(
+            protocol,
+            name,
+            { args: List<String>, chat: Chat, sender: User -> function(args, chat, sender)?.let { SimpleMessage(it) } },
+            helpText,
+            syntaxText
+        )
+        fun of(
+            protocol: Protocol,
+            name: String,
+            function: (args: List<String>, chat: Chat) -> String?,
+            helpText: String,
+            syntaxText: String
+        ) = Command(
+            protocol,
+            name,
+            { args: List<String>, chat: Chat -> function(args, chat)?.let { SimpleMessage(it) } },
+            helpText,
+            syntaxText
+        )
+        fun of(
+            protocol: Protocol,
+            name: String,
+            function: (args: List<String>) -> String?,
+            helpText: String,
+            syntaxText: String
+        ) = Command(
+            protocol,
+            name,
+            { args: List<String> -> function(args)?.let { SimpleMessage(it) } },
+            helpText,
+            syntaxText
+        )
+        fun of(
+            protocol: Protocol,
+            name: String,
+            function: () -> String?,
+            helpText: String,
+            syntaxText: String
+        ) = Command(
+            protocol,
+            name,
+            { -> function()?.let { SimpleMessage(it) } },
+            helpText,
+            syntaxText
+        )
+    }
+}
 
 data class Alias(
     val scope: CommandScope,
@@ -128,13 +200,13 @@ data class Alias(
     )
 }
 
-fun Map<String, Any>.json(): String = objectMapper.writeValueAsString(this)
-
-private val callbacks = mutableMapOf<KClass<out ChatEvent>, MutableList<ChatEvent>>(
-    ReceivedImages::class to mutableListOf(ReceivedImages { chat: Chat, message: String?, sender: User, images: Array<Image> ->
-        runCommand(chat, message ?: return@ReceivedImages false, sender, images)
-        true
-    })
+val callbacks = mutableMapOf<KClass<out ChatEvent>, MutableList<ChatEvent>>(
+    ReceivedImages::class to mutableListOf(
+        ReceivedImages { chat: Chat, message: String?, sender: User, images: Array<Image> ->
+            runCommand(chat, message ?: return@ReceivedImages false, sender, images)
+            true
+        }
+    )
 )
 
 fun registerCallback(event: ChatEvent) {
@@ -257,8 +329,12 @@ open class ReceivedImages(val fct: (chat: Chat, message: String?, sender: User, 
 }
 
 interface HasImages {
-    fun sendImages(chat: Chat, message: String, sender: User, vararg images: Image)
+    fun sendImages(chat: Chat, message: Message, sender: User, vararg images: Image)
+    fun sendImages(chat: Chat, message: String, sender: User, vararg images: Image) =
+        sendImages(chat, SimpleMessage(message), sender, *images)
     fun receivedImages(chat: Chat, message: String, sender: User, vararg images: Image) =
+        receivedImages(chat, SimpleMessage(message), sender, *images)
+    fun receivedImages(chat: Chat, message: Message, sender: User, vararg images: Image) =
         runCallbacks<ReceivedImages>(chat, message, sender, images)
 }
 
@@ -401,4 +477,11 @@ interface HasServer {
 
 interface HasServers {
     fun getServers(): List<Server>
+}
+
+abstract class Message {
+    abstract fun toSimple(): SimpleMessage
+}
+class SimpleMessage(val text: String): Message() {
+    override fun toSimple() = this
 }

@@ -1,7 +1,11 @@
 package convergence.discord
 
 import com.fasterxml.jackson.annotation.JsonIgnore
+import com.github.sardine.Sardine
+import com.github.sardine.SardineFactory
 import convergence.*
+import convergence.frat.fratConfig
+import convergence.frat.registerFratCommands
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.OnlineStatus
@@ -17,12 +21,13 @@ import net.dv8tion.jda.api.requests.GatewayIntent
 import net.dv8tion.jda.api.utils.FileUpload
 import net.dv8tion.jda.api.utils.cache.CacheFlag
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder
+import net.dv8tion.jda.api.utils.messages.MessageCreateData
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.FileNotFoundException
+import java.net.URI
 import java.nio.file.Files
 import java.time.OffsetDateTime
-import javax.security.auth.login.LoginException
 
 lateinit var jda: JDA
 
@@ -119,6 +124,19 @@ class DiscordImage(val image: Message.Attachment): Image() {
     val url get() = image.url
 }
 
+val sardine: Sardine by lazy { SardineFactory.begin("bot", fratConfig.botPassword) }
+fun uploadImage(discordURL: String, uploadURL: URI?) {
+    if (uploadURL == null)
+        return
+    sardine.put(uploadURL.toString(), URI(discordURL).toURL().openStream())
+}
+
+class DiscordMessage(val data: MessageCreateData): convergence.Message() {
+    override fun toSimple(): SimpleMessage {
+        return SimpleMessage(data.content)
+    }
+}
+
 object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, HasImages, CanMentionUsers,
     HasMessageHistory, CanEditOtherMessages, HasUserAvailability, HasCustomEmoji, HasServers {
     override fun init() {
@@ -154,6 +172,17 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
         registerFratCommands()
         discordLogger.info("JDA Initialized.")
         jda.addEventListener(MessageListener)
+        callbacks[ReceivedImages::class]!!.add(
+            ReceivedImages { chat: Chat, _: String?, _: User, images: Array<Image> ->
+                for (image in images) {
+                    if (image is DiscordImage && chat in imageUploadChannels) {
+                        val uploadURL = imageUploadChannels[chat]
+                        uploadImage(image.url, uploadURL)
+                    }
+                }
+                true
+            }
+        )
     }
 
     @JsonIgnore
@@ -200,21 +229,23 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
     override fun getBotNickname(chat: Chat): String? = getUserNickname(chat, getBot(chat))
 
 
-    override fun sendImages(chat: Chat, message: String, sender: User, vararg images: Image) {
+    override fun sendImages(chat: Chat, message: convergence.Message, sender: User, vararg images: Image) {
         if (chat is DiscordChat && images.isArrayOf<DiscordImage>()) {
             @Suppress("UNCHECKED_CAST")
             val discordImages = images as Array<DiscordImage>
             try {
-                chat.channel.sendMessage(
-                    MessageCreateBuilder()
+                when(message) {
+                    is DiscordMessage -> chat.channel.sendMessage(message.data).queue()
+                    is SimpleMessage -> chat.channel.sendMessage(MessageCreateBuilder()
                         .addFiles(discordImages.map {
                             FileUpload.fromStreamSupplier(it.image.fileName) {
                                 it.image.proxy.download().join()
                             }
                         })
-                        .setContent(message)
+                        .setContent(message.text)
                         .build()
-                ).queue()
+                    ).queue()
+                }
             } catch(e: Exception) {
                 e.printStackTrace()
             }
@@ -283,11 +314,14 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
 
     override fun getDelimiters(format: Format): Pair<String, String>? = formatMap[format]
     override fun getEmojis(chat: Chat): List<CustomEmoji> = jda.emojis.map { DiscordEmoji(it) }
-    override fun sendMessage(chat: Chat, message: String): Boolean {
+    override fun sendMessage(chat: Chat, message: convergence.Message): Boolean {
         if (chat !is DiscordChat)
             return false
         try {
-            chat.channel.sendMessage(message.take(2000)).complete()
+            when(message) {
+                is DiscordMessage -> chat.channel.sendMessage(message.data)
+                else -> chat.channel.sendMessage(message.toSimple().text.take(2000)).complete()
+            }
         } catch(e: Exception) {
             e.printStackTrace()
         }

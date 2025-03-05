@@ -1,9 +1,6 @@
 package convergence.console
 
-import convergence.Chat
-import convergence.Protocol
-import convergence.User
-import convergence.substringBetween
+import convergence.*
 import java.util.*
 import kotlin.system.exitProcess
 
@@ -18,9 +15,9 @@ val user = ConsoleUser("user")
 val bot = ConsoleUser("bot")
 
 object ConsoleProtocol: Protocol("Console") {
-    override fun sendMessage(chat: Chat, message: String): Boolean {
+    override fun sendMessage(chat: Chat, message: Message): Boolean {
         if (chat is ConsoleChat) {
-            println(message)
+            println(message.toSimple().text)
             return true
         }
         throw InputMismatchException("Invalid chat or user passed. Can only be ConsoleChat and ConsoleUser.")

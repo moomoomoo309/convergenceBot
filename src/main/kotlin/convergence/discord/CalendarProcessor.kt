@@ -4,6 +4,7 @@ import com.github.caldav4j.CalDAVCollection
 import com.github.caldav4j.exceptions.CalDAV4JException
 import com.github.caldav4j.util.GenerateQuery
 import convergence.*
+import convergence.frat.fratConfig
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.ScheduledEvent
@@ -16,6 +17,7 @@ import org.apache.http.impl.client.HttpClients
 import org.apache.http.message.BasicHeader
 import java.time.Instant
 import java.time.OffsetDateTime
+import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit
 import java.util.*
 import kotlin.contracts.ExperimentalContracts
@@ -159,7 +161,7 @@ object CalendarProcessor {
 fun DateProperty.toInstant(): Instant = this.date.toInstant()
 fun DateProperty.toOffsetDateTime(): OffsetDateTime = this.toInstant().atOffset(defaultZoneOffset)
 fun Date.toOffsetDateTime(): OffsetDateTime = this.toInstant().atOffset(defaultZoneOffset)
-val defaultZoneOffset = OffsetDateTime.now().offset
+val defaultZoneOffset: ZoneOffset = OffsetDateTime.now().offset
 
 fun Instant.toIDate(): Date {
     return Date(Date.from(this))

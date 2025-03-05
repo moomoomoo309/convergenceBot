@@ -10,7 +10,9 @@ jda = "5.3.0"
 kotlin = "2.1.10"
 logback = "1.5.16"
 natty = "1.0.1"
+poi = "5.4.0"
 prettytime = "5.0.9.Final"
+sardine = "5.13"
 shadow = "8.3.0"
 
 [libraries]
@@ -26,8 +28,11 @@ jda = { module = "net.dv8tion:JDA", version.ref = "jda" }
 jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
 jackson-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson" }
 jackson-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
-prettytime = { module = "org.ocpsoft.prettytime:prettytime", version.ref="prettytime"}
+poi = { module = "org.apache.poi:poi", version.ref = "poi" }
+poi-ooxml = { module = "org.apache.poi:poi-ooxml", version.ref = "poi" }
+prettytime = { module = "org.ocpsoft.prettytime:prettytime", version.ref = "prettytime" }
+sardine = { module = "com.github.lookfirst:sardine", version.ref = "sardine" }
 
 [plugins]
 kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
-shadow = { id = "com.gradleup.shadow", version.ref = "shadow"}
+shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
