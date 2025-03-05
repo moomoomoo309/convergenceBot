@@ -1,9 +1,9 @@
-grammar command;
+grammar Command;
 
 // Parser Rules
 command: commandName Whitespace* (argument (Whitespace+ | EOF))* EOF;
 argument: quoteArgument | nonQuoteArgument;
-nonQuoteArgument: (Alnum | RegularEscape | UnicodeEscape | OctalEscape | InvalidEscape | NotWhitespaceOrQuote)+;
+nonQuoteArgument: (RegularEscape | UnicodeEscape | OctalEscape | InvalidEscape | Alnum | NotWhitespaceOrQuote)+;
 quoteArgument: Quote notQuote* Quote;
 notQuote: RegularEscape | UnicodeEscape | OctalEscape | InvalidEscape | Alnum | Whitespace | NotWhitespaceOrQuote;
 commandName: Alnum+;
