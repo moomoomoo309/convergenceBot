@@ -1,5 +1,9 @@
 package convergence
 
+// This file has all the extension functions that aren't related to a specific file.
+// I.E: CalendarProcessor has some calendar event-related extensions, those can stay there.
+// This file has stuff on Lists or Strings or Maps, more generic stuff.
+
 fun <K, V> List<Pair<K, V>>.toMutableMap() = this.toMap() as MutableMap<K, V>
 fun <K, V, K2, V2> Map<K, V>.mapEntries(fct: (Map.Entry<K, V>) -> Pair<K2, V2>): Map<K2, V2> {
     val destination = LinkedHashMap<K2, V2>(mapCapacity(size))
@@ -14,7 +18,7 @@ fun <K, V, K2, V2> Map<K, V>.mutableMapEntries(fct: (Map.Entry<K, V>) -> Pair<K2
 }
 
 
-// These are copied straight from the Kotlin stdlib.
+// This is copied straight from the Kotlin stdlib.
 private fun mapCapacity(expectedSize: Int): Int = when {
     expectedSize < 0 -> expectedSize
     expectedSize < 3 -> expectedSize + 1
@@ -31,3 +35,5 @@ fun String.substringBetween(startDelimiter: String, endDelimiter: String): Strin
     }
     return this.substring(startIndex + startDelimiter.length, endIndex)
 }
+
+fun String.titleCase() = "${first().uppercase()}${substring(1).lowercase()}"

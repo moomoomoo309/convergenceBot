@@ -491,9 +491,8 @@ fun resetTimer(args: List<String>): String {
 }
 
 fun checkTimer(args: List<String>): String {
-    if (args.isEmpty()) {
+    if (args.isEmpty())
         return "A name has to be provided."
-    }
     val name = args.joinToString(" ")
     if (name !in timers)
         return "That timer doesn't exist!"

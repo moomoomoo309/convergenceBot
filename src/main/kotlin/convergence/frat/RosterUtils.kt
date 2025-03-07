@@ -1,5 +1,7 @@
 package convergence.frat
 
+import convergence.discord.defaultZoneOffset
+import convergence.titleCase
 import org.apache.poi.ss.usermodel.*
 import org.apache.poi.xssf.usermodel.XSSFFormulaEvaluator
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
@@ -45,12 +47,11 @@ private fun getOrdinal(day: Int): String {
 }
 
 private val dataFormatter = DataFormatter()
-val months = listOf("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December")
 lateinit var formulaEvaluator: FormulaEvaluator
 fun Cell.readString(): String {
     if (this.cellType == CellType.NUMERIC && DateUtil.isCellDateFormatted(this)) {
-        val date = this.dateCellValue
-        return "${months[date.month]} ${date.date}${getOrdinal(date.date)}, ${date.year + 1900}"
+        val date = this.dateCellValue.toInstant().atOffset(defaultZoneOffset)
+        return "${date.month.name.titleCase()} ${date.dayOfMonth}${getOrdinal(date.dayOfMonth)}, ${date.year}"
     }
     return dataFormatter.formatCellValue(this, formulaEvaluator)
 }

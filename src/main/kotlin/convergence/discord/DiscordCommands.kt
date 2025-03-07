@@ -1,6 +1,8 @@
 package convergence.discord
 
 import convergence.*
+import java.net.URI
+import java.net.URISyntaxException
 
 fun registerDiscordCommands() {
     registerCommand(Command.of(
@@ -33,5 +35,35 @@ fun registerDiscordCommands() {
         },
         "Prints out all the synced calendars in this chat.",
         "syncedCalendars (Takes no parameters)"
+    ))
+    registerCommand(Command.of(
+        DiscordProtocol,
+        "uploadImagesTo",
+        { args: List<String>, chat: Chat ->
+            if (args.isEmpty())
+                return@of "A URL has to be provided."
+            val url = try {
+                URI(args[0])
+            } catch(e: URISyntaxException) {
+                e.printStackTrace()
+                return@of "\"${args[0]}\" is not a valid URL."
+            }
+            imageUploadChannels[chat] = url
+            Settings.update()
+            "Images will now be uploaded to $url."
+        },
+        "Sets all images in this channel from here on out to be uploaded to the provided WebDAV URL.",
+        "uploadImagesTo (URL)"
+    ))
+    registerCommand(Command.of(
+        DiscordProtocol,
+        "stopUploadingImages",
+        { _, chat: Chat ->
+            imageUploadChannels.remove(chat)
+            Settings.update()
+            "Images will no longer be uploaded."
+        },
+        "Stops images in this channel from being uploaded anywhere.",
+        "stopUploadingImages (takes no arguments)"
     ))
 }
