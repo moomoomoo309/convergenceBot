@@ -28,6 +28,12 @@ buildscript {
     }
 }
 
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
 dependencies {
     antlr(libs.antlr)
     implementation(libs.argparse4j)
