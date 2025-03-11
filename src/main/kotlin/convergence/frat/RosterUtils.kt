@@ -10,6 +10,17 @@ import java.net.URI
 
 val illegalRosters = setOf("823")
 
+data class BrotherInfo(
+    val rosterNumber: String,
+    val lastName: String,
+    val firstName: String,
+    val pledgeClass: String,
+    val crossingDate: String,
+    val bigBrother: String,
+    val nickName: String,
+    val major: String
+)
+
 fun getNewRoster(): List<BrotherInfo> {
     val workbook = WorkbookFactory.create(URI(fratConfig.rosterURL).toURL().openStream())
     val worksheet = workbook.getSheet("Rosters 350+")

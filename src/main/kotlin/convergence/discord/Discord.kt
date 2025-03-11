@@ -131,9 +131,26 @@ fun uploadImage(discordURL: String, uploadURL: URI?) {
     sardine.put(uploadURL.toString(), URI(discordURL).toURL().openStream())
 }
 
-class DiscordMessage(val data: MessageCreateData): convergence.Message() {
-    override fun toSimple(): SimpleMessage {
-        return SimpleMessage(data.content)
+class DiscordOutgoingMessage(val data: MessageCreateData): OutgoingMessage() {
+    constructor(msg: String): this(MessageCreateBuilder()
+        .setContent(msg)
+        .build()
+    )
+    override fun toSimple(): SimpleOutgoingMessage {
+        return SimpleOutgoingMessage(data.content)
+    }
+}
+
+class DiscordIncomingMessage(val data: Message): IncomingMessage() {
+    override fun toSimple(): SimpleIncomingMessage {
+        return SimpleIncomingMessage(data.contentDisplay)
+    }
+
+    override fun toOutgoing(): OutgoingMessage {
+        return DiscordOutgoingMessage(
+            MessageCreateBuilder.fromMessage(data)
+                .build()
+        )
     }
 }
 
@@ -173,7 +190,7 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
         discordLogger.info("JDA Initialized.")
         jda.addEventListener(MessageListener)
         callbacks[ReceivedImages::class]!!.add(
-            ReceivedImages { chat: Chat, _: String?, _: User, images: Array<Image> ->
+            ReceivedImages { chat: Chat, _: IncomingMessage?, _: User, images: Array<Image> ->
                 for (image in images) {
                     if (image is DiscordImage && chat in imageUploadChannels) {
                         val uploadURL = imageUploadChannels[chat]
@@ -229,14 +246,14 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
     override fun getBotNickname(chat: Chat): String? = getUserNickname(chat, getBot(chat))
 
 
-    override fun sendImages(chat: Chat, message: convergence.Message, sender: User, vararg images: Image) {
+    override fun sendImages(chat: Chat, message: OutgoingMessage, sender: User, vararg images: Image) {
         if (chat is DiscordChat && images.isArrayOf<DiscordImage>()) {
             @Suppress("UNCHECKED_CAST")
             val discordImages = images as Array<DiscordImage>
             try {
                 when(message) {
-                    is DiscordMessage -> chat.channel.sendMessage(message.data).queue()
-                    is SimpleMessage -> chat.channel.sendMessage(MessageCreateBuilder()
+                    is DiscordOutgoingMessage -> chat.channel.sendMessage(message.data).queue()
+                    is SimpleOutgoingMessage -> chat.channel.sendMessage(MessageCreateBuilder()
                         .addFiles(discordImages.map {
                             FileUpload.fromStreamSupplier(it.image.fileName) {
                                 it.image.proxy.download().join()
@@ -314,12 +331,12 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
 
     override fun getDelimiters(format: Format): Pair<String, String>? = formatMap[format]
     override fun getEmojis(chat: Chat): List<CustomEmoji> = jda.emojis.map { DiscordEmoji(it) }
-    override fun sendMessage(chat: Chat, message: convergence.Message): Boolean {
+    override fun sendMessage(chat: Chat, message: OutgoingMessage): Boolean {
         if (chat !is DiscordChat)
             return false
         try {
             when(message) {
-                is DiscordMessage -> chat.channel.sendMessage(message.data)
+                is DiscordOutgoingMessage -> chat.channel.sendMessage(message.data).queue()
                 else -> chat.channel.sendMessage(message.toSimple().text.take(2000)).complete()
             }
         } catch(e: Exception) {
@@ -369,8 +386,8 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
 object MessageListener: ListenerAdapter() {
     override fun onMessageReceived(event: MessageReceivedEvent) {
         val chat = DiscordChat(event)
-        val messageText = event.message.contentDisplay
         val sender = DiscordUser(event)
+        val message = DiscordIncomingMessage(event.message)
         val mentionedMembers = event.message.mentions.members
         if (mentionedMembers.isNotEmpty())
             DiscordProtocol.mentionedUsers(
@@ -384,8 +401,8 @@ object MessageListener: ListenerAdapter() {
             .map { DiscordImage(it) }
             .toTypedArray()
         if (images.isNotEmpty())
-            DiscordProtocol.receivedImages(chat, messageText, sender, *images)
+            DiscordProtocol.receivedImages(chat, message, sender, *images)
         else
-            DiscordProtocol.receivedMessage(chat, messageText, sender)
+            DiscordProtocol.receivedMessage(chat, message, sender)
     }
 }

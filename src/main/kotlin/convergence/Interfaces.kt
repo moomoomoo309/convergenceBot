@@ -29,9 +29,9 @@ abstract class Protocol(val name: String): Comparable<Protocol> {
     override fun toString(): String = this::class.java.simpleName
     override fun hashCode(): Int = name.hashCode()
 
-    fun receivedMessage(chat: Chat, message: String, sender: User) = runCommand(chat, message, sender)
-    abstract fun sendMessage(chat: Chat, message: Message): Boolean
-    fun sendMessage(chat: Chat, message: String) = sendMessage(chat, SimpleMessage(message))
+    fun receivedMessage(chat: Chat, message: IncomingMessage, sender: User) = runCommand(chat, message, sender)
+    abstract fun sendMessage(chat: Chat, message: OutgoingMessage): Boolean
+    fun sendMessage(chat: Chat, message: String) = sendMessage(chat, SimpleOutgoingMessage(message))
     abstract fun getBot(chat: Chat): User
     abstract fun getName(chat: Chat, user: User): String
     abstract fun getChats(): List<Chat>
@@ -61,7 +61,7 @@ object UniversalUser: User(UniversalProtocol) {
 }
 
 object UniversalProtocol: Protocol("Universal") {
-    override fun sendMessage(chat: Chat, message: Message): Boolean = false
+    override fun sendMessage(chat: Chat, message: OutgoingMessage): Boolean = false
     override fun getBot(chat: Chat): User = UniversalUser
     override fun getName(chat: Chat, user: User): String = ""
     override fun getChats(): List<Chat> = listOf(UniversalChat)
@@ -94,20 +94,20 @@ sealed class CommandLike(
     open val protocol: Protocol,
     open val name: String
 ): Comparable<CommandLike> {
-    override fun compareTo(other: CommandLike) = "$protocol.$name".compareTo("${other.protocol}.${other.name}")
+    override fun compareTo(other: CommandLike) = "$protocol-$name".compareTo("${other.protocol}-${other.name}")
 }
 
 data class Command(
     override val protocol: Protocol,
     override val name: String,
-    @JsonIgnore val function: (List<String>, Chat, User) -> Message?,
+    @JsonIgnore val function: (List<String>, Chat, User) -> OutgoingMessage?,
     @JsonIgnore val helpText: String,
     @JsonIgnore val syntaxText: String
 ): CommandLike(protocol, name) {
     constructor(
         protocol: Protocol,
         name: String,
-        function: () -> Message?,
+        function: () -> OutgoingMessage?,
         helpText: String,
         syntaxText: String
     ): this(protocol, name, { _: List<String>, _: Chat, _: User -> function() }, helpText, syntaxText)
@@ -115,7 +115,7 @@ data class Command(
     constructor(
         protocol: Protocol,
         name: String,
-        function: (args: List<String>) -> Message?,
+        function: (args: List<String>) -> OutgoingMessage?,
         helpText: String,
         syntaxText: String
     ): this(protocol, name, { args: List<String>, _: Chat, _: User -> function(args) }, helpText, syntaxText)
@@ -123,7 +123,7 @@ data class Command(
     constructor(
         protocol: Protocol,
         name: String,
-        function: (args: List<String>, chat: Chat) -> Message?,
+        function: (args: List<String>, chat: Chat) -> OutgoingMessage?,
         helpText: String,
         syntaxText: String
     ): this(protocol, name, { args: List<String>, chat: Chat, _: User -> function(args, chat) }, helpText, syntaxText)
@@ -139,7 +139,7 @@ data class Command(
         ) = Command(
             protocol,
             name,
-            { args: List<String>, chat: Chat, sender: User -> function(args, chat, sender)?.let { SimpleMessage(it) } },
+            { args: List<String>, chat: Chat, sender: User -> function(args, chat, sender)?.let { SimpleOutgoingMessage(it) } },
             helpText,
             syntaxText
         )
@@ -152,7 +152,7 @@ data class Command(
         ) = Command(
             protocol,
             name,
-            { args: List<String>, chat: Chat -> function(args, chat)?.let { SimpleMessage(it) } },
+            { args: List<String>, chat: Chat -> function(args, chat)?.let { SimpleOutgoingMessage(it) } },
             helpText,
             syntaxText
         )
@@ -165,7 +165,7 @@ data class Command(
         ) = Command(
             protocol,
             name,
-            { args: List<String> -> function(args)?.let { SimpleMessage(it) } },
+            { args: List<String> -> function(args)?.let { SimpleOutgoingMessage(it) } },
             helpText,
             syntaxText
         )
@@ -178,7 +178,7 @@ data class Command(
         ) = Command(
             protocol,
             name,
-            { -> function()?.let { SimpleMessage(it) } },
+            { -> function()?.let { SimpleOutgoingMessage(it) } },
             helpText,
             syntaxText
         )
@@ -202,7 +202,7 @@ data class Alias(
 
 val callbacks = mutableMapOf<KClass<out ChatEvent>, MutableList<ChatEvent>>(
     ReceivedImages::class to mutableListOf(
-        ReceivedImages { chat: Chat, message: String?, sender: User, images: Array<Image> ->
+        ReceivedImages { chat: Chat, message: IncomingMessage?, sender: User, images: Array<Image> ->
             runCommand(chat, message ?: return@ReceivedImages false, sender, images)
             true
         }
@@ -321,20 +321,20 @@ interface HasNicknames {
 }
 
 open class Image
-open class ReceivedImages(val fct: (chat: Chat, message: String?, sender: User, image: Array<Image>) -> Boolean):
+open class ReceivedImages(val fct: (chat: Chat, message: IncomingMessage?, sender: User, image: Array<Image>) -> Boolean):
     ChatEvent {
     override fun invoke(vararg args: Any): Boolean = invokeTyped(fct, args[0] as Array<Any>)
-    fun invoke(chat: Chat, message: String?, sender: User, image: Array<Image>): Boolean =
-        fct(chat, message ?: "", sender, image)
+    fun invoke(chat: Chat, message: IncomingMessage?, sender: User, image: Array<Image>): Boolean =
+        fct(chat, message ?: SimpleIncomingMessage(""), sender, image)
 }
 
 interface HasImages {
-    fun sendImages(chat: Chat, message: Message, sender: User, vararg images: Image)
+    fun sendImages(chat: Chat, message: OutgoingMessage, sender: User, vararg images: Image)
     fun sendImages(chat: Chat, message: String, sender: User, vararg images: Image) =
-        sendImages(chat, SimpleMessage(message), sender, *images)
+        sendImages(chat, SimpleOutgoingMessage(message), sender, *images)
     fun receivedImages(chat: Chat, message: String, sender: User, vararg images: Image) =
-        receivedImages(chat, SimpleMessage(message), sender, *images)
-    fun receivedImages(chat: Chat, message: Message, sender: User, vararg images: Image) =
+        receivedImages(chat, SimpleIncomingMessage(message), sender, *images)
+    fun receivedImages(chat: Chat, message: IncomingMessage, sender: User, vararg images: Image) =
         runCallbacks<ReceivedImages>(chat, message, sender, images)
 }
 
@@ -447,7 +447,6 @@ open class Format(name: String) {
 }
 
 interface CanFormatMessages {
-
     val supportedFormats: Set<Format>
 
     fun getDelimiters(format: Format): Pair<String, String>?
@@ -479,9 +478,20 @@ interface HasServers {
     fun getServers(): List<Server>
 }
 
-abstract class Message {
-    abstract fun toSimple(): SimpleMessage
+abstract class IncomingMessage {
+    abstract fun toSimple(): SimpleIncomingMessage
+    abstract fun toOutgoing(): OutgoingMessage
 }
-class SimpleMessage(val text: String): Message() {
+
+class SimpleIncomingMessage(val text: String): IncomingMessage() {
+    override fun toSimple() = this
+    override fun toOutgoing() = SimpleOutgoingMessage(text)
+}
+
+abstract class OutgoingMessage {
+    abstract fun toSimple(): SimpleOutgoingMessage
+}
+
+class SimpleOutgoingMessage(val text: String): OutgoingMessage() {
     override fun toSimple() = this
 }

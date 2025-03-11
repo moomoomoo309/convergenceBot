@@ -1,6 +1,7 @@
 package convergence
 
 import com.fasterxml.jackson.annotation.JsonIgnore
+import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.readValue
@@ -193,6 +194,7 @@ val aliasVars: MutableMap<String, (chat: Chat, sender: User) -> String> = mutabl
 )
 val objectMapper: ObjectMapper = ObjectMapper()
     .configure(SerializationFeature.INDENT_OUTPUT, true)
+    .configure(JsonParser.Feature.INCLUDE_SOURCE_IN_LOCATION, true)
     .registerKotlinModule()
     .findAndRegisterModules()
 val settingsPath: Path by lazy { convergencePath.resolve("settings.json") }

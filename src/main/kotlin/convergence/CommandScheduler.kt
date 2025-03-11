@@ -62,6 +62,9 @@ object CommandScheduler: Thread() {
         }
     }
 
+    /**
+     * Syncs any calendars
+     */
     fun syncCalendars() {
         defaultLogger.info("Syncing calendars...")
         Thread {

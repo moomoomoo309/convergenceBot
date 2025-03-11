@@ -10,33 +10,27 @@ class InvalidCommandParseException(msg: String): Exception(msg)
 data class CommandData(var command: Command, var args: List<String>) {
     constructor(alias: Alias, args: List<String>): this(alias.command, alias.args + args)
 
-    operator fun invoke(args: List<String>, chat: Chat, sender: User): Message? =
+    operator fun invoke(args: List<String>, chat: Chat, sender: User): OutgoingMessage? =
         this.command.function(args, chat, sender)
 
-    operator fun invoke(vararg args: String, chat: Chat, sender: User): Message? =
+    operator fun invoke(vararg args: String, chat: Chat, sender: User): OutgoingMessage? =
         invoke(args.toList(), chat, sender)
 
-    operator fun invoke(chat: Chat, sender: User): Message? = invoke(args, chat, sender)
+    operator fun invoke(chat: Chat, sender: User): OutgoingMessage? = invoke(args, chat, sender)
 }
 
 class InvalidEscapeSequenceException(message: String): Exception(message)
 
-private fun <T: CommandLike> aliasAvailable(
-    list: MutableMap<*, MutableMap<String, T>>,
-    chat: CommandScope,
+private fun <T: CommandLike, ScopeType> commandAvailable(
+    list: MutableMap<ScopeType, MutableMap<String, T>>,
+    scope: ScopeType,
     command: String
-) = chat in list && command in list[chat]!!
-
-private fun <T: CommandLike> commandAvailable(
-    list: MutableMap<Protocol, MutableMap<String, T>>,
-    chat: Protocol,
-    command: String
-) = chat in list && command in list[chat]!!
+) = scope in list && command in list[scope]!!
 
 fun getCommand(command: String, chat: Chat): CommandLike {
     return when {
-        aliasAvailable(aliases, chat, command) -> aliases[chat]!![command]
-        chat is HasServer && aliasAvailable(aliases, chat.server, command) -> aliases[chat]!![command]
+        commandAvailable(aliases, chat, command) -> aliases[chat]!![command]
+        chat is HasServer && commandAvailable(aliases, chat.server, command) -> aliases[chat]!![command]
         commandAvailable(commands, chat.protocol, command) -> commands[chat.protocol]!![command]
         commandAvailable(commands, UniversalProtocol, command) -> commands[UniversalProtocol]!![command]
         else -> null

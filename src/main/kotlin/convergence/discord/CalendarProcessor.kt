@@ -11,7 +11,6 @@ import net.dv8tion.jda.api.entities.ScheduledEvent
 import net.fortuna.ical4j.model.Date
 import net.fortuna.ical4j.model.Period
 import net.fortuna.ical4j.model.component.VEvent
-import net.fortuna.ical4j.model.property.DateProperty
 import org.apache.http.impl.client.CloseableHttpClient
 import org.apache.http.impl.client.HttpClients
 import org.apache.http.message.BasicHeader
@@ -71,12 +70,6 @@ object CalendarProcessor {
                     && it.startTime.isBefore(OffsetDateTime.now().plus(DAYS, ChronoUnit.DAYS))
                     && it.guild.idLong == guildId
         }.sortedBy { it.startTime }
-    }
-
-    private fun removeCalendarSync(calendar: SyncedCalendar): String {
-        syncedCalendars.remove(calendar)
-        Settings.update()
-        return "Could not find guild with ID ${calendar.guildId}"
     }
 
     @Suppress("UNUSED_PARAMETER")
@@ -158,8 +151,6 @@ object CalendarProcessor {
     }
 }
 
-fun DateProperty.toInstant(): Instant = this.date.toInstant()
-fun DateProperty.toOffsetDateTime(): OffsetDateTime = this.toInstant().atOffset(defaultZoneOffset)
 fun Date.toOffsetDateTime(): OffsetDateTime = this.toInstant().atOffset(defaultZoneOffset)
 val defaultZoneOffset: ZoneOffset = OffsetDateTime.now().offset
 

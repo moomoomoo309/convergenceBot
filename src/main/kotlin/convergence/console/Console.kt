@@ -15,7 +15,7 @@ val user = ConsoleUser("user")
 val bot = ConsoleUser("bot")
 
 object ConsoleProtocol: Protocol("Console") {
-    override fun sendMessage(chat: Chat, message: Message): Boolean {
+    override fun sendMessage(chat: Chat, message: OutgoingMessage): Boolean {
         if (chat is ConsoleChat) {
             println(message.toSimple().text)
             return true
@@ -65,12 +65,12 @@ object ConsoleProtocol: Protocol("Console") {
                 try {
                     val stdin = Scanner(System.`in`)
                     val currentLine = stdin.nextLine()
-                    ConsoleProtocol.receivedMessage(ConsoleChat, currentLine, user)
+                    ConsoleProtocol.receivedMessage(ConsoleChat, SimpleIncomingMessage(currentLine), user)
                     while (true) {
                         print("> ")
                         System.out.flush()
                         while (!stdin.hasNextLine()) stdin.next()
-                        ConsoleProtocol.receivedMessage(ConsoleChat, stdin.nextLine(), user)
+                        ConsoleProtocol.receivedMessage(ConsoleChat, SimpleIncomingMessage(stdin.nextLine()), user)
                     }
                 } catch(e: NoSuchElementException) {
                     // Catch Ctrl-D (EOF). Normally, I wouldn't do this in a plugin, but it's the local console of the bot,

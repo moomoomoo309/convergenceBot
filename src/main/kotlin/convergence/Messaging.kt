@@ -4,25 +4,25 @@ package convergence
 /**
  * Sends [message] in the chat [sender] is in, forwarding the message to any linked chats.
  */
-fun sendMessage(chat: Chat, sender: User, message: Message?) {
+fun sendMessage(chat: Chat, sender: User, message: OutgoingMessage?) {
     if (sender != chat.protocol.getBot(chat))
         sendMessage(chat, message)
     forwardToLinkedChats(chat, message, sender, true)
 }
 
 fun sendMessage(chat: Chat, sender: User, message: String?) =
-    message?.let { sendMessage(chat, sender, SimpleMessage(message)) }
+    message?.let { sendMessage(chat, sender, SimpleOutgoingMessage(message)) }
 
 /**
  * Sends [message] in [chat], not forwarding it to linked chats.
  */
-fun sendMessage(chat: Chat, message: Message?) {
+fun sendMessage(chat: Chat, message: OutgoingMessage?) {
     if (message == null)
         return
     chat.protocol.sendMessage(chat, message)
 }
 
-fun sendMessage(chat: Chat, message: String?) = message?.let { sendMessage(chat, SimpleMessage(message)) }
+fun sendMessage(chat: Chat, message: String?) = message?.let { sendMessage(chat, SimpleOutgoingMessage(message)) }
 
 /**
  * Gets the nickname (if applicable) or name of a user.
@@ -39,8 +39,8 @@ fun getUserName(chat: Chat, sender: User): String {
  * Replaces instances of the keys in [aliasVars] preceded by a percent sign with the result of the functions therein,
  * such as %sender with the name of the user who sent the message.
  */
-fun replaceAliasVars(chat: Chat, message: Message?, sender: User): Message? {
-    if (message is SimpleMessage) {
+fun replaceAliasVars(chat: Chat, message: OutgoingMessage?, sender: User): OutgoingMessage? {
+    if (message is SimpleOutgoingMessage) {
         // Used as a mutable string, since this function does a lot of string appending.
         val text = message.text
         val stringBuilder = StringBuilder((text.length * 1.5).toInt())
@@ -76,17 +76,17 @@ fun replaceAliasVars(chat: Chat, message: Message?, sender: User): Message? {
             }
             charIndex = if (anyTrue) charIndex + 1 else -1
         }
-        return SimpleMessage(stringBuilder.toString())
+        return SimpleOutgoingMessage(stringBuilder.toString())
     } else
         return message
 }
 
-fun forwardToLinkedChats(chat: Chat, message: Message?, sender: User, isCommand: Boolean = false) =
+fun forwardToLinkedChats(chat: Chat, message: OutgoingMessage?, sender: User, isCommand: Boolean = false) =
     forwardToLinkedChats(chat, message, sender, emptyArray(), isCommand)
 
 fun forwardToLinkedChats(
     chat: Chat,
-    message: Message?,
+    message: OutgoingMessage?,
     sender: User,
     images: Array<Image> = emptyArray(),
     isCommand: Boolean = false
