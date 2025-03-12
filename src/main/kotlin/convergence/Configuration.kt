@@ -20,7 +20,13 @@ data class SyncedCalendar(val guildId: Long, val calURL: String) {
     }
 }
 
-data class AliasDTO(val scopeName: String, val name: String, val commandName: String, val protocolName: String, val args: List<String>) {
+data class AliasDTO(
+    val scopeName: String,
+    val name: String,
+    val commandName: String,
+    val protocolName: String,
+    val args: List<String>
+) {
     fun toAlias(): Alias {
         val protocol = protocols.first { protocolName == it.name }
         val scope = protocol.commandScopeFromKey(scopeName) as Chat
@@ -130,7 +136,7 @@ object Settings {
         } as MutableMap<Int, ScheduledCommand>)
         this.syncedCalendars.apply { clear() }.addAll(settingsDTO.syncedCalendars)
         this.timers.apply { clear() }.putAll(settingsDTO.timers)
-        this.imageUploadChannels.apply { clear() }.putAll(settingsDTO.imageUploadChannels.map { (k,v) ->
+        this.imageUploadChannels.apply { clear() }.putAll(settingsDTO.imageUploadChannels.map { (k, v) ->
             val protocol = scopeStrToProtocol(k)!!
             protocol.commandScopeFromKey(k) as Chat to URI(v)
         })
@@ -145,7 +151,7 @@ object Settings {
         } as MutableMap<Int, ScheduledCommandDTO>,
         syncedCalendars,
         timers,
-        imageUploadChannels.mutableMapEntries { (k,v) ->
+        imageUploadChannels.mutableMapEntries { (k, v) ->
             k.toKey() to v.toString()
         }
     )

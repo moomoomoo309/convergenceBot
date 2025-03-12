@@ -1,4 +1,4 @@
-package convergence.frat
+package convergence.discord.frat
 
 import convergence.discord.defaultZoneOffset
 import convergence.titleCase

@@ -4,7 +4,7 @@ import com.github.caldav4j.CalDAVCollection
 import com.github.caldav4j.exceptions.CalDAV4JException
 import com.github.caldav4j.util.GenerateQuery
 import convergence.*
-import convergence.frat.fratConfig
+import convergence.discord.frat.fratConfig
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.ScheduledEvent

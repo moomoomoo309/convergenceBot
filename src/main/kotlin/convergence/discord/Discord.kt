@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import com.github.sardine.Sardine
 import com.github.sardine.SardineFactory
 import convergence.*
-import convergence.frat.fratConfig
-import convergence.frat.registerFratCommands
+import convergence.discord.frat.fratConfig
+import convergence.discord.frat.registerFratCommands
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.OnlineStatus
@@ -42,6 +42,7 @@ typealias DCustomEmoji = net.dv8tion.jda.api.entities.emoji.RichCustomEmoji
 class DiscordAvailability(val status: OnlineStatus): Availability(status.name)
 class DiscordServer(name: String, val guild: Guild): Server(name, DiscordProtocol) {
     constructor(guild: Guild): this(guild.name, guild)
+
     override fun compareTo(other: Server): Int {
         if (other !is DiscordServer) {
             return name.compareTo(other.name)
@@ -51,6 +52,7 @@ class DiscordServer(name: String, val guild: Guild): Server(name, DiscordProtoco
 
     override fun toKey() = "DiscordServer(${guild.idLong})"
 }
+
 val serverCache = mutableMapOf<Long, DiscordServer>()
 
 class DiscordChat(name: String, override val id: Long, @JsonIgnore val channel: GuildMessageChannel):
@@ -58,6 +60,7 @@ class DiscordChat(name: String, override val id: Long, @JsonIgnore val channel: 
     constructor(channel: GuildMessageChannel): this(channel.name, channel.idLong, channel)
     constructor(message: Message): this(message.channel.asGuildMessageChannel())
     constructor(msgEvent: MessageReceivedEvent): this(msgEvent.message)
+
     override val server = serverCache.getOrPut(id) { DiscordServer(channel.guild) }
 
     override fun hashCode() = id.hashCode()
@@ -132,10 +135,12 @@ fun uploadImage(discordURL: String, uploadURL: URI?) {
 }
 
 class DiscordOutgoingMessage(val data: MessageCreateData): OutgoingMessage() {
-    constructor(msg: String): this(MessageCreateBuilder()
-        .setContent(msg)
-        .build()
+    constructor(msg: String): this(
+        MessageCreateBuilder()
+            .setContent(msg)
+            .build()
     )
+
     override fun toSimple(): SimpleOutgoingMessage {
         return SimpleOutgoingMessage(data.content)
     }
@@ -224,6 +229,7 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
                     chatCache[id] = chat
                 }
             }
+
             "Server" -> {
                 val id = key.substringBetween("(", ")").toLongOrNull() ?: return null
                 return serverCache[id] ?: DiscordServer(
@@ -232,6 +238,7 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
                     serverCache[id] = server
                 }
             }
+
             else -> null
         }
 
@@ -253,14 +260,15 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
             try {
                 when(message) {
                     is DiscordOutgoingMessage -> chat.channel.sendMessage(message.data).queue()
-                    is SimpleOutgoingMessage -> chat.channel.sendMessage(MessageCreateBuilder()
-                        .addFiles(discordImages.map {
-                            FileUpload.fromStreamSupplier(it.image.fileName) {
-                                it.image.proxy.download().join()
-                            }
-                        })
-                        .setContent(message.text)
-                        .build()
+                    else -> chat.channel.sendMessage(
+                        MessageCreateBuilder()
+                            .addFiles(discordImages.map {
+                                FileUpload.fromStreamSupplier(it.image.fileName) {
+                                    it.image.proxy.download().join()
+                                }
+                            })
+                            .setContent(message.toSimple().text)
+                            .build()
                     ).queue()
                 }
             } catch(e: Exception) {

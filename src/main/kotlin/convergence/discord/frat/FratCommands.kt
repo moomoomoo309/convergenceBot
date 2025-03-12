@@ -1,4 +1,4 @@
-package convergence.frat
+package convergence.discord.frat
 
 import convergence.Command
 import convergence.discord.DiscordOutgoingMessage

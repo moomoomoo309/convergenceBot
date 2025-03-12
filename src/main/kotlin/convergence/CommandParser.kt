@@ -21,8 +21,8 @@ data class CommandData(var command: Command, var args: List<String>) {
 
 class InvalidEscapeSequenceException(message: String): Exception(message)
 
-private fun <T: CommandLike, ScopeType> commandAvailable(
-    list: MutableMap<ScopeType, MutableMap<String, T>>,
+private fun <CommandType: CommandLike, ScopeType> commandAvailable(
+    list: MutableMap<ScopeType, MutableMap<String, CommandType>>,
     scope: ScopeType,
     command: String
 ) = scope in list && command in list[scope]!!

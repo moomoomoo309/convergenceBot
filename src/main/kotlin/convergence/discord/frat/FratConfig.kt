@@ -1,4 +1,4 @@
-package convergence.frat
+package convergence.discord.frat
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import convergence.objectMapper
