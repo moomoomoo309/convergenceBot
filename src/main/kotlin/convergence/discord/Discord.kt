@@ -345,7 +345,11 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
         try {
             when(message) {
                 is DiscordOutgoingMessage -> chat.channel.sendMessage(message.data).queue()
-                else -> chat.channel.sendMessage(message.toSimple().text.take(2000)).complete()
+                else -> {
+                    val text = message.toSimple().text
+                    if (text.isNotEmpty())
+                        chat.channel.sendMessage(text.take(2000)).complete()
+                }
             }
         } catch(e: Exception) {
             e.printStackTrace()

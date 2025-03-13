@@ -195,7 +195,7 @@ data class Alias(
         scope.toKey(),
         name,
         command.name,
-        command.protocol.name,
+        scope.protocol.name,
         args
     )
 }

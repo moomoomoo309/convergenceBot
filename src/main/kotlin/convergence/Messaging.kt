@@ -35,50 +35,17 @@ fun getUserName(chat: Chat, sender: User): String {
         protocol.getName(chat, sender)
 }
 
+
+val pattern: Regex by lazy { Regex(aliasVars.keys.sortedBy { -it.length }.joinToString("|")) }
 /**
  * Replaces instances of the keys in [aliasVars] preceded by a percent sign with the result of the functions therein,
  * such as %sender with the name of the user who sent the message.
  */
 fun replaceAliasVars(chat: Chat, message: OutgoingMessage?, sender: User): OutgoingMessage? {
-    if (message is SimpleOutgoingMessage) {
-        // Used as a mutable string, since this function does a lot of string appending.
-        val text = message.text
-        val stringBuilder = StringBuilder((text.length * 1.5).toInt())
-
-        var charIndex = -1
-        val possibleMatches = BooleanArray(aliasVars.size)
-
-        var anyTrue = false
-        for (currentChar in text) {
-            stringBuilder.append(currentChar)
-            if (currentChar == '%') {
-                charIndex = 0
-                continue
-            }
-            if (charIndex >= 0) {
-                var i = -1
-                for ((string, aliasVar) in aliasVars) {
-                    i++
-                    if (possibleMatches[i] && currentChar != string[charIndex])
-                        possibleMatches[i] = false
-                    if (possibleMatches[i]) {
-                        anyTrue = true
-                        if (charIndex == string.length - 1) {
-                            stringBuilder.setLength(stringBuilder.length - string.length - 1)
-                            stringBuilder.append(aliasVar(chat, sender))
-                            charIndex = -1
-                            break
-                        }
-                    }
-                }
-                if (!anyTrue)
-                    break
-            }
-            charIndex = if (anyTrue) charIndex + 1 else -1
-        }
-        return SimpleOutgoingMessage(stringBuilder.toString())
-    } else
-        return message
+    return if (message is SimpleOutgoingMessage)
+        SimpleOutgoingMessage(pattern.replace(message.text) { res -> aliasVars[res.value]!!(chat, sender) })
+    else
+        message
 }
 
 fun forwardToLinkedChats(chat: Chat, message: OutgoingMessage?, sender: User, isCommand: Boolean = false) =

@@ -58,7 +58,8 @@ data class ScheduledCommandDTO(
 }
 
 private fun strToProtocol(s: String) = protocols.firstOrNull { it.name == s }
-private fun scopeStrToProtocol(s: String) = protocols.firstOrNull { it.name == s.substringBefore("(") }
+private fun scopeStrToProtocol(s: String) = protocols.sortedBy { -it.name.length }
+    .firstOrNull { s.substringBefore("(").startsWith(it.name) }
 private fun strToChat(s: String): CommandScope? = scopeStrToProtocol(s)?.commandScopeFromKey(s)
 
 data class SettingsDTO(
@@ -194,9 +195,10 @@ val protocols: MutableList<Protocol> = mutableListOf()
 val sortedHelpText: MutableList<CommandLike> = mutableListOf()
 var currentChatID: Int = 0
 val aliasVars: MutableMap<String, (chat: Chat, sender: User) -> String> = mutableMapOf(
-    "sender" to { c: Chat, s: User -> c.protocol.getName(c, s) },
-    "botname" to { c: Chat, _: User -> c.protocol.getName(c, c.protocol.getBot(c)) },
-    "chatname" to { c: Chat, _: User -> c.protocol.getChatName(c) }
+    "%sender" to { c: Chat, s: User -> c.protocol.getName(c, s) },
+    "%sendernick" to { c, s -> (c.protocol as? HasNicknames)?.getUserNickname(c, s) ?: "%sendernick" },
+    "%botname" to { c: Chat, _: User -> c.protocol.getName(c, c.protocol.getBot(c)) },
+    "%chatname" to { c: Chat, _: User -> c.protocol.getChatName(c) }
 )
 val objectMapper: ObjectMapper = ObjectMapper()
     .configure(SerializationFeature.INDENT_OUTPUT, true)

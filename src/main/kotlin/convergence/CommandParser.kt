@@ -4,6 +4,7 @@ import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonToken
 import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.ParserRuleContext
+import org.antlr.v4.runtime.tree.ErrorNode
 import org.antlr.v4.runtime.tree.TerminalNode
 
 class InvalidCommandParseException: Exception {
@@ -68,26 +69,33 @@ fun parseCommand(command: String, commandDelimiter: String, chat: Chat): Command
     // Check for the command delimiter, so the grammar doesn't have to worry about it
     if (!command.startsWith(commandDelimiter))
         return null
-    // Set up antlr
-    val input = command.substring(commandDelimiter.length)
-    val chars = CharStreams.fromString(input, chat.name)
-    val lexer = CommandLexer(chars)
-    val tokens = CommonTokenStream(lexer)
-    val parser = CommandParser(tokens)
-    parser.buildParseTree = true
-    // Read a command
-    val tree = parser.command()
-
-    // Check if there were any invalid escape sequences, and error if there were.
-    val invalidEscapes = tokens.tokens.filter { it.type == CommandParser.InvalidEscape }
-    if (invalidEscapes.isNotEmpty())
-        throw InvalidEscapeSequenceException(
-            "Command \"$command\" contains the following invalid escape sequences: \"${
-                invalidEscapes.joinToString(
-                    "\", \""
-                ) { it.text }
-            }\"."
-        )
+    val tree = try {
+        // Set up antlr
+        val input = command.substring(commandDelimiter.length)
+        val chars = CharStreams.fromString(input, chat.name)
+        val lexer = CommandLexer(chars)
+        val tokens = CommonTokenStream(lexer)
+        val parser = CommandParser(tokens)
+        parser.buildParseTree = true
+        // Check if there were any invalid escape sequences, and error if there were.
+        val invalidEscapes = tokens.tokens.filter { it.type == CommandParser.InvalidEscape }
+        if (invalidEscapes.isNotEmpty())
+            throw InvalidEscapeSequenceException(
+                "Command \"$command\" contains the following invalid escape sequences: \"${
+                    invalidEscapes.joinToString(
+                        "\", \""
+                    ) { it.text }
+                }\"."
+            )
+        // Read a command
+        parser.command()
+    } catch(e: Exception) {
+        throw InvalidCommandParseException(e)
+    }
+    val errorTokens = tree.children.filterIsInstance<ErrorNode>()
+    if (errorTokens.isNotEmpty()) {
+        throw InvalidCommandParseException("The following invalid tokens were detected: ${errorTokens.joinToString("\", \"", "\"", "\"") { it.text }}")
+    }
 
     // See if the command was actually parsed successfully, and error if it wasn't.
     if (!tree.exception?.message.isNullOrBlank())

@@ -98,63 +98,50 @@ fun help(args: List<String>, chat: Chat): String {
 fun echo(args: List<String>) = args.joinToString(" ")
 fun ping() = "Pong!"
 
-fun addAlias(args: List<String>, chat: Chat): String {
+fun addAlias(args: List<String>, chat: Chat, scope: CommandScope): String {
     val commandDelimiter = commandDelimiters.getOrDefault(chat, defaultCommandDelimiter)
-    val command = parseCommand((if (args[1].startsWith(commandDelimiter)) "" else commandDelimiter) + args[1], commandDelimiter, chat)
+    val commandName = if (args[1].startsWith(commandDelimiter)) args[1].substringAfter(commandDelimiter) else args[1]
+    val commandStr = "$commandDelimiter$commandName ${args.subList(2, args.size).joinToString(" ")}"
+    val command = parseCommand(commandStr, commandDelimiter, chat)
         ?: return "Alias does not refer to a valid command!"
     if (!registerAlias(Alias(chat, args[0], command.command, command.args)))
         return "An alias with that name is already registered!"
     Settings.update()
-    return "Alias \"${args[0]}\" registered to \"${args[1]}\"."
+    return "Alias \"${args[0]}\" registered to \"$commandStr\"."
 }
 
-fun addServerAlias(args: List<String>, chat: Chat): String {
+fun addChatAlias(args: List<String>, chat: Chat) = addAlias(args, chat, chat)
+fun addServerAlias(args: List<String>, chat: Chat) =
     if (chat !is HasServer)
-        return "This protocol doesn't support servers!"
-    val commandDelimiter = commandDelimiters.getOrDefault(chat, defaultCommandDelimiter)
-    val command = parseCommand(commandDelimiter + args[1], commandDelimiter, chat)
-        ?: return "Alias does not refer to a valid command!"
-    if (!registerAlias(Alias(chat.server, args[0], command.command, command.args)))
-        return "An alias with that name is already registered!"
-    Settings.update()
-    return "Alias \"${args[0]}\" registered to \"${args[1]}\"."
-}
+        "This protocol doesn't support servers!"
+    else
+        addAlias(args, chat, chat.server)
 
 fun removeServerAlias(args: List<String>, chat: Chat): String {
     if (chat !is HasServer)
         return "This protocol doesn't support servers!"
-    val validAliases = BitSet(args.size)
-    var anyInvalid = false
-    val server = chat.server
-    for (i in 0..args.size) {
-        if (server in aliases && aliases[server] is MutableMap && args[i] in aliases[server]!!) {
-            aliases[server]!!.remove(args[i])
-            validAliases[i] = true
-        } else
-            anyInvalid = true
+    if (args.size != 1) {
+        return "Only one argument should be passed."
     }
-    Settings.update()
-    return if (anyInvalid)
-        "Aliases \"${args.filterIndexed { i, _ -> validAliases[i] }.joinToString("\", \"")}\" removed, " +
-                "${args.filterIndexed { i, _ -> !validAliases[i] }.joinToString("\", \"")} not removed."
-    else "Aliases \"${args.filterIndexed { i, _ -> validAliases[i] }.joinToString("\", \"")}\" removed."
+    val server = chat.server
+    if (chat in aliases && aliases[server] is MutableMap && args[0] in aliases[server]!!) {
+        aliases[server]!!.remove(args[0])
+        Settings.update()
+        return "Alias \"${args[0]}\" removed."
+    }
+    return "No alias with name \"${args[0]}\" found."
 }
 
 fun removeAlias(args: List<String>, chat: Chat): String {
-    val validAliases = BitSet(args.size)
-    var anyInvalid = false
-    for (i in 0..args.size) {
-        if (chat in aliases && aliases[chat] is MutableMap && args[i] in aliases[chat]!!) {
-            aliases[chat]!!.remove(args[i])
-            validAliases[i] = true
-        } else
-            anyInvalid = true
+    if (args.size != 1) {
+        return "Only one argument should be passed."
     }
-    Settings.update()
-    return if (anyInvalid)
-        "Aliases \"${args.filterIndexed { i, _ -> validAliases[i] }.joinToString("\", \"")}\" removed, " +
-                "${args.filterIndexed { i, _ -> !validAliases[i] }.joinToString("\", \"")} not removed."
-    else "Aliases \"${args.filterIndexed { i, _ -> validAliases[i] }.joinToString("\", \"")}\" removed."
+    if (chat in aliases && aliases[chat] is MutableMap && args[0] in aliases[chat]!!) {
+        aliases[chat]!!.remove(args[0])
+        Settings.update()
+        return "Alias \"${args[0]}\" removed."
+    }
+    return "No alias with name \"${args[0]}\" found."
 }
 
 fun me(args: List<String>, chat: Chat, sender: User): String {
@@ -287,7 +274,16 @@ fun goingto(args: List<String>, chat: Chat, sender: User): String {
 fun target(args: List<String>, chat: Chat): String {
     val user = getUserFromName(chat, args[args.size - 1])
         ?: return "No user by the name \"${args[args.size - 1]}\" found."
-    return args.subList(0, -1).joinToString(" ").replace("%target", chat.protocol.getName(chat, user))
+    return args.subList(0, args.size - 1).joinToString(" ").replace("%target", chat.protocol.getName(chat, user))
+}
+
+fun targetNick(args: List<String>, chat: Chat): String {
+    if (chat.protocol !is HasNicknames)
+        return "This protocol doesn't support nicknames!"
+    val protocol = chat.protocol as HasNicknames
+    val user = getUserFromName(chat, args[args.size - 1])
+        ?: return "No user by the name \"${args[args.size - 1]}\" found."
+    return args.subList(0, args.size - 1).joinToString(" ").replace("%target", protocol.getUserNickname(chat, user)!!)
 }
 
 fun commands(unused: List<String>, chat: Chat): String {
@@ -303,7 +299,7 @@ fun aliases(unused: List<String>, chat: Chat): String {
     aliases[chat]?.forEach { aliasList.add(it.key) }
     aliases[UniversalChat]?.forEach { aliasList.add(it.key) }
     linkedChats[chat]?.forEach { linked -> aliases[linked]?.forEach { aliasList.add(it.key) } }
-    return if (aliasList.isNotEmpty()) aliasList.joinToString(", ") else "No aliases found."
+    return if (aliasList.isNotEmpty()) "Aliases: ${aliasList.joinToString(", ")}" else "No aliases found."
 }
 
 fun schedule(args: List<String>, chat: Chat, sender: User): String {
@@ -532,7 +528,7 @@ fun registerDefaultCommands() {
     )
     registerCommand(
         Command.of(
-            UniversalProtocol, "alias", ::addAlias,
+            UniversalProtocol, "alias", ::addChatAlias,
             "Registers an alias to an existing command in this channel.",
             "alias (commandName) \"commandName [arguments...]\" (Command inside parentheses takes however many parameters that command takes)"
         )
@@ -686,6 +682,24 @@ fun registerDefaultCommands() {
             ::checkTimer,
             "Tells you how long a timer created by createTimer was running for.",
             "resetTimer (name)"
+        )
+    )
+    registerCommand(
+        Command.of(
+            UniversalProtocol,
+            "target",
+            ::target,
+            "Allows you to target another user so you can use them as an alias var. Used primarily to make aliases.",
+            "!target (message...) (user)"
+        )
+    )
+    registerCommand(
+        Command.of(
+            UniversalProtocol,
+            "targetnick",
+            ::targetNick,
+            "Allows you to target another user so you can use them as an alias var. Used primarily to make aliases. Uses the target's nickname.",
+            "!target (message...) (user)"
         )
     )
 }

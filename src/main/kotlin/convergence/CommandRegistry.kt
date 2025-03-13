@@ -34,16 +34,11 @@ fun registerAlias(alias: Alias): Boolean {
     val chat = alias.scope
     val aliases = aliases
     if (chat !in aliases || aliases[chat] !is MutableMap<String, Alias>)
-        aliases[chat] = mutableMapOf(alias.name.lowercase() to alias)
+        aliases[chat] = mutableMapOf()
     val aliasesInChat = aliases[chat]!!
 
     if (alias.name.lowercase() in aliasesInChat)
         return false
-
-    if (sortedHelpText.isEmpty())
-        sortedHelpText.add(alias)
-    else
-        sortedHelpText.add(-sortedHelpText.binarySearch(alias) - 1, alias)
 
     aliasesInChat[alias.name.lowercase()] = alias
     return true
@@ -73,16 +68,17 @@ fun runCommand(chat: Chat, message: IncomingMessage, sender: User, images: Array
         "[${getUserName(chat, sender)}]: $text${if (images.isNotEmpty()) " +${images.size} images" else ""}"
     )
     forwardToLinkedChats(chat, message.toOutgoing(), sender, images)
-    getCommandData(chat, text, sender)?.let { (command, args) ->
-        runCommand(chat, sender, command, args)
+    try {
+        getCommandData(chat, text, sender)?.let { (command, args) ->
+            runCommand(chat, sender, command, args)
+        }
+    } catch(e: Exception) {
+        sendMessage(chat, sender, "Error while running command! Stack trace:\n${getStackTraceText(e)}")
     }
 }
 
-fun runCommand(chat: Chat, sender: User, command: Command, args: List<String>) = try {
+fun runCommand(chat: Chat, sender: User, command: Command, args: List<String>) =
     sendMessage(chat, sender, replaceAliasVars(chat, command.function(args, chat, sender), sender))
-} catch(e: Exception) {
-    sendMessage(chat, sender, "Error while running command! Stack trace:\n${getStackTraceText(e)}")
-}
 
 fun runCommand(scheduledCommand: ScheduledCommand) {
     val command = getCommand(scheduledCommand.commandName.lowercase(), scheduledCommand.chat) as Command
