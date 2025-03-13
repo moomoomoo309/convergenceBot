@@ -4,8 +4,12 @@ import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonToken
 import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.ParserRuleContext
+import org.antlr.v4.runtime.tree.TerminalNode
 
-class InvalidCommandParseException(msg: String): Exception(msg)
+class InvalidCommandParseException: Exception {
+    constructor(msg: String): super(msg)
+    constructor(e: Exception): super(e)
+}
 
 data class CommandData(var command: Command, var args: List<String>) {
     constructor(alias: Alias, args: List<String>): this(alias.command, alias.args + args)
@@ -53,7 +57,6 @@ fun CommonToken.text() = when(this.type) {
         '\\' -> '\\'
         else -> throw InvalidEscapeSequenceException(this.text)
     }
-
     CommandLexer.Quote -> "" // This prevents quoted arguments from having the quotes around the text.
     else -> this.text
 }.toString()
@@ -98,11 +101,16 @@ fun parseCommand(command: String, commandDelimiter: String, chat: Chat): Command
 
     // Grab the args
     val args = tree.argument().map {
-        (it.children.first() as ParserRuleContext).children.joinToString("") { tok ->
-            if (tok.childCount == 0) // If we're looking at a token, use the text extension function above
-                (tok.payload as CommonToken).text()
-            else
-                tok.text // If it's a parser rule, just return text, don't mess with it
+        (it.children.first() as ParserRuleContext).children.joinToString("") { tokOrRule ->
+            if (tokOrRule.childCount == 0) // If we're looking at a token, use the text extension function above
+                (tokOrRule.payload as CommonToken).text()
+            else if (tokOrRule.payload is CommandParser.NotQuoteContext) {
+                val notQuote = tokOrRule.payload as CommandParser.NotQuoteContext
+                val node = notQuote.children.first() as TerminalNode
+                val token = node.symbol as CommonToken
+                token.text()
+            } else
+                tokOrRule.text // If it's any other parser rule, just return text, don't mess with it
         }
     }
 

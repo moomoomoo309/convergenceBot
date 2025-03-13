@@ -1,4 +1,5 @@
 import convergence.*
+import org.antlr.v4.runtime.InputMismatchException
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -12,7 +13,7 @@ object TestProtocol: Protocol("Test") {
     override fun init() {
     }
 
-    override fun sendMessage(chat: Chat, message: String): Boolean {
+    override fun sendMessage(chat: Chat, message: OutgoingMessage): Boolean {
         TODO("Not yet implemented")
     }
 
@@ -59,7 +60,7 @@ class CommandParserTest {
         val testChat = TestChat()
         val testIndex = command.indexOf(" ")
         val testCommandStr = command.substring(1, if (testIndex == -1) command.length else testIndex)
-        val testCommand = Command(testChat.protocol, testCommandStr, ::doNothing, "test", "test")
+        val testCommand = Command.of(testChat.protocol, testCommandStr, ::doNothing, "test", "test")
         commands[testChat.protocol] = mutableMapOf(testCommandStr to testCommand)
         return parseCommand(command, testChat)
     }
@@ -67,6 +68,21 @@ class CommandParserTest {
     @Test
     fun validEscapes() {
         val testCommandData = loadCommandData("!test \\f \\\\ \\u0014 \\tb \\b")
+        assertEquals("test", testCommandData?.command?.name, "Did not load test command correctly.")
+        assertEquals("\u000c", testCommandData?.args?.get(0), "Did not escape \\f properly.")
+        assertEquals("\\", testCommandData?.args?.get(1), "Did not escape \\\\ properly.")
+        assertEquals("\u0014", testCommandData?.args?.get(2), "Did not escape \\u0014 properly.")
+        assertEquals(
+            "\tb",
+            testCommandData?.args?.get(3),
+            "Did not escape \\tb properly. (a \\t with a letter after it)"
+        )
+        assertEquals("\b", testCommandData?.args?.get(4), "Did not escape \\b properly.")
+    }
+
+    @Test
+    fun validEscapesInQuotes() {
+        val testCommandData = loadCommandData("!test \"\\f\" \"\\\\\" \"\\u0014\" \"\\tb\" \"\\b\"")
         assertEquals("test", testCommandData?.command?.name, "Did not load test command correctly.")
         assertEquals("\u000c", testCommandData?.args?.get(0), "Did not escape \\f properly.")
         assertEquals("\\", testCommandData?.args?.get(1), "Did not escape \\\\ properly.")
@@ -88,7 +104,7 @@ class CommandParserTest {
 
     @Test
     fun invalidCommand() {
-        assertFailsWith<InvalidCommandParseException>("Did not fail on invalid command.") {
+        assertFailsWith<InputMismatchException>("Did not fail on invalid command.") {
             loadCommandData("!test2.5 abc\"def")
         }
     }
@@ -127,16 +143,14 @@ class CommandParserTest {
 
 
     private fun loadAliasData(command: String): CommandData? {
-//        val testChat = TestChat()
-//        val testIndex = command.indexOf(" ")
-//        val testAliasStr = command.substring(1, if (testIndex == -1) command.length else testIndex)
-//        val testCommand = Command(testChat.protocol, "test", ::doNothing, "test", "test")
-//        val testAlias =
-//            Alias(testChat, testAliasStr, testCommand, listOf("testArg1", "testArg2"), "testAlias", "testAlias")
-//        commands[testChat.protocol] = mutableMapOf("test" to testCommand)
-//        aliases[testChat] = mutableMapOf(testAliasStr to testAlias)
-//        return parseCommand(command, testChat)
-        TODO()
+        val testChat = TestChat()
+        val testAliasStr = command.substringBefore(" ").substringAfter(defaultCommandDelimiter).lowercase()
+        val testCommand = Command.of(testChat.protocol, "test", ::doNothing, "test", "test")
+        val testAlias =
+            Alias(testChat, testAliasStr, testCommand, listOf("testArg1", "testArg2"))
+        commands[testChat.protocol] = mutableMapOf("test" to testCommand)
+        aliases[testChat] = mutableMapOf(testAliasStr to testAlias)
+        return parseCommand(command, testChat)
     }
 
     @Test

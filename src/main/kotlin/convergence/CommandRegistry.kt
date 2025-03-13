@@ -68,11 +68,14 @@ fun getStackTraceText(e: Exception): String = ByteArrayOutputStream().let {
  * Run the Command in the given message, or do nothing if none exists.
  */
 fun runCommand(chat: Chat, message: IncomingMessage, sender: User, images: Array<Image> = emptyArray()) {
+    val text = message.toSimple().text
     defaultLogger.info(
-        "[${getUserName(chat, sender)}]: ${message.toSimple().text}${if (images.isNotEmpty()) " +${images.size} images" else ""}"
+        "[${getUserName(chat, sender)}]: $text${if (images.isNotEmpty()) " +${images.size} images" else ""}"
     )
     forwardToLinkedChats(chat, message.toOutgoing(), sender, images)
-    getCommandData(chat, message.toSimple().text, sender)?.let { (command, args) -> runCommand(chat, sender, command, args) }
+    getCommandData(chat, text, sender)?.let { (command, args) ->
+        runCommand(chat, sender, command, args)
+    }
 }
 
 fun runCommand(chat: Chat, sender: User, command: Command, args: List<String>) = try {
