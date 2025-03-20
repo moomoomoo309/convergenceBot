@@ -65,5 +65,15 @@ object ConvergenceBot {
         defaultLogger.info("Starting command scheduler...")
         CommandScheduler.loadFromFile()
         CommandScheduler.start()
+
+        // Update the chat map
+        for (protocol in protocols) {
+            defaultLogger.info("Running ${protocol.name}.configLoaded...")
+            try {
+                protocol.configLoaded()
+            } catch(e: Exception) {
+                e.printStackTrace()
+            }
+        }
     }
 }

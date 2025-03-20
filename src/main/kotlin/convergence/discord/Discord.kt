@@ -225,11 +225,11 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
             listOf(commands[DiscordProtocol]!!, commands[UniversalProtocol]!!)
                 .flatMap { commandMap ->
                     commandMap.map { (name, command) ->
-                        Commands.slash(name, command.helpText)
+                        Commands.slash(name.lowercase(), command.helpText)
                             .setContexts(InteractionContextType.GUILD)
                             .addOptions(
                                 command.argSpecs.map {
-                                    OptionData(it.type.toDiscord(), it.name, "", it.optional)
+                                    OptionData(it.type.toDiscord(), it.name.lowercase(), "ligma", !it.optional)
                                 }
                             )
                     }
@@ -240,10 +240,10 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
     override fun aliasCreated(alias: Alias) {
         val slashCommands = jda.updateCommands()
         slashCommands.addCommands(
-            Commands.slash(alias.name, "Alias that runs ${alias.command.name} with these arguments: ${alias.args}")
+            Commands.slash(alias.name.lowercase(), "Alias that runs ${alias.command.name} with these arguments: ${alias.args}")
                 .setContexts(InteractionContextType.GUILD)
                 .addOptions(alias.command.argSpecs.subList(alias.args.size, alias.command.argSpecs.size).map {
-                    OptionData(it.type.toDiscord(), it.name, "", it.optional)
+                    OptionData(it.type.toDiscord(), it.name.lowercase(), "ligma", !it.optional)
                 })
         ).queue()
     }

@@ -525,7 +525,7 @@ fun registerDefaultCommands() {
     )
     registerCommand(
         Command.of(
-            UniversalProtocol, "help", listOf(ArgumentSpec("Command or page number", ArgumentType.STRING)), ::help,
+            UniversalProtocol, "help", listOf(ArgumentSpec("Command-or-page", ArgumentType.STRING)), ::help,
             "Provides a paginated list of commands and their syntax, or specific help on a single command.",
             "help [command] or help [page number]"
         )
@@ -550,8 +550,8 @@ fun registerDefaultCommands() {
         Command.of(
             UniversalProtocol, "alias",
             listOf(
-                ArgumentSpec("Command name", ArgumentType.STRING),
-                ArgumentSpec("Alias Command", ArgumentType.STRING)
+                ArgumentSpec("Commandname", ArgumentType.STRING),
+                ArgumentSpec("Command", ArgumentType.STRING)
             ), ::addChatAlias,
             "Registers an alias to an existing command in this channel.",
             "alias (commandName) \"!commandName [arguments...]\""
@@ -560,7 +560,7 @@ fun registerDefaultCommands() {
     registerCommand(
         Command.of(
             UniversalProtocol, "removeAlias",
-            listOf(ArgumentSpec("Alias name", ArgumentType.STRING)),
+            listOf(ArgumentSpec("Name", ArgumentType.STRING)),
             ::removeAlias,
             "Removes an existing alias by its name.",
             "removeAlias (aliasName)"
@@ -570,8 +570,8 @@ fun registerDefaultCommands() {
         Command.of(
             UniversalProtocol, "serverAlias",
             listOf(
-                ArgumentSpec("Command name", ArgumentType.STRING),
-                ArgumentSpec("Alias Command", ArgumentType.STRING)
+                ArgumentSpec("name", ArgumentType.STRING),
+                ArgumentSpec("Command", ArgumentType.STRING)
             ), ::addServerAlias,
             "Registers an alias to an existing command in this server.",
             "serverAlias (commandName) \"commandName [arguments...]\" (Command inside parentheses takes however many parameters that command takes)"
@@ -580,7 +580,7 @@ fun registerDefaultCommands() {
     registerCommand(
         Command.of(
             UniversalProtocol, "removeServerAlias",
-            listOf(ArgumentSpec("Alias name", ArgumentType.STRING)),
+            listOf(ArgumentSpec("name", ArgumentType.STRING)),
             ::removeServerAlias,
             "Removes an existing alias by its name.",
             "removeServerAlias (aliasName)"
@@ -731,7 +731,7 @@ fun registerDefaultCommands() {
         Command.of(
             UniversalProtocol,
             "createTimer",
-            listOf(ArgumentSpec("Timer Name", ArgumentType.STRING)),
+            listOf(ArgumentSpec("Name", ArgumentType.STRING)),
             ::createTimer,
             "Creates a named timer, which you can reset later to see how long it's been since the last time.",
             "createTimer (name)"
@@ -741,7 +741,7 @@ fun registerDefaultCommands() {
         Command.of(
             UniversalProtocol,
             "resetTimer",
-            listOf(ArgumentSpec("Timer Name", ArgumentType.STRING)),
+            listOf(ArgumentSpec("Name", ArgumentType.STRING)),
             ::resetTimer,
             "Resets a timer created by createTimer and tells you how long it was running for.",
             "resetTimer (name)"
@@ -751,7 +751,7 @@ fun registerDefaultCommands() {
         Command.of(
             UniversalProtocol,
             "checkTimer",
-            listOf(ArgumentSpec("Timer Name", ArgumentType.STRING)),
+            listOf(ArgumentSpec("Name", ArgumentType.STRING)),
             ::checkTimer,
             "Tells you how long a timer created by createTimer was running for.",
             "resetTimer (name)"
@@ -766,7 +766,7 @@ fun registerDefaultCommands() {
                 ArgumentSpec("User", ArgumentType.STRING)
             ),
             ::target,
-            "Allows you to target another user so you can use them as an alias var. Used primarily to make aliases.",
+            "Allows you to target another user to use them as an alias var. Used primarily to make aliases.",
             "!target (message...) (user)"
         )
     )
@@ -779,7 +779,7 @@ fun registerDefaultCommands() {
                 ArgumentSpec("User", ArgumentType.STRING)
             ),
             ::targetNick,
-            "Allows you to target another user so you can use them as an alias var. Used primarily to make aliases. Uses the target's nickname.",
+            "Allows you to target another user to use them as an alias var. Uses the target's nickname.",
             "!target (message...) (user)"
         )
     )

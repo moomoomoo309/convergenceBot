@@ -57,7 +57,7 @@ fun registerFratCommands() {
         Command(
             DiscordProtocol,
             "brotherbyroster",
-            listOf(ArgumentSpec("Roster number", ArgumentType.STRING)),
+            listOf(ArgumentSpec("Roster", ArgumentType.STRING)),
             { args: List<String> -> brotherInfo(args) { it.rosterNumber } },
             "Gets information about a particular brother based on their roster number.",
             "brotherbyroster (roster number)"
