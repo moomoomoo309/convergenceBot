@@ -13,6 +13,14 @@ object TestProtocol: Protocol("Test") {
     override fun init() {
     }
 
+    override fun configLoaded() {
+        TODO("Not yet implemented")
+    }
+
+    override fun aliasCreated(alias: Alias) {
+        TODO("Not yet implemented")
+    }
+
     override fun sendMessage(chat: Chat, message: OutgoingMessage): Boolean {
         TODO("Not yet implemented")
     }
@@ -60,7 +68,7 @@ class CommandParserTest {
         val testChat = TestChat()
         val testIndex = command.indexOf(" ")
         val testCommandStr = command.substring(1, if (testIndex == -1) command.length else testIndex)
-        val testCommand = Command.of(testChat.protocol, testCommandStr, ::doNothing, "test", "test")
+        val testCommand = Command.of(testChat.protocol, testCommandStr, listOf(), ::doNothing, "test", "test")
         commands[testChat.protocol] = mutableMapOf(testCommandStr to testCommand)
         return parseCommand(command, testChat)
     }
@@ -145,7 +153,7 @@ class CommandParserTest {
     private fun loadAliasData(command: String): CommandData? {
         val testChat = TestChat()
         val testAliasStr = command.substringBefore(" ").substringAfter(defaultCommandDelimiter).lowercase()
-        val testCommand = Command.of(testChat.protocol, "test", ::doNothing, "test", "test")
+        val testCommand = Command.of(testChat.protocol, "test", listOf(), ::doNothing, "test", "test")
         val testAlias =
             Alias(testChat, testAliasStr, testCommand, listOf("testArg1", "testArg2"))
         commands[testChat.protocol] = mutableMapOf("test" to testCommand)

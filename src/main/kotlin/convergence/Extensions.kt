@@ -1,5 +1,9 @@
 package convergence
 
+import convergence.discord.defaultZoneOffset
+import java.time.OffsetDateTime
+import java.util.*
+
 // This file has all the extension functions that aren't related to a specific file.
 // I.E: CalendarProcessor has some calendar event-related extensions, those can stay there.
 // This file has stuff on Lists or Strings or Maps, more generic stuff.
@@ -37,3 +41,4 @@ fun String.substringBetween(startDelimiter: String, endDelimiter: String): Strin
 }
 
 fun String.titleCase() = "${first().uppercase()}${substring(1).lowercase()}"
+fun Date.toOffsetDatetime(): OffsetDateTime = this.toInstant().atOffset(defaultZoneOffset)

@@ -3,7 +3,6 @@ antlr = "4.13.2"
 argparse4j = "0.9.0"
 caldav4j = "1.0.5"
 commonstext = "1.13.0"
-coroutines = "1.10.1"
 gradle = "8.12"
 jackson = "2.18.2"
 jda = "5.3.0"
@@ -18,7 +17,6 @@ shadow = "8.3.0"
 [libraries]
 caldav4j = { module = "com.github.caldav4j:caldav4j", version.ref = "caldav4j" }
 commonstext = { module = "org.apache.commons:commons-text", version.ref = "commonstext" }
-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
 kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
 natty = { module = "io.github.natty-parser:natty", version.ref = "natty" }
 argparse4j = { module = "net.sourceforge.argparse4j:argparse4j", version.ref = "argparse4j" }

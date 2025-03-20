@@ -17,6 +17,10 @@ import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel
 import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
+import net.dv8tion.jda.api.interactions.InteractionContextType
+import net.dv8tion.jda.api.interactions.commands.OptionType
+import net.dv8tion.jda.api.interactions.commands.build.Commands
+import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import net.dv8tion.jda.api.requests.GatewayIntent
 import net.dv8tion.jda.api.utils.FileUpload
 import net.dv8tion.jda.api.utils.cache.CacheFlag
@@ -159,6 +163,13 @@ class DiscordIncomingMessage(val data: Message): IncomingMessage() {
     }
 }
 
+fun ArgumentType.toDiscord() = when(this) {
+    ArgumentType.NUMBER -> OptionType.NUMBER
+    ArgumentType.STRING -> OptionType.STRING
+    ArgumentType.INTEGER -> OptionType.INTEGER
+    ArgumentType.BOOLEAN -> OptionType.BOOLEAN
+}
+
 object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, HasImages, CanMentionUsers,
     HasMessageHistory, CanEditOtherMessages, HasUserAvailability, HasCustomEmoji, HasServers {
     override fun init() {
@@ -205,6 +216,36 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
                 true
             }
         )
+        jda.awaitReady()
+    }
+
+    override fun configLoaded() {
+        val slashCommands = jda.updateCommands()
+        slashCommands.addCommands(
+            listOf(commands[DiscordProtocol]!!, commands[UniversalProtocol]!!)
+                .flatMap { commandMap ->
+                    commandMap.map { (name, command) ->
+                        Commands.slash(name, command.helpText)
+                            .setContexts(InteractionContextType.GUILD)
+                            .addOptions(
+                                command.argSpecs.map {
+                                    OptionData(it.type.toDiscord(), it.name, "", it.optional)
+                                }
+                            )
+                    }
+                }
+        ).queue()
+    }
+
+    override fun aliasCreated(alias: Alias) {
+        val slashCommands = jda.updateCommands()
+        slashCommands.addCommands(
+            Commands.slash(alias.name, "Alias that runs ${alias.command.name} with these arguments: ${alias.args}")
+                .setContexts(InteractionContextType.GUILD)
+                .addOptions(alias.command.argSpecs.subList(alias.args.size, alias.command.argSpecs.size).map {
+                    OptionData(it.type.toDiscord(), it.name, "", it.optional)
+                })
+        ).queue()
     }
 
     @JsonIgnore

@@ -11,8 +11,6 @@ import java.io.StringWriter
 import java.time.Duration
 import java.time.Instant
 import java.time.OffsetDateTime
-import java.time.ZoneId
-import java.util.*
 import kotlin.math.ceil
 import kotlin.reflect.jvm.jvmName
 import kotlin.system.exitProcess
@@ -177,10 +175,6 @@ fun chats(): String {
 
 val dateTimeParser = Parser()
 
-fun dateToOffsetDateTime(d: Date, tz: ZoneId? = null): OffsetDateTime = OffsetDateTime.ofInstant(
-    d.toInstant(), tz ?: ZoneId.systemDefault()
-)
-
 val defaultDuration = Duration.ofMinutes(45)!!
 private val locations = HashMap<User, Pair<OffsetDateTime, String>>()
 
@@ -258,7 +252,7 @@ fun goingto(args: List<String>, chat: Chat, sender: User): String {
                                 listOf(location.toString())
                             else
                                 listOf(location.toString(), "for", durationStr.toString()),
-                            dateToOffsetDateTime(it)
+                            it.toOffsetDatetime()
                         )
                     )
                 }
@@ -266,7 +260,12 @@ fun goingto(args: List<String>, chat: Chat, sender: User): String {
             }
         }
     } else {
-        return "${getUserName(chat, sender)} is going to $location${if (durationStr.isEmpty()) "" else " for $durationStr"}."
+        return "${
+            getUserName(
+                chat,
+                sender
+            )
+        } is going to $location${if (durationStr.isEmpty()) "" else " for $durationStr"}."
     }
     return if (builder.isNotEmpty()) builder.toString() else "No events scheduled."
 }
@@ -312,7 +311,13 @@ fun schedule(args: List<String>, chat: Chat, sender: User): String {
     if (commandData != null)
         for (group in timeList)
             for (time in group.dates)
-                CommandScheduler.schedule(chat, sender, commandData.command.name, commandData.args, dateToOffsetDateTime(time))
+                CommandScheduler.schedule(
+                    chat,
+                    sender,
+                    commandData.command.name,
+                    commandData.args,
+                    time.toOffsetDatetime()
+                )
     Settings.update()
     return "Scheduled \"$command\" to run in ${args[0]}."
 }
@@ -483,7 +488,13 @@ fun resetTimer(args: List<String>): String {
     val oldVal = timers[name]
     timers[name] = Instant.now()
     Settings.update()
-    return "Timer reset. The time it was created or last time the timer was reset was ${formatTime(oldVal!!.atOffset(defaultZoneOffset))}."
+    return "Timer reset. The time it was created or last time the timer was reset was ${
+        formatTime(
+            oldVal!!.atOffset(
+                defaultZoneOffset
+            )
+        )
+    }."
 }
 
 fun checkTimer(args: List<String>): String {
@@ -494,173 +505,233 @@ fun checkTimer(args: List<String>): String {
         return "That timer doesn't exist!"
     val oldVal = timers[name]
     Settings.update()
-    return "The time it was created or last time the timer was reset was ${formatTime(oldVal!!.atOffset(defaultZoneOffset))}."
+    return "The time it was created or last time the timer was reset was ${
+        formatTime(
+            oldVal!!.atOffset(
+                defaultZoneOffset
+            )
+        )
+    }."
 }
 
 fun registerDefaultCommands() {
     registerCommand(
         Command(
-            UniversalProtocol, "exit", { -> exitProcess(0) },
+            UniversalProtocol, "exit", listOf(),
+            { -> exitProcess(0) },
             "Exits the bot.",
             "exit (Takes no arguments)"
         )
     )
     registerCommand(
         Command.of(
-            UniversalProtocol, "help", ::help,
+            UniversalProtocol, "help", listOf(ArgumentSpec("Command or page number", ArgumentType.STRING)), ::help,
             "Provides a paginated list of commands and their syntax, or specific help on a single command.",
             "help [command] or help [page number]"
         )
     )
     registerCommand(
         Command.of(
-            UniversalProtocol, "echo", ::echo,
+            UniversalProtocol, "echo",
+            listOf(ArgumentSpec("Message", ArgumentType.STRING)),
+            ::echo,
             "Replies with the string passed to it.",
             "echo [message...] (All arguments are appended to each other with spaces)"
         )
     )
     registerCommand(
         Command.of(
-            UniversalProtocol, "ping", ::ping,
+            UniversalProtocol, "ping", listOf(), ::ping,
             "Replies with \"Pong!\".",
             "ping (Takes no arguments)"
         )
     )
     registerCommand(
         Command.of(
-            UniversalProtocol, "alias", ::addChatAlias,
+            UniversalProtocol, "alias",
+            listOf(
+                ArgumentSpec("Command name", ArgumentType.STRING),
+                ArgumentSpec("Alias Command", ArgumentType.STRING)
+            ), ::addChatAlias,
             "Registers an alias to an existing command in this channel.",
-            "alias (commandName) \"commandName [arguments...]\" (Command inside parentheses takes however many parameters that command takes)"
+            "alias (commandName) \"!commandName [arguments...]\""
         )
     )
     registerCommand(
         Command.of(
-            UniversalProtocol, "removeAlias", ::removeAlias,
+            UniversalProtocol, "removeAlias",
+            listOf(ArgumentSpec("Alias name", ArgumentType.STRING)),
+            ::removeAlias,
             "Removes an existing alias by its name.",
             "removeAlias (aliasName)"
         )
     )
     registerCommand(
         Command.of(
-            UniversalProtocol, "serverAlias", ::addServerAlias,
+            UniversalProtocol, "serverAlias",
+            listOf(
+                ArgumentSpec("Command name", ArgumentType.STRING),
+                ArgumentSpec("Alias Command", ArgumentType.STRING)
+            ), ::addServerAlias,
             "Registers an alias to an existing command in this server.",
             "serverAlias (commandName) \"commandName [arguments...]\" (Command inside parentheses takes however many parameters that command takes)"
         )
     )
     registerCommand(
         Command.of(
-            UniversalProtocol, "removeServerAlias", ::removeServerAlias,
+            UniversalProtocol, "removeServerAlias",
+            listOf(ArgumentSpec("Alias name", ArgumentType.STRING)),
+            ::removeServerAlias,
             "Removes an existing alias by its name.",
             "removeServerAlias (aliasName)"
         )
     )
     registerCommand(
         Command.of(
-            UniversalProtocol, "me", ::me,
+            UniversalProtocol, "me",
+            listOf(ArgumentSpec("Message", ArgumentType.STRING)),
+            ::me,
             "Replied \"*(username) (message)\" e.g. \"*Gian Laput is French.\"",
             "me [message...] (All arguments are appended to each other with spaces)"
         )
     )
     registerCommand(
         Command.of(
-            UniversalProtocol, "chats", ::chats,
+            UniversalProtocol, "chats", listOf(), ::chats,
             "Lists all chats the bot knows of by name.",
             "chats (Takes no arguments)"
         )
     )
     registerCommand(
         Command.of(
-            UniversalProtocol, "goingto", ::goingto,
+            UniversalProtocol, "goingto",
+            listOf(
+                ArgumentSpec("Location", ArgumentType.STRING),
+                ArgumentSpec("Duration", ArgumentType.STRING, true),
+                ArgumentSpec("Time", ArgumentType.STRING, true)
+            ),
+            ::goingto,
             "Tells the chat you're going somewhere for some time.",
             "goingto \"location\" [for (duration)] [at (time)/in (timedelta)/on (datetime)] (Note: Order does not matter with for/at/in/on)"
         )
     )
     registerCommand(
         Command.of(
-            UniversalProtocol, "commands", ::commands,
+            UniversalProtocol, "commands",
+            listOf(),
+            ::commands,
             "Lists all of the commands in this chat.",
             "commands (Takes no arguments)"
         )
     )
     registerCommand(
         Command.of(
-            UniversalProtocol, "aliases", ::aliases,
+            UniversalProtocol, "aliases",
+            listOf(),
+            ::aliases,
             "Lists all of the aliases in this chat.",
             "aliases (Takes no arguments)"
         )
     )
     registerCommand(
         Command.of(
-            UniversalProtocol, "schedule", ::schedule,
+            UniversalProtocol, "schedule",
+            listOf(
+                ArgumentSpec("Time", ArgumentType.STRING),
+                ArgumentSpec("Command", ArgumentType.STRING)
+            ),
+            ::schedule,
             "Schedules a command to run later.",
             "schedule \"time\" \"command (with delimiter and arguments)\""
         )
     )
     registerCommand(
         Command.of(
-            UniversalProtocol, "unschedule", ::unschedule,
+            UniversalProtocol, "unschedule",
+            listOf(ArgumentSpec("ID", ArgumentType.INTEGER)),
+            ::unschedule,
             "Unschedules a command, so it will not be run later. The ID can be obtained from the events command.",
             "unschedule (ID)"
         )
     )
     registerCommand(
         Command.of(
-            UniversalProtocol, "events", ::eventsFromUser,
+            UniversalProtocol, "events",
+            listOf(),
+            ::eventsFromUser,
             "Lists all of the events you've made.",
             "events (Takes no arguments)"
         )
     )
     registerCommand(
         Command.of(
-            UniversalProtocol, "allevents", ::events,
+            UniversalProtocol, "allevents",
+            listOf(),
+            ::events,
             "Lists all of the events in chronological order.",
             "allevents (Takes no arguments)"
         )
     )
     registerCommand(
         Command.of(
-            UniversalProtocol, "eventsbyuser", ::eventsByUser,
+            UniversalProtocol, "eventsbyuser",
+            listOf(),
+            ::eventsByUser,
             "Lists all events by user, then in chronological order.",
             "eventsbyuser (Takes no arguments)"
         )
     )
     registerCommand(
         Command.of(
-            UniversalProtocol, "link", ::link,
+            UniversalProtocol, "link",
+            listOf(ArgumentSpec("ID", ArgumentType.INTEGER)),
+            ::link,
             "Links a chat to this one. The ID can be obtained from the chats command.",
             "link (ID)"
         )
     )
     registerCommand(
         Command.of(
-            UniversalProtocol, "unlink", ::unlink,
+            UniversalProtocol, "unlink",
+            listOf(ArgumentSpec("ID", ArgumentType.INTEGER)),
+            ::unlink,
             "Unlinks a chat from this one. The ID can be obtained from the chats command.",
             "unlink (ID)"
         )
     )
     registerCommand(
         Command.of(
-            UniversalProtocol, "links", ::links,
+            UniversalProtocol, "links",
+            listOf(),
+            ::links,
             "Lists all of the chats linked to this one.",
             "links (Takes no arguments)"
         )
     )
     registerCommand(
         Command.of(
-            UniversalProtocol, "setdelimiter", ::setDelimiter,
+            UniversalProtocol, "setdelimiter",
+            listOf(ArgumentSpec("Delimiter", ArgumentType.STRING)),
+            ::setDelimiter,
             "Changes the command delimiter of the current chat (default is !)",
             "setdelimiter (New delimiter)"
         )
     )
     registerCommand(
         Command.of(
-            UniversalProtocol, "dumpSettings", { -> Settings.toDTO().toString() }, "", ""
+            UniversalProtocol,
+            "dumpSettings",
+            listOf(),
+            { -> Settings.toDTO().toString() },
+            "Prints out the content of the settings file.",
+            "dumpSettings (takes no arguments)"
         )
     )
     registerCommand(
         Command.of(
             UniversalProtocol,
             "createTimer",
+            listOf(ArgumentSpec("Timer Name", ArgumentType.STRING)),
             ::createTimer,
             "Creates a named timer, which you can reset later to see how long it's been since the last time.",
             "createTimer (name)"
@@ -670,6 +741,7 @@ fun registerDefaultCommands() {
         Command.of(
             UniversalProtocol,
             "resetTimer",
+            listOf(ArgumentSpec("Timer Name", ArgumentType.STRING)),
             ::resetTimer,
             "Resets a timer created by createTimer and tells you how long it was running for.",
             "resetTimer (name)"
@@ -679,6 +751,7 @@ fun registerDefaultCommands() {
         Command.of(
             UniversalProtocol,
             "checkTimer",
+            listOf(ArgumentSpec("Timer Name", ArgumentType.STRING)),
             ::checkTimer,
             "Tells you how long a timer created by createTimer was running for.",
             "resetTimer (name)"
@@ -688,6 +761,10 @@ fun registerDefaultCommands() {
         Command.of(
             UniversalProtocol,
             "target",
+            listOf(
+                ArgumentSpec("Message", ArgumentType.STRING),
+                ArgumentSpec("User", ArgumentType.STRING)
+            ),
             ::target,
             "Allows you to target another user so you can use them as an alias var. Used primarily to make aliases.",
             "!target (message...) (user)"
@@ -697,6 +774,10 @@ fun registerDefaultCommands() {
         Command.of(
             UniversalProtocol,
             "targetnick",
+            listOf(
+                ArgumentSpec("Message", ArgumentType.STRING),
+                ArgumentSpec("User", ArgumentType.STRING)
+            ),
             ::targetNick,
             "Allows you to target another user so you can use them as an alias var. Used primarily to make aliases. Uses the target's nickname.",
             "!target (message...) (user)"

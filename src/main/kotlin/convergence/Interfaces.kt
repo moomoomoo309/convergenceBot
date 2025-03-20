@@ -16,6 +16,8 @@ abstract class Server(val name: String, override val protocol: Protocol): Compar
 
 abstract class Protocol(val name: String): Comparable<Protocol> {
     abstract fun init()
+    abstract fun configLoaded()
+    abstract fun aliasCreated(alias: Alias)
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is Protocol) return false
@@ -83,6 +85,14 @@ object UniversalProtocol: Protocol("Universal") {
     override fun init() {
         // Do nothing
     }
+
+    override fun configLoaded() {
+        // Do nothing
+    }
+
+    override fun aliasCreated(alias: Alias) {
+        // Do nothing
+    }
 }
 
 // Used to represent the universal chat.
@@ -90,9 +100,18 @@ object UniversalChat: Chat(UniversalProtocol, "Universal") {
     override fun toKey() = "UniversalChat"
 }
 
+enum class ArgumentType {
+    NUMBER,
+    STRING,
+    BOOLEAN,
+    INTEGER
+}
+
+data class ArgumentSpec(val name: String, val type: ArgumentType, val optional: Boolean = false)
+
 sealed class CommandLike(
     open val protocol: Protocol,
-    open val name: String
+    open val name: String,
 ): Comparable<CommandLike> {
     override fun compareTo(other: CommandLike) = "$protocol-$name".compareTo("${other.protocol}-${other.name}")
 }
@@ -100,6 +119,7 @@ sealed class CommandLike(
 data class Command(
     override val protocol: Protocol,
     override val name: String,
+    @JsonIgnore val argSpecs: List<ArgumentSpec>,
     @JsonIgnore val function: (List<String>, Chat, User) -> OutgoingMessage?,
     @JsonIgnore val helpText: String,
     @JsonIgnore val syntaxText: String
@@ -107,38 +127,43 @@ data class Command(
     constructor(
         protocol: Protocol,
         name: String,
+        argSpecs: List<ArgumentSpec>,
         function: () -> OutgoingMessage?,
         helpText: String,
         syntaxText: String
-    ): this(protocol, name, { _: List<String>, _: Chat, _: User -> function() }, helpText, syntaxText)
+    ): this(protocol, name, argSpecs, { _: List<String>, _: Chat, _: User -> function() }, helpText, syntaxText)
 
     constructor(
         protocol: Protocol,
         name: String,
+        argSpecs: List<ArgumentSpec>,
         function: (args: List<String>) -> OutgoingMessage?,
         helpText: String,
         syntaxText: String
-    ): this(protocol, name, { args: List<String>, _: Chat, _: User -> function(args) }, helpText, syntaxText)
+    ): this(protocol, name, argSpecs, { args: List<String>, _: Chat, _: User -> function(args) }, helpText, syntaxText)
 
     constructor(
         protocol: Protocol,
         name: String,
+        argSpecs: List<ArgumentSpec>,
         function: (args: List<String>, chat: Chat) -> OutgoingMessage?,
         helpText: String,
         syntaxText: String
-    ): this(protocol, name, { args: List<String>, chat: Chat, _: User -> function(args, chat) }, helpText, syntaxText)
+    ): this(protocol, name, argSpecs, { args: List<String>, chat: Chat, _: User -> function(args, chat) }, helpText, syntaxText)
 
 
     companion object {
         fun of(
             protocol: Protocol,
             name: String,
+            argSpecs: List<ArgumentSpec>,
             function: (args: List<String>, chat: Chat, sender: User) -> String?,
             helpText: String,
             syntaxText: String
         ) = Command(
             protocol,
             name,
+            argSpecs,
             { args: List<String>, chat: Chat, sender: User -> function(args, chat, sender)?.let { SimpleOutgoingMessage(it) } },
             helpText,
             syntaxText
@@ -146,12 +171,14 @@ data class Command(
         fun of(
             protocol: Protocol,
             name: String,
+            argSpecs: List<ArgumentSpec>,
             function: (args: List<String>, chat: Chat) -> String?,
             helpText: String,
             syntaxText: String
         ) = Command(
             protocol,
             name,
+            argSpecs,
             { args: List<String>, chat: Chat -> function(args, chat)?.let { SimpleOutgoingMessage(it) } },
             helpText,
             syntaxText
@@ -159,12 +186,14 @@ data class Command(
         fun of(
             protocol: Protocol,
             name: String,
+            argSpecs: List<ArgumentSpec>,
             function: (args: List<String>) -> String?,
             helpText: String,
             syntaxText: String
         ) = Command(
             protocol,
             name,
+            argSpecs,
             { args: List<String> -> function(args)?.let { SimpleOutgoingMessage(it) } },
             helpText,
             syntaxText
@@ -172,12 +201,14 @@ data class Command(
         fun of(
             protocol: Protocol,
             name: String,
+            argSpecs: List<ArgumentSpec>,
             function: () -> String?,
             helpText: String,
             syntaxText: String
         ) = Command(
             protocol,
             name,
+            argSpecs,
             { -> function()?.let { SimpleOutgoingMessage(it) } },
             helpText,
             syntaxText

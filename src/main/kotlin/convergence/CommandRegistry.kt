@@ -40,6 +40,7 @@ fun registerAlias(alias: Alias): Boolean {
     if (alias.name.lowercase() in aliasesInChat)
         return false
 
+    alias.protocol.aliasCreated(alias)
     aliasesInChat[alias.name.lowercase()] = alias
     return true
 }

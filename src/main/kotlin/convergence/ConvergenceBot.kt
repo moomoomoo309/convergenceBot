@@ -60,7 +60,6 @@ object ConvergenceBot {
             }
         }
 
-        Thread.sleep(3000L)
         readSettings()
 
         defaultLogger.info("Starting command scheduler...")

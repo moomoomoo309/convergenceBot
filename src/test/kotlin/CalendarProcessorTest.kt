@@ -10,5 +10,4 @@ class CalendarProcessorTest {
             println("${event.summary}@${event.startDate.date.toInstant()}: ${event.uid}")
         }
     }
-
 }

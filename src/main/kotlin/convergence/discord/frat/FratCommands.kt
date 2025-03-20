@@ -1,10 +1,8 @@
 package convergence.discord.frat
 
-import convergence.Command
+import convergence.*
 import convergence.discord.DiscordOutgoingMessage
 import convergence.discord.DiscordProtocol
-import convergence.objectMapper
-import convergence.registerCommand
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder
 import java.nio.file.Files
@@ -59,6 +57,7 @@ fun registerFratCommands() {
         Command(
             DiscordProtocol,
             "brotherbyroster",
+            listOf(ArgumentSpec("Roster number", ArgumentType.STRING)),
             { args: List<String> -> brotherInfo(args) { it.rosterNumber } },
             "Gets information about a particular brother based on their roster number.",
             "brotherbyroster (roster number)"
@@ -68,6 +67,7 @@ fun registerFratCommands() {
         Command(
             DiscordProtocol,
             "brotherbyname",
+            listOf(ArgumentSpec("Name", ArgumentType.STRING)),
             { args -> brotherInfo(args) { it.firstName + " " + it.lastName } },
             "Gets information about a particular brother based on their first and last name.",
             "brotherbyname (name)"
@@ -77,6 +77,7 @@ fun registerFratCommands() {
         Command(
             DiscordProtocol,
             "brotherbynickname",
+            listOf(ArgumentSpec("Nickname", ArgumentType.STRING)),
             { args -> brotherInfo(args) { it.nickName } },
             "Gets information about a particular brother based on their nickname.",
             "brotherbynickname (nickname)"
@@ -86,6 +87,7 @@ fun registerFratCommands() {
         Command.of(
             DiscordProtocol,
             "updateRoster",
+            listOf(),
             { ->
                 val newRoster = getNewRoster()
                 brotherInfo.clear()

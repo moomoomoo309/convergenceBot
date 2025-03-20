@@ -39,7 +39,6 @@ dependencies {
     implementation(libs.argparse4j)
     implementation(libs.caldav4j)
     implementation(libs.commonstext)
-    implementation(libs.coroutines)
     implementation(libs.jackson.databind)
     implementation(libs.jackson.jsr310)
     implementation(libs.jackson.kotlin)
@@ -82,5 +81,11 @@ tasks {
     }
     compileTestKotlin {
         dependsOn(named("generateTestGrammarSource"))
+    }
+}
+
+tasks.shadowJar {
+    minimize {
+        exclude(dependency(libs.kotlin.reflect.get()))
     }
 }

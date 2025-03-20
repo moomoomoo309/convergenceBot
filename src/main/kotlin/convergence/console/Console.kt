@@ -81,4 +81,12 @@ object ConsoleProtocol: Protocol("Console") {
             }.start()
         }
     }
+
+    override fun configLoaded() {
+        // Do nothing
+    }
+
+    override fun aliasCreated(alias: Alias) {
+        // Do nothing
+    }
 }
