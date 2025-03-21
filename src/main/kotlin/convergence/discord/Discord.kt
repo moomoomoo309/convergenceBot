@@ -473,7 +473,7 @@ object MessageListener: ListenerAdapter() {
         val chat = DiscordProtocol.getChats().firstOrNull { it.channel == event.guildChannel } ?: return
         val sender = DiscordProtocol.getUsers().firstOrNull { it.id == event.member!!.user.idLong } ?: return
         val commandDelimiter = commandDelimiters[chat] ?: commandDelimiters[chat.server] ?: defaultCommandDelimiter
-        val commandData = parseCommand(commandDelimiter + event.commandString.substringAfter("/"), chat) ?: return
+        val commandData = parseCommand(commandDelimiter + event.name + event.options.joinToString(" ", " ") { it.asString }, chat) ?: return
         val msg = replaceAliasVars(chat, commandData.command.function(commandData.args, chat, sender), sender)
         event.reply((msg as? DiscordOutgoingMessage ?: DiscordOutgoingMessage(msg!!.toSimple().text)).data).queue()
     }

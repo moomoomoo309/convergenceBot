@@ -3,13 +3,11 @@
 package convergence
 
 import convergence.CommandScheduler.getCommands
-import convergence.discord.defaultZoneOffset
 import org.natty.DateGroup
 import org.natty.Parser
 import java.io.PrintWriter
 import java.io.StringWriter
 import java.time.Duration
-import java.time.Instant
 import java.time.OffsetDateTime
 import kotlin.math.ceil
 import kotlin.reflect.jvm.jvmName
@@ -473,7 +471,7 @@ fun createTimer(args: List<String>): String {
     val name = args.joinToString(" ")
     if (name in timers)
         return "That timer already exists!"
-    timers[name] = Instant.now()
+    timers[name] = OffsetDateTime.now()
     Settings.update()
     return "New timer \"$name\" created."
 }
@@ -486,15 +484,9 @@ fun resetTimer(args: List<String>): String {
     if (name !in timers)
         return "That timer doesn't exist!"
     val oldVal = timers[name]
-    timers[name] = Instant.now()
+    timers[name] = OffsetDateTime.now()
     Settings.update()
-    return "Timer reset. The time it was created or last time the timer was reset was ${
-        formatTime(
-            oldVal!!.atOffset(
-                defaultZoneOffset
-            )
-        )
-    }."
+    return "Timer reset. The time it was created or last time the timer was reset was ${formatTime(oldVal!!)}."
 }
 
 fun checkTimer(args: List<String>): String {
@@ -505,13 +497,7 @@ fun checkTimer(args: List<String>): String {
         return "That timer doesn't exist!"
     val oldVal = timers[name]
     Settings.update()
-    return "The time it was created or last time the timer was reset was ${
-        formatTime(
-            oldVal!!.atOffset(
-                defaultZoneOffset
-            )
-        )
-    }."
+    return "The time it was created or last time the timer was reset was ${formatTime(oldVal!!)}."
 }
 
 fun registerDefaultCommands() {

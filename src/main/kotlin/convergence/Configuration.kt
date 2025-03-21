@@ -9,7 +9,6 @@ import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import convergence.discord.jda
 import java.net.URI
 import java.nio.file.Path
-import java.time.Instant
 import java.time.OffsetDateTime
 
 const val defaultCommandDelimiter = "!"
@@ -68,7 +67,7 @@ data class SettingsDTO(
     var linkedChats: MutableMap<String, MutableSet<String>> = mutableMapOf(),
     var serializedCommands: MutableMap<Int, ScheduledCommandDTO> = mutableMapOf(),
     var syncedCalendars: MutableList<SyncedCalendar> = mutableListOf(),
-    var timers: MutableMap<String, Instant> = mutableMapOf(),
+    var timers: MutableMap<String, OffsetDateTime> = mutableMapOf(),
     var imageUploadChannels: MutableMap<String, String> = mutableMapOf()
 )
 
@@ -78,7 +77,7 @@ object Settings {
     var linkedChats: MutableMap<Chat, MutableSet<Chat>> = mutableMapOf()
     var serializedCommands: MutableMap<Int, ScheduledCommand> = mutableMapOf()
     var syncedCalendars: MutableList<SyncedCalendar> = mutableListOf()
-    var timers: MutableMap<String, Instant> = mutableMapOf()
+    var timers: MutableMap<String, OffsetDateTime> = mutableMapOf()
     var imageUploadChannels: MutableMap<Chat, URI> = mutableMapOf()
 
     @JsonIgnore
