@@ -15,6 +15,7 @@ import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel
 import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.dv8tion.jda.api.interactions.InteractionContextType
@@ -220,27 +221,36 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
     }
 
     override fun configLoaded() {
-        val slashCommands = jda.updateCommands()
-        slashCommands.addCommands(
-            listOf(commands[DiscordProtocol]!!, commands[UniversalProtocol]!!)
-                .flatMap { commandMap ->
-                    commandMap.map { (name, command) ->
-                        Commands.slash(name.lowercase(), command.helpText)
-                            .setContexts(InteractionContextType.GUILD)
-                            .addOptions(
-                                command.argSpecs.map {
-                                    OptionData(it.type.toDiscord(), it.name.lowercase(), "ligma", !it.optional)
-                                }
-                            )
+        jda.guilds.map { guild ->
+            val slashCommands = guild.updateCommands()
+            slashCommands.addCommands(
+                listOf(commands[DiscordProtocol]!!, commands[UniversalProtocol]!!)
+                    .flatMap { commandMap ->
+                        commandMap.map { (name, command) ->
+                            Commands.slash(name.lowercase(), command.helpText)
+                                .setContexts(InteractionContextType.GUILD)
+                                .addOptions(
+                                    command.argSpecs.map {
+                                        OptionData(it.type.toDiscord(), it.name.lowercase(), "ligma", !it.optional)
+                                    }
+                                )
+                        }
                     }
-                }
-        ).queue()
+            ).queue()
+        }
     }
 
     override fun aliasCreated(alias: Alias) {
-        val slashCommands = jda.updateCommands()
+        val slashCommands = when(alias.scope) {
+            is DiscordServer -> alias.scope
+            is DiscordChat -> alias.scope.server
+            else -> return
+        }.guild.updateCommands()
         slashCommands.addCommands(
-            Commands.slash(alias.name.lowercase(), "Alias that runs ${alias.command.name} with these arguments: ${alias.args}")
+            Commands.slash(
+                alias.name.lowercase(),
+                "Alias that runs ${alias.command.name} with these arguments: ${alias.args}"
+            )
                 .setContexts(InteractionContextType.GUILD)
                 .addOptions(alias.command.argSpecs.subList(alias.args.size, alias.command.argSpecs.size).map {
                     OptionData(it.type.toDiscord(), it.name.lowercase(), "ligma", !it.optional)
@@ -410,14 +420,14 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
     }
 
     private val chatCache = mutableMapOf<Long, DiscordChat>()
-    override fun getChats(): List<Chat> = jda.textChannels.map {
+    override fun getChats(): List<DiscordChat> = jda.textChannels.map {
         chatCache[it.idLong] ?: DiscordChat(it).also { chat ->
             chatCache[it.idLong] = chat
         }
     }
 
     private val userCache = mutableMapOf<Long, DiscordUser>()
-    override fun getUsers(): List<User> = jda.users.map {
+    override fun getUsers(): List<DiscordUser> = jda.users.map {
         userCache[it.idLong] ?: DiscordUser(it).also { user ->
             userCache[it.idLong] = user
         }
@@ -457,5 +467,14 @@ object MessageListener: ListenerAdapter() {
             DiscordProtocol.receivedImages(chat, message, sender, *images)
         else
             DiscordProtocol.receivedMessage(chat, message, sender)
+    }
+
+    override fun onSlashCommandInteraction(event: SlashCommandInteractionEvent) {
+        val chat = DiscordProtocol.getChats().firstOrNull { it.channel == event.guildChannel } ?: return
+        val sender = DiscordProtocol.getUsers().firstOrNull { it.id == event.member!!.user.idLong } ?: return
+        val commandDelimiter = commandDelimiters[chat] ?: commandDelimiters[chat.server] ?: defaultCommandDelimiter
+        val commandData = parseCommand(commandDelimiter + event.commandString.substringAfter("/"), chat) ?: return
+        val msg = replaceAliasVars(chat, commandData.command.function(commandData.args, chat, sender), sender)
+        event.reply((msg as? DiscordOutgoingMessage ?: DiscordOutgoingMessage(msg!!.toSimple().text)).data).queue()
     }
 }
