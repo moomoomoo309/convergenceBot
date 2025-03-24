@@ -3,6 +3,8 @@
 package convergence
 
 import com.fasterxml.jackson.annotation.JsonIgnore
+import java.io.InputStream
+import java.net.URI
 import java.time.OffsetDateTime
 import java.util.*
 import kotlin.reflect.KClass
@@ -131,7 +133,7 @@ data class Command(
         function: () -> OutgoingMessage?,
         helpText: String,
         syntaxText: String
-    ): this(protocol, name, argSpecs, { _: List<String>, _: Chat, _: User -> function() }, helpText, syntaxText)
+    ): this(protocol, name, argSpecs, { _, _, _ -> function() }, helpText, syntaxText)
 
     constructor(
         protocol: Protocol,
@@ -140,7 +142,7 @@ data class Command(
         function: (args: List<String>) -> OutgoingMessage?,
         helpText: String,
         syntaxText: String
-    ): this(protocol, name, argSpecs, { args: List<String>, _: Chat, _: User -> function(args) }, helpText, syntaxText)
+    ): this(protocol, name, argSpecs, { args: List<String>, _, _ -> function(args) }, helpText, syntaxText)
 
     constructor(
         protocol: Protocol,
@@ -149,7 +151,7 @@ data class Command(
         function: (args: List<String>, chat: Chat) -> OutgoingMessage?,
         helpText: String,
         syntaxText: String
-    ): this(protocol, name, argSpecs, { args: List<String>, chat: Chat, _: User -> function(args, chat) }, helpText, syntaxText)
+    ): this(protocol, name, argSpecs, { args: List<String>, chat: Chat, _ -> function(args, chat) }, helpText, syntaxText)
 
 
     companion object {
@@ -247,9 +249,9 @@ fun registerCallback(event: ChatEvent) {
 }
 
 fun runCallbacks(eventClass: KClass<out ChatEvent>, vararg args: Any) =
-    callbacks[eventClass]?.any { callback ->
+    callbacks[eventClass]?.filter { callback ->
         callback(args)
-    } ?: false
+    }
 
 inline fun <reified T: ChatEvent> runCallbacks(vararg args: Any) = runCallbacks(T::class, *args)
 
@@ -339,7 +341,7 @@ interface ChatEvent {
     operator fun invoke(vararg args: Any): Boolean
 }
 
-open class ChangedNickname(val fct: (chat: Chat, user: User, oldName: String) -> Boolean): ChatEvent {
+class ChangedNickname(val fct: (chat: Chat, user: User, oldName: String) -> Boolean): ChatEvent {
     override fun invoke(vararg args: Any) = invokeTyped(fct, args)
     fun invoke(chat: Chat, user: User, oldName: String) = fct(chat, user, oldName)
 }
@@ -351,8 +353,12 @@ interface HasNicknames {
     fun changedNickname(chat: Chat, user: User, oldName: String) = runCallbacks<ChangedNickname>(chat, user, oldName)
 }
 
-open class Image
-open class ReceivedImages(val fct: (chat: Chat, message: IncomingMessage?, sender: User, image: Array<Image>) -> Boolean):
+abstract class Image {
+    abstract fun getURL(): URI
+    abstract fun getStream(): InputStream
+    fun getBytes(): ByteArray = getStream().readAllBytes()
+}
+class ReceivedImages(val fct: (chat: Chat, message: IncomingMessage?, sender: User, image: Array<Image>) -> Boolean):
     ChatEvent {
     override fun invoke(vararg args: Any): Boolean = invokeTyped(fct, args[0] as Array<Any>)
     fun invoke(chat: Chat, message: IncomingMessage?, sender: User, image: Array<Image>): Boolean =
@@ -369,7 +375,7 @@ interface HasImages {
         runCallbacks<ReceivedImages>(chat, message, sender, images)
 }
 
-open class EditMessage(val fct: (oldMessage: String, sender: User, newMessage: String) -> Boolean): ChatEvent {
+class EditMessage(val fct: (oldMessage: String, sender: User, newMessage: String) -> Boolean): ChatEvent {
     override fun invoke(vararg args: Any): Boolean = invokeTyped(fct, args)
     fun invoke(oldMessage: String, sender: User, newMessage: String): Boolean = fct(oldMessage, sender, newMessage)
 }
@@ -391,7 +397,7 @@ interface HasMessageHistory {
     ): List<MessageHistory>
 }
 
-open class MentionedUser(val fct: (chat: Chat, message: String, users: Set<User>) -> Boolean): ChatEvent {
+class MentionedUser(val fct: (chat: Chat, message: String, users: Set<User>) -> Boolean): ChatEvent {
     override fun invoke(vararg args: Any) = invokeTyped(fct, args)
     fun invoke(chat: Chat, message: String, users: Set<User>) = fct(chat, message, users)
 }
@@ -403,12 +409,12 @@ interface CanMentionUsers {
         runCallbacks<MentionedUser>(chat, message, users, sender)
 }
 
-open class StartedTyping(val fct: (chat: Chat, user: User) -> Boolean): ChatEvent {
+class StartedTyping(val fct: (chat: Chat, user: User) -> Boolean): ChatEvent {
     override fun invoke(vararg args: Any): Boolean = invokeTyped(fct, args)
     fun invoke(chat: Chat, user: User): Boolean = fct(chat, user)
 }
 
-open class StoppedTyping(val fct: (chat: Chat, user: User) -> Boolean): ChatEvent {
+class StoppedTyping(val fct: (chat: Chat, user: User) -> Boolean): ChatEvent {
     override fun invoke(vararg args: Any): Boolean = invokeTyped(fct, args)
     fun invoke(chat: Chat, user: User): Boolean = fct(chat, user)
 }
@@ -419,8 +425,8 @@ interface HasTypingStatus {
     fun stoppedTyping(chat: Chat, user: User) = runCallbacks<StoppedTyping>(chat, user)
 }
 
-open class Sticker(val name: String, val URL: String?)
-open class ReceivedSticker(val fct: (chat: Chat, sticker: Sticker, user: User) -> Boolean): ChatEvent {
+abstract class Sticker(val name: String, val url: String?)
+class ReceivedSticker(val fct: (chat: Chat, sticker: Sticker, user: User) -> Boolean): ChatEvent {
     override fun invoke(vararg args: Any): Boolean = invokeTyped(fct, args)
     fun invoke(chat: Chat, sticker: Sticker, user: User): Boolean = fct(chat, sticker, user)
 }
@@ -436,8 +442,8 @@ interface HasUserStatus { // Like your status on Skype.
     fun getUserStatus(chat: Chat, user: User): String
 }
 
-open class Availability(val description: String)
-open class ChangedAvailability(val fct: (chat: Chat, user: User, availability: Availability) -> Boolean): ChatEvent {
+abstract class Availability(val description: String)
+class ChangedAvailability(val fct: (chat: Chat, user: User, availability: Availability) -> Boolean): ChatEvent {
     override fun invoke(vararg args: Any): Boolean = invokeTyped(fct, args)
     fun invoke(chat: Chat, user: User, availability: Availability): Boolean = fct(chat, user, availability)
 }
@@ -449,7 +455,7 @@ interface HasUserAvailability {
         runCallbacks<ChangedAvailability>(chat, user, availability)
 }
 
-open class ReadByUser(val fct: (chat: Chat, message: MessageHistory, user: User) -> Boolean): ChatEvent {
+class ReadByUser(val fct: (chat: Chat, message: MessageHistory, user: User) -> Boolean): ChatEvent {
     override fun invoke(vararg args: Any): Boolean = invokeTyped(fct, args)
     fun invoke(chat: Chat, message: MessageHistory, user: User): Boolean = fct(chat, message, user)
 }
@@ -463,17 +469,17 @@ interface HasReadStatus {
 // If possible, the name would be an enum instead, but I want the ability for protocols to add extra formats
 // beyond the defaults in the companion object, so it's an open class.
 open class Format(name: String) {
-    val name: String = name.uppercase(Locale.getDefault())
+    val name: String = name.lowercase(Locale.getDefault())
 
     companion object {
-        val bold = Format("BOLD")
-        val italics = Format("ITALICS")
-        val underline = Format("UNDERLINE")
-        val monospace = Format("MONOSPACE")
-        val code = Format("CODE")
-        val strikethrough = Format("STRIKETHROUGH")
-        val spoiler = Format("SPOILER")
-        val greentext = Format("GREENTEXT")
+        val bold = Format("bold")
+        val italics = Format("italics")
+        val underline = Format("underline")
+        val monospace = Format("monospace")
+        val code = Format("code")
+        val strikethrough = Format("strikethrough")
+        val spoiler = Format("spoiler")
+        val greentext = Format("greentext")
     }
 }
 
@@ -496,7 +502,7 @@ interface CanFormatMessages {
     }
 }
 
-abstract class CustomEmoji(open val name: String, val URL: String?)
+abstract class CustomEmoji(open val name: String, open val url: String?)
 interface HasCustomEmoji {
     fun getEmojis(chat: Chat): List<CustomEmoji>
 }

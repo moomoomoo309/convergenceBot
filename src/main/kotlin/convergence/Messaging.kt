@@ -7,7 +7,7 @@ package convergence
 fun sendMessage(chat: Chat, sender: User, message: OutgoingMessage?) {
     if (sender != chat.protocol.getBot(chat))
         sendMessage(chat, message)
-    forwardToLinkedChats(chat, message, sender, true)
+    forwardToLinkedChats(chat, message, sender, isCommand=true)
 }
 
 fun sendMessage(chat: Chat, sender: User, message: String?) =
@@ -41,15 +41,12 @@ val pattern: Regex by lazy { Regex(aliasVars.keys.sortedBy { -it.length }.joinTo
  * Replaces instances of the keys in [aliasVars] preceded by a percent sign with the result of the functions therein,
  * such as %sender with the name of the user who sent the message.
  */
-fun replaceAliasVars(chat: Chat, message: OutgoingMessage?, sender: User): OutgoingMessage? {
-    return if (message is SimpleOutgoingMessage)
-        SimpleOutgoingMessage(pattern.replace(message.text) { res -> aliasVars[res.value]!!(chat, sender) })
+fun replaceAliasVars(chat: Chat, msg: OutgoingMessage?, sender: User): OutgoingMessage? {
+    return if (msg is SimpleOutgoingMessage)
+        SimpleOutgoingMessage(pattern.replace(msg.text) { res -> aliasVars[res.value]!!(chat, sender) ?: res.value })
     else
-        message
+        msg
 }
-
-fun forwardToLinkedChats(chat: Chat, message: OutgoingMessage?, sender: User, isCommand: Boolean = false) =
-    forwardToLinkedChats(chat, message, sender, emptyArray(), isCommand)
 
 fun forwardToLinkedChats(
     chat: Chat,

@@ -30,6 +30,7 @@ import net.dv8tion.jda.api.utils.messages.MessageCreateData
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.FileNotFoundException
+import java.io.InputStream
 import java.net.URI
 import java.nio.file.Files
 import java.time.OffsetDateTime
@@ -110,7 +111,7 @@ class DiscordUser(val name: String, override val id: Long, val author: DUser):
 }
 
 data class DiscordEmoji(
-    val url: String,
+    override val url: String,
     override val name: String,
     val emoji: DCustomEmoji,
     override val id: Long
@@ -129,14 +130,15 @@ val formatMap = mapOf(
 )
 
 class DiscordImage(val image: Message.Attachment): Image() {
-    val url get() = image.url
+    override fun getURL() = URI(image.url)
+    override fun getStream(): InputStream = image.proxy.download().get()
 }
 
 val sardine: Sardine by lazy { SardineFactory.begin("bot", fratConfig.botPassword) }
-fun uploadImage(discordURL: String, uploadURL: URI?) {
+fun uploadImage(discordURL: URI, uploadURL: URI?) {
     if (uploadURL == null)
         return
-    sardine.put(uploadURL.toString(), URI(discordURL).toURL().openStream())
+    sardine.put(uploadURL.toString(), discordURL.toURL().openStream())
 }
 
 class DiscordOutgoingMessage(val data: MessageCreateData): OutgoingMessage() {
@@ -211,7 +213,7 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
                 for (image in images) {
                     if (image is DiscordImage && chat in imageUploadChannels) {
                         val uploadURL = imageUploadChannels[chat]
-                        uploadImage(image.url, uploadURL)
+                        uploadImage(image.getURL(), uploadURL)
                     }
                 }
                 true

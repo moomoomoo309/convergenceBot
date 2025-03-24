@@ -46,7 +46,7 @@ fun getNewRoster(): List<BrotherInfo> {
 }
 
 private fun getOrdinal(day: Int): String {
-    if (day in 11..13) {
+    if (day in 11..13 || day in -13..-11) {
         return "th"
     }
     return when(day % 10) {

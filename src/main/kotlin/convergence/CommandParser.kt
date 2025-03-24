@@ -15,12 +15,8 @@ class InvalidCommandParseException: Exception {
 data class CommandData(var command: Command, var args: List<String>) {
     constructor(alias: Alias, args: List<String>): this(alias.command, alias.args + args)
 
-    operator fun invoke(args: List<String>, chat: Chat, sender: User): OutgoingMessage? =
-        this.command.function(args, chat, sender)
-
-    operator fun invoke(vararg args: String, chat: Chat, sender: User): OutgoingMessage? =
-        invoke(args.toList(), chat, sender)
-
+    operator fun invoke(args: List<String>, chat: Chat, sender: User) = this.command.function(args, chat, sender)
+    operator fun invoke(vararg args: String, chat: Chat, sender: User) = invoke(args.toList(), chat, sender)
     operator fun invoke(chat: Chat, sender: User): OutgoingMessage? = invoke(args, chat, sender)
 }
 
