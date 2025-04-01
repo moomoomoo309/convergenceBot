@@ -32,8 +32,10 @@ import org.slf4j.LoggerFactory
 import java.io.FileNotFoundException
 import java.io.InputStream
 import java.net.URI
+import java.net.URLEncoder
 import java.nio.file.Files
 import java.time.OffsetDateTime
+import java.time.format.DateTimeFormatter
 
 lateinit var jda: JDA
 
@@ -135,10 +137,13 @@ class DiscordImage(val image: Message.Attachment): Image() {
 }
 
 val sardine: Sardine by lazy { SardineFactory.begin("bot", fratConfig.botPassword) }
-fun uploadImage(discordURL: URI, uploadURL: URI?) {
+fun uploadImage(discordURL: URI, uploadURL: URI?, filename: String) {
     if (uploadURL == null)
         return
-    sardine.put(uploadURL.toString(), discordURL.toURL().openStream())
+    val connection = discordURL.toURL().openConnection()
+    val encoding = connection.contentEncoding
+    val content = connection.getInputStream().readAllBytes()
+    sardine.put(uploadURL.toString() + "/" + URLEncoder.encode(filename), content, encoding)
 }
 
 class DiscordOutgoingMessage(val data: MessageCreateData): OutgoingMessage() {
@@ -160,8 +165,12 @@ class DiscordIncomingMessage(val data: Message): IncomingMessage() {
 
     override fun toOutgoing(): OutgoingMessage {
         return DiscordOutgoingMessage(
-            MessageCreateBuilder.fromMessage(data)
-                .build()
+            try {
+                MessageCreateBuilder.fromMessage(data)
+                    .build()
+            } catch(e: IllegalStateException) {
+                return SimpleOutgoingMessage("")
+            }
         )
     }
 }
@@ -213,7 +222,9 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
                 for (image in images) {
                     if (image is DiscordImage && chat in imageUploadChannels) {
                         val uploadURL = imageUploadChannels[chat]
-                        uploadImage(image.getURL(), uploadURL)
+                        val timeCreated = image.image.timeCreated.format(DateTimeFormatter.ISO_INSTANT)
+                        val filename = image.image.fileName.substringBeforeLast(".")
+                        uploadImage(image.getURL(), uploadURL, "$filename-$timeCreated${image.image.fileExtension ?: ""}")
                     }
                 }
                 true
@@ -475,7 +486,9 @@ object MessageListener: ListenerAdapter() {
         val chat = DiscordProtocol.getChats().firstOrNull { it.channel == event.guildChannel } ?: return
         val sender = DiscordProtocol.getUsers().firstOrNull { it.id == event.member!!.user.idLong } ?: return
         val commandDelimiter = commandDelimiters[chat] ?: commandDelimiters[chat.server] ?: defaultCommandDelimiter
-        val commandData = parseCommand(commandDelimiter + event.name + event.options.joinToString(" ", " ") { it.asString }, chat) ?: return
+        val commandData =
+            parseCommand(commandDelimiter + event.name + event.options.joinToString(" ", " ") { it.asString }, chat)
+                ?: return
         val msg = replaceAliasVars(chat, commandData.command.function(commandData.args, chat, sender), sender)
         event.reply((msg as? DiscordOutgoingMessage ?: DiscordOutgoingMessage(msg!!.toSimple().text)).data).queue()
     }

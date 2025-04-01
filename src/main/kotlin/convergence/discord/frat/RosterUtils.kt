@@ -32,7 +32,7 @@ fun getNewRoster(): List<BrotherInfo> {
         row = worksheet.getRow(i)
     }
     val brotherInfoList = mutableListOf<BrotherInfo>()
-    while (true) {
+    while (i < 1000) {
         if (row.getCell(0).readString().isNotBlank())
             brotherInfoList.add(extractInfoFromRow(row))
         if (worksheet.getRow(i + 1).getCell(0).readString().isBlank() &&
@@ -64,18 +64,18 @@ fun Cell.readString(): String {
         val date = this.dateCellValue.toInstant().atOffset(defaultZoneOffset)
         return "${date.month.name.titleCase()} ${date.dayOfMonth}${getOrdinal(date.dayOfMonth)}, ${date.year}"
     }
-    return dataFormatter.formatCellValue(this, formulaEvaluator)
+    return dataFormatter.formatCellValue(this, formulaEvaluator).trim()
 }
 
 fun extractInfoFromRow(row: Row): BrotherInfo {
     return BrotherInfo(
-        row.getCell(0).readString().trim(),
-        row.getCell(1).readString().trim(),
-        row.getCell(2).readString().trim(),
-        row.getCell(3).readString().trim(),
-        row.getCell(4).readString().trim(),
-        row.getCell(5).readString().trim(),
-        row.getCell(6).readString().trim(),
-        row.getCell(7).readString().trim(),
+        row.getCell(0).readString(),
+        row.getCell(1).readString(),
+        row.getCell(2).readString(),
+        row.getCell(3).readString(),
+        row.getCell(4).readString(),
+        row.getCell(5).readString(),
+        row.getCell(6).readString(),
+        row.getCell(7).readString(),
     )
 }
