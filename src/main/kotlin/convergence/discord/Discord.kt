@@ -502,9 +502,9 @@ object MessageListener: ListenerAdapter() {
         val neededScore = config.emojis[emoji.name] ?: return
         event.retrieveMessage().onSuccess {
             if ((it.reactions.firstOrNull { reaction -> reaction.emoji == emoji }?.count ?: 0) == neededScore) {
-                forwardedMessages.getOrPut(server.guild.idLong) { mutableSetOf() }.add(it.idLong)
                 if (it.idLong !in forwardedMessages.getOrDefault(server.guild.idLong, mutableSetOf()))
                     it.forwardTo(config.destination.channel)
+                forwardedMessages.getOrPut(server.guild.idLong) { mutableSetOf() }.add(it.idLong)
             }
         }.queue()
     }
