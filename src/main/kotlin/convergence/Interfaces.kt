@@ -507,12 +507,12 @@ interface HasCustomEmoji {
     fun getEmojis(chat: Chat): List<CustomEmoji>
 }
 
-interface HasServer {
-    val server: Server
+interface HasServer<T: Server> {
+    val server: T
 }
 
-interface HasServers {
-    fun getServers(): List<Server>
+interface HasServers<T: Server> {
+    fun getServers(): List<T>
 }
 
 abstract class IncomingMessage {

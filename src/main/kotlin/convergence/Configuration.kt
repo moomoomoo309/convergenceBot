@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import convergence.discord.DiscordChat
 import convergence.discord.jda
 import java.net.URI
 import java.nio.file.Path
@@ -56,6 +57,14 @@ data class ScheduledCommandDTO(
     }
 }
 
+data class ReactConfig(val destination: DiscordChat, val emojis: MutableMap<String, Int>) {
+    fun toDTO() = ReactConfigDTO(destination, emojis)
+}
+data class ReactConfigDTO(val destination: String, val emojis: MutableMap<String, Int>) {
+    constructor(chat: DiscordChat, emojis: MutableMap<String, Int>): this(chat.toKey(), emojis)
+    fun toConfig() = ReactConfig(scopeStrToProtocol(destination)!!.commandScopeFromKey(destination) as DiscordChat, emojis)
+}
+
 private fun strToProtocol(s: String) = protocols.firstOrNull { it.name == s }
 private fun scopeStrToProtocol(s: String) = protocols.sortedBy { -it.name.length }
     .firstOrNull { s.substringBefore("(").startsWith(it.name) }
@@ -68,7 +77,8 @@ data class SettingsDTO(
     var serializedCommands: MutableMap<Int, ScheduledCommandDTO> = mutableMapOf(),
     var syncedCalendars: MutableList<SyncedCalendar> = mutableListOf(),
     var timers: MutableMap<String, OffsetDateTime> = mutableMapOf(),
-    var imageUploadChannels: MutableMap<String, String> = mutableMapOf()
+    var imageUploadChannels: MutableMap<String, String> = mutableMapOf(),
+    var imageReactServers: MutableMap<String, ReactConfig> = mutableMapOf()
 )
 
 object Settings {
@@ -79,6 +89,7 @@ object Settings {
     var syncedCalendars: MutableList<SyncedCalendar> = mutableListOf()
     var timers: MutableMap<String, OffsetDateTime> = mutableMapOf()
     var imageUploadChannels: MutableMap<Chat, URI> = mutableMapOf()
+    var reactServers: MutableMap<Server, ReactConfig> = mutableMapOf()
 
     @JsonIgnore
     var updateIsScheduled = false
@@ -140,6 +151,10 @@ object Settings {
             val protocol = scopeStrToProtocol(k)!!
             protocol.commandScopeFromKey(k) as Chat to URI(v)
         })
+        this.reactServers.apply { clear() }.putAll(settingsDTO.imageReactServers.mapKeys { (k, _) ->
+            val protocol = scopeStrToProtocol(k)!!
+            protocol.commandScopeFromKey(k) as Server
+        })
     }
 
     fun toDTO() = SettingsDTO(
@@ -185,6 +200,7 @@ val serializedCommands = Settings.serializedCommands
 val syncedCalendars = Settings.syncedCalendars
 val timers = Settings.timers
 val imageUploadChannels: MutableMap<Chat, URI> = Settings.imageUploadChannels
+val reactServers: MutableMap<Server, ReactConfig> = Settings.reactServers
 
 lateinit var convergencePath: Path
 val chatMap: MutableMap<Int, Chat> = mutableMapOf()

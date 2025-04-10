@@ -4,6 +4,7 @@ import convergence.*
 import java.net.URI
 import java.net.URISyntaxException
 
+val emojiRegex = Regex(":[a-zA-Z0-9_]+:|([\\u20a0-\\u32ff\\ud83c\\udc00-\\ud83d\\udeff\\udbb9\\udce5-\\udbb9\\udcee])")
 fun registerDiscordCommands() {
     registerCommand(Command.of(
         DiscordProtocol,
@@ -71,5 +72,42 @@ fun registerDiscordCommands() {
         },
         "Stops images in this channel from being uploaded anywhere.",
         "stopUploadingImages (takes no arguments)"
+    ))
+    registerCommand(Command.of(
+        DiscordProtocol,
+        "registerReactChannel",
+        listOf(ArgumentSpec("emoji", ArgumentType.STRING), ArgumentSpec("threshold", ArgumentType.INTEGER)),
+        cmd@{ args, chat ->
+            if (chat !is DiscordChat)
+                return@cmd "This command can only be run on discord."
+            if (args.size != 2)
+                return@cmd "2 args required: emoji and threshold."
+            val emoji = args[0]
+            if (!emoji.matches(emojiRegex))
+                return@cmd "Emoji must be a valid unicode or discord emoji."
+            val threshold = args[1].toIntOrNull()
+            if (threshold == null || threshold <= 0)
+                return@cmd "Threshold must be a positive integer."
+            if (chat.server !in reactServers)
+                reactServers[chat.server] = ReactConfig(chat, mutableMapOf(emoji to threshold))
+            else
+                reactServers[chat.server]?.emojis?.put(emoji, threshold) ?: "Could not find server in map."
+            "Registered messages to be forwarded to this channel if they are reacted with $emoji $threshold times or more."
+        },
+        "Registers messages to be forwarded to this channel if they are reacted with emoji threshold times or more.",
+        "registerReactChannel (emoji) (threshold)"
+    ))
+    registerCommand(Command.of(
+        DiscordProtocol,
+        "removeReactChannel",
+        listOf(),
+        cmd@{ _, chat ->
+            if (chat !is DiscordChat)
+                return@cmd "This command can only be run on discord."
+            reactServers.remove(chat.server)
+            "Messages will no longer be forwarded to this channel based on reactions."
+        },
+        "Removes messages being forwarded to this channel based on reactions.",
+        "removeReactChannel (takes no arguments)"
     ))
 }
