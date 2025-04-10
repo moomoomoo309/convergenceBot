@@ -101,6 +101,7 @@ fun registerDiscordCommands() {
                 reactServers[chat.server] = ReactConfig(chat, mutableMapOf(emoji to threshold))
             else
                 reactServers[chat.server]?.emojis?.put(emoji, threshold) ?: "Could not find server in map."
+            Settings.update()
             "Registered messages to be forwarded to this channel if they are reacted with $emoji $threshold times or more."
         },
         "Registers messages to be forwarded to this channel if they are reacted with emoji threshold times or more.",
@@ -114,6 +115,7 @@ fun registerDiscordCommands() {
             if (chat !is DiscordChat)
                 return@cmd "This command can only be run on discord."
             reactServers.remove(chat.server)
+            Settings.update()
             "Messages will no longer be forwarded to this channel based on reactions."
         },
         "Removes messages being forwarded to this channel based on reactions.",

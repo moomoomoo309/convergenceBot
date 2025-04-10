@@ -11,6 +11,7 @@ import convergence.discord.jda
 import java.net.URI
 import java.nio.file.Path
 import java.time.OffsetDateTime
+import java.util.*
 
 const val defaultCommandDelimiter = "!"
 
@@ -78,7 +79,7 @@ data class SettingsDTO(
     var syncedCalendars: MutableList<SyncedCalendar> = mutableListOf(),
     var timers: MutableMap<String, OffsetDateTime> = mutableMapOf(),
     var imageUploadChannels: MutableMap<String, String> = mutableMapOf(),
-    var reactServers: MutableMap<String, ReactConfig> = mutableMapOf()
+    var reactServers: MutableMap<String, ReactConfigDTO> = mutableMapOf()
 )
 
 object Settings {
@@ -89,7 +90,7 @@ object Settings {
     var syncedCalendars: MutableList<SyncedCalendar> = mutableListOf()
     var timers: MutableMap<String, OffsetDateTime> = mutableMapOf()
     var imageUploadChannels: MutableMap<Chat, URI> = mutableMapOf()
-    var reactServers: MutableMap<Server, ReactConfig> = mutableMapOf()
+    var reactServers: MutableMap<Server, ReactConfig> = TreeMap()
 
     @JsonIgnore
     var updateIsScheduled = false
@@ -151,9 +152,9 @@ object Settings {
             val protocol = scopeStrToProtocol(k)!!
             protocol.commandScopeFromKey(k) as Chat to URI(v)
         })
-        this.reactServers.apply { clear() }.putAll(settingsDTO.reactServers.mapKeys { (k, _) ->
+        this.reactServers.apply { clear() }.putAll(settingsDTO.reactServers.mapEntries { (k, v) ->
             val protocol = scopeStrToProtocol(k)!!
-            protocol.commandScopeFromKey(k) as Server
+            protocol.commandScopeFromKey(k) as Server to v.toConfig()
         })
     }
 
@@ -169,8 +170,8 @@ object Settings {
         imageUploadChannels.mapEntries { (k, v) ->
             k.toKey() to v.toString()
         }.mutable(),
-        reactServers.mapKeys { (k, _) ->
-            k.toKey()
+        reactServers.mapEntries { (k, v) ->
+            k.toKey() to v.toDTO()
         }.mutable()
     )
 }

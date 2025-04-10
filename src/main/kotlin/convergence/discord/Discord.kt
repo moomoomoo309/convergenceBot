@@ -242,7 +242,7 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
                 listOf(commands[DiscordProtocol]!!, commands[UniversalProtocol]!!)
                     .flatMap { commandMap ->
                         commandMap.map { (name, command) ->
-                            Commands.slash(name.lowercase(), command.helpText)
+                            Commands.slash(name.lowercase(), command.helpText.take(100))
                                 .setContexts(InteractionContextType.GUILD)
                                 .addOptions(
                                     command.argSpecs.map {
@@ -501,9 +501,13 @@ object MessageListener: ListenerAdapter() {
         val config = reactServers[server] ?: return
         val neededScore = config.emojis[emoji.name] ?: return
         event.retrieveMessage().onSuccess {
-            if ((it.reactions.firstOrNull { reaction -> reaction.emoji == emoji }?.count ?: 0) == neededScore) {
+            val reaction = it.reactions.firstOrNull { reaction -> reaction.emoji == emoji }
+            if ((reaction?.count ?: return@onSuccess) == neededScore) {
                 if (it.idLong !in forwardedMessages.getOrDefault(server.guild.idLong, mutableSetOf()))
-                    it.forwardTo(config.destination.channel)
+                    it.forwardTo(config.destination.channel).queue { fwd ->
+                        forwardedMessages.getOrPut(server.guild.idLong) { mutableSetOf() }.add(fwd.idLong)
+                        fwd.addReaction(reaction.emoji).queue()
+                    }
                 forwardedMessages.getOrPut(server.guild.idLong) { mutableSetOf() }.add(it.idLong)
             }
         }.queue()
