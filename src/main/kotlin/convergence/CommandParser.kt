@@ -31,7 +31,7 @@ private fun <CommandType: CommandLike, ScopeType> commandAvailable(
 fun getCommand(command: String, chat: Chat): CommandLike {
     return when {
         commandAvailable(aliases, chat, command) -> aliases[chat]!![command]
-        chat is HasServer && commandAvailable(aliases, chat.server, command) -> aliases[chat]!![command]
+        chat is HasServer<*> && commandAvailable(aliases, chat.server, command) -> aliases[chat]!![command]
         commandAvailable(commands, chat.protocol, command) -> commands[chat.protocol]!![command]
         commandAvailable(commands, UniversalProtocol, command) -> commands[UniversalProtocol]!![command]
         else -> null

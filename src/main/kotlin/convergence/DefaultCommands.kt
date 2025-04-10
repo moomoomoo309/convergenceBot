@@ -108,13 +108,13 @@ fun addAlias(args: List<String>, chat: Chat, scope: CommandScope): String {
 
 fun addChatAlias(args: List<String>, chat: Chat) = addAlias(args, chat, chat)
 fun addServerAlias(args: List<String>, chat: Chat) =
-    if (chat !is HasServer)
+    if (chat !is HasServer<*>)
         "This protocol doesn't support servers!"
     else
         addAlias(args, chat, chat.server)
 
 fun removeServerAlias(args: List<String>, chat: Chat): String {
-    if (chat !is HasServer)
+    if (chat !is HasServer<*>)
         return "This protocol doesn't support servers!"
     if (args.size != 1) {
         return "Only one argument should be passed."

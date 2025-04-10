@@ -78,7 +78,7 @@ data class SettingsDTO(
     var syncedCalendars: MutableList<SyncedCalendar> = mutableListOf(),
     var timers: MutableMap<String, OffsetDateTime> = mutableMapOf(),
     var imageUploadChannels: MutableMap<String, String> = mutableMapOf(),
-    var imageReactServers: MutableMap<String, ReactConfig> = mutableMapOf()
+    var reactServers: MutableMap<String, ReactConfig> = mutableMapOf()
 )
 
 object Settings {
@@ -122,20 +122,20 @@ object Settings {
     private fun <T> mapToDTO(map: Map<out CommandScope, T>): MutableMap<String, T> {
         return map.mapKeys { (k, _) ->
             k.toKey()
-        } as MutableMap<String, T>
+        }.mutable()
     }
 
     private fun mapAliasesToDTO(aliases: MutableMap<CommandScope, MutableMap<String, Alias>>): MutableMap<String, MutableMap<String, AliasDTO>> {
-        return aliases.mutableMapEntries { (k, v) ->
+        return aliases.mapEntries { (k, v) ->
             k.toKey() to v.mapValues { (_, alias) -> alias.toDTO() }.toMutableMap()
-        }
+        }.mutable()
     }
 
     private fun mapAliasesFromDTO(aliasesDTO: MutableMap<String, MutableMap<String, AliasDTO>>): MutableMap<CommandScope, MutableMap<String, Alias>> {
-        return aliasesDTO.mutableMapEntries { (k, v) ->
+        return aliasesDTO.mapEntries { (k, v) ->
             val protocol = scopeStrToProtocol(k)!!
             protocol.commandScopeFromKey(k)!! to v.mapValues { (_, aliasDTO) -> aliasDTO.toAlias() }.toMutableMap()
-        }
+        }.mutable()
     }
 
     fun updateFrom(settingsDTO: SettingsDTO) {
@@ -151,7 +151,7 @@ object Settings {
             val protocol = scopeStrToProtocol(k)!!
             protocol.commandScopeFromKey(k) as Chat to URI(v)
         })
-        this.reactServers.apply { clear() }.putAll(settingsDTO.imageReactServers.mapKeys { (k, _) ->
+        this.reactServers.apply { clear() }.putAll(settingsDTO.reactServers.mapKeys { (k, _) ->
             val protocol = scopeStrToProtocol(k)!!
             protocol.commandScopeFromKey(k) as Server
         })
@@ -166,9 +166,12 @@ object Settings {
         } as MutableMap<Int, ScheduledCommandDTO>,
         syncedCalendars,
         timers,
-        imageUploadChannels.mutableMapEntries { (k, v) ->
+        imageUploadChannels.mapEntries { (k, v) ->
             k.toKey() to v.toString()
-        }
+        }.mutable(),
+        reactServers.mapKeys { (k, _) ->
+            k.toKey()
+        }.mutable()
     )
 }
 
