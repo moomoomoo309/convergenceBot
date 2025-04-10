@@ -4,7 +4,16 @@ import convergence.*
 import java.net.URI
 import java.net.URISyntaxException
 
-val emojiRegex = Regex(":[a-zA-Z0-9_]+:|([\\u20a0-\\u32ff\\ud83c\\udc00-\\ud83d\\udeff\\udbb9\\udce5-\\udbb9\\udcee])")
+val emojiRegex = Regex(":[a-zA-Z0-9_]+:|(?:[\uD83E\uDD00-\uD83E\uDDFF]|" +
+            "[☀-⛿]\uFE0F?|[✀-➿]\uFE0F?|Ⓜ\uFE0F?|" +
+            "[\uD83C\uDDE6-\uD83C\uDDFF]{1,2}|" +
+            "[\uD83C\uDD70\uD83C\uDD71\uD83C\uDD7E\uD83C\uDD7F\uD83C\uDD8E\uD83C\uDD91-\uD83C\uDD9A]\uFE0F?|" +
+            "[#*0-9]\uFE0F?⃣|[↔-↙↩-↪]\uFE0F?|[⬅-⬇⬛⬜⭐⭕]\uFE0F?|" +
+            "[⤴⤵]\uFE0F?|[〰〽]\uFE0F?|[㊗㊙]\uFE0F?|" +
+            "[\uD83C\uDE01\uD83C\uDE02\uD83C\uDE1A\uD83C\uDE2F\uD83C\uDE32-\uD83C\uDE3A\uD83C\uDE50\uD83C\uDE51]\uFE0F?|" +
+            "[‼⁉]\uFE0F?|[▪▫▶◀◻-◾]\uFE0F?|" +
+            "[©®]\uFE0F?|[™ℹ]\uFE0F?|\uD83C\uDCCF\uFE0F?|" +
+            "[⌚⌛⌨⏏⏩-⏳⏸-⏺]\uFE0F?)+")
 fun registerDiscordCommands() {
     registerCommand(Command.of(
         DiscordProtocol,
