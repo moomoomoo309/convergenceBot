@@ -1,19 +1,12 @@
 package convergence.discord
 
+import com.sigpwned.emoji4j.core.Grapheme
+import com.sigpwned.emoji4j.core.GraphemeMatcher
 import convergence.*
 import java.net.URI
 import java.net.URISyntaxException
 
-val emojiRegex = Regex(":[a-zA-Z0-9_]+:|(?:[\uD83E\uDD00-\uD83E\uDDFF]|" +
-            "[☀-⛿]\uFE0F?|[✀-➿]\uFE0F?|Ⓜ\uFE0F?|" +
-            "[\uD83C\uDDE6-\uD83C\uDDFF]{1,2}|" +
-            "[\uD83C\uDD70\uD83C\uDD71\uD83C\uDD7E\uD83C\uDD7F\uD83C\uDD8E\uD83C\uDD91-\uD83C\uDD9A]\uFE0F?|" +
-            "[#*0-9]\uFE0F?⃣|[↔-↙↩-↪]\uFE0F?|[⬅-⬇⬛⬜⭐⭕]\uFE0F?|" +
-            "[⤴⤵]\uFE0F?|[〰〽]\uFE0F?|[㊗㊙]\uFE0F?|" +
-            "[\uD83C\uDE01\uD83C\uDE02\uD83C\uDE1A\uD83C\uDE2F\uD83C\uDE32-\uD83C\uDE3A\uD83C\uDE50\uD83C\uDE51]\uFE0F?|" +
-            "[‼⁉]\uFE0F?|[▪▫▶◀◻-◾]\uFE0F?|" +
-            "[©®]\uFE0F?|[™ℹ]\uFE0F?|\uD83C\uDCCF\uFE0F?|" +
-            "[⌚⌛⌨⏏⏩-⏳⏸-⏺]\uFE0F?)+")
+val discordEmojiRegex = Regex("^:[a-zA-Z0-9_]+:$")
 fun registerDiscordCommands() {
     registerCommand(Command.of(
         DiscordProtocol,
@@ -92,15 +85,16 @@ fun registerDiscordCommands() {
             if (args.size != 2)
                 return@cmd "2 args required: emoji and threshold."
             val emoji = args[0]
-            if (!emoji.matches(emojiRegex))
+            val matcher = GraphemeMatcher(emoji)
+            val isUnicodeEmoji = matcher.matches() && matcher.grapheme().type == Grapheme.Type.EMOJI
+            val isDiscordEmoji = discordEmojiRegex.matches(emoji)
+            if (!isUnicodeEmoji && !isDiscordEmoji)
                 return@cmd "Emoji must be a valid unicode or discord emoji."
             val threshold = args[1].toIntOrNull()
             if (threshold == null || threshold <= 0)
                 return@cmd "Threshold must be a positive integer."
-            if (chat.server !in reactServers)
-                reactServers[chat.server] = ReactConfig(chat, mutableMapOf(emoji to threshold))
-            else
-                reactServers[chat.server]?.emojis?.put(emoji, threshold) ?: "Could not find server in map."
+            reactServers.getOrPut(chat.server) { mutableListOf(ReactConfig(chat, mutableMapOf())) }
+                .first { it.destination == chat }.emojis[emoji] = threshold
             Settings.update()
             "Registered messages to be forwarded to this channel if they are reacted with $emoji $threshold times or more."
         },
@@ -120,5 +114,22 @@ fun registerDiscordCommands() {
         },
         "Removes messages being forwarded to this channel based on reactions.",
         "removeReactChannel (takes no arguments)"
+    ))
+    registerCommand(Command.of(
+        DiscordProtocol,
+        "reactChannels",
+        listOf(),
+        cmd@{ _, chat ->
+            if (chat !is DiscordChat)
+                return@cmd "This command can only be run on discord."
+            "Reactions that will be sent to this channel: ${
+                reactServers[chat.server]?.firstOrNull { it.destination == chat }
+                    ?.emojis?.toList()?.joinToString(", ") { (emoji, threshold) ->
+                        "$emoji: $threshold"
+                    } ?: "None"
+            }"
+        },
+        "Lists all react channels.",
+        "reactChannels (takes no arguments)"
     ))
 }

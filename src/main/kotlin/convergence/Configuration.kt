@@ -79,7 +79,7 @@ data class SettingsDTO(
     var syncedCalendars: MutableList<SyncedCalendar> = mutableListOf(),
     var timers: MutableMap<String, OffsetDateTime> = mutableMapOf(),
     var imageUploadChannels: MutableMap<String, String> = mutableMapOf(),
-    var reactServers: MutableMap<String, ReactConfigDTO> = mutableMapOf()
+    var reactServers: MutableMap<String, List<ReactConfigDTO>> = mutableMapOf()
 )
 
 object Settings {
@@ -90,7 +90,7 @@ object Settings {
     var syncedCalendars: MutableList<SyncedCalendar> = mutableListOf()
     var timers: MutableMap<String, OffsetDateTime> = mutableMapOf()
     var imageUploadChannels: MutableMap<Chat, URI> = mutableMapOf()
-    var reactServers: MutableMap<Server, ReactConfig> = TreeMap()
+    var reactServers: MutableMap<Server, List<ReactConfig>> = TreeMap()
 
     @JsonIgnore
     var updateIsScheduled = false
@@ -154,7 +154,7 @@ object Settings {
         })
         this.reactServers.apply { clear() }.putAll(settingsDTO.reactServers.mapEntries { (k, v) ->
             val protocol = scopeStrToProtocol(k)!!
-            protocol.commandScopeFromKey(k) as Server to v.toConfig()
+            protocol.commandScopeFromKey(k) as Server to v.map { it.toConfig() }
         })
     }
 
@@ -171,7 +171,7 @@ object Settings {
             k.toKey() to v.toString()
         }.mutable(),
         reactServers.mapEntries { (k, v) ->
-            k.toKey() to v.toDTO()
+            k.toKey() to v.map { it.toDTO() }
         }.mutable()
     )
 }
@@ -204,7 +204,7 @@ val serializedCommands = Settings.serializedCommands
 val syncedCalendars = Settings.syncedCalendars
 val timers = Settings.timers
 val imageUploadChannels: MutableMap<Chat, URI> = Settings.imageUploadChannels
-val reactServers: MutableMap<Server, ReactConfig> = Settings.reactServers
+val reactServers: MutableMap<Server, List<ReactConfig>> = Settings.reactServers
 
 lateinit var convergencePath: Path
 val chatMap: MutableMap<Int, Chat> = mutableMapOf()

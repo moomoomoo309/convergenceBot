@@ -39,6 +39,7 @@ dependencies {
     implementation(libs.argparse4j)
     implementation(libs.caldav4j)
     implementation(libs.commonstext)
+    implementation(libs.emoji4j)
     implementation(libs.jackson.databind)
     implementation(libs.jackson.jsr310)
     implementation(libs.jackson.kotlin)

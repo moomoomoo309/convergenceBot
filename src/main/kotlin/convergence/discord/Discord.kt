@@ -498,17 +498,20 @@ object MessageListener: ListenerAdapter() {
     override fun onMessageReactionAdd(event: MessageReactionAddEvent) {
         val server = DiscordServer(event.guild)
         val emoji = event.emoji
-        val config = reactServers[server] ?: return
-        val neededScore = config.emojis[emoji.name] ?: return
+        val configs = reactServers[server]?.filter { it.destination.channel.guild == event.guild } ?: return
+
         event.retrieveMessage().onSuccess {
-            val reaction = it.reactions.firstOrNull { reaction -> reaction.emoji == emoji }
-            if ((reaction?.count ?: return@onSuccess) == neededScore) {
-                if (it.idLong !in forwardedMessages.getOrDefault(server.guild.idLong, mutableSetOf()))
-                    it.forwardTo(config.destination.channel).queue { fwd ->
-                        forwardedMessages.getOrPut(server.guild.idLong) { mutableSetOf() }.add(fwd.idLong)
-                        fwd.addReaction(reaction.emoji).queue()
-                    }
-                forwardedMessages.getOrPut(server.guild.idLong) { mutableSetOf() }.add(it.idLong)
+            for (config in configs) {
+                val neededScore = config.emojis[emoji.name] ?: continue
+                val reaction = it.reactions.firstOrNull { reaction -> reaction.emoji == emoji }
+                if ((reaction?.count ?: return@onSuccess) == neededScore) {
+                    if (it.idLong !in forwardedMessages.getOrDefault(server.guild.idLong, mutableSetOf()))
+                        it.forwardTo(config.destination.channel).queue { fwd ->
+                            forwardedMessages.getOrPut(server.guild.idLong) { mutableSetOf() }.add(fwd.idLong)
+                            fwd.addReaction(reaction.emoji).queue()
+                        }
+                    forwardedMessages.getOrPut(server.guild.idLong) { mutableSetOf() }.add(it.idLong)
+                }
             }
         }.queue()
     }
