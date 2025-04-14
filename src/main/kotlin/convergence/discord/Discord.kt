@@ -499,17 +499,24 @@ object MessageListener: ListenerAdapter() {
         val server = DiscordServer(event.guild)
         val emoji = event.emoji
         val configs = reactServers[server]?.filter { it.destination.channel.guild == event.guild } ?: return
+        if (configs.isEmpty())
+            return
 
         event.retrieveMessage().onSuccess {
             for (config in configs) {
                 val neededScore = config.emojis[emoji.name] ?: continue
                 val reaction = it.reactions.firstOrNull { reaction -> reaction.emoji == emoji }
                 if ((reaction?.count ?: return@onSuccess) == neededScore) {
-                    if (it.idLong !in forwardedMessages.getOrDefault(server.guild.idLong, mutableSetOf()))
+                    if (it.idLong !in forwardedMessages.getOrDefault(server.guild.idLong, mutableSetOf())) {
+                        config.destination.channel.sendMessage(MessageCreateBuilder()
+                            .addContent(it.member?.asMention ?: continue)
+                            .build()
+                        ).queue()
                         it.forwardTo(config.destination.channel).queue { fwd ->
                             forwardedMessages.getOrPut(server.guild.idLong) { mutableSetOf() }.add(fwd.idLong)
                             fwd.addReaction(reaction.emoji).queue()
                         }
+                    }
                     forwardedMessages.getOrPut(server.guild.idLong) { mutableSetOf() }.add(it.idLong)
                 }
             }

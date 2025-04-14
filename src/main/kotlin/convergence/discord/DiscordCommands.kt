@@ -129,7 +129,7 @@ fun registerDiscordCommands() {
                     } ?: "None"
             }"
         },
-        "Lists all react channels.",
+        "Lists all reactions that may cause messages to be forwarded to this channel.",
         "reactChannels (takes no arguments)"
     ))
 }
