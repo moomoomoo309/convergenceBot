@@ -67,7 +67,7 @@ fun forwardToLinkedChats(
         boldClose = delimiters?.second ?: boldClose
     }
 
-    // Send the messages out to the linked chats, if there are any. Don't error if there aren't any.
+    // Send the messages out to the linked chats if there are any. Don't error if there aren't any.
     val bot = chat.protocol.getBot(chat)
     if (isCommand || sender != bot)
         if (chat in linkedChats)

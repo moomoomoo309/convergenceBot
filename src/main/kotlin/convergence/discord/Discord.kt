@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import com.github.sardine.Sardine
 import com.github.sardine.SardineFactory
 import convergence.*
+import convergence.discord.MessageListener.forwardedMessages
 import convergence.discord.frat.fratConfig
 import convergence.discord.frat.registerFratCommands
 import net.dv8tion.jda.api.JDA
@@ -15,9 +16,11 @@ import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel
 import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel
+import net.dv8tion.jda.api.entities.emoji.Emoji
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent
+import net.dv8tion.jda.api.events.message.react.MessageReactionRemoveEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.dv8tion.jda.api.interactions.InteractionContextType
 import net.dv8tion.jda.api.interactions.commands.OptionType
@@ -37,6 +40,8 @@ import java.net.URLEncoder
 import java.nio.file.Files
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
 import kotlin.math.max
 
 lateinit var jda: JDA
@@ -52,6 +57,7 @@ typealias DCustomEmoji = net.dv8tion.jda.api.entities.emoji.RichCustomEmoji
 class DiscordAvailability(val status: OnlineStatus): Availability(status.name)
 class DiscordServer(name: String, val guild: Guild): Server(name, DiscordProtocol) {
     constructor(guild: Guild): this(guild.name, guild)
+    constructor(id: Long): this(jda.getGuildById(id)!!)
 
     override fun compareTo(other: Server): Int {
         if (other !is DiscordServer) {
@@ -69,6 +75,7 @@ class DiscordChat(name: String, override val id: Long, @JsonIgnore val channel: 
     Chat(DiscordProtocol, name), DiscordObject, HasServer<DiscordServer> {
     constructor(channel: GuildMessageChannel): this(channel.name, channel.idLong, channel)
     constructor(message: Message): this(message.channel.asGuildMessageChannel())
+    constructor(id: Long): this(jda.getGuildChannelById(id) as GuildMessageChannel)
     constructor(msgEvent: MessageReceivedEvent): this(msgEvent.message)
 
     override val server = serverCache.getOrPut(id) { DiscordServer(channel.guild) }
@@ -121,6 +128,8 @@ data class DiscordEmoji(
     override val id: Long
 ): CustomEmoji(url, name), DiscordObject {
     constructor(emoji: DCustomEmoji): this(emoji.imageUrl, emoji.name, emoji, emoji.idLong)
+
+    override fun asString() = emoji.asReactionCode
 }
 
 val formatMap = mapOf(
@@ -170,7 +179,7 @@ class DiscordIncomingMessage(val data: Message): IncomingMessage() {
             try {
                 MessageCreateBuilder.fromMessage(data)
                     .build()
-            } catch(e: IllegalStateException) {
+            } catch(_: IllegalStateException) {
                 return SimpleOutgoingMessage("")
             }
         )
@@ -185,7 +194,7 @@ fun ArgumentType.toDiscord() = when(this) {
 }
 
 object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, HasImages, CanMentionUsers,
-    HasMessageHistory, CanEditOtherMessages, HasUserAvailability, HasCustomEmoji, HasServers<DiscordServer> {
+    HasMessageHistory, CanEditOtherMessages, HasUserAvailability, HasCustomEmoji, HasServers<DiscordServer>, HasReactions {
     override fun init() {
         println("Discord Plugin initialized.")
         jda = try {
@@ -208,7 +217,7 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
                 .setToken(Files.readString(convergencePath.resolve("discordToken")).trim())
                 .disableCache(CacheFlag.VOICE_STATE)
             it.build()
-        } catch(e: FileNotFoundException) {
+        } catch(_: FileNotFoundException) {
             discordLogger.error("You need to put your discord token in $convergencePath/discordToken!")
             return
         } catch(e: Exception) {
@@ -230,6 +239,36 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
                     }
                 }
                 true
+            }
+        )
+        callbacks.getOrPut(ReactionChanged::class) { mutableListOf() }.add(
+            ReactionChanged { sender: User, chat: Chat, message: IncomingMessage, emoji: IEmoji, oldAmount: Int, newAmount: Int ->
+                if (chat !is DiscordChat) return@ReactionChanged false
+                if (message !is DiscordIncomingMessage) return@ReactionChanged false
+                if (emoji !is DiscordEmoji && emoji !is UnicodeEmoji) return@ReactionChanged false
+                val server = chat.server
+                val configs = reactServers[server]?.filter { it.destination.channel.guild == chat.channel.guild } ?: return@ReactionChanged false
+                if (configs.isEmpty())
+                    return@ReactionChanged false
+
+                for (config in configs) {
+                    val neededScore = config.emojis[emoji.asString()] ?: continue
+                    if (newAmount == neededScore) {
+                        if (message.data.idLong !in forwardedMessages.getOrDefault(server.guild.idLong, mutableSetOf())) {
+                            config.destination.channel.sendMessage(MessageCreateBuilder()
+                                .addContent(message.data.member?.asMention ?: continue)
+                                .build()
+                            ).queue()
+                            message.data.forwardTo(config.destination.channel).queue { fwd ->
+                                forwardedMessages.getOrPut(server.guild.idLong) { mutableSetOf() }.add(fwd.idLong)
+                                val discordEmoji = if (emoji is DiscordEmoji) emoji.emoji else Emoji.fromUnicode(emoji.asString())
+                                fwd.addReaction(discordEmoji).queue()
+                            }
+                        }
+                        forwardedMessages.getOrPut(server.guild.idLong) { mutableSetOf() }.add(message.data.idLong)
+                    }
+                }
+                return@ReactionChanged true
             }
         )
         jda.awaitReady()
@@ -321,7 +360,7 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
 
     override fun sendImages(chat: Chat, message: OutgoingMessage, sender: User, vararg images: Image) {
         if (chat is DiscordChat && images.isArrayOf<DiscordImage>()) {
-            @Suppress("UNCHECKED_CAST")
+            @Suppress("UNCHECKED_CAST", "KotlinConstantConditions")
             val discordImages = images as Array<DiscordImage>
             try {
                 when(message) {
@@ -353,7 +392,7 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
             return emptyList()
         val history = chat.channel.history
 
-        for (i in 0..9) { // Get the last 1000 messages, 100 at a time.
+        repeat(10) { // Get the last 1000 messages, 100 at a time.
             history.retrievePast(100)
             if (since != null && history.retrievedHistory.last().timeCreated.isBefore(since)) {
                 if (until == null) {
@@ -404,7 +443,7 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
     }
 
     override fun getDelimiters(format: Format): Pair<String, String>? = formatMap[format]
-    override fun getEmojis(chat: Chat): List<CustomEmoji> = jda.emojis.map { DiscordEmoji(it) }
+    override fun getEmojis(chat: Chat): List<DiscordEmoji> = jda.emojis.map { DiscordEmoji(it) }
     override fun sendMessage(chat: Chat, message: OutgoingMessage): Boolean {
         if (chat !is DiscordChat)
             return false
@@ -429,22 +468,49 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
 
     private val serverCache = mutableMapOf<Long, DiscordServer>()
     override fun getServers(): List<DiscordServer> = jda.guilds.map {
-        serverCache[it.idLong] ?: DiscordServer(it).also { server ->
-            serverCache[it.idLong] = server
+        getServer(it.idLong)!!
+    }
+
+    @OptIn(ExperimentalContracts::class)
+    fun getServer(id: Long?): DiscordServer? {
+        contract {
+            this.returns(null) implies (id is Nothing?)
+            this.returnsNotNull() implies (id is Long)
+        }
+        return serverCache[id] ?: DiscordServer(id ?: return null).also { server ->
+            serverCache[id] = server
         }
     }
 
     private val chatCache = mutableMapOf<Long, DiscordChat>()
     override fun getChats(): List<DiscordChat> = jda.textChannels.map {
-        chatCache[it.idLong] ?: DiscordChat(it).also { chat ->
-            chatCache[it.idLong] = chat
+        getChat(it.idLong)!!
+    }
+
+    @OptIn(ExperimentalContracts::class)
+    fun getChat(id: Long?): DiscordChat? {
+        contract {
+            this.returns(null) implies (id is Nothing?)
+            this.returnsNotNull() implies (id is Long)
+        }
+        return chatCache[id] ?: DiscordChat(id ?: return null).also { chat ->
+            chatCache[id] = chat
         }
     }
 
     private val userCache = mutableMapOf<Long, DiscordUser>()
     override fun getUsers(): List<DiscordUser> = jda.users.map {
-        userCache[it.idLong] ?: DiscordUser(it).also { user ->
-            userCache[it.idLong] = user
+        getUser(it.idLong)!!
+    }
+
+    @OptIn(ExperimentalContracts::class)
+    fun getUser(id: Long?): DiscordUser? {
+        contract {
+            this.returns(null) implies (id is Nothing?) // Returns null
+            this.returnsNotNull() implies (id is Long) // If the id is not null, it does not return null
+        }
+        return userCache[id] ?: DiscordUser(id ?: return null).also { user ->
+            userCache[id] = user
         }
     }
 
@@ -458,6 +524,46 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
     override fun getChatName(chat: Chat): String = if (chat is DiscordChat) chat.name else ""
     override fun mention(chat: Chat, user: User, message: String?) {
         sendMessage(chat, jda.retrieveUserById((user as DiscordUser).id).complete().asMention + message?.let { " $it" })
+    }
+
+    override fun react(message: IncomingMessage, emoji: IEmoji) {
+        if (message !is DiscordIncomingMessage)
+            return
+        when(emoji) {
+            is DiscordEmoji -> {
+                message.data.addReaction(emoji.emoji)
+            }
+            is UnicodeEmoji -> {
+                message.data.addReaction(Emoji.fromUnicode(emoji.emoji.name))
+            }
+            else -> return
+        }.queue()
+    }
+
+    override fun unreact(message: IncomingMessage, emoji: IEmoji) {
+        if (message !is DiscordIncomingMessage)
+            return
+
+        when(emoji) {
+            is DiscordEmoji -> {
+                message.data.removeReaction(emoji.emoji)
+            }
+            is UnicodeEmoji -> {
+                message.data.removeReaction(Emoji.fromUnicode(emoji.emoji.name))
+            }
+            else -> return
+        }.queue()
+    }
+
+    override fun getReactions(message: IncomingMessage): Map<IEmoji, Int> {
+        if (message !is DiscordIncomingMessage)
+            return emptyMap()
+        return message.data.reactions.associate {
+            if (it.emoji.type == Emoji.Type.CUSTOM)
+                DiscordEmoji(it.emoji.asRich()) to it.count
+            else
+                UnicodeEmoji(it.emoji.name) to it.count
+        }
     }
 }
 
@@ -494,32 +600,27 @@ object MessageListener: ListenerAdapter() {
         val msg = replaceAliasVars(chat, commandData.command.function(commandData.args, chat, sender), sender)
         event.reply((msg as? DiscordOutgoingMessage ?: DiscordOutgoingMessage(msg!!.toSimple().text)).data).queue()
     }
-    private val forwardedMessages = mutableMapOf<Long, MutableSet<Long>>()
-    override fun onMessageReactionAdd(event: MessageReactionAddEvent) {
-        val server = DiscordServer(event.guild)
-        val emoji = event.emoji
-        val configs = reactServers[server]?.filter { it.destination.channel.guild == event.guild } ?: return
-        if (configs.isEmpty())
-            return
+    val forwardedMessages = mutableMapOf<Long, MutableSet<Long>>()
 
-        event.retrieveMessage().onSuccess {
-            for (config in configs) {
-                val neededScore = config.emojis[emoji.name] ?: continue
-                val reaction = it.reactions.firstOrNull { reaction -> reaction.emoji == emoji }
-                if ((reaction?.count ?: return@onSuccess) == neededScore) {
-                    if (it.idLong !in forwardedMessages.getOrDefault(server.guild.idLong, mutableSetOf())) {
-                        config.destination.channel.sendMessage(MessageCreateBuilder()
-                            .addContent(it.member?.asMention ?: continue)
-                            .build()
-                        ).queue()
-                        it.forwardTo(config.destination.channel).queue { fwd ->
-                            forwardedMessages.getOrPut(server.guild.idLong) { mutableSetOf() }.add(fwd.idLong)
-                            fwd.addReaction(reaction.emoji).queue()
-                        }
-                    }
-                    forwardedMessages.getOrPut(server.guild.idLong) { mutableSetOf() }.add(it.idLong)
-                }
-            }
-        }.queue()
+    override fun onMessageReactionRemove(event: MessageReactionRemoveEvent) {
+        DiscordProtocol.reactionChanged(
+            DiscordProtocol.getUser(event.user?.idLong) ?: return,
+            DiscordChat(event.guildChannel),
+            DiscordIncomingMessage(event.retrieveMessage().complete()),
+            if (event.emoji.type == Emoji.Type.UNICODE) UnicodeEmoji(event.emoji.name) else DiscordEmoji(event.emoji as DCustomEmoji),
+            event.reaction.count + 1,
+            event.reaction.count
+        )
+    }
+
+    override fun onMessageReactionAdd(event: MessageReactionAddEvent) {
+        DiscordProtocol.reactionChanged(
+            DiscordProtocol.getUser(event.user?.idLong) ?: return,
+            DiscordChat(event.guildChannel),
+            DiscordIncomingMessage(event.retrieveMessage().complete()),
+            if (event.emoji.type == Emoji.Type.UNICODE) UnicodeEmoji(event.emoji.name) else DiscordEmoji(event.emoji as DCustomEmoji),
+            event.reaction.count - 1,
+            event.reaction.count
+        )
     }
 }

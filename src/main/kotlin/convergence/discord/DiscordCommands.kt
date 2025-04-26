@@ -6,7 +6,7 @@ import convergence.*
 import java.net.URI
 import java.net.URISyntaxException
 
-val discordEmojiRegex = Regex("^:[a-zA-Z0-9_]+:$")
+val discordEmojiRegex = Regex("^<a?:[a-zA-Z0-9_-]{1,100}:[0-9]{1,20}>$")
 fun registerDiscordCommands() {
     registerCommand(Command.of(
         DiscordProtocol,
@@ -24,16 +24,25 @@ fun registerDiscordCommands() {
         "Resyncs all calendars in all servers.",
         "resyncCalendar (Takes no parameters)"
     ))
-    registerCommand(Command.of(
-        DiscordProtocol,
-        "unsyncCalendar",
-        listOf(ArgumentSpec("URL", ArgumentType.STRING)),
-        {args, chat -> val removed = syncedCalendars.remove(syncedCalendars.firstOrNull { it.guildId == (chat as DiscordChat).server.guild.idLong && it.calURL == args[0] }); if (removed) "Calendar removed." else "No calendar with URL ${args[0]} found." },
-        "Removes a synced calendar.",
-        "unsyncCalendar (URL)"
-    ))
-    registerCommand(Command.of(
-        DiscordProtocol,
+    registerCommand(
+        Command.of(
+            DiscordProtocol,
+            "unsyncCalendar",
+            listOf(ArgumentSpec("URL", ArgumentType.STRING)),
+            { args, chat ->
+                val removed = syncedCalendars.remove(syncedCalendars.firstOrNull {
+                        it.guildId == (chat as DiscordChat).server.guild.idLong && it.calURL == args[0]
+                    }
+                )
+                if (removed) "Calendar removed." else "No calendar with URL ${args[0]} found."
+            },
+            "Removes a synced calendar.",
+            "unsyncCalendar (URL)"
+        )
+    )
+    registerCommand(
+        Command.of(
+            DiscordProtocol,
         "syncedCalendars",
         listOf(),
         {_, chat -> syncedCalendars.filter {

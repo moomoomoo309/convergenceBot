@@ -3,6 +3,8 @@
 package convergence
 
 import com.fasterxml.jackson.annotation.JsonIgnore
+import com.sigpwned.emoji4j.core.GraphemeMatcher
+import com.sigpwned.emoji4j.core.grapheme.Emoji
 import java.io.InputStream
 import java.net.URI
 import java.time.OffsetDateTime
@@ -258,6 +260,60 @@ inline fun <reified T: ChatEvent> runCallbacks(vararg args: Any) = runCallbacks(
 /**
  * Cuts down on type casts/checks because [ChatEvent.invoke] takes varargs of [Any].
  */
+fun <T1, T2, T3, T4, T5, T6> invokeTyped(
+    fct: (T1, T2, T3, T4, T5, T6) -> Boolean,
+    args: Array<out Any>,
+    default1: T1? = null,
+    default2: T2? = null,
+    default3: T3? = null,
+    default4: T4? = null,
+    default5: T5? = null,
+    default6: T6? = null,
+): Boolean {
+    when(args.size) {
+        6 -> {
+        }
+
+        in 0..5 -> throw IllegalArgumentException("invokeTyped called with ${args.size} parameters, but 4 expected")
+        else -> defaultLogger.error("invokeTyped called with ${args.size} parameters, but 6 expected")
+    }
+    val arg1 = args.getOrNull(0) ?: default1
+    val arg2 = args.getOrNull(1) ?: default2
+    val arg3 = args.getOrNull(2) ?: default3
+    val arg4 = args.getOrNull(3) ?: default4
+    val arg5 = args.getOrNull(4) ?: default5
+    val arg6 = args.getOrNull(5) ?: default6
+
+    return fct(arg1 as T1, arg2 as T2, arg3 as T3, arg4 as T4, arg5 as T5, arg6 as T6)
+}
+
+fun <T1, T2, T3, T4, T5> invokeTyped(
+    fct: (T1, T2, T3, T4, T5) -> Boolean,
+    args: Array<out Any>,
+    default1: T1? = null,
+    default2: T2? = null,
+    default3: T3? = null,
+    default4: T4? = null,
+    default5: T5? = null
+): Boolean {
+    when(args.size) {
+        5 -> {
+        }
+
+        in 0..4 -> throw IllegalArgumentException("invokeTyped called with ${args.size} parameters, but 4 expected")
+        else -> defaultLogger.error("invokeTyped called with ${args.size} parameters, but 5 expected")
+    }
+    val arg1 = args.getOrNull(0) ?: default1
+    val arg2 = args.getOrNull(1) ?: default2
+    val arg3 = args.getOrNull(2) ?: default3
+    val arg4 = args.getOrNull(3) ?: default4
+    val arg5 = args.getOrNull(4) ?: default5
+
+    return fct(arg1 as T1, arg2 as T2, arg3 as T3, arg4 as T4, arg5 as T5)
+}
+/**
+ * Cuts down on type casts/checks because [ChatEvent.invoke] takes varargs of [Any].
+ */
 fun <T1, T2, T3, T4> invokeTyped(
     fct: (T1, T2, T3, T4) -> Boolean,
     args: Array<out Any>,
@@ -502,9 +558,29 @@ interface CanFormatMessages {
     }
 }
 
-abstract class CustomEmoji(open val name: String, open val url: String?)
+interface IEmoji {
+    fun asString(): String
+}
+abstract class CustomEmoji(open val name: String, open val url: String?): IEmoji
+class UnicodeEmoji(val emoji: Emoji): IEmoji {
+    constructor(s: String): this(GraphemeMatcher(s).grapheme() as Emoji)
+    override fun asString(): String = emoji.name
+}
 interface HasCustomEmoji {
     fun getEmojis(chat: Chat): List<CustomEmoji>
+}
+
+interface HasReactions {
+    fun react(message: IncomingMessage, emoji: IEmoji)
+    fun unreact(message: IncomingMessage, emoji: IEmoji)
+    fun getReactions(message: IncomingMessage): Map<IEmoji, Int>
+    fun reactionChanged(sender: User, chat: Chat, message: IncomingMessage, emoji: IEmoji, oldAmount: Int, newAmount: Int) =
+        runCallbacks<ReactionChanged>(sender, chat, message, emoji, oldAmount, newAmount)
+}
+
+class ReactionChanged(val fct: (sender: User, chat: Chat, message: IncomingMessage, emoji: IEmoji, oldAmount: Int, newAmount: Int) -> Boolean): ChatEvent {
+    override fun invoke(vararg args: Any): Boolean = invokeTyped(fct, args)
+    fun invoke(sender: User, chat: Chat, message: IncomingMessage, emoji: IEmoji, oldAmount: Int, newAmount: Int): Boolean = fct(sender, chat, message, emoji, oldAmount, newAmount)
 }
 
 interface HasServer<T: Server> {
