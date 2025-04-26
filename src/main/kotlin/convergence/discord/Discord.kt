@@ -603,24 +603,31 @@ object MessageListener: ListenerAdapter() {
     val forwardedMessages = mutableMapOf<Long, MutableSet<Long>>()
 
     override fun onMessageReactionRemove(event: MessageReactionRemoveEvent) {
-        DiscordProtocol.reactionChanged(
-            DiscordProtocol.getUser(event.user?.idLong) ?: return,
-            DiscordChat(event.guildChannel),
-            DiscordIncomingMessage(event.retrieveMessage().complete()),
-            if (event.emoji.type == Emoji.Type.UNICODE) UnicodeEmoji(event.emoji.name) else DiscordEmoji(event.emoji as DCustomEmoji),
-            event.reaction.count + 1,
-            event.reaction.count
-        )
+        event.retrieveMessage().queue {
+            val count = it.getReaction(event.reaction.emoji)?.count ?: return@queue
+            DiscordProtocol.reactionChanged(
+                DiscordProtocol.getUser(event.user?.idLong) ?: return@queue,
+                DiscordChat(event.guildChannel),
+                DiscordIncomingMessage(it),
+                if (event.emoji.type == Emoji.Type.UNICODE) UnicodeEmoji(event.emoji.name) else DiscordEmoji(event.emoji as DCustomEmoji),
+                count + 1,
+                count
+            )
+        }
+
     }
 
     override fun onMessageReactionAdd(event: MessageReactionAddEvent) {
-        DiscordProtocol.reactionChanged(
-            DiscordProtocol.getUser(event.user?.idLong) ?: return,
-            DiscordChat(event.guildChannel),
-            DiscordIncomingMessage(event.retrieveMessage().complete()),
-            if (event.emoji.type == Emoji.Type.UNICODE) UnicodeEmoji(event.emoji.name) else DiscordEmoji(event.emoji as DCustomEmoji),
-            event.reaction.count - 1,
-            event.reaction.count
-        )
+        event.retrieveMessage().queue {
+            val count = it.getReaction(event.reaction.emoji)?.count ?: return@queue
+            DiscordProtocol.reactionChanged(
+                DiscordProtocol.getUser(event.user?.idLong) ?: return@queue,
+                DiscordChat(event.guildChannel),
+                DiscordIncomingMessage(it),
+                if (event.emoji.type == Emoji.Type.UNICODE) UnicodeEmoji(event.emoji.name) else DiscordEmoji(event.emoji as DCustomEmoji),
+                count - 1,
+                count
+            )
+        }
     }
 }

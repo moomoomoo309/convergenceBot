@@ -3,7 +3,6 @@
 package convergence
 
 import com.fasterxml.jackson.annotation.JsonIgnore
-import com.sigpwned.emoji4j.core.GraphemeMatcher
 import com.sigpwned.emoji4j.core.grapheme.Emoji
 import java.io.InputStream
 import java.net.URI
@@ -252,7 +251,7 @@ fun registerCallback(event: ChatEvent) {
 
 fun runCallbacks(eventClass: KClass<out ChatEvent>, vararg args: Any) =
     callbacks[eventClass]?.filter { callback ->
-        callback(args)
+        callback(*args)
     }
 
 inline fun <reified T: ChatEvent> runCallbacks(vararg args: Any) = runCallbacks(T::class, *args)
@@ -563,8 +562,8 @@ interface IEmoji {
 }
 abstract class CustomEmoji(open val name: String, open val url: String?): IEmoji
 class UnicodeEmoji(val emoji: Emoji): IEmoji {
-    constructor(s: String): this(GraphemeMatcher(s).grapheme() as Emoji)
-    override fun asString(): String = emoji.name
+    constructor(s: String): this(s.toEmoji()!!)
+    override fun asString(): String = emoji.toString()
 }
 interface HasCustomEmoji {
     fun getEmojis(chat: Chat): List<CustomEmoji>

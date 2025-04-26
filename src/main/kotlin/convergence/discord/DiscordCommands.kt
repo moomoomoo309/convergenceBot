@@ -1,7 +1,5 @@
 package convergence.discord
 
-import com.sigpwned.emoji4j.core.Grapheme
-import com.sigpwned.emoji4j.core.GraphemeMatcher
 import convergence.*
 import java.net.URI
 import java.net.URISyntaxException
@@ -94,8 +92,7 @@ fun registerDiscordCommands() {
             if (args.size != 2)
                 return@cmd "2 args required: emoji and threshold."
             val emoji = args[0]
-            val matcher = GraphemeMatcher(emoji)
-            val isUnicodeEmoji = matcher.matches() && matcher.grapheme().type == Grapheme.Type.EMOJI
+            val isUnicodeEmoji = emoji.toEmoji() != null
             val isDiscordEmoji = discordEmojiRegex.matches(emoji)
             if (!isUnicodeEmoji && !isDiscordEmoji)
                 return@cmd "Emoji must be a valid unicode or discord emoji."

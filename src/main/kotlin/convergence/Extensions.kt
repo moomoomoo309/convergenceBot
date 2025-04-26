@@ -1,5 +1,8 @@
 package convergence
 
+import com.sigpwned.emoji4j.core.Grapheme
+import com.sigpwned.emoji4j.core.GraphemeMatcher
+import com.sigpwned.emoji4j.core.grapheme.Emoji
 import convergence.discord.defaultZoneOffset
 import java.time.OffsetDateTime
 import java.util.*
@@ -40,3 +43,13 @@ fun String.substringBetween(startDelimiter: String, endDelimiter: String): Strin
 
 fun String.titleCase() = "${first().uppercase()}${substring(1).lowercase()}"
 fun Date.toOffsetDatetime(): OffsetDateTime = this.toInstant().atOffset(defaultZoneOffset)
+
+fun String.toEmoji(): Emoji? {
+    return GraphemeMatcher(this).results().findFirst().map {
+        val grapheme = it.grapheme()
+        if (grapheme.type == Grapheme.Type.EMOJI)
+            grapheme as Emoji
+        else
+            null
+    }.get()
+}
