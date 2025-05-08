@@ -33,11 +33,37 @@ val englishToGreek = mapOf(
     'Y' to 'Ψ',
 )
 
-fun brotherInfo(args: List<String>, searchCriteria: (BrotherInfo) -> String?): DiscordOutgoingMessage {
-    val name = args.joinToString(" ").lowercase()
-    val info = brotherInfo.firstOrNull { searchCriteria(it)?.lowercase() == name }
+fun getBrotherInfo(args: String, searchCriteria: (BrotherInfo) -> String?): BrotherInfo {
+    return brotherInfo.firstOrNull { searchCriteria(it)?.lowercase() == name }
         ?: brotherInfo.firstOrNull { searchCriteria(it)?.lowercase()?.startsWith(name) == true }
         ?: brotherInfo.firstOrNull { searchCriteria(it)?.lowercase()?.contains(name) == true }
+}
+
+
+fun brotherLineRec(name: String, searchCriteria: (BrotherInfo) -> String?, depth: Int = 6): List<String>  {
+    val info = getBrotherInfo(name, searchCriteria)
+        ?: return List<String>()
+
+    if (depth == 0) {
+        return List<String>()
+    }
+    
+    return brotherLineRec(info.bigBrother.ifBlank { "N/A" }, searchCriteria, depth-1).add(info.bigBrother)
+}
+
+fun brotherLine(args: List<String>, searchCriteria: (BrotherInfo) -> String?): DiscordOutgoingMessage  {
+    val name = args.joinToString(" ").lowercase()
+    val startInfo = getBrotherInfo(name, searchCriteria)
+        ?: return DiscordOutgoingMessage("No brothers found searching for \"$name\".")
+    
+    val lineList = brotherLineRec(startInfo.firstName + " " + startInfo.lastName)
+    
+    return DiscordOutgoingMessage("No brothers found searching for \"$name\".")
+}
+
+fun brotherInfo(args: List<String>, searchCriteria: (BrotherInfo) -> String?): DiscordOutgoingMessage {
+    val name = args.joinToString(" ").lowercase()
+    val info = getBrotherInfo(name, searchCriteria)
         ?: return DiscordOutgoingMessage("No brothers found searching for \"$name\".")
     return DiscordOutgoingMessage(MessageCreateBuilder()
         .addEmbeds(EmbedBuilder()
@@ -81,6 +107,16 @@ fun registerFratCommands() {
             { args -> brotherInfo(args) { it.nickName } },
             "Gets information about a particular brother based on their nickname.",
             "brotherbynickname (nickname)"
+        )
+    )
+    registerCommand(
+        Command(
+            DiscordProtocol,
+            "brothergetline",
+            listOf(ArgumentSpec("Nickname", ArgumentType.STRING)),
+            { args -> brotherLine(args) { it.firstName + " " + it.lastName } },
+            "Gets information about a particular brother's line going up.",
+            "brothergetline (name)"
         )
     )
     registerCommand(
