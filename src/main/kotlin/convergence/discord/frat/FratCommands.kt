@@ -39,8 +39,7 @@ fun getBrotherInfo(args: String, searchCriteria: (BrotherInfo) -> String?): Brot
         ?: brotherInfo.firstOrNull { searchCriteria(it)?.lowercase()?.contains(name) == true }
 }
 
-
-fun brotherLineRec(name: String, searchCriteria: (BrotherInfo) -> String?, depth: Int = 6): List<String>  {
+fun brotherLineRec(name: String, searchCriteria: (BrotherInfo) -> String?, depth: Int = 10): List<String>  {
     val info = getBrotherInfo(name, searchCriteria)
         ?: return List<String>()
 
@@ -57,8 +56,12 @@ fun brotherLine(args: List<String>, searchCriteria: (BrotherInfo) -> String?): D
         ?: return DiscordOutgoingMessage("No brothers found searching for \"$name\".")
     
     val lineList = brotherLineRec(startInfo.firstName + " " + startInfo.lastName)
-    
-    return DiscordOutgoingMessage("No brothers found searching for \"$name\".")
+
+    return DiscordOutgoingMessage(MessageCreateBuilder()
+            .addEmbeds(EmbedBuilder()
+                    .setTitle("Line for Brother #${startInfo.rosterNumber} ${startInfo.firstName} ${startInfo.lastName}")
+                    .addField("Line", lineList.joinToString("/r/n") true).build()
+            ).build())
 }
 
 fun brotherInfo(args: List<String>, searchCriteria: (BrotherInfo) -> String?): DiscordOutgoingMessage {
@@ -113,7 +116,7 @@ fun registerFratCommands() {
         Command(
             DiscordProtocol,
             "brothergetline",
-            listOf(ArgumentSpec("Nickname", ArgumentType.STRING)),
+            listOf(ArgumentSpec("Name", ArgumentType.STRING)),
             { args -> brotherLine(args) { it.firstName + " " + it.lastName } },
             "Gets information about a particular brother's line going up.",
             "brothergetline (name)"
