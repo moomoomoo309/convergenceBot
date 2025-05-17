@@ -88,5 +88,6 @@ tasks {
 tasks.shadowJar {
     minimize {
         exclude(dependency(libs.kotlin.reflect.get()))
+        exclude(dependency(libs.logback.get()))
     }
 }
