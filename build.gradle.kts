@@ -51,7 +51,7 @@ dependencies {
     implementation(libs.natty)
     implementation(libs.prettytime)
     implementation(libs.sardine)
-    implementation(libs.poi)
+    implementation(libs.poi.core)
     implementation(libs.poi.ooxml)
     testImplementation("org.jetbrains.kotlin:kotlin-test")
 }
@@ -89,5 +89,7 @@ tasks.shadowJar {
     minimize {
         exclude(dependency(libs.kotlin.reflect.get()))
         exclude(dependency(libs.logback.get()))
+        exclude(dependency(libs.poi.core.get()))
+        exclude(dependency(libs.poi.ooxml.get()))
     }
 }

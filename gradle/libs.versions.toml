@@ -29,7 +29,7 @@ jda = { module = "net.dv8tion:JDA", version.ref = "jda" }
 kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
 logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 natty = { module = "io.github.natty-parser:natty", version.ref = "natty" }
-poi = { module = "org.apache.poi:poi", version.ref = "poi" }
+poi-core = { module = "org.apache.poi:poi", version.ref = "poi" }
 poi-ooxml = { module = "org.apache.poi:poi-ooxml", version.ref = "poi" }
 prettytime = { module = "org.ocpsoft.prettytime:prettytime", version.ref = "prettytime" }
 sardine = { module = "com.github.lookfirst:sardine", version.ref = "sardine" }

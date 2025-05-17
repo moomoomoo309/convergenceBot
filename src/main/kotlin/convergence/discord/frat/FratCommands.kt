@@ -39,7 +39,7 @@ fun getBrotherInfo(name: String, searchCriteria: (BrotherInfo) -> String?): Brot
         ?: brotherInfo.firstOrNull { searchCriteria(it)?.lowercase()?.contains(name) == true }
 }
 
-fun brotherLineRec(name: String, searchCriteria: (BrotherInfo) -> String?, depth: Int = 30): MutableList<BrotherInfo> {
+fun brotherLineRec(name: String, searchCriteria: (BrotherInfo) -> String?, depth: Int = 25): MutableList<BrotherInfo> {
     val info = getBrotherInfo(name.lowercase(), searchCriteria)
         ?: return mutableListOf()
 
@@ -133,7 +133,7 @@ fun registerFratCommands() {
             listOf(ArgumentSpec("Name", ArgumentType.STRING)),
             { args -> brotherLine(args) },
             "Gets information about a particular brother's line going up.",
-            "brothergetline (name)"
+            "brotherline (name)"
         )
     )
     registerCommand(
