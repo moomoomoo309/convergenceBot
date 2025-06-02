@@ -52,7 +52,7 @@ interface DiscordObject {
     val id: Long
 }
 typealias DUser = net.dv8tion.jda.api.entities.User
-typealias DCustomEmoji = net.dv8tion.jda.api.entities.emoji.RichCustomEmoji
+typealias DCustomEmoji = net.dv8tion.jda.api.entities.emoji.CustomEmoji
 
 class DiscordAvailability(val status: OnlineStatus): Availability(status.name)
 class DiscordServer(name: String, val guild: Guild): Server(name, DiscordProtocol) {

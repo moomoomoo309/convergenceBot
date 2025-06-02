@@ -185,6 +185,11 @@ private fun writeSettingsToFile() {
     settingsLogger.info("Settings written.")
 }
 
+private fun moveSettings() {
+    settingsLogger.error("Could not read settings due to error. Moving...")
+    settingsPath.toFile().renameTo(convergencePath.resolve("settings.json.bak").toFile())
+}
+
 fun readSettings() {
     try {
         val settings = objectMapper.readValue<SettingsDTO>(settingsPath.toFile())
@@ -192,6 +197,7 @@ fun readSettings() {
         writeSettingsToFile()
     } catch(e: Throwable) {
         settingsLogger.error("Error occurred while reading settings from $settingsPath. Returning fallback settings instead.\n\tError: $e")
+        moveSettings()
         writeSettingsToFile()
         e.printStackTrace()
     }

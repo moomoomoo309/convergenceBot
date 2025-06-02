@@ -19,6 +19,7 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit
 import java.util.*
+import java.util.concurrent.CompletableFuture
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
@@ -95,12 +96,10 @@ object CalendarProcessor {
             if (cal.guildId != guildId)
                 return "The guild IDs of each calendar don't match!"
         }
-        val discordEvents = getDiscordEventsNextDays(jda, guildId)
-        val guild = jda.getGuildById(guildId) ?: return "No guild found with ID $guildId."
         return syncToDiscord(
-            guild,
+            jda.getGuildById(guildId) ?: return "No guild found with ID $guildId.",
             calendarEvents.sortedBy { it.getNextOccurrence().start },
-            discordEvents
+            getDiscordEventsNextDays(jda, guildId)
         )
     }
 
@@ -108,6 +107,7 @@ object CalendarProcessor {
     private fun syncToDiscord(guild: Guild, calEvents: List<VEvent>, discordEvents: List<ScheduledEvent>): String {
         val uidMap = mutableMapOf<String, Long>()
         val calEventsById = mutableMapOf<String, VEvent>()
+        val futures = mutableListOf<CompletableFuture<ScheduledEvent>>()
         outer@for (event in calEvents) {
             calEventsById[event.uid.value] = event
             for (currentDiscordEvent in discordEvents) {
@@ -116,8 +116,12 @@ object CalendarProcessor {
                     continue@outer
                 }
             }
-            addCalendarEventToDiscord(uidMap, guild, event)
+            futures.add(addCalendarEventToDiscord(uidMap, guild, event))
         }
+
+        // Wait for all the events to be added, so we know uidMap is populated
+        CompletableFuture.allOf(*futures.toTypedArray()).join()
+
         for (discordEvent in discordEvents) {
             val uid = discordEvent.description?.takeLast(UID_LENGTH)?.trim()
             if (uid == null || !uidRegex.matches(uid))
@@ -129,16 +133,18 @@ object CalendarProcessor {
         return "Calendar synced successfully."
     }
 
-    private fun addCalendarEventToDiscord(uidMap: MutableMap<String, Long>, guild: Guild, event: VEvent) {
+    private fun addCalendarEventToDiscord(uidMap: MutableMap<String, Long>, guild: Guild, event: VEvent): CompletableFuture<ScheduledEvent> {
         val nextOccurrence = event.getNextOccurrence()
-        guild.createScheduledEvent(
+        return guild.createScheduledEvent(
             event.summary?.value ?: "Unnamed event",
             if (event.location?.value.isNullOrBlank()) "No Location" else event.location.value,
             nextOccurrence.start.toOffsetDateTime(),
             nextOccurrence.end.toOffsetDateTime()
-        ).setDescription(addUIDToDescription(event.description?.value ?: "", event.uid.value)).queue {
-            uidMap[event.uid.value] = it.idLong
-        }
+        ).setDescription(addUIDToDescription(event.description?.value ?: "", event.uid.value))
+            .submit()
+            .whenComplete { it, _ ->
+                uidMap[event.uid.value] = it.idLong
+            }
     }
 
     private fun addUIDToDescription(description: String?, uid: String): String {
