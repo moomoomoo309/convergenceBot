@@ -53,6 +53,8 @@ dependencies {
     implementation(libs.sardine)
     implementation(libs.poi.core)
     implementation(libs.poi.ooxml)
+    implementation(libs.graphviz)
+    implementation(libs.graaljs)
     testImplementation("org.jetbrains.kotlin:kotlin-test")
 }
 

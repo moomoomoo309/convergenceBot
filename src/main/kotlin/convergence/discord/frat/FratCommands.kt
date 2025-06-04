@@ -3,8 +3,16 @@ package convergence.discord.frat
 import convergence.*
 import convergence.discord.DiscordOutgoingMessage
 import convergence.discord.DiscordProtocol
+import guru.nidi.graphviz.engine.Format
+import guru.nidi.graphviz.engine.Graphviz
+import guru.nidi.graphviz.model.Factory.mutGraph
+import guru.nidi.graphviz.model.Factory.mutNode
+import guru.nidi.graphviz.model.MutableNode
 import net.dv8tion.jda.api.EmbedBuilder
+import net.dv8tion.jda.api.utils.FileUpload
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 import java.nio.file.Files
 
 val englishToGreek = mapOf(
@@ -39,7 +47,40 @@ fun getBrotherInfo(name: String, searchCriteria: (BrotherInfo) -> String?): Brot
         ?: brotherInfo.firstOrNull { searchCriteria(it)?.lowercase()?.contains(name) == true }
 }
 
-fun brotherLineRec(name: String, searchCriteria: (BrotherInfo) -> String?, depth: Int = 25): MutableList<BrotherInfo> {
+fun brotherLine(args: List<String>): OutgoingMessage {
+    val name = args.joinToString(" ").lowercase()
+    val startInfo = getBrotherInfo(name) { it.getName() }
+        ?: return SimpleOutgoingMessage("No brothers found searching for \"$name\".")
+
+    val node = brotherMap["${startInfo.firstName} ${startInfo.lastName}".lowercase()]
+        ?: return SimpleOutgoingMessage("No brothers found searching for \"${startInfo.firstName} ${startInfo.lastName}\".")
+    // Convert the brother tree into graphviz nodes
+    val graph = mutGraph("$name's line")
+        .setDirected(true)
+    fun recurse(node: BrotherTreeNode, mutNode: MutableNode) {
+        for (little in node.littles) {
+            val newNode = mutNode(little.brother.getName())
+            mutNode.addLink(newNode)
+            graph.add(newNode)
+            recurse(little, newNode)
+        }
+    }
+    val rootNode = mutNode(node.brother.getName())
+    graph.add(rootNode)
+    recurse(node, rootNode)
+
+    val msg = MessageCreateBuilder()
+    // Render the graph to an image, get it as a byte array
+    val rendered = Graphviz.fromGraph(graph).render(Format.PNG)
+    val stream = ByteArrayOutputStream()
+
+    // Convert the outputstream to an inputstream so it can be uploaded to discord
+    rendered.toOutputStream(stream)
+    msg.addFiles(FileUpload.fromData(ByteArrayInputStream(stream.toByteArray()), "$name line.png"))
+    return DiscordOutgoingMessage(msg.build())
+}
+
+fun brotherBigsRecurse(name: String, searchCriteria: (BrotherInfo) -> String?, depth: Int = 25): MutableList<BrotherInfo> {
     val info = getBrotherInfo(name.lowercase(), searchCriteria)
         ?: return mutableListOf()
 
@@ -47,17 +88,18 @@ fun brotherLineRec(name: String, searchCriteria: (BrotherInfo) -> String?, depth
         return mutableListOf()
     }
 
-    val line = brotherLineRec(info.bigBrother.lowercase().ifBlank { "N/A" }, searchCriteria, depth - 1)
+    val line = brotherBigsRecurse(info.bigBrother.lowercase().ifBlank { "N/A" }, searchCriteria, depth - 1)
     line.add(info)
     return line
 }
 
-fun brotherLine(args: List<String>): DiscordOutgoingMessage {
+
+fun brotherBigs(args: List<String>): DiscordOutgoingMessage {
     val name = args.joinToString(" ").lowercase()
     val startInfo = getBrotherInfo(name) { it.firstName + " " + it.lastName }
         ?: return DiscordOutgoingMessage("No brothers found searching for \"$name\".")
 
-    val line = brotherLineRec(name, { it.firstName + " " + it.lastName })
+    val line = brotherBigsRecurse(name, { it.firstName + " " + it.lastName })
 
     val msg = MessageCreateBuilder()
     val embeds = EmbedBuilder()
@@ -111,7 +153,7 @@ fun registerFratCommands() {
             DiscordProtocol,
             "brotherbyname",
             listOf(ArgumentSpec("Name", ArgumentType.STRING)),
-            { args -> brotherInfo(args) { it.firstName + " " + it.lastName } },
+            { args -> brotherInfo(args) { it.getName() } },
             "Gets information about a particular brother based on their first and last name.",
             "brotherbyname (name)"
         )
@@ -132,8 +174,18 @@ fun registerFratCommands() {
             "brotherline",
             listOf(ArgumentSpec("Name", ArgumentType.STRING)),
             { args -> brotherLine(args) },
-            "Gets information about a particular brother's line going up.",
+            "Gets information about a particular brother's line going down.",
             "brotherline (name)"
+        )
+    )
+    registerCommand(
+        Command(
+            DiscordProtocol,
+            "brotherbigs",
+            listOf(ArgumentSpec("Name", ArgumentType.STRING)),
+            { args -> brotherBigs(args) },
+            "Gets information about a particular brother's line going up.",
+            "brotherbigs (name)"
         )
     )
     registerCommand(

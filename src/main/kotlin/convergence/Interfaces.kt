@@ -415,7 +415,7 @@ abstract class Image {
 }
 class ReceivedImages(val fct: (chat: Chat, message: IncomingMessage?, sender: User, image: Array<Image>) -> Boolean):
     ChatEvent {
-    override fun invoke(vararg args: Any): Boolean = invokeTyped(fct, args[0] as Array<Any>)
+    override fun invoke(vararg args: Any): Boolean = invokeTyped(fct, args)
     fun invoke(chat: Chat, message: IncomingMessage?, sender: User, image: Array<Image>): Boolean =
         fct(chat, message ?: SimpleIncomingMessage(""), sender, image)
 }

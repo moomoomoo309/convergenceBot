@@ -5,6 +5,8 @@ caldav4j = "1.0.5"
 commonstext = "1.13.1"
 emoji4j = "16.0.0"
 gradle = "8.12"
+graaljs = "24.2.1"
+graphviz = "0.18.1"
 jackson = "2.19.0"
 jda = "5.5.1"
 kotlin = "2.1.21"
@@ -22,6 +24,8 @@ argparse4j = { module = "net.sourceforge.argparse4j:argparse4j", version.ref = "
 caldav4j = { module = "com.github.caldav4j:caldav4j", version.ref = "caldav4j" }
 commonstext = { module = "org.apache.commons:commons-text", version.ref = "commonstext" }
 emoji4j = { module = "com.sigpwned:emoji4j-core", version.ref = "emoji4j" }
+graaljs = { module = "org.graalvm.js:js", version.ref = "graaljs" }
+graphviz = { module = "guru.nidi:graphviz-kotlin", version.ref = "graphviz" }
 jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
 jackson-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson" }
 jackson-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
@@ -33,7 +37,6 @@ poi-core = { module = "org.apache.poi:poi", version.ref = "poi" }
 poi-ooxml = { module = "org.apache.poi:poi-ooxml", version.ref = "poi" }
 prettytime = { module = "org.ocpsoft.prettytime:prettytime", version.ref = "prettytime" }
 sardine = { module = "com.github.lookfirst:sardine", version.ref = "sardine" }
-
 [plugins]
 kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
