@@ -46,7 +46,7 @@ fun getNewRoster(): List<BrotherInfo> {
         i += 1
         row = worksheet.getRow(i)
     }
-    brotherMapLazy.reset()
+    brotherPairLazy.reset()
     return brotherInfoList.filter { it.rosterNumber !in illegalRosters }
 }
 
@@ -87,7 +87,7 @@ fun extractInfoFromRow(row: Row): BrotherInfo {
 
 data class BrotherTreeNode(val brother: BrotherInfo, var big: BrotherTreeNode?, val littles: MutableList<BrotherTreeNode>)
 
-private fun getBrotherTree(): Map<String, BrotherTreeNode> {
+private fun getBrotherTree(): Pair<Map<String, BrotherTreeNode>, BrotherTreeNode> {
     val brotherMap = mutableMapOf<String, BrotherTreeNode>()
     for (brother in brotherInfo) {
         val node = BrotherTreeNode(brother, null, mutableListOf())
@@ -96,18 +96,20 @@ private fun getBrotherTree(): Map<String, BrotherTreeNode> {
         big?.littles?.add(node)
         node.big = big
     }
-    val roots = mutableListOf<BrotherTreeNode>()
+    val rootNode = BrotherTreeNode(BrotherInfo("-1", "", "Root", "", "", "", "", ""), null, mutableListOf())
     for (brother in brotherInfo) {
-        if (brother.bigBrother == " = = = = = =")
-            brotherMap["${brother.firstName} ${brother.lastName}".lowercase()]?.let { roots.add(it) }
+        if (brother.bigBrother == "= = = = = =")
+            brotherMap[brother.getName().lowercase()]?.let { rootNode.littles.add(it) }
         else
             break
     }
-    return brotherMap
+    return brotherMap to rootNode
 }
 
-private val brotherMapLazy = MutableLazy { getBrotherTree() }
-val brotherMap: Map<String, BrotherTreeNode> by brotherMapLazy
+private val brotherPairLazy = MutableLazy { getBrotherTree() }
+val brotherPair: Pair<Map<String, BrotherTreeNode>, BrotherTreeNode> by brotherPairLazy
+val brotherMap: Map<String, BrotherTreeNode> by lazy { brotherPair.first }
+val brotherRoot: BrotherTreeNode by lazy { brotherPair.second }
 
 class MutableLazy<T>(private val initializer: () -> T) : Lazy<T> {
     private var cached: T? = null

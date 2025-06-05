@@ -3,6 +3,8 @@ package convergence.discord.frat
 import convergence.*
 import convergence.discord.DiscordOutgoingMessage
 import convergence.discord.DiscordProtocol
+import guru.nidi.graphviz.attribute.Color
+import guru.nidi.graphviz.attribute.Style
 import guru.nidi.graphviz.engine.Format
 import guru.nidi.graphviz.engine.Graphviz
 import guru.nidi.graphviz.model.Factory.mutGraph
@@ -68,6 +70,102 @@ fun brotherLine(args: List<String>): OutgoingMessage {
     val rootNode = mutNode(node.brother.getName())
     graph.add(rootNode)
     recurse(node, rootNode)
+
+    val msg = MessageCreateBuilder()
+    // Render the graph to an image, get it as a byte array
+    val rendered = Graphviz.fromGraph(graph).render(Format.PNG)
+    val stream = ByteArrayOutputStream()
+
+    // Convert the outputstream to an inputstream so it can be uploaded to discord
+    rendered.toOutputStream(stream)
+    msg.addFiles(FileUpload.fromData(ByteArrayInputStream(stream.toByteArray()), "$name line.png"))
+    return DiscordOutgoingMessage(msg.build())
+}
+
+fun fullTree(args: List<String>): OutgoingMessage {
+    val name = args.joinToString(" ").lowercase()
+    val startInfo = getBrotherInfo(name) { it.getName() }
+        ?: return SimpleOutgoingMessage("No brothers found searching for \"$name\".")
+
+    val node = brotherMap["${startInfo.firstName} ${startInfo.lastName}".lowercase()]
+        ?: return SimpleOutgoingMessage("No brothers found searching for \"${startInfo.firstName} ${startInfo.lastName}\".")
+    val brotherLine = mutableSetOf<String>()
+
+    // Add the line going down
+    fun recurse(node: BrotherTreeNode) {
+        brotherLine.add(node.brother.getName())
+        for (little in node.littles) {
+            recurse(little)
+        }
+    }
+    recurse(node)
+    var big = node.big
+    // Add the line going up
+    while (big != null) {
+        brotherLine.add(big.brother.getName())
+        big = big.big
+    }
+
+    // Convert the brother tree into graphviz nodes
+    val graph = mutGraph("$name's line in full tree")
+        .setDirected(true)
+    fun generateGraph(node: BrotherTreeNode, mutNode: MutableNode?) {
+        for (little in node.littles) {
+            val name = little.brother.getName()
+            val newNode = mutNode(name)
+            // Make your line red and gray
+            if (name in brotherLine)
+                newNode.add(Style.FILLED, Color.GRAY).add(Color.RED.font())
+            mutNode?.addLink(newNode)
+            graph.add(newNode)
+            generateGraph(little, newNode)
+        }
+    }
+    generateGraph(brotherRoot, null)
+
+
+    val msg = MessageCreateBuilder()
+    // Render the graph to an image, get it as a byte array
+    val rendered = Graphviz.fromGraph(graph).render(Format.PNG)
+    val stream = ByteArrayOutputStream()
+
+    // Convert the outputstream to an inputstream so it can be uploaded to discord
+    rendered.toOutputStream(stream)
+    msg.addFiles(FileUpload.fromData(ByteArrayInputStream(stream.toByteArray()), "$name line.png"))
+    return DiscordOutgoingMessage(msg.build())
+}
+
+fun fullLine(args: List<String>): OutgoingMessage {
+    val name = args.joinToString(" ").lowercase()
+    val startInfo = getBrotherInfo(name) { it.getName() }
+        ?: return SimpleOutgoingMessage("No brothers found searching for \"$name\".")
+
+    val node = brotherMap["${startInfo.firstName} ${startInfo.lastName}".lowercase()]
+        ?: return SimpleOutgoingMessage("No brothers found searching for \"${startInfo.firstName} ${startInfo.lastName}\".")
+    // Convert the brother tree into graphviz nodes
+    val graph = mutGraph("$name's line")
+        .setDirected(true)
+    fun generateGraphGoingDown(node: BrotherTreeNode, mutNode: MutableNode) {
+        for (little in node.littles) {
+            val newNode = mutNode(little.brother.getName())
+            mutNode.addLink(newNode)
+            graph.add(newNode)
+            generateGraphGoingDown(little, newNode)
+        }
+    }
+    val rootNode = mutNode(node.brother.getName())
+    graph.add(rootNode)
+    generateGraphGoingDown(node, rootNode)
+    var big = node.big
+    var previousNode = rootNode
+    // Add the line going all the way up
+    while (big != null) {
+        val newNode = mutNode(big.brother.getName())
+        newNode.addLink(previousNode)
+        graph.add(newNode)
+        previousNode = newNode
+        big = big.big
+    }
 
     val msg = MessageCreateBuilder()
     // Render the graph to an image, get it as a byte array
@@ -175,7 +273,7 @@ fun registerFratCommands() {
             listOf(ArgumentSpec("Name", ArgumentType.STRING)),
             { args -> brotherLine(args) },
             "Gets information about a particular brother's line going down.",
-            "brotherline (name)"
+            "brotherLine (name)"
         )
     )
     registerCommand(
@@ -185,7 +283,27 @@ fun registerFratCommands() {
             listOf(ArgumentSpec("Name", ArgumentType.STRING)),
             { args -> brotherBigs(args) },
             "Gets information about a particular brother's line going up.",
-            "brotherbigs (name)"
+            "brotherBigs (name)"
+        )
+    )
+    registerCommand(
+        Command(
+            DiscordProtocol,
+            "fullline",
+            listOf(ArgumentSpec("Name", ArgumentType.STRING)),
+            { args -> fullLine(args) },
+            "Gets information about a particular brother's line going up and down.",
+            "fullLine (name)"
+        )
+    )
+    registerCommand(
+        Command(
+            DiscordProtocol,
+            "fulltree",
+            listOf(ArgumentSpec("Name", ArgumentType.STRING)),
+            { args -> fullTree(args) },
+            "Shows the full tree, with a particular brother's line going up and down highlighted.",
+            "fullTree (name)"
         )
     )
     registerCommand(
