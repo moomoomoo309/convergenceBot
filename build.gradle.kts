@@ -93,5 +93,6 @@ tasks.shadowJar {
         exclude(dependency(libs.logback.get()))
         exclude(dependency(libs.poi.core.get()))
         exclude(dependency(libs.poi.ooxml.get()))
+        exclude(dependency("org.mnode.ical4j:ical4j"))
     }
 }
