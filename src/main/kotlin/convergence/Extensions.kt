@@ -3,7 +3,7 @@ package convergence
 import com.sigpwned.emoji4j.core.Grapheme
 import com.sigpwned.emoji4j.core.GraphemeMatcher
 import com.sigpwned.emoji4j.core.grapheme.Emoji
-import convergence.discord.defaultZoneOffset
+import convergence.discord.calendar.defaultZoneOffset
 import java.time.OffsetDateTime
 import java.util.*
 

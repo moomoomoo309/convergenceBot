@@ -8,50 +8,6 @@ val discordEmojiRegex = Regex("^<a?:[a-zA-Z0-9_-]{1,100}:[0-9]{1,20}>$")
 fun registerDiscordCommands() {
     registerCommand(Command.of(
         DiscordProtocol,
-        "syncCalendar",
-        listOf(ArgumentSpec("URL", ArgumentType.STRING)),
-        CalendarProcessor::syncCommand,
-        "Sync a CalDAV calendar to discord events.",
-        "syncCalendar (URL)"
-    ))
-    registerCommand(Command.of(
-        DiscordProtocol,
-        "resyncCalendar",
-        listOf(),
-        { -> CommandScheduler.syncCalendars(); "Resyncing calendars..." },
-        "Resyncs all calendars in all servers.",
-        "resyncCalendar (Takes no parameters)"
-    ))
-    registerCommand(
-        Command.of(
-            DiscordProtocol,
-            "unsyncCalendar",
-            listOf(ArgumentSpec("URL", ArgumentType.STRING)),
-            { args, chat ->
-                val removed = syncedCalendars.remove(syncedCalendars.firstOrNull {
-                        it.guildId == (chat as DiscordChat).server.guild.idLong && it.calURL == args[0]
-                    }
-                )
-                if (removed) "Calendar removed." else "No calendar with URL ${args[0]} found."
-            },
-            "Removes a synced calendar.",
-            "unsyncCalendar (URL)"
-        )
-    )
-    registerCommand(
-        Command.of(
-            DiscordProtocol,
-        "syncedCalendars",
-        listOf(),
-        {_, chat -> syncedCalendars.filter {
-                it.guildId == (chat as DiscordChat).server.guild.idLong
-            }.joinToString(", ").ifEmpty { "No calendars are synced in this chat." }
-        },
-        "Prints out all the synced calendars in this chat.",
-        "syncedCalendars (Takes no parameters)"
-    ))
-    registerCommand(Command.of(
-        DiscordProtocol,
         "uploadImagesTo",
         listOf(ArgumentSpec("URL", ArgumentType.STRING)),
         { args: List<String>, chat: Chat ->

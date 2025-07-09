@@ -1,10 +1,13 @@
-package convergence.discord
+package convergence.discord.calendar
 
 import com.github.caldav4j.CalDAVCollection
 import com.github.caldav4j.exceptions.CalDAV4JException
 import com.github.caldav4j.util.GenerateQuery
 import convergence.*
+import convergence.discord.DiscordChat
+import convergence.discord.DiscordProtocol
 import convergence.discord.frat.fratConfig
+import convergence.discord.jda
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.ScheduledEvent
@@ -14,6 +17,7 @@ import net.fortuna.ical4j.model.component.VEvent
 import org.apache.http.impl.client.CloseableHttpClient
 import org.apache.http.impl.client.HttpClients
 import org.apache.http.message.BasicHeader
+import java.time.Duration
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
@@ -35,6 +39,9 @@ val httpClient: CloseableHttpClient = HttpClients.custom().setDefaultHeaders(
 
 const val UID_LENGTH = 36
 const val DAYS = 30L
+private var lastCalendarUpdateTime = Instant.now().plusSeconds(10)
+private val calendarUpdateFrequency = Duration.ofMinutes(15L)
+
 
 object CalendarProcessor {
     fun getAndCacheCalendar(url: String): CalDAVCollection? {
@@ -108,7 +115,7 @@ object CalendarProcessor {
         val uidMap = mutableMapOf<String, Long>()
         val calEventsById = mutableMapOf<String, VEvent>()
         val futures = mutableListOf<CompletableFuture<ScheduledEvent>>()
-        outer@for (event in calEvents) {
+        outer@ for (event in calEvents) {
             calEventsById[event.uid.value] = event
             for (currentDiscordEvent in discordEvents) {
                 if (event.equalEnough(currentDiscordEvent)) {
@@ -133,7 +140,11 @@ object CalendarProcessor {
         return "Calendar synced successfully."
     }
 
-    private fun addCalendarEventToDiscord(uidMap: MutableMap<String, Long>, guild: Guild, event: VEvent): CompletableFuture<ScheduledEvent> {
+    private fun addCalendarEventToDiscord(
+        uidMap: MutableMap<String, Long>,
+        guild: Guild,
+        event: VEvent
+    ): CompletableFuture<ScheduledEvent> {
         val nextOccurrence = event.getNextOccurrence()
         return guild.createScheduledEvent(
             event.summary?.value ?: "Unnamed event",
@@ -154,6 +165,22 @@ object CalendarProcessor {
             return description
         }
         return description + "\n" + uid
+    }
+
+    fun onUpdate() {
+        if ((lastCalendarUpdateTime + calendarUpdateFrequency).isBefore(Instant.now())) {
+            syncCalendars()
+        }
+    }
+
+    fun syncCalendars() {
+        defaultLogger.info("Syncing calendars...")
+        Thread {
+            val serverIDs = syncedCalendars.map { it.guildId }.toSet()
+            for (serverId in serverIDs)
+                syncToDiscord(syncedCalendars.filter { it.guildId == serverId })
+        }.start()
+        lastCalendarUpdateTime = Instant.now()
     }
 }
 
@@ -180,4 +207,108 @@ fun VEvent.equalEnough(dEvent: ScheduledEvent?): Boolean {
 fun VEvent.getNextOccurrence(): Period {
     val now = Instant.now()
     return this.getConsumedTime(now.toIDate(), now.plus(DAYS, ChronoUnit.DAYS).toIDate(), true).first()
+}
+
+fun registerCalendarCommands() {
+    registerCommand(
+        Command.of(
+            DiscordProtocol,
+            "syncCalendar",
+            listOf(ArgumentSpec("URL", ArgumentType.STRING)),
+            CalendarProcessor::syncCommand,
+            "Sync a CalDAV calendar to discord events.",
+            "syncCalendar (URL)"
+        )
+    )
+    registerCommand(
+        Command.of(
+            DiscordProtocol,
+            "resyncCalendar",
+            listOf(),
+            { -> CalendarProcessor.syncCalendars(); "Resyncing calendars..." },
+            "Resyncs all calendars in all servers.",
+            "resyncCalendar (Takes no parameters)"
+        )
+    )
+    registerCommand(
+        Command.of(
+            DiscordProtocol,
+            "unsyncCalendar",
+            listOf(ArgumentSpec("URL", ArgumentType.STRING)),
+            { args, chat ->
+                val removed = syncedCalendars.remove(syncedCalendars.firstOrNull {
+                    it.guildId == (chat as DiscordChat).server.guild.idLong && it.calURL == args[0]
+                }
+                )
+                if (removed) "Calendar removed." else "No calendar with URL ${args[0]} found."
+            },
+            "Removes a synced calendar.",
+            "unsyncCalendar (URL)"
+        )
+    )
+    registerCommand(
+        Command.of(
+            DiscordProtocol,
+            "syncedCalendars",
+            listOf(),
+            { _, chat ->
+                syncedCalendars.filter {
+                    it.guildId == (chat as DiscordChat).server.guild.idLong
+                }.joinToString(", ").ifEmpty { "No calendars are synced in this chat." }
+            },
+            "Prints out all the synced calendars in this chat.",
+            "syncedCalendars (Takes no parameters)"
+        )
+    )
+
+    registerCommand(
+        Command.of(
+            DiscordProtocol,
+            "syncCalendar",
+            listOf(ArgumentSpec("URL", ArgumentType.STRING)),
+            CalendarProcessor::syncCommand,
+            "Sync a CalDAV calendar to discord events.",
+            "syncCalendar (URL)"
+        )
+    )
+    registerCommand(
+        Command.of(
+            DiscordProtocol,
+            "resyncCalendar",
+            listOf(),
+            { -> CalendarProcessor.syncCalendars(); "Resyncing calendars..." },
+            "Resyncs all calendars in all servers.",
+            "resyncCalendar (Takes no parameters)"
+        )
+    )
+    registerCommand(
+        Command.of(
+            DiscordProtocol,
+            "unsyncCalendar",
+            listOf(ArgumentSpec("URL", ArgumentType.STRING)),
+            { args, chat ->
+                val removed = syncedCalendars.remove(syncedCalendars.firstOrNull {
+                    it.guildId == (chat as DiscordChat).server.guild.idLong && it.calURL == args[0]
+                }
+                )
+                if (removed) "Calendar removed." else "No calendar with URL ${args[0]} found."
+            },
+            "Removes a synced calendar.",
+            "unsyncCalendar (URL)"
+        )
+    )
+    registerCommand(
+        Command.of(
+            DiscordProtocol,
+            "syncedCalendars",
+            listOf(),
+            { _, chat ->
+                syncedCalendars.filter {
+                    it.guildId == (chat as DiscordChat).server.guild.idLong
+                }.joinToString(", ").ifEmpty { "No calendars are synced in this chat." }
+            },
+            "Prints out all the synced calendars in this chat.",
+            "syncedCalendars (Takes no parameters)"
+        )
+    )
 }

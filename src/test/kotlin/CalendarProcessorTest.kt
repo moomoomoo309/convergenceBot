@@ -1,4 +1,4 @@
-import convergence.discord.CalendarProcessor
+import convergence.discord.calendar.CalendarProcessor
 import kotlin.test.Test
 
 class CalendarProcessorTest {

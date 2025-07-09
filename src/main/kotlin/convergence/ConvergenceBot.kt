@@ -7,7 +7,6 @@ import convergence.discord.DiscordProtocol
 import net.sourceforge.argparse4j.ArgumentParsers
 import net.sourceforge.argparse4j.inf.ArgumentParserException
 import java.nio.file.Paths
-import kotlin.collections.set
 
 object ConvergenceBot {
     @JvmStatic
@@ -40,6 +39,8 @@ object ConvergenceBot {
 
         defaultLogger.info("Registering default commands...")
         registerDefaultCommands()
+
+        defaultLogger.info("Registering addons...")
 
         // Update the chat map
         for (protocol in protocols) {

@@ -1,7 +1,7 @@
 package convergence.discord.frat
 
 import com.fasterxml.jackson.annotation.JsonIgnore
-import convergence.discord.defaultZoneOffset
+import convergence.discord.calendar.defaultZoneOffset
 import convergence.titleCase
 import org.apache.poi.ss.usermodel.*
 import org.apache.poi.xssf.usermodel.XSSFFormulaEvaluator

@@ -1,10 +1,8 @@
 package convergence
 
-import convergence.discord.CalendarProcessor
+import convergence.discord.calendar.CalendarProcessor
 import org.ocpsoft.prettytime.PrettyTime
 import org.ocpsoft.prettytime.units.JustNow
-import java.time.Duration
-import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
 
@@ -15,12 +13,10 @@ import java.time.temporal.ChronoUnit
 object CommandScheduler: Thread() {
     private const val allowedTimeDifferenceSeconds = 30
     private const val updatesPerSecond = 1
-    private val calendarUpdateFrequency = Duration.ofMinutes(15L)
 
     private val scheduledCommands = sortedMapOf<OffsetDateTime, MutableList<ScheduledCommand>>()
     private val commandsList = sortedMapOf<Int, ScheduledCommand>()
     private var currentId: Int = 0
-    private var lastCalendarUpdateTime = Instant.now().plusSeconds(10)
 
     fun loadFromFile() {
         serializedCommands.values.forEach { cmd ->
@@ -55,24 +51,9 @@ object CommandScheduler: Thread() {
                 } else // It's already sorted chronologically, so all following events are early.
                     break
             }
-            if ((lastCalendarUpdateTime + calendarUpdateFrequency).isBefore(Instant.now())) {
-                syncCalendars()
-            }
+            CalendarProcessor.onUpdate()
             sleep((1000.0 / updatesPerSecond).toLong())
         }
-    }
-
-    /**
-     * Syncs any calendars
-     */
-    fun syncCalendars() {
-        defaultLogger.info("Syncing calendars...")
-        Thread {
-            val serverIDs = syncedCalendars.map { it.guildId }.toSet()
-            for (serverId in serverIDs)
-                CalendarProcessor.syncToDiscord(syncedCalendars.filter { it.guildId == serverId })
-        }.start()
-        lastCalendarUpdateTime = Instant.now()
     }
 
     /**

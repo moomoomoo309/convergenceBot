@@ -65,6 +65,8 @@ fun parseCommand(command: String, commandDelimiter: String, chat: Chat): Command
     // Check for the command delimiter, so the grammar doesn't have to worry about it
     if (!command.startsWith(commandDelimiter))
         return null
+    if (command.startsWith(commandDelimiter + commandDelimiter))
+        return null
     val tree = try {
         // Set up antlr
         val input = command.substring(commandDelimiter.length)

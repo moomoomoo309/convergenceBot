@@ -5,6 +5,7 @@ import com.github.sardine.Sardine
 import com.github.sardine.SardineFactory
 import convergence.*
 import convergence.discord.MessageListener.forwardedMessages
+import convergence.discord.calendar.registerCalendarCommands
 import convergence.discord.frat.fratConfig
 import convergence.discord.frat.registerFratCommands
 import net.dv8tion.jda.api.JDA
@@ -225,6 +226,7 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
             return
         }
         registerDiscordCommands()
+        registerCalendarCommands()
         registerFratCommands()
         discordLogger.info("JDA Initialized.")
         jda.addEventListener(MessageListener)

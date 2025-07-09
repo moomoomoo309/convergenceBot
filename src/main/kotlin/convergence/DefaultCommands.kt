@@ -226,7 +226,7 @@ fun goingto(args: List<String>, chat: Chat, sender: User): String {
                 val groups = dateTimeParser.parse(durationStr.toString())
                 if (groups.size > 1 || groups[0].dates.size > 1)
                     return "You can't have the duration be more than one time!"
-                else if (groups.size == 0 || groups[0].dates.size == 0)
+                else if (groups.isEmpty() || groups[0].dates.isEmpty())
                     return "You can't just put \"for\" and not put a time after it!"
             }
 
@@ -333,7 +333,7 @@ fun events(unused: List<String>, chat: Chat): String {
 }
 
 /**
- * Gets all of the currently scheduled events that were scheduled by [sender].
+ * Gets all the currently scheduled events that were scheduled by [sender].
  */
 private fun getUserEvents(sender: User): Map<User, MutableList<ScheduledCommand>> {
     val eventsList = getCommands(sender)

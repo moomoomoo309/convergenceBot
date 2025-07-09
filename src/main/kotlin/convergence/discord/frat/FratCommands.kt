@@ -9,6 +9,7 @@ import guru.nidi.graphviz.engine.Format
 import guru.nidi.graphviz.engine.Graphviz
 import guru.nidi.graphviz.model.Factory.mutGraph
 import guru.nidi.graphviz.model.Factory.mutNode
+import guru.nidi.graphviz.model.MutableGraph
 import guru.nidi.graphviz.model.MutableNode
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.utils.FileUpload
@@ -49,6 +50,18 @@ fun getBrotherInfo(name: String, searchCriteria: (BrotherInfo) -> String?): Brot
         ?: brotherInfo.firstOrNull { searchCriteria(it)?.lowercase()?.contains(name) == true }
 }
 
+fun generateGraphGoingDown(graph: MutableGraph, node: BrotherTreeNode, mutNode: MutableNode?) = generateGraphGoingDown(graph, node, mutNode) { _,_,_ -> }
+fun generateGraphGoingDown(graph: MutableGraph, node: BrotherTreeNode, mutNode: MutableNode?, callback: (BrotherTreeNode, MutableNode?, MutableNode) -> Unit) {
+    for (little in node.littles) {
+        val name = little.brother.getName()
+        val newNode = mutNode(name)
+        callback(node, mutNode, newNode)
+        mutNode?.addLink(newNode)
+        graph.add(newNode)
+        generateGraphGoingDown(graph, little, newNode, callback)
+    }
+}
+
 fun brotherLine(args: List<String>): OutgoingMessage {
     val name = args.joinToString(" ").lowercase()
     val startInfo = getBrotherInfo(name) { it.getName() }
@@ -59,17 +72,9 @@ fun brotherLine(args: List<String>): OutgoingMessage {
     // Convert the brother tree into graphviz nodes
     val graph = mutGraph("$name's line")
         .setDirected(true)
-    fun recurse(node: BrotherTreeNode, mutNode: MutableNode) {
-        for (little in node.littles) {
-            val newNode = mutNode(little.brother.getName())
-            mutNode.addLink(newNode)
-            graph.add(newNode)
-            recurse(little, newNode)
-        }
-    }
     val rootNode = mutNode(node.brother.getName())
     graph.add(rootNode)
-    recurse(node, rootNode)
+    generateGraphGoingDown(graph, node, rootNode)
 
     val msg = MessageCreateBuilder()
     // Render the graph to an image, get it as a byte array
@@ -109,20 +114,11 @@ fun fullTree(args: List<String>): OutgoingMessage {
     // Convert the brother tree into graphviz nodes
     val graph = mutGraph("$name's line in full tree")
         .setDirected(true)
-    fun generateGraph(node: BrotherTreeNode, mutNode: MutableNode?) {
-        for (little in node.littles) {
-            val name = little.brother.getName()
-            val newNode = mutNode(name)
-            // Make your line red and gray
-            if (name in brotherLine)
-                newNode.add(Style.FILLED, Color.GRAY).add(Color.RED.font())
-            mutNode?.addLink(newNode)
-            graph.add(newNode)
-            generateGraph(little, newNode)
-        }
+    generateGraphGoingDown(graph, brotherRoot, null) { _, _, newNode ->
+        // Make your line red and gray
+        if (name in brotherLine)
+            newNode.add(Style.FILLED, Color.GRAY).add(Color.RED.font())
     }
-    generateGraph(brotherRoot, null)
-
 
     val msg = MessageCreateBuilder()
     // Render the graph to an image, get it as a byte array
@@ -145,17 +141,9 @@ fun fullLine(args: List<String>): OutgoingMessage {
     // Convert the brother tree into graphviz nodes
     val graph = mutGraph("$name's line")
         .setDirected(true)
-    fun generateGraphGoingDown(node: BrotherTreeNode, mutNode: MutableNode) {
-        for (little in node.littles) {
-            val newNode = mutNode(little.brother.getName())
-            mutNode.addLink(newNode)
-            graph.add(newNode)
-            generateGraphGoingDown(little, newNode)
-        }
-    }
     val rootNode = mutNode(node.brother.getName())
     graph.add(rootNode)
-    generateGraphGoingDown(node, rootNode)
+    generateGraphGoingDown(graph, node, rootNode)
     var big = node.big
     var previousNode = rootNode
     // Add the line going all the way up
@@ -178,26 +166,24 @@ fun fullLine(args: List<String>): OutgoingMessage {
     return DiscordOutgoingMessage(msg.build())
 }
 
-fun brotherBigsRecurse(name: String, searchCriteria: (BrotherInfo) -> String?, depth: Int = 25): MutableList<BrotherInfo> {
-    val info = getBrotherInfo(name.lowercase(), searchCriteria)
-        ?: return mutableListOf()
 
-    if (depth == 0) {
-        return mutableListOf()
-    }
-
-    val line = brotherBigsRecurse(info.bigBrother.lowercase().ifBlank { "N/A" }, searchCriteria, depth - 1)
-    line.add(info)
-    return line
-}
-
-
-fun brotherBigs(args: List<String>): DiscordOutgoingMessage {
+fun brotherBigs(args: List<String>): OutgoingMessage {
     val name = args.joinToString(" ").lowercase()
     val startInfo = getBrotherInfo(name) { it.firstName + " " + it.lastName }
-        ?: return DiscordOutgoingMessage("No brothers found searching for \"$name\".")
+        ?: return SimpleOutgoingMessage("No brothers found searching for \"$name\".")
 
-    val line = brotherBigsRecurse(name, { it.firstName + " " + it.lastName })
+    var node: BrotherTreeNode? = brotherMap["${startInfo.firstName} ${startInfo.lastName}".lowercase()]
+        ?: return SimpleOutgoingMessage("No brothers found searching for \"${startInfo.firstName} ${startInfo.lastName}\".")
+    // Add the line going up
+    val line = mutableListOf(node!!.brother)
+    node = node.big
+    @Suppress("unused")
+    for (unused in 0..<25) { // Discord has a 25 field limit
+        if (node == null)
+            break
+        line.add(node.brother)
+        node = node.big
+    }
 
     val msg = MessageCreateBuilder()
     val embeds = EmbedBuilder()
