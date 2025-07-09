@@ -63,7 +63,7 @@ fun parseCommand(command: String, chat: Chat): CommandData? =
 
 fun parseCommand(command: String, commandDelimiter: String, chat: Chat): CommandData? {
     // Check for the command delimiter, so the grammar doesn't have to worry about it
-    if (!command.startsWith(commandDelimiter))
+    if (!command.startsWith(commandDelimiter) || command.isEmpty())
         return null
     if (command.startsWith(commandDelimiter + commandDelimiter))
         return null

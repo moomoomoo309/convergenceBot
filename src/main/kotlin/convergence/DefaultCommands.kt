@@ -269,12 +269,18 @@ fun goingto(args: List<String>, chat: Chat, sender: User): String {
 }
 
 fun target(args: List<String>, chat: Chat): String {
+    if (args.isEmpty()) {
+        return "You need to pass some arguments! Syntax: " + commands[UniversalProtocol]!!["target"]!!.syntaxText
+    }
     val user = getUserFromName(chat, args[args.size - 1])
         ?: return "No user by the name \"${args[args.size - 1]}\" found."
     return args.subList(0, args.size - 1).joinToString(" ").replace("%target", chat.protocol.getName(chat, user))
 }
 
 fun targetNick(args: List<String>, chat: Chat): String {
+    if (args.isEmpty()) {
+        return "You need to pass some arguments! Syntax: " + commands[UniversalProtocol]!!["target"]!!.syntaxText
+    }
     if (chat.protocol !is HasNicknames)
         return "This protocol doesn't support nicknames!"
     val protocol = chat.protocol as HasNicknames
