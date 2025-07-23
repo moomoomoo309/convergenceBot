@@ -111,14 +111,13 @@ val brotherPair: Pair<Map<String, BrotherTreeNode>, BrotherTreeNode> by brotherP
 val brotherMap: Map<String, BrotherTreeNode> by lazy { brotherPair.first }
 val brotherRoot: BrotherTreeNode by lazy { brotherPair.second }
 
-class MutableLazy<T>(private val initializer: () -> T) : Lazy<T> {
+class MutableLazy<T: Any>(private val initializer: () -> T) : Lazy<T> {
     private var cached: T? = null
     override val value: T
         get() {
             if (cached == null) {
                 cached = initializer()
             }
-            @Suppress("UNCHECKED_CAST")
             return cached as T
         }
 

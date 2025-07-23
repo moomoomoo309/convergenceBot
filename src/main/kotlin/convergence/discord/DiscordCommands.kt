@@ -5,24 +5,46 @@ import java.net.URI
 import java.net.URISyntaxException
 
 val discordEmojiRegex = Regex("^<a?:[a-zA-Z0-9_-]{1,100}:[0-9]{1,20}>$")
+
+private fun registerReactChannel(args: List<String>, chat: Chat): String {
+    if (chat !is DiscordChat)
+        return "This command can only be run on discord."
+    if (args.size != 2)
+        return "2 args required: emoji and threshold."
+    val emoji = args[0]
+    val isUnicodeEmoji = emoji.toEmoji() != null
+    val isDiscordEmoji = discordEmojiRegex.matches(emoji)
+    if (!isUnicodeEmoji && !isDiscordEmoji)
+        return "Emoji must be a valid unicode or discord emoji."
+    val threshold = args[1].toIntOrNull()
+    if (threshold == null || threshold <= 0)
+        return "Threshold must be a positive integer."
+    reactServers.getOrPut(chat.server) { mutableListOf(ReactConfig(chat, mutableMapOf())) }
+        .first { it.destination == chat }.emojis[emoji] = threshold
+    Settings.update()
+    return "Registered messages to be forwarded to this channel if they are reacted with $emoji $threshold times or more."
+}
+
+private fun uploadImagesTo(args: List<String>, chat: Chat): String? {
+    if (args.isEmpty())
+        return "A URL has to be provided."
+    val url = try {
+        URI(args[0])
+    } catch(e: URISyntaxException) {
+        e.printStackTrace()
+        return "\"${args[0]}\" is not a valid URL."
+    }
+    imageUploadChannels[chat] = url
+    Settings.update()
+    return "Images will now be uploaded to $url."
+}
+
 fun registerDiscordCommands() {
     registerCommand(Command.of(
         DiscordProtocol,
         "uploadImagesTo",
         listOf(ArgumentSpec("URL", ArgumentType.STRING)),
-        { args: List<String>, chat: Chat ->
-            if (args.isEmpty())
-                return@of "A URL has to be provided."
-            val url = try {
-                URI(args[0])
-            } catch(e: URISyntaxException) {
-                e.printStackTrace()
-                return@of "\"${args[0]}\" is not a valid URL."
-            }
-            imageUploadChannels[chat] = url
-            Settings.update()
-            "Images will now be uploaded to $url."
-        },
+        ::uploadImagesTo,
         "Sets all images in this channel from here on out to be uploaded to the provided WebDAV URL.",
         "uploadImagesTo (URL)"
     ))
@@ -42,24 +64,7 @@ fun registerDiscordCommands() {
         DiscordProtocol,
         "registerReactChannel",
         listOf(ArgumentSpec("emoji", ArgumentType.STRING), ArgumentSpec("threshold", ArgumentType.INTEGER)),
-        cmd@{ args, chat ->
-            if (chat !is DiscordChat)
-                return@cmd "This command can only be run on discord."
-            if (args.size != 2)
-                return@cmd "2 args required: emoji and threshold."
-            val emoji = args[0]
-            val isUnicodeEmoji = emoji.toEmoji() != null
-            val isDiscordEmoji = discordEmojiRegex.matches(emoji)
-            if (!isUnicodeEmoji && !isDiscordEmoji)
-                return@cmd "Emoji must be a valid unicode or discord emoji."
-            val threshold = args[1].toIntOrNull()
-            if (threshold == null || threshold <= 0)
-                return@cmd "Threshold must be a positive integer."
-            reactServers.getOrPut(chat.server) { mutableListOf(ReactConfig(chat, mutableMapOf())) }
-                .first { it.destination == chat }.emojis[emoji] = threshold
-            Settings.update()
-            "Registered messages to be forwarded to this channel if they are reacted with $emoji $threshold times or more."
-        },
+        ::registerReactChannel,
         "Registers messages to be forwarded to this channel if they are reacted with emoji threshold times or more.",
         "registerReactChannel (emoji) (threshold)"
     ))

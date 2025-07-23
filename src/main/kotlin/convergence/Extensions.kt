@@ -11,7 +11,6 @@ import java.util.*
 // I.E: CalendarProcessor has some calendar event-related extensions, those can stay there.
 // This file has stuff on Lists or Strings or Maps, more generic stuff.
 
-fun <K, V> List<Pair<K, V>>.toMutableMap() = this.toMap() as MutableMap<K, V>
 fun <K, V, K2, V2> Map<K, V>.mapEntries(fct: (Map.Entry<K, V>) -> Pair<K2, V2>): Map<K2, V2> {
     val destination = LinkedHashMap<K2, V2>(mapCapacity(size))
     for (entry in this) {
@@ -53,3 +52,6 @@ fun String.toEmoji(): Emoji? {
             null
     }.get()
 }
+
+fun <K, V> MutableMap<K, V>.clearThen() = this.apply { this.clear() }
+fun <T> MutableList<T>.clearThen() = this.apply { this.clear() }

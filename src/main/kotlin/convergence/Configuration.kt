@@ -140,19 +140,19 @@ object Settings {
     }
 
     fun updateFrom(settingsDTO: SettingsDTO) {
-        this.aliases.apply { clear() }.putAll(mapAliasesFromDTO(settingsDTO.aliases))
-        this.commandDelimiters.apply { clear() }.putAll(mapFromDTO(settingsDTO.commandDelimiters))
-        this.linkedChats.apply { clear() }.putAll(linkedChatsFromDTO(settingsDTO.linkedChats))
-        this.serializedCommands.apply { clear() }.putAll(settingsDTO.serializedCommands.mapValues { (_, dto) ->
+        this.aliases.clearThen().putAll(mapAliasesFromDTO(settingsDTO.aliases))
+        this.commandDelimiters.clearThen().putAll(mapFromDTO(settingsDTO.commandDelimiters))
+        this.linkedChats.clearThen().putAll(linkedChatsFromDTO(settingsDTO.linkedChats))
+        this.serializedCommands.clearThen().putAll(settingsDTO.serializedCommands.mapValues { (_, dto) ->
             dto.toScheduledCommand()!!
         } as MutableMap<Int, ScheduledCommand>)
-        this.syncedCalendars.apply { clear() }.addAll(settingsDTO.syncedCalendars)
-        this.timers.apply { clear() }.putAll(settingsDTO.timers)
-        this.imageUploadChannels.apply { clear() }.putAll(settingsDTO.imageUploadChannels.map { (k, v) ->
+        this.syncedCalendars.clearThen().addAll(settingsDTO.syncedCalendars)
+        this.timers.clearThen().putAll(settingsDTO.timers)
+        this.imageUploadChannels.clearThen().putAll(settingsDTO.imageUploadChannels.map { (k, v) ->
             val protocol = scopeStrToProtocol(k)!!
             protocol.commandScopeFromKey(k) as Chat to URI(v)
         })
-        this.reactServers.apply { clear() }.putAll(settingsDTO.reactServers.mapEntries { (k, v) ->
+        this.reactServers.clearThen().putAll(settingsDTO.reactServers.mapEntries { (k, v) ->
             val protocol = scopeStrToProtocol(k)!!
             protocol.commandScopeFromKey(k) as Server to v.map { it.toConfig() }
         })

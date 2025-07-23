@@ -92,7 +92,7 @@ class DiscordChat(name: String, override val id: Long, @JsonIgnore val channel: 
 }
 
 class DiscordMessageHistory(val msg: Message, override val id: Long):
-    MessageHistory(msg.contentRaw, msg.timeCreated, DiscordUser(msg.author)), DiscordObject {
+    MessageHistory(DiscordIncomingMessage(msg), msg.timeCreated, DiscordUser(msg.author)), DiscordObject {
     constructor(msg: Message): this(msg, msg.idLong)
 }
 
@@ -384,9 +384,9 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
         }
     }
 
-    override fun editMessage(message: MessageHistory, oldMessage: String, sender: User, newMessage: String) {
+    override fun editMessage(message: MessageHistory, oldMessage: IncomingMessage, sender: User, newMessage: OutgoingMessage) {
         if (message is DiscordMessageHistory)
-            message.msg.editMessage(newMessage).queue()
+            message.msg.editMessage(newMessage.toSimple().text).queue()
     }
 
     override fun getMessages(chat: Chat, since: OffsetDateTime?, until: OffsetDateTime?): List<DiscordMessageHistory> {
@@ -524,7 +524,7 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
     }
 
     override fun getChatName(chat: Chat): String = if (chat is DiscordChat) chat.name else ""
-    override fun mention(chat: Chat, user: User, message: String?) {
+    override fun mention(chat: Chat, user: User, message: OutgoingMessage?) {
         sendMessage(chat, jda.retrieveUserById((user as DiscordUser).id).complete().asMention + message?.let { " $it" })
     }
 
@@ -578,7 +578,7 @@ object MessageListener: ListenerAdapter() {
         if (mentionedMembers.isNotEmpty())
             DiscordProtocol.mentionedUsers(
                 chat,
-                event.message.contentDisplay,
+                DiscordIncomingMessage(event.message),
                 mentionedMembers.map { DiscordUser(it) }.toSet(),
                 sender
             )
@@ -611,7 +611,10 @@ object MessageListener: ListenerAdapter() {
                 DiscordProtocol.getUser(event.user?.idLong) ?: return@queue,
                 DiscordChat(event.guildChannel),
                 DiscordIncomingMessage(it),
-                if (event.emoji.type == Emoji.Type.UNICODE) UnicodeEmoji(event.emoji.name) else DiscordEmoji(event.emoji as DCustomEmoji),
+                if (event.emoji.type == Emoji.Type.UNICODE)
+                    UnicodeEmoji(event.emoji.name)
+                else
+                    DiscordEmoji(event.emoji as DCustomEmoji),
                 count + 1,
                 count
             )
@@ -626,7 +629,10 @@ object MessageListener: ListenerAdapter() {
                 DiscordProtocol.getUser(event.user?.idLong) ?: return@queue,
                 DiscordChat(event.guildChannel),
                 DiscordIncomingMessage(it),
-                if (event.emoji.type == Emoji.Type.UNICODE) UnicodeEmoji(event.emoji.name) else DiscordEmoji(event.emoji as DCustomEmoji),
+                if (event.emoji.type == Emoji.Type.UNICODE)
+                    UnicodeEmoji(event.emoji.name)
+                else
+                        DiscordEmoji(event.emoji as DCustomEmoji),
                 count - 1,
                 count
             )

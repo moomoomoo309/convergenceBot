@@ -752,6 +752,16 @@ fun registerDefaultCommands() {
     registerCommand(
         Command.of(
             UniversalProtocol,
+            "timers",
+            listOf(),
+            { -> "The current active timers are: ${timers.keys.joinToString(", ") }" },
+            "Lists out all currently active timers.",
+            "timers (takes no arguments)"
+        )
+    )
+    registerCommand(
+        Command.of(
+            UniversalProtocol,
             "target",
             listOf(
                 ArgumentSpec("Message", ArgumentType.STRING),

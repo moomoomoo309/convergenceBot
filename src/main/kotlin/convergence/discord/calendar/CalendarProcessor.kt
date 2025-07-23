@@ -89,6 +89,8 @@ object CalendarProcessor {
         if (getAndCacheCalendar(args[0]) == null)
             return "No calendar found at URL \"${args[0]}\"."
         val syncedCalendar = SyncedCalendar(chat.channel.guild.idLong, args[0])
+        if (syncedCalendar in syncedCalendars)
+            return "That calendar is already synced!"
         syncedCalendars.add(syncedCalendar)
         Settings.update()
         return syncToDiscord(syncedCalendars.filter { it.guildId == chat.channel.guild.idLong })
@@ -289,8 +291,7 @@ fun registerCalendarCommands() {
             { args, chat ->
                 val removed = syncedCalendars.remove(syncedCalendars.firstOrNull {
                     it.guildId == (chat as DiscordChat).server.guild.idLong && it.calURL == args[0]
-                }
-                )
+                })
                 if (removed) "Calendar removed." else "No calendar with URL ${args[0]} found."
             },
             "Removes a synced calendar.",

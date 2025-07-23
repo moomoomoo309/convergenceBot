@@ -436,12 +436,12 @@ class EditMessage(val fct: (oldMessage: String, sender: User, newMessage: String
 }
 
 interface CanEditOtherMessages {
-    fun editMessage(message: MessageHistory, oldMessage: String, sender: User, newMessage: String)
-    fun editedMessage(oldMessage: String, sender: User, newMessage: String) =
+    fun editMessage(message: MessageHistory, oldMessage: IncomingMessage, sender: User, newMessage: OutgoingMessage)
+    fun editedMessage(oldMessage: IncomingMessage, sender: User, newMessage: IncomingMessage) =
         runCallbacks<EditMessage>(oldMessage, sender, newMessage)
 }
 
-abstract class MessageHistory(var message: String, val timestamp: OffsetDateTime, val sender: User)
+abstract class MessageHistory(var message: IncomingMessage, val timestamp: OffsetDateTime, val sender: User)
 interface HasMessageHistory {
     fun getMessages(chat: Chat, since: OffsetDateTime? = null, until: OffsetDateTime? = null): List<MessageHistory>
     fun getUserMessages(
@@ -452,24 +452,24 @@ interface HasMessageHistory {
     ): List<MessageHistory>
 }
 
-class MentionedUser(val fct: (chat: Chat, message: String, users: Set<User>) -> Boolean): ChatEvent {
+class MentionedUser(val fct: (Chat, message: IncomingMessage, users: Set<User>) -> Boolean): ChatEvent {
     override fun invoke(vararg args: Any) = invokeTyped(fct, args)
-    fun invoke(chat: Chat, message: String, users: Set<User>) = fct(chat, message, users)
+    fun invoke(chat: Chat, message: IncomingMessage, users: Set<User>) = fct(chat, message, users)
 }
 
 interface CanMentionUsers {
-    fun mention(chat: Chat, user: User, message: String?)
+    fun mention(chat: Chat, user: User, message: OutgoingMessage?)
     fun mention(chat: Chat, user: User) = mention(chat, user, null)
-    fun mentionedUsers(chat: Chat, message: String, users: Set<User>, sender: User) =
+    fun mentionedUsers(chat: Chat, message: IncomingMessage, users: Set<User>, sender: User) =
         runCallbacks<MentionedUser>(chat, message, users, sender)
 }
 
-class StartedTyping(val fct: (chat: Chat, user: User) -> Boolean): ChatEvent {
+class StartedTyping(val fct: (Chat, User) -> Boolean): ChatEvent {
     override fun invoke(vararg args: Any): Boolean = invokeTyped(fct, args)
     fun invoke(chat: Chat, user: User): Boolean = fct(chat, user)
 }
 
-class StoppedTyping(val fct: (chat: Chat, user: User) -> Boolean): ChatEvent {
+class StoppedTyping(val fct: (Chat, User) -> Boolean): ChatEvent {
     override fun invoke(vararg args: Any): Boolean = invokeTyped(fct, args)
     fun invoke(chat: Chat, user: User): Boolean = fct(chat, user)
 }
@@ -481,7 +481,7 @@ interface HasTypingStatus {
 }
 
 abstract class Sticker(val name: String, val url: String?)
-class ReceivedSticker(val fct: (chat: Chat, sticker: Sticker, user: User) -> Boolean): ChatEvent {
+class ReceivedSticker(val fct: (Chat, Sticker, User) -> Boolean): ChatEvent {
     override fun invoke(vararg args: Any): Boolean = invokeTyped(fct, args)
     fun invoke(chat: Chat, sticker: Sticker, user: User): Boolean = fct(chat, sticker, user)
 }
@@ -498,7 +498,7 @@ interface HasUserStatus { // Like your status on Skype.
 }
 
 abstract class Availability(val description: String)
-class ChangedAvailability(val fct: (chat: Chat, user: User, availability: Availability) -> Boolean): ChatEvent {
+class ChangedAvailability(val fct: (Chat, User, Availability) -> Boolean): ChatEvent {
     override fun invoke(vararg args: Any): Boolean = invokeTyped(fct, args)
     fun invoke(chat: Chat, user: User, availability: Availability): Boolean = fct(chat, user, availability)
 }
