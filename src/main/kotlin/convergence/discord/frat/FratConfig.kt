@@ -5,8 +5,10 @@ import convergence.objectMapper
 import java.nio.file.Path
 import java.nio.file.Paths
 
+@Suppress("unused")
 class CurrentSemester(val year: String, val season: String)
 
+@Suppress("unused")
 class FratConfig(
     val currentSemester: CurrentSemester,
     val houseResidents: Map<String, String>,

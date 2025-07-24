@@ -152,7 +152,14 @@ data class Command(
         function: (args: List<String>, chat: Chat) -> OutgoingMessage?,
         helpText: String,
         syntaxText: String
-    ): this(protocol, name, argSpecs, { args: List<String>, chat: Chat, _ -> function(args, chat) }, helpText, syntaxText)
+    ): this(
+        protocol,
+        name,
+        argSpecs,
+        { args: List<String>, chat: Chat, _ -> function(args, chat) },
+        helpText,
+        syntaxText
+    )
 
 
     companion object {
@@ -167,10 +174,17 @@ data class Command(
             protocol,
             name,
             argSpecs,
-            { args: List<String>, chat: Chat, sender: User -> function(args, chat, sender)?.let { SimpleOutgoingMessage(it) } },
+            { args: List<String>, chat: Chat, sender: User ->
+                function(args, chat, sender)?.let {
+                    SimpleOutgoingMessage(
+                        it
+                    )
+                }
+            },
             helpText,
             syntaxText
         )
+
         fun of(
             protocol: Protocol,
             name: String,
@@ -186,6 +200,7 @@ data class Command(
             helpText,
             syntaxText
         )
+
         fun of(
             protocol: Protocol,
             name: String,
@@ -201,6 +216,7 @@ data class Command(
             helpText,
             syntaxText
         )
+
         fun of(
             protocol: Protocol,
             name: String,
@@ -246,7 +262,9 @@ val callbacks = mutableMapOf<KClass<out ChatEvent>, MutableList<ChatEvent>>(
 fun registerCallback(event: ChatEvent) {
     callbacks.putIfAbsent(event::class, ArrayList())
     callbacks[event::class]?.add(event)
-        ?: throw IllegalArgumentException("Tried to register callback for unregistered class ${event::class.simpleName}.")
+        ?: throw IllegalArgumentException(
+            "Tried to register callback for unregistered class ${event::class.simpleName}."
+        )
 }
 
 fun runCallbacks(eventClass: KClass<out ChatEvent>, vararg args: Any) =
@@ -310,6 +328,7 @@ fun <T1, T2, T3, T4, T5> invokeTyped(
 
     return fct(arg1 as T1, arg2 as T2, arg3 as T3, arg4 as T4, arg5 as T5)
 }
+
 /**
  * Cuts down on type casts/checks because [ChatEvent.invoke] takes varargs of [Any].
  */
@@ -413,6 +432,7 @@ abstract class Image {
     abstract fun getStream(): InputStream
     fun getBytes(): ByteArray = getStream().readAllBytes()
 }
+
 class ReceivedImages(val fct: (chat: Chat, message: IncomingMessage?, sender: User, image: Array<Image>) -> Boolean):
     ChatEvent {
     override fun invoke(vararg args: Any): Boolean = invokeTyped(fct, args)
@@ -424,8 +444,10 @@ interface HasImages {
     fun sendImages(chat: Chat, message: OutgoingMessage, sender: User, vararg images: Image)
     fun sendImages(chat: Chat, message: String, sender: User, vararg images: Image) =
         sendImages(chat, SimpleOutgoingMessage(message), sender, *images)
+
     fun receivedImages(chat: Chat, message: String, sender: User, vararg images: Image) =
         receivedImages(chat, SimpleIncomingMessage(message), sender, *images)
+
     fun receivedImages(chat: Chat, message: IncomingMessage, sender: User, vararg images: Image) =
         runCallbacks<ReceivedImages>(chat, message, sender, images)
 }
@@ -560,11 +582,14 @@ interface CanFormatMessages {
 interface IEmoji {
     fun asString(): String
 }
+
 abstract class CustomEmoji(open val name: String, open val url: String?): IEmoji
 class UnicodeEmoji(val emoji: Emoji): IEmoji {
     constructor(s: String): this(s.toEmoji()!!)
+
     override fun asString(): String = emoji.toString()
 }
+
 interface HasCustomEmoji {
     fun getEmojis(chat: Chat): List<CustomEmoji>
 }
@@ -573,13 +598,28 @@ interface HasReactions {
     fun react(message: IncomingMessage, emoji: IEmoji)
     fun unreact(message: IncomingMessage, emoji: IEmoji)
     fun getReactions(message: IncomingMessage): Map<IEmoji, Int>
-    fun reactionChanged(sender: User, chat: Chat, message: IncomingMessage, emoji: IEmoji, oldAmount: Int, newAmount: Int) =
+    fun reactionChanged(
+        sender: User,
+        chat: Chat,
+        message: IncomingMessage,
+        emoji: IEmoji,
+        oldAmount: Int,
+        newAmount: Int
+    ) =
         runCallbacks<ReactionChanged>(sender, chat, message, emoji, oldAmount, newAmount)
 }
 
-class ReactionChanged(val fct: (sender: User, chat: Chat, message: IncomingMessage, emoji: IEmoji, oldAmount: Int, newAmount: Int) -> Boolean): ChatEvent {
+class ReactionChanged(val fct: (User, Chat, IncomingMessage, IEmoji, oldAmount: Int, newAmount: Int) -> Boolean):
+    ChatEvent {
     override fun invoke(vararg args: Any): Boolean = invokeTyped(fct, args)
-    fun invoke(sender: User, chat: Chat, message: IncomingMessage, emoji: IEmoji, oldAmount: Int, newAmount: Int): Boolean = fct(sender, chat, message, emoji, oldAmount, newAmount)
+    fun invoke(
+        sender: User,
+        chat: Chat,
+        message: IncomingMessage,
+        emoji: IEmoji,
+        oldAmount: Int,
+        newAmount: Int
+    ): Boolean = fct(sender, chat, message, emoji, oldAmount, newAmount)
 }
 
 interface HasServer<T: Server> {

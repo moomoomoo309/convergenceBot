@@ -26,8 +26,7 @@ object ConvergenceBot {
         val commandLineArgs = try {
             argParser.parseArgs(args)
         } catch(e: ArgumentParserException) {
-            defaultLogger.error("Failed to parse command line arguments. Printing stack trace:")
-            defaultLogger.error(getStackTraceText(e))
+            defaultLogger.error("Failed to parse command line arguments. Exception: ", e)
             return
         }
 
@@ -41,39 +40,45 @@ object ConvergenceBot {
         registerDefaultCommands()
 
         defaultLogger.info("Registering addons...")
-
-        // Update the chat map
-        for (protocol in protocols) {
-            defaultLogger.info("Initializing ${protocol.name}...")
-            try {
-                protocol.init()
-                val chats = protocol.getChats()
-                for (chat in chats) {
-                    if (chat !in reverseChatMap) {
-                        while (currentChatID in chatMap)
-                            currentChatID++
-                        chatMap[currentChatID] = chat
-                        reverseChatMap[chat] = currentChatID
-                    }
-                }
-            } catch(e: Exception) {
-                e.printStackTrace()
-            }
-        }
+        updateChatMap()
 
         readSettings()
 
-        for (protocol in protocols) {
-            defaultLogger.info("Running ${protocol.name}.configLoaded...")
-            try {
-                protocol.configLoaded()
-            } catch(e: Exception) {
-                e.printStackTrace()
-            }
-        }
+        loadProtocolConfig()
 
         defaultLogger.info("Starting command scheduler...")
         CommandScheduler.loadFromFile()
         CommandScheduler.start()
+    }
+}
+
+private fun loadProtocolConfig() {
+    for (protocol in protocols) {
+        defaultLogger.info("Running ${protocol.name}.configLoaded...")
+        try {
+            protocol.configLoaded()
+        } catch(e: Exception) {
+            defaultLogger.error("Failed to run config callback! Exception: ", e)
+        }
+    }
+}
+
+private fun updateChatMap() {
+    for (protocol in protocols) {
+        defaultLogger.info("Initializing ${protocol.name}...")
+        try {
+            protocol.init()
+            val chats = protocol.getChats()
+            for (chat in chats) {
+                if (chat !in reverseChatMap) {
+                    while (currentChatID in chatMap)
+                        currentChatID++
+                    chatMap[currentChatID] = chat
+                    reverseChatMap[chat] = currentChatID
+                }
+            }
+        } catch(e: Exception) {
+            defaultLogger.error("Failed to initialize protocol! Exception: ", e)
+        }
     }
 }

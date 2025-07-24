@@ -13,7 +13,7 @@ import java.nio.file.Path
 import java.time.OffsetDateTime
 import java.util.*
 
-const val defaultCommandDelimiter = "!"
+const val DEFAULT_COMMAND_DELIMITER = "!"
 
 data class SyncedCalendar(val guildId: Long, val calURL: String) {
     override fun toString(): String {
@@ -61,14 +61,20 @@ data class ScheduledCommandDTO(
 data class ReactConfig(val destination: DiscordChat, val emojis: MutableMap<String, Int>) {
     fun toDTO() = ReactConfigDTO(destination, emojis)
 }
+
 data class ReactConfigDTO(val destination: String, val emojis: MutableMap<String, Int>) {
     constructor(chat: DiscordChat, emojis: MutableMap<String, Int>): this(chat.toKey(), emojis)
-    fun toConfig() = ReactConfig(scopeStrToProtocol(destination)!!.commandScopeFromKey(destination) as DiscordChat, emojis)
+
+    fun toConfig() = ReactConfig(
+        scopeStrToProtocol(destination)!!.commandScopeFromKey(destination) as DiscordChat,
+        emojis
+    )
 }
 
 private fun strToProtocol(s: String) = protocols.firstOrNull { it.name == s }
 private fun scopeStrToProtocol(s: String) = protocols.sortedBy { -it.name.length }
     .firstOrNull { s.substringBefore("(").startsWith(it.name) }
+
 private fun strToChat(s: String): CommandScope? = scopeStrToProtocol(s)?.commandScopeFromKey(s)
 
 data class SettingsDTO(
@@ -114,7 +120,8 @@ object Settings {
         }.toMap()
     }
 
-    private fun linkedChatsFromDTO(linkedChats: MutableMap<String, MutableSet<String>>): MutableMap<Chat, MutableSet<Chat>> {
+    private fun linkedChatsFromDTO(linkedChats: MutableMap<String, MutableSet<String>>):
+            MutableMap<Chat, MutableSet<Chat>> {
         return mutableMapOf(*linkedChats.mapNotNull { (k, v) ->
             (strToChat(k) as? Chat)?.to(v.mapNotNull { strToChat(it) as? Chat }.toMutableSet())
         }.toTypedArray())
@@ -126,13 +133,15 @@ object Settings {
         }.mutable()
     }
 
-    private fun mapAliasesToDTO(aliases: MutableMap<CommandScope, MutableMap<String, Alias>>): MutableMap<String, MutableMap<String, AliasDTO>> {
+    private fun mapAliasesToDTO(aliases: MutableMap<CommandScope, MutableMap<String, Alias>>):
+            MutableMap<String, MutableMap<String, AliasDTO>> {
         return aliases.mapEntries { (k, v) ->
             k.toKey() to v.mapValues { (_, alias) -> alias.toDTO() }.toMutableMap()
         }.mutable()
     }
 
-    private fun mapAliasesFromDTO(aliasesDTO: MutableMap<String, MutableMap<String, AliasDTO>>): MutableMap<CommandScope, MutableMap<String, Alias>> {
+    private fun mapAliasesFromDTO(aliasesDTO: MutableMap<String, MutableMap<String, AliasDTO>>):
+            MutableMap<CommandScope, MutableMap<String, Alias>> {
         return aliasesDTO.mapEntries { (k, v) ->
             val protocol = scopeStrToProtocol(k)!!
             protocol.commandScopeFromKey(k)!! to v.mapValues { (_, aliasDTO) -> aliasDTO.toAlias() }.toMutableMap()
@@ -196,10 +205,12 @@ fun readSettings() {
         Settings.updateFrom(settings)
         writeSettingsToFile()
     } catch(e: Throwable) {
-        settingsLogger.error("Error occurred while reading settings from $settingsPath. Returning fallback settings instead.\n\tError: $e")
+        settingsLogger.error(
+            "Error occurred while reading settings from $settingsPath. " +
+                    "Returning fallback settings instead.\n\tError: ", e
+        )
         moveSettings()
         writeSettingsToFile()
-        e.printStackTrace()
     }
 }
 

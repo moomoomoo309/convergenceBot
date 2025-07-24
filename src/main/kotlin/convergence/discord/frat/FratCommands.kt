@@ -50,8 +50,13 @@ fun getBrotherInfo(name: String, searchCriteria: (BrotherInfo) -> String?): Brot
         ?: brotherInfo.firstOrNull { searchCriteria(it)?.lowercase()?.contains(name) == true }
 }
 
-fun generateGraphGoingDown(graph: MutableGraph, node: BrotherTreeNode, mutNode: MutableNode?) = generateGraphGoingDown(graph, node, mutNode) { _,_,_ -> }
-fun generateGraphGoingDown(graph: MutableGraph, node: BrotherTreeNode, mutNode: MutableNode?, callback: (BrotherTreeNode, MutableNode?, MutableNode) -> Unit) {
+fun generateGraphGoingDown(graph: MutableGraph, node: BrotherTreeNode, mutNode: MutableNode?) =
+    generateGraphGoingDown(graph, node, mutNode) { _, _, _ -> }
+
+fun generateGraphGoingDown(
+    graph: MutableGraph, node: BrotherTreeNode, mutNode: MutableNode?,
+    callback: (BrotherTreeNode, MutableNode?, MutableNode) -> Unit
+) {
     for (little in node.littles) {
         val name = little.brother.getName()
         val newNode = mutNode(name)
@@ -68,7 +73,10 @@ fun brotherLine(args: List<String>): OutgoingMessage {
         ?: return SimpleOutgoingMessage("No brothers found searching for \"$name\".")
 
     val node = brotherMap["${startInfo.firstName} ${startInfo.lastName}".lowercase()]
-        ?: return SimpleOutgoingMessage("No brothers found searching for \"${startInfo.firstName} ${startInfo.lastName}\".")
+        ?: return SimpleOutgoingMessage(
+            "No brothers found searching for " +
+                    "\"${startInfo.firstName} ${startInfo.lastName}\"."
+        )
     // Convert the brother tree into graphviz nodes
     val graph = mutGraph("$name's line")
         .setDirected(true)
@@ -93,7 +101,10 @@ fun fullTree(args: List<String>): OutgoingMessage {
         ?: return SimpleOutgoingMessage("No brothers found searching for \"$name\".")
 
     val node = brotherMap["${startInfo.firstName} ${startInfo.lastName}".lowercase()]
-        ?: return SimpleOutgoingMessage("No brothers found searching for \"${startInfo.firstName} ${startInfo.lastName}\".")
+        ?: return SimpleOutgoingMessage(
+            "No brothers found searching for " +
+                    "\"${startInfo.firstName} ${startInfo.lastName}\"."
+        )
     val brotherLine = mutableSetOf<String>()
 
     // Add the line going down
@@ -137,7 +148,10 @@ fun fullLine(args: List<String>): OutgoingMessage {
         ?: return SimpleOutgoingMessage("No brothers found searching for \"$name\".")
 
     val node = brotherMap["${startInfo.firstName} ${startInfo.lastName}".lowercase()]
-        ?: return SimpleOutgoingMessage("No brothers found searching for \"${startInfo.firstName} ${startInfo.lastName}\".")
+        ?: return SimpleOutgoingMessage(
+            "No brothers found searching for " +
+                    "\"${startInfo.firstName} ${startInfo.lastName}\"."
+        )
     // Convert the brother tree into graphviz nodes
     val graph = mutGraph("$name's line")
         .setDirected(true)
@@ -173,7 +187,10 @@ fun brotherBigs(args: List<String>): OutgoingMessage {
         ?: return SimpleOutgoingMessage("No brothers found searching for \"$name\".")
 
     var node: BrotherTreeNode? = brotherMap["${startInfo.firstName} ${startInfo.lastName}".lowercase()]
-        ?: return SimpleOutgoingMessage("No brothers found searching for \"${startInfo.firstName} ${startInfo.lastName}\".")
+        ?: return SimpleOutgoingMessage(
+            "No brothers found searching for " +
+                    "\"${startInfo.firstName} ${startInfo.lastName}\"."
+        )
     // Add the line going up
     val line = mutableListOf(node!!.brother)
     node = node.big
@@ -190,7 +207,11 @@ fun brotherBigs(args: List<String>): OutgoingMessage {
         .setTitle("Line for Brother #${startInfo.rosterNumber} ${startInfo.firstName} ${startInfo.lastName}")
 
     for (brother in line) {
-        embeds.addField("#" + brother.rosterNumber, "${brother.firstName} \"${brother.nickName}\" ${brother.lastName}", true)
+        embeds.addField(
+            "#" + brother.rosterNumber,
+            "${brother.firstName} \"${brother.nickName}\" ${brother.lastName}",
+            true
+        )
     }
     return DiscordOutgoingMessage(msg.addEmbeds(embeds.build()).build())
 }
@@ -220,7 +241,7 @@ fun brotherInfo(args: List<String>, searchCriteria: (BrotherInfo) -> String?): D
             ).build()
     )
 }
-
+@Suppress("LongMethod")
 fun registerFratCommands() {
     registerCommand(
         Command(

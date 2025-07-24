@@ -152,7 +152,7 @@ class CommandParserTest {
 
     private fun loadAliasData(command: String): CommandData? {
         val testChat = TestChat()
-        val testAliasStr = command.substringBefore(" ").substringAfter(defaultCommandDelimiter).lowercase()
+        val testAliasStr = command.substringBefore(" ").substringAfter(DEFAULT_COMMAND_DELIMITER).lowercase()
         val testCommand = Command.of(testChat.protocol, "test", listOf(), ::doNothing, "test", "test")
         val testAlias =
             Alias(testChat, testAliasStr, testCommand, listOf("testArg1", "testArg2"))

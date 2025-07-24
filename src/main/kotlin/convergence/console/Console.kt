@@ -61,7 +61,7 @@ object ConsoleProtocol: Protocol("Console") {
             Thread {
                 print("consolePlugin initialized.\n\n> ")
 
-                System.out.flush() // Flush guarantees that the > shows up before stdin. IntelliJ still doesn't listen to it.
+                System.out.flush() // Flush guarantees that the > shows up before stdin. IntelliJ doesn't listen to it.
                 try {
                     val stdin = Scanner(System.`in`)
                     val currentLine = stdin.nextLine()
@@ -72,9 +72,9 @@ object ConsoleProtocol: Protocol("Console") {
                         while (!stdin.hasNextLine()) stdin.next()
                         receivedMessage(ConsoleChat, SimpleIncomingMessage(stdin.nextLine()), user)
                     }
-                } catch(e: NoSuchElementException) {
-                    // Catch Ctrl-D (EOF). Normally, I wouldn't do this in a plugin, but it's the local console of the bot,
-                    // and if the user puts in a Ctrl-D, they probably want to close the bot, just like a SIGTERM.
+                } catch(_: NoSuchElementException) {
+                    // Catch Ctrl-D (EOF). Normally, I wouldn't do this in a plugin, but it's the local console of the
+                    // bot, and if the user puts in a Ctrl-D, they probably want to close the bot, just like a SIGTERM.
                     println() // The newline is just to make the output cleaner.
                     exitProcess(0)
                 }

@@ -22,7 +22,8 @@ private fun registerReactChannel(args: List<String>, chat: Chat): String {
     reactServers.getOrPut(chat.server) { mutableListOf(ReactConfig(chat, mutableMapOf())) }
         .first { it.destination == chat }.emojis[emoji] = threshold
     Settings.update()
-    return "Registered messages to be forwarded to this channel if they are reacted with $emoji $threshold times or more."
+    return "Registered messages to be forwarded to this channel " +
+            "if they are reacted with $emoji $threshold times or more."
 }
 
 private fun uploadImagesTo(args: List<String>, chat: Chat): String? {
@@ -31,7 +32,7 @@ private fun uploadImagesTo(args: List<String>, chat: Chat): String? {
     val url = try {
         URI(args[0])
     } catch(e: URISyntaxException) {
-        e.printStackTrace()
+        discordLogger.error("Could not parse URL! Exception: ", e)
         return "\"${args[0]}\" is not a valid URL."
     }
     imageUploadChannels[chat] = url
@@ -39,6 +40,7 @@ private fun uploadImagesTo(args: List<String>, chat: Chat): String? {
     return "Images will now be uploaded to $url."
 }
 
+@Suppress("LongMethod")
 fun registerDiscordCommands() {
     registerCommand(Command.of(
         DiscordProtocol,

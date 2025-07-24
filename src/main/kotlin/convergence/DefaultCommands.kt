@@ -21,6 +21,7 @@ inline fun unregisteredChat(chat: Chat) {
         throw UnregisteredChat()
     } catch(e: UnregisteredChat) {
         val writer = StringWriter()
+        @Suppress("PrintStackTrace")
         e.printStackTrace(PrintWriter(writer))
         chat.protocol.sendMessage(
             chat, "Bot error: Chat is missing a protocol.\nStack Trace:\n$writer"
@@ -51,20 +52,21 @@ fun getFullName(chat: Chat, name: String): String? {
 }
 
 
-const val commandsPerPage = 10
+const val COMMANDS_PER_PAGE = 10
 fun help(args: List<String>, chat: Chat): String {
-    val numPages = ceil(sortedHelpText.size.toDouble() / commandsPerPage).toInt()
+    val numPages = ceil(sortedHelpText.size.toDouble() / COMMANDS_PER_PAGE).toInt()
     val pageOrCommand = if (args.isEmpty()) 1 else args[0].toIntOrNull()?.coerceIn(1..numPages) ?: args[0]
     return when(pageOrCommand) {
         is Int -> {
             val helpText = StringBuilder("Help page $pageOrCommand/$numPages:\n")
-            for (i in 0..commandsPerPage) {
-                val index = i + (pageOrCommand - 1) * (commandsPerPage + 1)
+            for (i in 0..COMMANDS_PER_PAGE) {
+                val index = i + (pageOrCommand - 1) * (COMMANDS_PER_PAGE + 1)
                 if (index >= sortedHelpText.size)
                     break
                 val currentCommand = sortedHelpText[index]
                 val indicator = if (currentCommand is Command) 'C' else 'A'
-                helpText.append("($indicator) ${currentCommand.name}${if (currentCommand is Command) " - " + (currentCommand.helpText) else ""}\n")
+                helpText.append("($indicator) ${currentCommand.name}" +
+                        "${if (currentCommand is Command) " - " + (currentCommand.helpText) else ""}\n")
             }
             helpText.toString()
         }
@@ -92,10 +94,11 @@ fun help(args: List<String>, chat: Chat): String {
 }
 
 fun echo(args: List<String>) = args.joinToString(" ")
+@Suppress("FunctionOnlyReturningConstant")
 fun ping() = "Pong!"
 
 fun addAlias(args: List<String>, chat: Chat, scope: CommandScope): String {
-    val commandDelimiter = commandDelimiters.getOrDefault(chat, defaultCommandDelimiter)
+    val commandDelimiter = commandDelimiters.getOrDefault(chat, DEFAULT_COMMAND_DELIMITER)
     val commandName = if (args[1].startsWith(commandDelimiter)) args[1].substringAfter(commandDelimiter) else args[1]
     val commandStr = "$commandDelimiter$commandName ${args.subList(2, args.size).joinToString(" ")}"
     val command = parseCommand(commandStr, commandDelimiter, chat)
@@ -191,9 +194,9 @@ fun goingto(args: List<String>, chat: Chat, sender: User): String {
             "at", "on", "in" -> {
                 if (hasAtInOn)
                     return "You can't put multiple times in!"
-                hasAtInOn = true
                 if (i == args.size - 1)
                     return "You can't just put \"at\" and not put a time after it!"
+                hasAtInOn = true
                 for (i2 in i + 1 until args.size)
                     if (args[i2] == "for") {
                         continueUntil = i2
@@ -309,7 +312,7 @@ fun schedule(args: List<String>, chat: Chat, sender: User): String {
     if (args.size != 2)
         return "Expected 2 arguments, got ${args.size} argument${if (args.size != 1) "s" else ""}."
     val timeList = dateTimeParser.parse(args[0])
-    val delimiter = commandDelimiters[chat] ?: defaultCommandDelimiter
+    val delimiter = commandDelimiters[chat] ?: DEFAULT_COMMAND_DELIMITER
     val command = (if (args[1].startsWith(delimiter)) "" else delimiter) + args[1]
     val commandData = getCommandData(chat, command, sender)
     if (commandData != null)
@@ -387,7 +390,7 @@ private fun addEventToBuilder(
     for (event in events) {
         val id = event.id
         val time = formatTime(event.time)
-        val commandDelimiter = commandDelimiters.getOrDefault(chat, defaultCommandDelimiter)
+        val commandDelimiter = commandDelimiters.getOrDefault(chat, DEFAULT_COMMAND_DELIMITER)
         val name = event.commandName
         val argsStr = event.args.joinToString(" ")
         builder.append("\t[$id] $time: \"$commandDelimiter$name $argsStr\"")
@@ -506,6 +509,7 @@ fun checkTimer(args: List<String>): String {
     return "The time it was created or last time the timer was reset was ${formatTime(oldVal!!)}."
 }
 
+@Suppress("LongMethod")
 fun registerDefaultCommands() {
     registerCommand(
         Command(
@@ -566,7 +570,8 @@ fun registerDefaultCommands() {
                 ArgumentSpec("Command", ArgumentType.STRING)
             ), ::addServerAlias,
             "Registers an alias to an existing command in this server.",
-            "serverAlias (commandName) \"commandName [arguments...]\" (Command inside parentheses takes however many parameters that command takes)"
+            "serverAlias (commandName) \"commandName [arguments...]\" " +
+                    "(Command inside parentheses takes however many parameters that command takes)"
         )
     )
     registerCommand(
@@ -604,7 +609,8 @@ fun registerDefaultCommands() {
             ),
             ::goingto,
             "Tells the chat you're going somewhere for some time.",
-            "goingto \"location\" [for (duration)] [at (time)/in (timedelta)/on (datetime)] (Note: Order does not matter with for/at/in/on)"
+            "goingto \"location\" [for (duration)] [at (time)/in (timedelta)/on (datetime)] " +
+                    "(Note: Order does not matter with for/at/in/on)"
         )
     )
     registerCommand(

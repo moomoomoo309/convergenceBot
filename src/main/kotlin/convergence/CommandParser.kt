@@ -59,7 +59,7 @@ fun CommonToken.text() = when(this.type) {
 }.toString()
 
 fun parseCommand(command: String, chat: Chat): CommandData? =
-    parseCommand(command, commandDelimiters.getOrDefault(chat, defaultCommandDelimiter), chat)
+    parseCommand(command, commandDelimiters.getOrDefault(chat, DEFAULT_COMMAND_DELIMITER), chat)
 
 fun parseCommand(command: String, commandDelimiter: String, chat: Chat): CommandData? {
     // Check for the command delimiter, so the grammar doesn't have to worry about it
@@ -92,7 +92,8 @@ fun parseCommand(command: String, commandDelimiter: String, chat: Chat): Command
     }
     val errorTokens = tree.children.filterIsInstance<ErrorNode>()
     if (errorTokens.isNotEmpty()) {
-        throw InvalidCommandParseException("The following invalid tokens were detected: ${errorTokens.joinToString("\", \"", "\"", "\"") { it.text }}")
+        throw InvalidCommandParseException("The following invalid tokens were detected: " +
+                errorTokens.joinToString("\", \"", "\"", "\"") { it.text })
     }
 
     // See if the command was actually parsed successfully, and error if it wasn't.

@@ -6,6 +6,7 @@ import com.github.caldav4j.util.GenerateQuery
 import convergence.*
 import convergence.discord.DiscordChat
 import convergence.discord.DiscordProtocol
+import convergence.discord.discordLogger
 import convergence.discord.frat.fratConfig
 import convergence.discord.jda
 import net.dv8tion.jda.api.JDA
@@ -52,7 +53,7 @@ object CalendarProcessor {
         try {
             cal.testConnection(httpClient)
         } catch(e: CalDAV4JException) {
-            e.printStackTrace()
+            discordLogger.error("Could not connect to calendar! Exception: ", e)
             return null
         }
         calendarCache[url] = cal
@@ -155,8 +156,8 @@ object CalendarProcessor {
             nextOccurrence.end.toOffsetDateTime()
         ).setDescription(addUIDToDescription(event.description?.value ?: "", event.uid.value))
             .submit()
-            .whenComplete { it, _ ->
-                uidMap[event.uid.value] = it.idLong
+            .whenComplete { discordEvent, _ ->
+                uidMap[event.uid.value] = discordEvent.idLong
             }
     }
 

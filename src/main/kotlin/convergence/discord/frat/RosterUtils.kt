@@ -85,7 +85,8 @@ fun extractInfoFromRow(row: Row): BrotherInfo {
     )
 }
 
-data class BrotherTreeNode(val brother: BrotherInfo, var big: BrotherTreeNode?, val littles: MutableList<BrotherTreeNode>)
+data class BrotherTreeNode(val brother: BrotherInfo, var big: BrotherTreeNode?,
+                           val littles: MutableList<BrotherTreeNode>)
 
 private fun getBrotherTree(): Pair<Map<String, BrotherTreeNode>, BrotherTreeNode> {
     val brotherMap = mutableMapOf<String, BrotherTreeNode>()
