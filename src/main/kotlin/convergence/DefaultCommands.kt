@@ -297,6 +297,7 @@ fun commands(unused: List<String>, chat: Chat): String {
     commands[chat.protocol]?.forEach { commandList.add(it.key) }
     commands[UniversalProtocol]?.forEach { commandList.add(it.key) }
     linkedChats[chat]?.forEach { linked -> commands[linked.protocol]?.forEach { commandList.add(it.key) } }
+    commandList.sort()
     return if (commandList.isNotEmpty()) commandList.joinToString(", ") else "No commands found."
 }
 
@@ -305,6 +306,7 @@ fun aliases(unused: List<String>, chat: Chat): String {
     aliases[chat]?.forEach { aliasList.add(it.key) }
     aliases[UniversalChat]?.forEach { aliasList.add(it.key) }
     linkedChats[chat]?.forEach { linked -> aliases[linked]?.forEach { aliasList.add(it.key) } }
+    aliasList.sort()
     return if (aliasList.isNotEmpty()) "Aliases: ${aliasList.joinToString(", ")}" else "No aliases found."
 }
 

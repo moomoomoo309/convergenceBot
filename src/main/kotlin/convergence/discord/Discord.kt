@@ -130,7 +130,7 @@ data class DiscordEmoji(
 ): CustomEmoji(url, name), DiscordObject {
     constructor(emoji: DCustomEmoji): this(emoji.imageUrl, emoji.name, emoji, emoji.idLong)
 
-    override fun asString() = emoji.asReactionCode
+    override fun asString() = emoji.formatted
 }
 
 val formatMap = mapOf(
@@ -172,7 +172,7 @@ class DiscordOutgoingMessage(val data: MessageCreateData): OutgoingMessage() {
 
 class DiscordIncomingMessage(val data: Message): IncomingMessage() {
     override fun toSimple(): SimpleIncomingMessage {
-        return SimpleIncomingMessage(data.contentDisplay)
+        return SimpleIncomingMessage(data.contentRaw)
     }
 
     override fun toOutgoing(): OutgoingMessage {

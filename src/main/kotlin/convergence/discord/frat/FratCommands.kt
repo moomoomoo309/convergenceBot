@@ -17,8 +17,8 @@ import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.nio.file.Files
+import java.time.LocalTime
 import java.time.OffsetDateTime
-import java.time.temporal.ChronoUnit
 
 val englishToGreek = mapOf(
     'A' to 'Α',
@@ -395,7 +395,8 @@ private fun nextMonth(): OffsetDateTime {
     // If it's the first of the month, we should schedule it for 8AM today
     val now = OffsetDateTime.now()
     val thisMonth = now
-        .truncatedTo(ChronoUnit.MONTHS)
+        .withDayOfMonth(1)
+        .with(LocalTime.MIN)
         .plusHours(8)
     // But if it isn't, it should be scheduled for next month
     if (thisMonth < now)

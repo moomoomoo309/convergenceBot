@@ -21,6 +21,7 @@ fun <K, V, K2, V2> Map<K, V>.mapEntries(fct: (Map.Entry<K, V>) -> Pair<K2, V2>):
     return destination
 }
 fun <K, V> Map<K, V>.mutable() = this as MutableMap<K, V>
+fun <T> List<T>.mutable() = this as MutableList<T>
 
 
 // This is copied straight from the Kotlin stdlib.

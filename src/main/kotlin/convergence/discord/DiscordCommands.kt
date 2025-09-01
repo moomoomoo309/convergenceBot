@@ -19,14 +19,23 @@ private fun registerReactChannel(args: List<String>, chat: Chat): String {
     val threshold = args[1].toIntOrNull()
     if (threshold == null || threshold <= 0)
         return "Threshold must be a positive integer."
-    reactServers.getOrPut(chat.server) { mutableListOf(ReactConfig(chat, mutableMapOf())) }
-        .first { it.destination == chat }.emojis[emoji] = threshold
+    val reactConfigs = reactServers.getOrPut(chat.server) {
+        mutableListOf(ReactConfig(chat, mutableMapOf()))
+    }
+    var reactConfig = reactConfigs.firstOrNull {
+        it.destination == chat
+    }
+    if (reactConfig == null) {
+        reactConfig = ReactConfig(chat, mutableMapOf())
+        reactConfigs.add(reactConfig)
+    }
+    reactConfig.emojis[emoji] = threshold
     Settings.update()
     return "Registered messages to be forwarded to this channel " +
             "if they are reacted with $emoji $threshold times or more."
 }
 
-private fun uploadImagesTo(args: List<String>, chat: Chat): String? {
+private fun uploadImagesTo(args: List<String>, chat: Chat): String {
     if (args.isEmpty())
         return "A URL has to be provided."
     val url = try {

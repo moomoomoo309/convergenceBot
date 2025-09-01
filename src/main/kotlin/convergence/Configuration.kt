@@ -12,6 +12,7 @@ import java.net.URI
 import java.nio.file.Path
 import java.time.OffsetDateTime
 import java.util.*
+import kotlin.system.exitProcess
 
 const val DEFAULT_COMMAND_DELIMITER = "!"
 
@@ -97,7 +98,7 @@ object Settings {
     var syncedCalendars: MutableList<SyncedCalendar> = mutableListOf()
     var timers: MutableMap<String, OffsetDateTime> = mutableMapOf()
     var imageUploadChannels: MutableMap<Chat, URI> = mutableMapOf()
-    var reactServers: MutableMap<Server, List<ReactConfig>> = TreeMap()
+    var reactServers: MutableMap<Server, MutableList<ReactConfig>> = TreeMap()
     var mentionChats: MutableMap<Chat, MutableMap<User, MutableMap<User, Int>>> = mutableMapOf()
 
     @JsonIgnore
@@ -165,7 +166,7 @@ object Settings {
         })
         this.reactServers.clearThen().putAll(settingsDTO.reactServers.mapEntries { (k, v) ->
             val protocol = scopeStrToProtocol(k)!!
-            protocol.commandScopeFromKey(k) as Server to v.map { it.toConfig() }
+            protocol.commandScopeFromKey(k) as Server to v.map { it.toConfig() }.mutable()
         })
         this.mentionChats.clearThen().putAll(settingsDTO.mentionChats.mapEntries { (k, v) ->
             val protocol = scopeStrToProtocol(k)!!
@@ -210,23 +211,16 @@ private fun writeSettingsToFile() {
     settingsLogger.info("Settings written.")
 }
 
-private fun moveSettings() {
-    settingsLogger.error("Could not read settings due to error. Moving...")
-    settingsPath.toFile().renameTo(convergencePath.resolve("settings.json.bak").toFile())
-}
-
 fun readSettings() {
     try {
         val settings = objectMapper.readValue<SettingsDTO>(settingsPath.toFile())
         Settings.updateFrom(settings)
         writeSettingsToFile()
-    } catch(e: Throwable) {
-        settingsLogger.error(
-            "Error occurred while reading settings from $settingsPath. " +
-                    "Returning fallback settings instead.\n\tError: ", e
-        )
-        moveSettings()
+    } catch(_: java.io.FileNotFoundException) {
         writeSettingsToFile()
+    } catch(e: Throwable) {
+        settingsLogger.error("Error occurred while reading settings from $settingsPath.\n\tError: ", e)
+        exitProcess(1)
     }
 }
 
@@ -237,7 +231,7 @@ val serializedCommands = Settings.serializedCommands
 val syncedCalendars = Settings.syncedCalendars
 val timers = Settings.timers
 val imageUploadChannels: MutableMap<Chat, URI> = Settings.imageUploadChannels
-val reactServers: MutableMap<Server, List<ReactConfig>> = Settings.reactServers
+val reactServers: MutableMap<Server, MutableList<ReactConfig>> = Settings.reactServers
 val mentionChats: MutableMap<Chat, MutableMap<User, MutableMap<User, Int>>> = Settings.mentionChats
 
 lateinit var convergencePath: Path
