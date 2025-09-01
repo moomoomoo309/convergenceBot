@@ -17,6 +17,7 @@ object CommandScheduler: Thread() {
     private val scheduledCommands = sortedMapOf<OffsetDateTime, MutableList<ScheduledCommand>>()
     private val commandsList = sortedMapOf<Int, ScheduledCommand>()
     private var currentId: Int = 0
+    val taskList = mutableListOf<ScheduledTask>()
 
     fun loadFromFile() {
         serializedCommands.values.forEach { cmd ->
@@ -32,7 +33,7 @@ object CommandScheduler: Thread() {
                 if (cmdTime.isBefore(now)) {
                     if (cmdTime.until(now, ChronoUnit.SECONDS) in 0..allowedTimeDifferenceSeconds) {
                         for (cmd in cmdList) {
-                            runCommand(cmd)
+                            cmd()
                             scheduledCommands.remove(cmd.time)
                             commandsList.remove(cmd.id)
                             Settings.serializedCommands.remove(cmd.id)
@@ -50,6 +51,14 @@ object CommandScheduler: Thread() {
                     }
                 } else // It's already sorted chronologically, so all following events are early.
                     break
+            }
+            val iter = taskList.iterator()
+            while (iter.hasNext()) {
+                val task = iter.next()
+                if (now >= task.time) {
+                    task()
+                    iter.remove()
+                }
             }
             CalendarProcessor.onUpdate()
             sleep((1000.0 / updatesPerSecond).toLong())
@@ -102,16 +111,29 @@ object CommandScheduler: Thread() {
 private val prettyTime = PrettyTime().also { it.removeUnit(JustNow::class.java) }
 fun formatTime(time: OffsetDateTime): String = prettyTime.format(time)
 
+interface Schedulable {
+    val time: OffsetDateTime
+}
+
+data class ScheduledTask(
+    override val time: OffsetDateTime,
+    val fct: Runnable
+): Schedulable {
+    operator fun invoke() = ::fct
+}
+
 data class ScheduledCommand(
-    val time: OffsetDateTime,
+    override val time: OffsetDateTime,
     val chat: Chat,
     val sender: User,
     val protocolName: String,
     val commandName: String,
     val args: List<String>,
     val id: Int,
-) {
+): Schedulable {
     fun toDTO() = ScheduledCommandDTO(
         time, chat.toKey(), sender.toKey(), protocolName, commandName, args, id
     )
+
+    operator fun invoke() = runCommand(chat, sender, getCommand(commandName.lowercase(), chat) as Command, args)
 }

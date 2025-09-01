@@ -45,8 +45,8 @@ fun String.titleCase() = "${first().uppercase()}${substring(1).lowercase()}"
 fun Date.toOffsetDatetime(): OffsetDateTime = this.toInstant().atOffset(defaultZoneOffset)
 
 fun String.toEmoji(): Emoji? {
-    val grapheme = GraphemeMatcher(this).results().asSequence().first().grapheme()
-    return if (grapheme.type == Grapheme.Type.EMOJI)
+    val grapheme = GraphemeMatcher(this).results().asSequence().firstOrNull()?.grapheme()
+    return if (grapheme?.type == Grapheme.Type.EMOJI)
         grapheme as Emoji
     else
         null

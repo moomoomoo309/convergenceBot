@@ -80,8 +80,3 @@ fun runCommand(chat: Chat, message: IncomingMessage, sender: User, images: Array
 
 fun runCommand(chat: Chat, sender: User, command: Command, args: List<String>) =
     sendMessage(chat, sender, replaceAliasVars(chat, command.function(args, chat, sender), sender))
-
-fun runCommand(scheduledCommand: ScheduledCommand) {
-    val command = getCommand(scheduledCommand.commandName.lowercase(), scheduledCommand.chat) as Command
-    runCommand(scheduledCommand.chat, scheduledCommand.sender, command, scheduledCommand.args)
-}

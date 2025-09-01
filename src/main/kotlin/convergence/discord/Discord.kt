@@ -231,7 +231,8 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
         registerFratCommands()
         discordLogger.info("JDA Initialized.")
         jda.addEventListener(MessageListener)
-        addCallbacks()
+        callbacks.getOrPut(ReceivedImages::class) { mutableListOf() }.add(imageUploadChannelCallback)
+        callbacks.getOrPut(ReactionChanged::class) { mutableListOf() }.add(reactionChannelCallback)
         jda.awaitReady()
     }
 
@@ -531,56 +532,66 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
     }
 }
 
-private fun addCallbacks() {
-    callbacks[ReceivedImages::class]!!.add(
-        ReceivedImages { chat: Chat, _: IncomingMessage?, _: User, images: Array<Image> ->
-            for (image in images) {
-                if (image is DiscordImage && chat in imageUploadChannels) {
-                    val uploadURL = imageUploadChannels[chat]
-                    val timeCreated = image.image.timeCreated.format(DateTimeFormatter.ISO_INSTANT)
-                    val filename = image.image.fileName.substringBeforeLast(".")
-                    uploadImage(image.getURL(), uploadURL, "$filename-$timeCreated${image.image.fileExtension ?: ""}")
-                }
-            }
-            true
+private fun forwardMessageToReactChannel(
+    message: DiscordIncomingMessage,
+    config: ReactConfig,
+    server: DiscordServer,
+    emoji: IEmoji
+) {
+    if (message.data.idLong !in forwardedMessages.getOrDefault(
+            server.guild.idLong,
+            mutableSetOf()
+        )
+    ) {
+        config.destination.channel.sendMessage(
+            MessageCreateBuilder()
+                .addContent(message.data.member!!.asMention)
+                .build()
+        ).queue()
+        message.data.forwardTo(config.destination.channel).queue { fwd ->
+            forwardedMessages.getOrPut(server.guild.idLong) { mutableSetOf() }.add(fwd.idLong)
+            val discordEmoji =
+                if (emoji is DiscordEmoji) emoji.emoji else Emoji.fromUnicode(emoji.asString())
+            fwd.addReaction(discordEmoji).queue()
         }
-    )
-    callbacks.getOrPut(ReactionChanged::class) { mutableListOf() }.add(
-        ReactionChanged { sender: User, chat: Chat, message: IncomingMessage, emoji: IEmoji,
-                          oldAmount: Int, newAmount: Int ->
-            if (chat !is DiscordChat) return@ReactionChanged false
-            if (message !is DiscordIncomingMessage) return@ReactionChanged false
-            if (emoji !is DiscordEmoji && emoji !is UnicodeEmoji) return@ReactionChanged false
-            val server = chat.server
-            val configs = reactServers[server]?.filter { it.destination.channel.guild == chat.channel.guild }
-                ?: return@ReactionChanged false
-            if (configs.isEmpty())
-                return@ReactionChanged false
-
-            for (config in configs) {
-                message.data.member ?: continue
-                val neededScore = config.emojis[emoji.asString()] ?: continue
-                if (newAmount == neededScore) {
-                    if (message.data.idLong !in forwardedMessages.getOrDefault(server.guild.idLong, mutableSetOf())) {
-                        config.destination.channel.sendMessage(
-                            MessageCreateBuilder()
-                                .addContent(message.data.member!!.asMention)
-                                .build()
-                        ).queue()
-                        message.data.forwardTo(config.destination.channel).queue { fwd ->
-                            forwardedMessages.getOrPut(server.guild.idLong) { mutableSetOf() }.add(fwd.idLong)
-                            val discordEmoji =
-                                if (emoji is DiscordEmoji) emoji.emoji else Emoji.fromUnicode(emoji.asString())
-                            fwd.addReaction(discordEmoji).queue()
-                        }
-                    }
-                    forwardedMessages.getOrPut(server.guild.idLong) { mutableSetOf() }.add(message.data.idLong)
-                }
-            }
-            return@ReactionChanged true
-        }
-    )
+    }
+    forwardedMessages.getOrPut(server.guild.idLong) { mutableSetOf() }.add(message.data.idLong)
 }
+
+private val imageUploadChannelCallback =
+    ReceivedImages { chat: Chat, _: IncomingMessage?, _: User, images: Array<Image> ->
+        for (image in images) {
+            if (image is DiscordImage && chat in imageUploadChannels) {
+                val uploadURL = imageUploadChannels[chat]
+                val timeCreated = image.image.timeCreated.format(DateTimeFormatter.ISO_INSTANT)
+                val filename = image.image.fileName.substringBeforeLast(".")
+                uploadImage(image.getURL(), uploadURL, "$filename-$timeCreated${image.image.fileExtension ?: ""}")
+            }
+        }
+        true
+    }
+
+private val reactionChannelCallback =
+    ReactionChanged { _: User, chat: Chat, message: IncomingMessage, emoji: IEmoji,
+                      _: Int, newAmount: Int ->
+        if (chat !is DiscordChat) return@ReactionChanged false
+        if (message !is DiscordIncomingMessage) return@ReactionChanged false
+        if (emoji !is DiscordEmoji && emoji !is UnicodeEmoji) return@ReactionChanged false
+        val server = chat.server
+        val configs = reactServers[server]?.filter { it.destination.channel.guild == chat.channel.guild }
+            ?: return@ReactionChanged false
+        if (configs.isEmpty())
+            return@ReactionChanged false
+
+        for (config in configs) {
+            message.data.member ?: continue
+            val neededScore = config.emojis[emoji.asString()] ?: continue
+            if (newAmount == neededScore) {
+                forwardMessageToReactChannel(message, config, server, emoji)
+            }
+        }
+        return@ReactionChanged true
+    }
 
 object MessageListener: ListenerAdapter() {
     override fun onMessageReceived(event: MessageReceivedEvent) {
@@ -592,8 +603,8 @@ object MessageListener: ListenerAdapter() {
             DiscordProtocol.mentionedUsers(
                 chat,
                 DiscordIncomingMessage(event.message),
-                mentionedMembers.map { DiscordUser(it) }.toSet(),
-                sender
+                sender,
+                mentionedMembers.map { DiscordUser(it) }.toSet()
             )
         val images = event.message.attachments
             .filter { it.isImage }
@@ -645,7 +656,7 @@ object MessageListener: ListenerAdapter() {
                 if (event.emoji.type == Emoji.Type.UNICODE)
                     UnicodeEmoji(event.emoji.name)
                 else
-                        DiscordEmoji(event.emoji as DCustomEmoji),
+                    DiscordEmoji(event.emoji as DCustomEmoji),
                 count - 1,
                 count
             )

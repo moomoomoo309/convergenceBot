@@ -17,6 +17,8 @@ import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.nio.file.Files
+import java.time.OffsetDateTime
+import java.time.temporal.ChronoUnit
 
 val englishToGreek = mapOf(
     'A' to 'Α',
@@ -329,4 +331,95 @@ fun registerFratCommands() {
             "updateRoster (takes no arguments)"
         )
     )
+    registerCommand(
+        Command.of(
+            DiscordProtocol,
+            "registerMentionChat",
+            listOf(ArgumentSpec("user", ArgumentType.STRING)),
+            fct@{ args, chat, _ ->
+                val name = args.joinToString(" ")
+                val target = getUserFromName(chat, name)
+                    ?: return@fct "No user found with name \"$name\"."
+                mentionChats
+                    .getOrPut(chat) { mutableMapOf() }
+                    .putIfAbsent(target, mutableMapOf())
+                Settings.update()
+                "Chat registered."
+            },
+            "Registers this chat with the given user as a mention chat.",
+            "registerMentionChat (user)"
+        )
+    )
+    registerCommand(
+        Command.of(
+            DiscordProtocol,
+            "removeMentionChats",
+            listOf(),
+            { _, chat, _ ->
+                mentionChats
+                    .getOrDefault(chat, mutableMapOf())
+                    .clear()
+                Settings.update()
+                "Mention users cleared from this chat."
+            },
+            "Removes all mention users from this chat.",
+            "removeMentionChat (takes no arguments)"
+        )
+    )
+    registerCommand(
+        Command.of(
+            DiscordProtocol,
+            "mentionChatStats",
+            listOf(ArgumentSpec("user", ArgumentType.STRING)),
+            { _, chat, _ -> "Mention chat stats for this channel:\n${mentionStats(chat)}" },
+            "Lists the stats for this mention chat.",
+            "mentionChatStats (takes no arguments)"
+        )
+    )
+    callbacks.getOrPut(MentionedUser::class) { mutableListOf() }.add(
+        MentionedUser { chat: Chat, _: IncomingMessage, sender: User, users: Set<User> ->
+            for (user in users) {
+                val mentions = mentionChats
+                    .getOrPut(chat) { mutableMapOf() }
+                    .getOrPut(user) { mutableMapOf() }
+                mentions[sender] = mentions.getOrDefault(sender, 0) + 1
+                Settings.update()
+            }
+            true
+        }
+    )
+    CommandScheduler.taskList.add(ScheduledTask(nextMonth(), ::mentionStatsFct))
 }
+
+private fun nextMonth(): OffsetDateTime {
+    // If it's the first of the month, we should schedule it for 8AM today
+    val now = OffsetDateTime.now()
+    val thisMonth = now
+        .truncatedTo(ChronoUnit.MONTHS)
+        .plusHours(8)
+    // But if it isn't, it should be scheduled for next month
+    if (thisMonth < now)
+        return thisMonth.plusMonths(1)
+
+    return thisMonth
+}
+
+private fun mentionStatsFct() {
+    for ((chat, _) in mentionChats) {
+        sendMessage(chat, "Monthly mention stats:\n${mentionStats(chat)}")
+    }
+    // Schedule it again for next month
+    CommandScheduler.taskList.add(ScheduledTask(nextMonth(), ::mentionStatsFct))
+}
+
+fun mentionStats(chat: Chat) = mentionChats
+    .getOrDefault(chat, mutableMapOf())
+    .map { (target, mentions) ->
+        "${DiscordProtocol.getName(chat, target)}:\n\t${
+            mentions.toList().joinToString(
+                "\n\t",
+                transform = { (user, count) ->
+                    "${DiscordProtocol.getName(chat, user)}: $count"
+                })
+        }"
+    }.joinToString()

@@ -85,7 +85,8 @@ data class SettingsDTO(
     var syncedCalendars: MutableList<SyncedCalendar> = mutableListOf(),
     var timers: MutableMap<String, OffsetDateTime> = mutableMapOf(),
     var imageUploadChannels: MutableMap<String, String> = mutableMapOf(),
-    var reactServers: MutableMap<String, List<ReactConfigDTO>> = mutableMapOf()
+    var reactServers: MutableMap<String, List<ReactConfigDTO>> = mutableMapOf(),
+    val mentionChats: MutableMap<String, MutableMap<String, MutableMap<String, Int>>> = mutableMapOf()
 )
 
 object Settings {
@@ -97,6 +98,7 @@ object Settings {
     var timers: MutableMap<String, OffsetDateTime> = mutableMapOf()
     var imageUploadChannels: MutableMap<Chat, URI> = mutableMapOf()
     var reactServers: MutableMap<Server, List<ReactConfig>> = TreeMap()
+    var mentionChats: MutableMap<Chat, MutableMap<User, MutableMap<User, Int>>> = mutableMapOf()
 
     @JsonIgnore
     var updateIsScheduled = false
@@ -165,6 +167,14 @@ object Settings {
             val protocol = scopeStrToProtocol(k)!!
             protocol.commandScopeFromKey(k) as Server to v.map { it.toConfig() }
         })
+        this.mentionChats.clearThen().putAll(settingsDTO.mentionChats.mapEntries { (k, v) ->
+            val protocol = scopeStrToProtocol(k)!!
+            val chat = protocol.commandScopeFromKey(k) as Chat
+            chat to v.mapEntries { (receiver, mentions) ->
+                protocol.userFromKey(receiver)!! to mentions.mapKeys { (user, _) -> protocol.userFromKey(user)!! }
+                    .mutable()
+            }.mutable()
+        })
     }
 
     fun toDTO() = SettingsDTO(
@@ -181,6 +191,12 @@ object Settings {
         }.mutable(),
         reactServers.mapEntries { (k, v) ->
             k.toKey() to v.map { it.toDTO() }
+        }.mutable(),
+        mentionChats.mapEntries { (k, v) ->
+            k.toKey() to v.mapEntries { (receiver, mentions) ->
+                receiver.toKey() to mentions.mapKeys { (user, _) -> user.toKey() }
+                    .mutable()
+            }.mutable()
         }.mutable()
     )
 }
@@ -222,6 +238,7 @@ val syncedCalendars = Settings.syncedCalendars
 val timers = Settings.timers
 val imageUploadChannels: MutableMap<Chat, URI> = Settings.imageUploadChannels
 val reactServers: MutableMap<Server, List<ReactConfig>> = Settings.reactServers
+val mentionChats: MutableMap<Chat, MutableMap<User, MutableMap<User, Int>>> = Settings.mentionChats
 
 lateinit var convergencePath: Path
 val chatMap: MutableMap<Int, Chat> = mutableMapOf()

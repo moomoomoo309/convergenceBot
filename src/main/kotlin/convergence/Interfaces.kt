@@ -17,6 +17,10 @@ sealed interface CommandScope {
 
 abstract class Server(val name: String, override val protocol: Protocol): Comparable<Server>, CommandScope
 
+typealias MessageCallback = (chat: Chat, message: IncomingMessage, sender: User) -> Unit
+val messageCallbacks = mutableListOf<MessageCallback>(
+    { chat, message, sender -> runCommand(chat, message, sender) },
+)
 abstract class Protocol(val name: String): Comparable<Protocol> {
     abstract fun init()
     abstract fun configLoaded()
@@ -34,7 +38,9 @@ abstract class Protocol(val name: String): Comparable<Protocol> {
     override fun toString(): String = this::class.java.simpleName
     override fun hashCode(): Int = name.hashCode()
 
-    fun receivedMessage(chat: Chat, message: IncomingMessage, sender: User) = runCommand(chat, message, sender)
+    fun receivedMessage(chat: Chat, message: IncomingMessage, sender: User) = messageCallbacks.forEach {
+        it(chat, message, sender)
+    }
     abstract fun sendMessage(chat: Chat, message: OutgoingMessage): Boolean
     fun sendMessage(chat: Chat, message: String) = sendMessage(chat, SimpleOutgoingMessage(message))
     abstract fun getBot(chat: Chat): User
@@ -474,16 +480,16 @@ interface HasMessageHistory {
     ): List<MessageHistory>
 }
 
-class MentionedUser(val fct: (Chat, message: IncomingMessage, users: Set<User>) -> Boolean): ChatEvent {
+class MentionedUser(val fct: (Chat, message: IncomingMessage, sender: User, users: Set<User>) -> Boolean): ChatEvent {
     override fun invoke(vararg args: Any) = invokeTyped(fct, args)
-    fun invoke(chat: Chat, message: IncomingMessage, users: Set<User>) = fct(chat, message, users)
+    fun invoke(chat: Chat, message: IncomingMessage, sender: User, users: Set<User>) = fct(chat, message, sender, users)
 }
 
 interface CanMentionUsers {
     fun mention(chat: Chat, user: User, message: OutgoingMessage?)
     fun mention(chat: Chat, user: User) = mention(chat, user, null)
-    fun mentionedUsers(chat: Chat, message: IncomingMessage, users: Set<User>, sender: User) =
-        runCallbacks<MentionedUser>(chat, message, users, sender)
+    fun mentionedUsers(chat: Chat, message: IncomingMessage, sender: User, users: Set<User>) =
+        runCallbacks<MentionedUser>(chat, message, sender, users)
 }
 
 class StartedTyping(val fct: (Chat, User) -> Boolean): ChatEvent {
