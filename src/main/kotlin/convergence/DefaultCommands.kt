@@ -3,7 +3,6 @@
 package convergence
 
 import convergence.CommandScheduler.getCommands
-import org.natty.DateGroup
 import org.natty.Parser
 import java.io.PrintWriter
 import java.io.StringWriter
@@ -178,98 +177,6 @@ val dateTimeParser = Parser()
 
 val defaultDuration = Duration.ofMinutes(45)!!
 private val locations = HashMap<User, Pair<OffsetDateTime, String>>()
-
-fun goingto(args: List<String>, chat: Chat, sender: User): String {
-    val location = StringBuilder(args[0])
-    val timeStr = StringBuilder()
-    val durationStr = StringBuilder()
-    var continueUntil = -1
-    var timeGroups: List<DateGroup> = emptyList()
-    var hasAtInOn = false
-    var hasFor = false
-    for (i in 1 until args.size) {
-        if (continueUntil > i)
-            continue
-        when(args[i]) {
-            "at", "on", "in" -> {
-                if (hasAtInOn)
-                    return "You can't put multiple times in!"
-                if (i == args.size - 1)
-                    return "You can't just put \"at\" and not put a time after it!"
-                hasAtInOn = true
-                for (i2 in i + 1 until args.size)
-                    if (args[i2] == "for") {
-                        continueUntil = i2
-                        if (i2 == i + 1)
-                            return "You can't just put \"at\" and not put a time after it!"
-                        break
-                    } else {
-                        timeStr.append(args[i2]).append(' ')
-                        continueUntil = continueUntil.coerceAtLeast(i2 + 1)
-                    }
-                timeStr.setLength(timeStr.length - 1)
-                timeGroups = dateTimeParser.parse(timeStr.toString())
-            }
-
-            "for" -> {
-                if (hasFor)
-                    return "You can't put multiple durations in!"
-                hasFor = true
-                for (i2 in i + 1 until args.size)
-                    if (args[i2] in setOf("at", "in", "on")) {
-                        continueUntil = i2
-                        if (i2 == i + 1)
-                            return "You can't just put \"for\" and not put a time after it!"
-                        break
-                    } else {
-                        durationStr.append(args[i2]).append(' ')
-                        continueUntil = continueUntil.coerceAtLeast(i2 + 1)
-                    }
-                durationStr.setLength(durationStr.length - 1)
-                val groups = dateTimeParser.parse(durationStr.toString())
-                if (groups.size > 1 || groups[0].dates.size > 1)
-                    return "You can't have the duration be more than one time!"
-                else if (groups.isEmpty() || groups[0].dates.isEmpty())
-                    return "You can't just put \"for\" and not put a time after it!"
-            }
-
-            else -> {
-                location.append(' ').append(args[i])
-            }
-        }
-    }
-
-    val builder = StringBuilder()
-    if (timeGroups.isNotEmpty()) {
-        for (group in timeGroups) {
-            if (group.isRecurring) {
-                return "Sorry, the bot doesn't support recurring events."
-            } else {
-                group.dates.forEach {
-                    builder.append(
-                        CommandScheduler.schedule(
-                            chat, sender, "goingto",
-                            if (durationStr.isEmpty())
-                                listOf(location.toString())
-                            else
-                                listOf(location.toString(), "for", durationStr.toString()),
-                            it.toOffsetDatetime()
-                        )
-                    )
-                }
-                Settings.update()
-            }
-        }
-    } else {
-        return "${
-            getUserName(
-                chat,
-                sender
-            )
-        } is going to $location${if (durationStr.isEmpty()) "" else " for $durationStr"}."
-    }
-    return if (builder.isNotEmpty()) builder.toString() else "No events scheduled."
-}
 
 fun target(args: List<String>, chat: Chat): String {
     if (args.isEmpty()) {
@@ -599,20 +506,6 @@ fun registerDefaultCommands() {
             UniversalProtocol, "chats", listOf(), ::chats,
             "Lists all chats the bot knows of by name.",
             "chats (Takes no arguments)"
-        )
-    )
-    registerCommand(
-        Command.of(
-            UniversalProtocol, "goingto",
-            listOf(
-                ArgumentSpec("Location", ArgumentType.STRING),
-                ArgumentSpec("Duration", ArgumentType.STRING, true),
-                ArgumentSpec("Time", ArgumentType.STRING, true)
-            ),
-            ::goingto,
-            "Tells the chat you're going somewhere for some time.",
-            "goingto \"location\" [for (duration)] [at (time)/in (timedelta)/on (datetime)] " +
-                    "(Note: Order does not matter with for/at/in/on)"
         )
     )
     registerCommand(

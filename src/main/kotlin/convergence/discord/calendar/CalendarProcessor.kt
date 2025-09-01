@@ -202,8 +202,8 @@ fun VEvent.equalEnough(dEvent: ScheduledEvent?): Boolean {
     val period = this.getNextOccurrence()
     // More fields can be added here if needed, but this should be alright
     return dEvent != null
-            && period.start.toInstant() == dEvent.startTime.toInstant()
-            && period.end.toInstant() == dEvent.endTime?.toInstant()
+            && period.start.time == dEvent.startTime.toInstant().toEpochMilli()
+            && period.end.time == dEvent.endTime?.toInstant()?.toEpochMilli()
             && (this.summary?.value ?: "Unnamed event") == dEvent.name
 }
 
@@ -212,6 +212,7 @@ fun VEvent.getNextOccurrence(): Period {
     return this.getConsumedTime(now.toIDate(), now.plus(DAYS, ChronoUnit.DAYS).toIDate(), true).first()
 }
 
+@SuppressWarnings("LongMethod")
 fun registerCalendarCommands() {
     registerCommand(
         Command.of(

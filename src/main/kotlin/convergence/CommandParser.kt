@@ -38,22 +38,23 @@ fun getCommand(command: String, chat: Chat): CommandLike {
     } ?: throw CommandDoesNotExist(command)
 }
 
+private val escapeMap = mapOf(
+    'r' to '\r',
+    'n' to '\n',
+    'b' to '\b',
+    't' to '\t',
+    'f' to '\u000c',
+    '\'' to '\'',
+    '"' to '"',
+    '\\' to '\\'
+)
+
 // This function replaces the escape sequences with their replaced variants, and ignores quotes, so the quotes don't
 // show up in the argument text.
 fun CommonToken.text() = when(this.type) {
     CommandLexer.OctalEscape -> Integer.parseInt(this.text.substring(1), 8).toChar()
     CommandLexer.UnicodeEscape -> Integer.parseInt(this.text.substring(2), 16).toChar()
-    CommandLexer.RegularEscape -> when(this.text[1]) {
-        'r' -> '\r'
-        'n' -> '\n'
-        'b' -> '\b'
-        't' -> '\t'
-        'f' -> '\u000c'
-        '\'' -> '\''
-        '"' -> '"'
-        '\\' -> '\\'
-        else -> throw InvalidEscapeSequenceException(this.text)
-    }
+    CommandLexer.RegularEscape -> escapeMap[this.text[1]] ?: throw InvalidEscapeSequenceException(this.text)
     CommandLexer.Quote -> "" // This prevents quoted arguments from having the quotes around the text.
     else -> this.text
 }.toString()
@@ -61,6 +62,7 @@ fun CommonToken.text() = when(this.type) {
 fun parseCommand(command: String, chat: Chat): CommandData? =
     parseCommand(command, commandDelimiters.getOrDefault(chat, DEFAULT_COMMAND_DELIMITER), chat)
 
+@SuppressWarnings("ThrowsCount")
 fun parseCommand(command: String, commandDelimiter: String, chat: Chat): CommandData? {
     // Check for the command delimiter, so the grammar doesn't have to worry about it
     if (!command.startsWith(commandDelimiter) || command.isEmpty())
@@ -102,29 +104,30 @@ fun parseCommand(command: String, commandDelimiter: String, chat: Chat): Command
     else if (tree.exception != null)
         throw tree.exception
 
-
     // Grab the command name
     val commandName = tree.commandName().text
 
     // Grab the args
-    val args = tree.argument().map {
-        (it.children.first() as ParserRuleContext).children.joinToString("") { tokOrRule ->
-            if (tokOrRule.childCount == 0) // If we're looking at a token, use the text extension function above
-                (tokOrRule.payload as CommonToken).text()
-            else if (tokOrRule.payload is CommandParser.NotQuoteContext) {
-                val notQuote = tokOrRule.payload as CommandParser.NotQuoteContext
-                val node = notQuote.children.first() as TerminalNode
-                val token = node.symbol as CommonToken
-                token.text()
-            } else
-                tokOrRule.text // If it's any other parser rule, just return text, don't mess with it
-        }
-    }
+    val args = tokenArgsToStringArgs(tree)
 
     // Return the command or alias object
     val cmd = commandName?.let { getCommand(it.lowercase(), chat) } ?: return null
     return when(cmd) {
         is Command -> CommandData(cmd, args)
         is Alias -> CommandData(cmd, args)
+    }
+}
+
+private fun tokenArgsToStringArgs(tree: CommandParser.CommandContext): List<String> = tree.argument().map {
+    (it.children.first() as ParserRuleContext).children.joinToString("") { tokOrRule ->
+        if (tokOrRule.childCount == 0) // If we're looking at a token, use the text extension function above
+            (tokOrRule.payload as CommonToken).text()
+        else if (tokOrRule.payload is CommandParser.NotQuoteContext) {
+            val notQuote = tokOrRule.payload as CommandParser.NotQuoteContext
+            val node = notQuote.children.first() as TerminalNode
+            val token = node.symbol as CommonToken
+            token.text()
+        } else
+            tokOrRule.text // If it's any other parser rule, just return text, don't mess with it
     }
 }
