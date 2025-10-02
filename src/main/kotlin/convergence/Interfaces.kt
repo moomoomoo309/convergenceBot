@@ -297,7 +297,7 @@ fun <T1, T2, T3, T4, T5, T6> invokeTyped(
         6 -> {
         }
 
-        in 0..5 -> throw IllegalArgumentException("invokeTyped called with ${args.size} parameters, but 4 expected")
+        in 0..5 -> throw IllegalArgumentException("invokeTyped called with ${args.size} parameters, but 6 expected")
         else -> defaultLogger.error("invokeTyped called with ${args.size} parameters, but 6 expected")
     }
     val arg1 = args.getOrNull(0) ?: default1
@@ -323,7 +323,7 @@ fun <T1, T2, T3, T4, T5> invokeTyped(
         5 -> {
         }
 
-        in 0..4 -> throw IllegalArgumentException("invokeTyped called with ${args.size} parameters, but 4 expected")
+        in 0..4 -> throw IllegalArgumentException("invokeTyped called with ${args.size} parameters, but 5 expected")
         else -> defaultLogger.error("invokeTyped called with ${args.size} parameters, but 5 expected")
     }
     val arg1 = args.getOrNull(0) ?: default1
@@ -611,8 +611,7 @@ interface HasReactions {
         emoji: IEmoji,
         oldAmount: Int,
         newAmount: Int
-    ) =
-        runCallbacks<ReactionChanged>(sender, chat, message, emoji, oldAmount, newAmount)
+    ) = runCallbacks<ReactionChanged>(sender, chat, message, emoji, oldAmount, newAmount)
 }
 
 class ReactionChanged(val fct: (User, Chat, IncomingMessage, IEmoji, oldAmount: Int, newAmount: Int) -> Boolean):

@@ -12,8 +12,10 @@ import convergence.discord.jda
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.ScheduledEvent
+import net.dv8tion.jda.api.requests.restaction.ScheduledEventAction
 import net.fortuna.ical4j.model.Date
 import net.fortuna.ical4j.model.Period
+import net.fortuna.ical4j.model.PeriodList
 import net.fortuna.ical4j.model.component.VEvent
 import org.apache.http.impl.client.CloseableHttpClient
 import org.apache.http.impl.client.HttpClients
@@ -69,7 +71,7 @@ object CalendarProcessor {
         val now = Instant.now()
         return eventList.filter {
             val duration = it.getConsumedTime(now.toIDate(), now.plus(DAYS, ChronoUnit.DAYS).toIDate())
-            duration.isNotEmpty() && duration.first().start.toInstant().isAfter(now)
+            duration.isNotEmpty() && duration.any { p -> p.start.toInstant().isAfter(now) }
         }.sortedBy { it.startDate.date }
     }
 
@@ -108,57 +110,97 @@ object CalendarProcessor {
         }
         return syncToDiscord(
             jda.getGuildById(guildId) ?: return "No guild found with ID $guildId.",
-            calendarEvents.sortedBy { it.getNextOccurrence().start },
+            calendarEvents,
             getDiscordEventsNextDays(jda, guildId)
         )
     }
 
     private val uidRegex = Regex("[a-z0-9-]{36}")
     private fun syncToDiscord(guild: Guild, calEvents: List<VEvent>, discordEvents: List<ScheduledEvent>): String {
-        val uidMap = mutableMapOf<String, Long>()
+        val uidMap = mutableMapOf<Long, String>()
         val calEventsById = mutableMapOf<String, VEvent>()
-        val futures = mutableListOf<CompletableFuture<ScheduledEvent>>()
+        val recurrencesById = mutableMapOf<String, MutableList<VEvent>>()
+        val futures = mutableListOf<Triple<VEvent, Period, ScheduledEventAction>>()
         outer@ for (event in calEvents) {
+            if (event.recurrenceId != null)
+                recurrencesById.getOrPut(event.uid.value) { mutableListOf() }.add(event)
             calEventsById[event.uid.value] = event
             for (currentDiscordEvent in discordEvents) {
                 if (event.equalEnough(currentDiscordEvent)) {
-                    uidMap[event.uid.value] = currentDiscordEvent.idLong
+                    uidMap[currentDiscordEvent.idLong] = event.uid.value
                     continue@outer
                 }
             }
-            futures.add(addCalendarEventToDiscord(uidMap, guild, event))
+            futures.addAll(addCalendarEventToDiscord(uidMap, guild, event))
+        }
+
+        // Remove any events in a sequence which have a recurrence
+        for ((_, recurrences) in recurrencesById) {
+            val futureIter = futures.iterator()
+            while (futureIter.hasNext()) {
+                val (event, period, _) = futureIter.next()
+                for (recurrence in recurrences) {
+                    val recurrenceStart = recurrence.recurrenceId.date
+                    if (event.uid.value == recurrence.uid.value && recurrenceStart == period.start) {
+                        // There's a recurrence to replace this event
+                        futureIter.remove()
+                    }
+                }
+            }
         }
 
         // Wait for all the events to be added, so we know uidMap is populated
-        CompletableFuture.allOf(*futures.toTypedArray()).join()
+        CompletableFuture.allOf(*futures.mapNotNull { it.third.submit().whenComplete { discordEvent, _ ->
+            uidMap[discordEvent.idLong] = it.first.uid.value
+        }}.toTypedArray()).join()
 
+        // Remove invalid events
         for (discordEvent in discordEvents) {
             val uid = discordEvent.description?.takeLast(UID_LENGTH)?.trim()
-            if (uid == null || !uidRegex.matches(uid))
+            val calEvent = calEventsById[uid]
+            if (calEvent == null || uid == null || !uidRegex.matches(uid))
                 continue
-            if (uidMap[uid] == null || calEventsById[uid]?.equalEnough(discordEvent) != true) {
+            if (uidMap[discordEvent.idLong] != uid) {
                 discordEvent.delete().queue()
+            } else if (!calEvent.equalEnough(discordEvent)) {
+                // This means the date has changed, or there's a recurrence
+                if (uid in recurrencesById) {
+                    for (recurrence in recurrencesById[uid]!!) {
+                        val recurrenceStart = recurrence.recurrenceId.date
+                        if (calEvent.uid.value == uid &&
+                            recurrenceStart.time == discordEvent.startTime.toInstant().toEpochMilli()
+                        ) {
+                            // There's a recurrence to replace this event
+                            discordEvent.delete().queue()
+                        }
+                    }
+                } else {
+                    discordEvent.delete().queue()
+                }
             }
         }
         return "Calendar synced successfully."
     }
 
     private fun addCalendarEventToDiscord(
-        uidMap: MutableMap<String, Long>,
+        uidMap: MutableMap<Long, String>,
         guild: Guild,
         event: VEvent
-    ): CompletableFuture<ScheduledEvent> {
-        val nextOccurrence = event.getNextOccurrence()
-        return guild.createScheduledEvent(
-            event.summary?.value ?: "Unnamed event",
-            if (event.location?.value.isNullOrBlank()) "No Location" else event.location.value,
-            nextOccurrence.start.toOffsetDateTime(),
-            nextOccurrence.end.toOffsetDateTime()
-        ).setDescription(addUIDToDescription(event.description?.value ?: "", event.uid.value))
-            .submit()
-            .whenComplete { discordEvent, _ ->
-                uidMap[event.uid.value] = discordEvent.idLong
-            }
+    ): List<Triple<VEvent, Period, ScheduledEventAction>> {
+        val nextOccurrences = event.getNextOccurrence()
+        return nextOccurrences.mapNotNull { nextOccurrence ->
+            if (nextOccurrence.start.toInstant() < Instant.now())
+                null
+            else
+                Triple(
+                    event, nextOccurrence, guild.createScheduledEvent(
+                        event.summary?.value ?: "Unnamed event",
+                        if (event.location?.value.isNullOrBlank()) "No Location" else event.location.value,
+                        nextOccurrence.start.toOffsetDateTime(),
+                        nextOccurrence.end.toOffsetDateTime()
+                    ).setDescription(addUIDToDescription(event.description?.value ?: "", event.uid.value))
+                )
+        }
     }
 
     private fun addUIDToDescription(description: String?, uid: String): String {
@@ -199,17 +241,19 @@ fun VEvent.equalEnough(dEvent: ScheduledEvent?): Boolean {
     contract {
         returns(true) implies (dEvent != null)
     }
-    val period = this.getNextOccurrence()
+    val periodList = this.getNextOccurrence()
     // More fields can be added here if needed, but this should be alright
     return dEvent != null
-            && period.start.time == dEvent.startTime.toInstant().toEpochMilli()
-            && period.end.time == dEvent.endTime?.toInstant()?.toEpochMilli()
             && (this.summary?.value ?: "Unnamed event") == dEvent.name
+            && periodList.any { period ->
+        period.start.time == dEvent.startTime.toInstant().toEpochMilli()
+                && period.end.time == dEvent.endTime?.toInstant()?.toEpochMilli()
+    }
 }
 
-fun VEvent.getNextOccurrence(): Period {
+fun VEvent.getNextOccurrence(): PeriodList {
     val now = Instant.now()
-    return this.getConsumedTime(now.toIDate(), now.plus(DAYS, ChronoUnit.DAYS).toIDate(), true).first()
+    return this.getConsumedTime(now.toIDate(), now.plus(DAYS, ChronoUnit.DAYS).toIDate(), true)
 }
 
 @SuppressWarnings("LongMethod")
@@ -242,8 +286,7 @@ fun registerCalendarCommands() {
             { args, chat ->
                 val removed = syncedCalendars.remove(syncedCalendars.firstOrNull {
                     it.guildId == (chat as DiscordChat).server.guild.idLong && it.calURL == args[0]
-                }
-                )
+                })
                 if (removed) "Calendar removed." else "No calendar with URL ${args[0]} found."
             },
             "Removes a synced calendar.",

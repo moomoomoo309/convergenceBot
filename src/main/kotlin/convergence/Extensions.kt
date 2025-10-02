@@ -6,7 +6,6 @@ import com.sigpwned.emoji4j.core.grapheme.Emoji
 import convergence.discord.calendar.defaultZoneOffset
 import java.time.OffsetDateTime
 import java.util.*
-import kotlin.streams.asSequence
 
 // This file has all the extension functions that aren't related to a specific file.
 // I.E: CalendarProcessor has some calendar event-related extensions, those can stay there.
@@ -46,7 +45,7 @@ fun String.titleCase() = "${first().uppercase()}${substring(1).lowercase()}"
 fun Date.toOffsetDatetime(): OffsetDateTime = this.toInstant().atOffset(defaultZoneOffset)
 
 fun String.toEmoji(): Emoji? {
-    val grapheme = GraphemeMatcher(this).results().asSequence().firstOrNull()?.grapheme()
+    val grapheme = GraphemeMatcher(this).toMatchResult().grapheme()
     return if (grapheme?.type == Grapheme.Type.EMOJI)
         grapheme as Emoji
     else

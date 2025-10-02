@@ -65,7 +65,7 @@ fun parseCommand(command: String, chat: Chat): CommandData? =
 @SuppressWarnings("ThrowsCount")
 fun parseCommand(command: String, commandDelimiter: String, chat: Chat): CommandData? {
     // Check for the command delimiter, so the grammar doesn't have to worry about it
-    if (!command.startsWith(commandDelimiter) || command.isEmpty())
+    if (!command.startsWith(commandDelimiter) || command.isEmpty() || command == commandDelimiter)
         return null
     if (command.startsWith(commandDelimiter + commandDelimiter))
         return null
@@ -99,18 +99,12 @@ fun parseCommand(command: String, commandDelimiter: String, chat: Chat): Command
     }
 
     // See if the command was actually parsed successfully, and error if it wasn't.
-    if (!tree.exception?.message.isNullOrBlank())
-        throw InvalidCommandParseException(tree.exception?.message ?: "")
-    else if (tree.exception != null)
-        throw tree.exception
+    if (tree.exception != null)
+        throw InvalidCommandParseException(tree.exception)
 
-    // Grab the command name
     val commandName = tree.commandName().text
-
-    // Grab the args
     val args = tokenArgsToStringArgs(tree)
 
-    // Return the command or alias object
     val cmd = commandName?.let { getCommand(it.lowercase(), chat) } ?: return null
     return when(cmd) {
         is Command -> CommandData(cmd, args)

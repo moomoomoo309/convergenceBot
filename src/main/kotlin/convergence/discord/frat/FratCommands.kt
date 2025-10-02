@@ -176,9 +176,9 @@ fun fullLine(args: List<String>): OutgoingMessage {
     val rendered = Graphviz.fromGraph(graph).render(Format.PNG)
     val stream = ByteArrayOutputStream()
 
-    // Convert the outputstream to an inputstream so it can be uploaded to discord
+    // Get the bytes so it can be uploaded to discord
     rendered.toOutputStream(stream)
-    msg.addFiles(FileUpload.fromData(ByteArrayInputStream(stream.toByteArray()), "$name line.png"))
+    msg.addFiles(FileUpload.fromData(stream.toByteArray(), "$name line.png"))
     return DiscordOutgoingMessage(msg.build())
 }
 

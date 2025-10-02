@@ -87,7 +87,8 @@ data class SettingsDTO(
     var timers: MutableMap<String, OffsetDateTime> = mutableMapOf(),
     var imageUploadChannels: MutableMap<String, String> = mutableMapOf(),
     var reactServers: MutableMap<String, List<ReactConfigDTO>> = mutableMapOf(),
-    val mentionChats: MutableMap<String, MutableMap<String, MutableMap<String, Int>>> = mutableMapOf()
+    var mentionChats: MutableMap<String, MutableMap<String, MutableMap<String, Int>>> = mutableMapOf(),
+    var debugMode: Boolean = false
 )
 
 object Settings {
@@ -100,6 +101,7 @@ object Settings {
     var imageUploadChannels: MutableMap<Chat, URI> = mutableMapOf()
     var reactServers: MutableMap<Server, MutableList<ReactConfig>> = TreeMap()
     var mentionChats: MutableMap<Chat, MutableMap<User, MutableMap<User, Int>>> = mutableMapOf()
+    var debugMode: Boolean = false
 
     @JsonIgnore
     var updateIsScheduled = false
@@ -176,6 +178,7 @@ object Settings {
                     .mutable()
             }.mutable()
         })
+        this.debugMode = settingsDTO.debugMode
     }
 
     fun toDTO() = SettingsDTO(
@@ -195,10 +198,10 @@ object Settings {
         }.mutable(),
         mentionChats.mapEntries { (k, v) ->
             k.toKey() to v.mapEntries { (receiver, mentions) ->
-                receiver.toKey() to mentions.mapKeys { (user, _) -> user.toKey() }
-                    .mutable()
+                receiver.toKey() to mentions.mapKeys { (user, _) -> user.toKey() }.mutable()
             }.mutable()
-        }.mutable()
+        }.mutable(),
+        debugMode
     )
 }
 
@@ -233,6 +236,7 @@ val timers = Settings.timers
 val imageUploadChannels: MutableMap<Chat, URI> = Settings.imageUploadChannels
 val reactServers: MutableMap<Server, MutableList<ReactConfig>> = Settings.reactServers
 val mentionChats: MutableMap<Chat, MutableMap<User, MutableMap<User, Int>>> = Settings.mentionChats
+val debugMode = Settings.debugMode
 
 lateinit var convergencePath: Path
 val chatMap: MutableMap<Int, Chat> = mutableMapOf()

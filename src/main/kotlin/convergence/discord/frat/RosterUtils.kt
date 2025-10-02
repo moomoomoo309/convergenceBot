@@ -12,14 +12,14 @@ import java.net.URI
 val illegalRosters = setOf("823")
 
 data class BrotherInfo(
-    val rosterNumber: String,
-    val lastName: String,
-    val firstName: String,
-    val pledgeClass: String,
-    val crossingDate: String,
-    val bigBrother: String,
-    val nickName: String,
-    val major: String
+    val rosterNumber: String = "-1",
+    val lastName: String = "",
+    val firstName: String = "",
+    val pledgeClass: String = "",
+    val crossingDate: String = "",
+    val bigBrother: String = "",
+    val nickName: String = "",
+    val major: String = ""
 ) {
     @JsonIgnore
     fun getName() = "$firstName $lastName"
@@ -85,8 +85,11 @@ fun extractInfoFromRow(row: Row): BrotherInfo {
     )
 }
 
-data class BrotherTreeNode(val brother: BrotherInfo, var big: BrotherTreeNode?,
-                           val littles: MutableList<BrotherTreeNode>)
+data class BrotherTreeNode(
+    val brother: BrotherInfo,
+    var big: BrotherTreeNode?,
+    val littles: MutableList<BrotherTreeNode>
+)
 
 private fun getBrotherTree(): Pair<Map<String, BrotherTreeNode>, BrotherTreeNode> {
     val brotherMap = mutableMapOf<String, BrotherTreeNode>()
@@ -97,7 +100,7 @@ private fun getBrotherTree(): Pair<Map<String, BrotherTreeNode>, BrotherTreeNode
         big?.littles?.add(node)
         node.big = big
     }
-    val rootNode = BrotherTreeNode(BrotherInfo("-1", "", "Root", "", "", "", "", ""), null, mutableListOf())
+    val rootNode = BrotherTreeNode(BrotherInfo(firstName="Root"), null, mutableListOf())
     for (brother in brotherInfo) {
         if (brother.bigBrother == "= = = = = =")
             brotherMap[brother.getName().lowercase()]?.let { rootNode.littles.add(it) }
@@ -126,5 +129,8 @@ class MutableLazy<T: Any>(private val initializer: () -> T) : Lazy<T> {
         cached = null
     }
 
+    /**
+     * Returns `true` if a value for this `Lazy` instance has been already initialized, and `false` otherwise.
+     */
     override fun isInitialized(): Boolean = cached != null
 }

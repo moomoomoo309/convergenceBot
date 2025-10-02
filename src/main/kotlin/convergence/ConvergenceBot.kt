@@ -39,9 +39,9 @@ object ConvergenceBot {
         defaultLogger.info("Registering default commands...")
         registerDefaultCommands()
 
-        defaultLogger.info("Registering addons...")
         updateChatMap()
 
+        defaultLogger.info("Loading settings...")
         readSettings()
 
         loadProtocolConfig()
