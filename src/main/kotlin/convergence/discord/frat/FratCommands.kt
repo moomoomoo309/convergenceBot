@@ -14,7 +14,6 @@ import guru.nidi.graphviz.model.MutableNode
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.utils.FileUpload
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder
-import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.nio.file.Files
 import java.time.LocalTime
@@ -47,9 +46,10 @@ val englishToGreek = mapOf(
 )
 
 fun getBrotherInfo(name: String, searchCriteria: (BrotherInfo) -> String?): BrotherInfo? {
-    return brotherInfo.firstOrNull { searchCriteria(it)?.lowercase() == name }
-        ?: brotherInfo.firstOrNull { searchCriteria(it)?.lowercase()?.startsWith(name) == true }
-        ?: brotherInfo.firstOrNull { searchCriteria(it)?.lowercase()?.contains(name) == true }
+    val lowerName = name.lowercase()
+    return brotherInfo.firstOrNull { searchCriteria(it)?.lowercase() == lowerName }
+        ?: brotherInfo.firstOrNull { searchCriteria(it)?.lowercase()?.startsWith(lowerName) == true }
+        ?: brotherInfo.firstOrNull { searchCriteria(it)?.lowercase()?.contains(lowerName) == true }
 }
 
 fun generateGraphGoingDown(graph: MutableGraph, node: BrotherTreeNode, mutNode: MutableNode?) =
@@ -73,11 +73,12 @@ fun brotherLine(args: List<String>): OutgoingMessage {
     val name = args.joinToString(" ").lowercase()
     val startInfo = getBrotherInfo(name) { it.getName() }
         ?: return SimpleOutgoingMessage("No brothers found searching for \"$name\".")
+    if (startInfo.rosterNumber.toInt() > 800)
+        return SimpleOutgoingMessage("800-and? Never heard of 'em.")
 
     val node = brotherMap["${startInfo.firstName} ${startInfo.lastName}".lowercase()]
         ?: return SimpleOutgoingMessage(
-            "No brothers found searching for " +
-                    "\"${startInfo.firstName} ${startInfo.lastName}\"."
+            "No brothers found searching for \"${startInfo.firstName} ${startInfo.lastName}\"."
         )
     // Convert the brother tree into graphviz nodes
     val graph = mutGraph("$name's line")
@@ -93,7 +94,7 @@ fun brotherLine(args: List<String>): OutgoingMessage {
 
     // Convert the outputstream to an inputstream so it can be uploaded to discord
     rendered.toOutputStream(stream)
-    msg.addFiles(FileUpload.fromData(ByteArrayInputStream(stream.toByteArray()), "$name line.png"))
+    msg.addFiles(FileUpload.fromData(stream.toByteArray(), "$name line.png"))
     return DiscordOutgoingMessage(msg.build())
 }
 
@@ -101,6 +102,8 @@ fun fullTree(args: List<String>): OutgoingMessage {
     val name = args.joinToString(" ").lowercase()
     val startInfo = getBrotherInfo(name) { it.getName() }
         ?: return SimpleOutgoingMessage("No brothers found searching for \"$name\".")
+    if (startInfo.rosterNumber.toInt() > 800)
+        return SimpleOutgoingMessage("800-and? Never heard of 'em.")
 
     val node = brotherMap["${startInfo.firstName} ${startInfo.lastName}".lowercase()]
         ?: return SimpleOutgoingMessage(
@@ -129,7 +132,7 @@ fun fullTree(args: List<String>): OutgoingMessage {
         .setDirected(true)
     generateGraphGoingDown(graph, brotherRoot, null) { _, _, newNode ->
         // Make your line red and gray
-        if (name in brotherLine)
+        if (newNode.name().value() in brotherLine)
             newNode.add(Style.FILLED, Color.GRAY).add(Color.RED.font())
     }
 
@@ -140,7 +143,7 @@ fun fullTree(args: List<String>): OutgoingMessage {
 
     // Convert the outputstream to an inputstream so it can be uploaded to discord
     rendered.toOutputStream(stream)
-    msg.addFiles(FileUpload.fromData(ByteArrayInputStream(stream.toByteArray()), "$name line.png"))
+    msg.addFiles(FileUpload.fromData(stream.toByteArray(), "$name line.png"))
     return DiscordOutgoingMessage(msg.build())
 }
 
@@ -148,6 +151,8 @@ fun fullLine(args: List<String>): OutgoingMessage {
     val name = args.joinToString(" ").lowercase()
     val startInfo = getBrotherInfo(name) { it.getName() }
         ?: return SimpleOutgoingMessage("No brothers found searching for \"$name\".")
+    if (startInfo.rosterNumber.toInt() > 800)
+        return SimpleOutgoingMessage("800-and? Never heard of 'em.")
 
     val node = brotherMap["${startInfo.firstName} ${startInfo.lastName}".lowercase()]
         ?: return SimpleOutgoingMessage(
@@ -187,6 +192,8 @@ fun brotherBigs(args: List<String>): OutgoingMessage {
     val name = args.joinToString(" ").lowercase()
     val startInfo = getBrotherInfo(name) { it.firstName + " " + it.lastName }
         ?: return SimpleOutgoingMessage("No brothers found searching for \"$name\".")
+    if (startInfo.rosterNumber.toInt() > 800)
+        return SimpleOutgoingMessage("800-and? Never heard of 'em.")
 
     var node: BrotherTreeNode? = brotherMap["${startInfo.firstName} ${startInfo.lastName}".lowercase()]
         ?: return SimpleOutgoingMessage(
@@ -222,6 +229,9 @@ fun brotherInfo(args: List<String>, searchCriteria: (BrotherInfo) -> String?): D
     val name = args.joinToString(" ").lowercase()
     val info = getBrotherInfo(name, searchCriteria)
         ?: return DiscordOutgoingMessage("No brothers found searching for \"$name\".")
+    if (info.rosterNumber.toInt() > 800)
+        return DiscordOutgoingMessage("800-and? Never heard of 'em.")
+
     return DiscordOutgoingMessage(
         MessageCreateBuilder()
             .addEmbeds(
@@ -416,11 +426,11 @@ private fun mentionStatsFct() {
 fun mentionStats(chat: Chat) = mentionChats
     .getOrDefault(chat, mutableMapOf())
     .map { (target, mentions) ->
-        "${DiscordProtocol.getName(chat, target)}:\n\t${
+        "${DiscordProtocol.getUserName(chat, target)}:\n\t${
             mentions.toList().joinToString(
                 "\n\t",
                 transform = { (user, count) ->
-                    "${DiscordProtocol.getName(chat, user)}: $count"
+                    "${DiscordProtocol.getUserName(chat, user)}: $count"
                 })
         }"
     }.joinToString()

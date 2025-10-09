@@ -55,7 +55,7 @@ object CommandScheduler: Thread() {
             val iter = taskList.iterator()
             while (iter.hasNext()) {
                 val task = iter.next()
-                if (now >= task.time) {
+                if (now.isAfter(task.time)) {
                     task()
                     iter.remove()
                 }

@@ -74,9 +74,10 @@ fun runCommand(chat: Chat, message: IncomingMessage, sender: User, images: Array
             runCommand(chat, sender, command, args)
         }
     } catch(e: Exception) {
-        sendMessage(chat, sender, "Error while running command! Stack trace:\n${
-            if (debugMode) getStackTraceText(e) else e.message
-        }")
+        sendMessage(
+            chat, sender,
+            "Error while running command! Stack trace:\n${if (debugMode) getStackTraceText(e) else e.message}"
+        )
         if (!debugMode)
             defaultLogger.error("Error while running command!", e)
     }

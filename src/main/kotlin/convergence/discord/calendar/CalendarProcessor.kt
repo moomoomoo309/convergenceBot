@@ -14,6 +14,7 @@ import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.ScheduledEvent
 import net.dv8tion.jda.api.requests.restaction.ScheduledEventAction
 import net.fortuna.ical4j.model.Date
+import net.fortuna.ical4j.model.DateTime
 import net.fortuna.ical4j.model.Period
 import net.fortuna.ical4j.model.PeriodList
 import net.fortuna.ical4j.model.component.VEvent
@@ -69,9 +70,8 @@ object CalendarProcessor {
             eventList.addAll(cal.getComponents("VEVENT"))
         }
         val now = Instant.now()
-        return eventList.filter {
-            val duration = it.getConsumedTime(now.toIDate(), now.plus(DAYS, ChronoUnit.DAYS).toIDate())
-            duration.isNotEmpty() && duration.any { p -> p.start.toInstant().isAfter(now) }
+        return eventList.flatMap {
+            it.getOccurrences(Period(now.toIDate(), now.plus(DAYS, ChronoUnit.DAYS).toIDate()))
         }.sortedBy { it.startDate.date }
     }
 
@@ -120,6 +120,29 @@ object CalendarProcessor {
         val uidMap = mutableMapOf<Long, String>()
         val calEventsById = mutableMapOf<String, VEvent>()
         val recurrencesById = mutableMapOf<String, MutableList<VEvent>>()
+        val futures = getFutures(calEvents, recurrencesById, calEventsById, discordEvents, uidMap, guild)
+
+        // Remove any events in a sequence which have a recurrence
+        removeEventsWithRecurrences(recurrencesById, futures)
+
+        // Add all the events simultaneously, adding them to the uidMap after, then wait for all of them to complete.
+        CompletableFuture.allOf(*futures.mapNotNull { it.third.submit().whenComplete { discordEvent, _ ->
+            uidMap[discordEvent.idLong] = it.first.uid.value
+        }}.toTypedArray()).join()
+
+        // Remove invalid events
+        removeInvalidEvents(discordEvents, calEventsById, uidMap, recurrencesById)
+        return "Calendar synced successfully."
+    }
+
+    private fun getFutures(
+        calEvents: List<VEvent>,
+        recurrencesById: MutableMap<String, MutableList<VEvent>>,
+        calEventsById: MutableMap<String, VEvent>,
+        discordEvents: List<ScheduledEvent>,
+        uidMap: MutableMap<Long, String>,
+        guild: Guild
+    ): MutableList<Triple<VEvent, Period, ScheduledEventAction>> {
         val futures = mutableListOf<Triple<VEvent, Period, ScheduledEventAction>>()
         outer@ for (event in calEvents) {
             if (event.recurrenceId != null)
@@ -130,31 +153,18 @@ object CalendarProcessor {
                     uidMap[currentDiscordEvent.idLong] = event.uid.value
                     continue@outer
                 }
-            }
-            futures.addAll(addCalendarEventToDiscord(uidMap, guild, event))
-        }
-
-        // Remove any events in a sequence which have a recurrence
-        for ((_, recurrences) in recurrencesById) {
-            val futureIter = futures.iterator()
-            while (futureIter.hasNext()) {
-                val (event, period, _) = futureIter.next()
-                for (recurrence in recurrences) {
-                    val recurrenceStart = recurrence.recurrenceId.date
-                    if (event.uid.value == recurrence.uid.value && recurrenceStart == period.start) {
-                        // There's a recurrence to replace this event
-                        futureIter.remove()
-                    }
-                }
+                futures.addAll(addCalendarEventToDiscord(guild, event))
             }
         }
+        return futures
+    }
 
-        // Wait for all the events to be added, so we know uidMap is populated
-        CompletableFuture.allOf(*futures.mapNotNull { it.third.submit().whenComplete { discordEvent, _ ->
-            uidMap[discordEvent.idLong] = it.first.uid.value
-        }}.toTypedArray()).join()
-
-        // Remove invalid events
+    private fun removeInvalidEvents(
+        discordEvents: List<ScheduledEvent>,
+        calEventsById: MutableMap<String, VEvent>,
+        uidMap: MutableMap<Long, String>,
+        recurrencesById: MutableMap<String, MutableList<VEvent>>
+    ) {
         for (discordEvent in discordEvents) {
             val uid = discordEvent.description?.takeLast(UID_LENGTH)?.trim()
             val calEvent = calEventsById[uid]
@@ -179,15 +189,32 @@ object CalendarProcessor {
                 }
             }
         }
-        return "Calendar synced successfully."
+    }
+
+    private fun removeEventsWithRecurrences(
+        recurrencesById: MutableMap<String, MutableList<VEvent>>,
+        futures: MutableList<Triple<VEvent, Period, ScheduledEventAction>>
+    ) {
+        for ((_, recurrences) in recurrencesById) {
+            val futureIter = futures.iterator()
+            while (futureIter.hasNext()) {
+                val (event, period, _) = futureIter.next()
+                for (recurrence in recurrences) {
+                    val recurrenceStart = recurrence.recurrenceId.date
+                    if (event.uid.value == recurrence.uid.value && recurrenceStart == period.start) {
+                        // There's a recurrence to replace this event
+                        futureIter.remove()
+                    }
+                }
+            }
+        }
     }
 
     private fun addCalendarEventToDiscord(
-        uidMap: MutableMap<Long, String>,
         guild: Guild,
         event: VEvent
     ): List<Triple<VEvent, Period, ScheduledEventAction>> {
-        val nextOccurrences = event.getNextOccurrence()
+        val nextOccurrences = event.getOccurrences()
         return nextOccurrences.mapNotNull { nextOccurrence ->
             if (nextOccurrence.start.toInstant() < Instant.now())
                 null
@@ -232,8 +259,8 @@ object CalendarProcessor {
 fun Date.toOffsetDateTime(): OffsetDateTime = this.toInstant().atOffset(defaultZoneOffset)
 val defaultZoneOffset: ZoneOffset = OffsetDateTime.now().offset
 
-fun Instant.toIDate(): Date {
-    return Date(Date.from(this))
+fun Instant.toIDate(): DateTime {
+    return DateTime(Date.from(this))
 }
 
 @OptIn(ExperimentalContracts::class)
@@ -241,17 +268,15 @@ fun VEvent.equalEnough(dEvent: ScheduledEvent?): Boolean {
     contract {
         returns(true) implies (dEvent != null)
     }
-    val periodList = this.getNextOccurrence()
+    val periodList = this.getOccurrences()
     // More fields can be added here if needed, but this should be alright
+    @Suppress("IDENTITY_SENSITIVE_OPERATIONS_WITH_VALUE_TYPE")
     return dEvent != null
             && (this.summary?.value ?: "Unnamed event") == dEvent.name
-            && periodList.any { period ->
-        period.start.time == dEvent.startTime.toInstant().toEpochMilli()
-                && period.end.time == dEvent.endTime?.toInstant()?.toEpochMilli()
-    }
+            && periodList.any { dEvent.startTime == it.start && dEvent.endTime == it.end }
 }
 
-fun VEvent.getNextOccurrence(): PeriodList {
+fun VEvent.getOccurrences(): PeriodList {
     val now = Instant.now()
     return this.getConsumedTime(now.toIDate(), now.plus(DAYS, ChronoUnit.DAYS).toIDate(), true)
 }
@@ -358,3 +383,5 @@ fun registerCalendarCommands() {
         )
     )
 }
+
+fun OffsetDateTime?.equals(date: java.util.Date) = this?.toInstant()?.toEpochMilli() == date.time

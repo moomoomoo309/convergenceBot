@@ -429,7 +429,7 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
 
     private val botUser: DiscordUser by lazy { DiscordUser(jda.selfUser) }
     override fun getBot(chat: Chat): User = botUser
-    override fun getName(chat: Chat, user: User): String = if (user is DiscordUser) user.name else ""
+    override fun getUserName(chat: Chat, user: User): String = if (user is DiscordUser) user.name else ""
 
     private val serverCache = mutableMapOf<Long, DiscordServer>()
     override fun getServers(): List<DiscordServer> = jda.guilds.map {

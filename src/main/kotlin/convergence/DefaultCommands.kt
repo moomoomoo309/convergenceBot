@@ -33,7 +33,7 @@ fun getUserFromName(chat: Chat, name: String): User? {
     var alternateOption: User? = null
     val protocol = chat.protocol
     for (user in protocol.getUsers(chat)) {
-        val currentName = protocol.getName(chat, user)
+        val currentName = protocol.getUserName(chat, user)
         if (currentName == name)
             return user
         else if (alternateOption == null && name in currentName)
@@ -45,7 +45,7 @@ fun getUserFromName(chat: Chat, name: String): User? {
 fun getFullName(chat: Chat, name: String): String? {
     val user = getUserFromName(chat, name)
     if (chat.protocol in protocols)
-        return user?.let { chat.protocol.getName(chat, user) }
+        return user?.let { chat.protocol.getUserName(chat, user) }
     unregisteredChat(chat)
     return null
 }
@@ -184,7 +184,7 @@ fun target(args: List<String>, chat: Chat): String {
     }
     val user = getUserFromName(chat, args[args.size - 1])
         ?: return "No user by the name \"${args[args.size - 1]}\" found."
-    return args.subList(0, args.size - 1).joinToString(" ").replace("%target", chat.protocol.getName(chat, user))
+    return args.subList(0, args.size - 1).joinToString(" ").replace("%target", chat.protocol.getUserName(chat, user))
 }
 
 fun targetNick(args: List<String>, chat: Chat): String {

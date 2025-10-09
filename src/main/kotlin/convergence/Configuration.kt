@@ -209,7 +209,6 @@ object Settings {
 private fun writeSettingsToFile() {
     settingsLogger.info("Writing settings to ${settingsPath}:")
     val settingsAsString = objectMapper.writeValueAsString(Settings.toDTO())
-    settingsLogger.info(settingsAsString)
     settingsPath.toFile().writeText(settingsAsString)
     settingsLogger.info("Settings written.")
 }
@@ -246,9 +245,9 @@ val protocols: MutableList<Protocol> = mutableListOf()
 val sortedHelpText: MutableList<CommandLike> = mutableListOf()
 var currentChatID: Int = 0
 val aliasVars: MutableMap<String, (chat: Chat, sender: User) -> String?> = mutableMapOf(
-    "%sender" to { c: Chat, s: User -> c.protocol.getName(c, s) },
+    "%sender" to { c: Chat, s: User -> c.protocol.getUserName(c, s) },
     "%nick" to { c, s -> (c.protocol as? HasNicknames)?.getUserNickname(c, s) },
-    "%botname" to { c: Chat, _: User -> c.protocol.getName(c, c.protocol.getBot(c)) },
+    "%botname" to { c: Chat, _: User -> c.protocol.getUserName(c, c.protocol.getBot(c)) },
     "%chatname" to { c: Chat, _: User -> c.protocol.getChatName(c) }
 )
 val objectMapper: ObjectMapper = ObjectMapper()

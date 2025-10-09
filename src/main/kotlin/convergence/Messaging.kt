@@ -30,9 +30,9 @@ fun sendMessage(chat: Chat, message: String?) = message?.let { sendMessage(chat,
 fun getUserName(chat: Chat, sender: User): String {
     val protocol = chat.protocol
     return if (protocol is HasNicknames)
-        protocol.getUserNickname(chat, sender) ?: protocol.getName(chat, sender)
+        protocol.getUserNickname(chat, sender) ?: protocol.getUserName(chat, sender)
     else
-        protocol.getName(chat, sender)
+        protocol.getUserName(chat, sender)
 }
 
 

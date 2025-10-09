@@ -1,9 +1,6 @@
 import convergence.*
 import org.antlr.v4.runtime.InputMismatchException
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
-import kotlin.test.assertNull
+import kotlin.test.*
 
 class TestChat: Chat(UniversalProtocol, "Test") {
     override fun toKey() = "TestChat(Test)"
@@ -29,7 +26,7 @@ object TestProtocol: Protocol("Test") {
         TODO("Not yet implemented")
     }
 
-    override fun getName(chat: Chat, user: User): String {
+    override fun getUserName(chat: Chat, user: User): String {
         TODO("Not yet implemented")
     }
 

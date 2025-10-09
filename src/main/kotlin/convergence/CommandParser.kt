@@ -15,9 +15,7 @@ class InvalidCommandParseException: Exception {
 data class CommandData(var command: Command, var args: List<String>) {
     constructor(alias: Alias, args: List<String>): this(alias.command, alias.args + args)
 
-    operator fun invoke(args: List<String>, chat: Chat, sender: User) = this.command.function(args, chat, sender)
-    operator fun invoke(vararg args: String, chat: Chat, sender: User) = invoke(args.toList(), chat, sender)
-    operator fun invoke(chat: Chat, sender: User): OutgoingMessage? = invoke(args, chat, sender)
+    operator fun invoke(args: List<String>, chat: Chat, sender: User) = command::function
 }
 
 class InvalidEscapeSequenceException(message: String): Exception(message)
@@ -82,9 +80,7 @@ fun parseCommand(command: String, commandDelimiter: String, chat: Chat): Command
         if (invalidEscapes.isNotEmpty())
             throw InvalidEscapeSequenceException(
                 "Command \"$command\" contains the following invalid escape sequences: \"${
-                    invalidEscapes.joinToString(
-                        "\", \""
-                    ) { it.text }
+                    invalidEscapes.joinToString("\", \"") { it.text }
                 }\"."
             )
         // Read a command
@@ -94,8 +90,10 @@ fun parseCommand(command: String, commandDelimiter: String, chat: Chat): Command
     }
     val errorTokens = tree.children.filterIsInstance<ErrorNode>()
     if (errorTokens.isNotEmpty()) {
-        throw InvalidCommandParseException("The following invalid tokens were detected: " +
-                errorTokens.joinToString("\", \"", "\"", "\"") { it.text })
+        throw InvalidCommandParseException(
+            "The following invalid tokens were detected: " +
+                    errorTokens.joinToString("\", \"", "\"", "\"") { it.text }
+        )
     }
 
     // See if the command was actually parsed successfully, and error if it wasn't.

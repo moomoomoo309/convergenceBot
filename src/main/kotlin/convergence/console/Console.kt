@@ -34,7 +34,7 @@ object ConsoleProtocol: Protocol("Console") {
         return bot
     }
 
-    override fun getName(chat: Chat, user: User): String {
+    override fun getUserName(chat: Chat, user: User): String {
         if (user is ConsoleUser && chat is ConsoleChat)
             return "ConsoleUser"
         throw InputMismatchException("Invalid chat or user passed. Can only be ConsoleChat and ConsoleUser.")
