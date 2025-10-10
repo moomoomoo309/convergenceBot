@@ -55,7 +55,7 @@ dependencies {
     implementation(libs.poi.ooxml)
     implementation(libs.graphviz)
     implementation(libs.graaljs)
-    testImplementation("org.jetbrains.kotlin:kotlin-test")
+    testImplementation(kotlin("test"))
 }
 
 application {

@@ -18,6 +18,7 @@ import net.fortuna.ical4j.model.DateTime
 import net.fortuna.ical4j.model.Period
 import net.fortuna.ical4j.model.PeriodList
 import net.fortuna.ical4j.model.component.VEvent
+import net.fortuna.ical4j.model.property.RRule
 import org.apache.http.impl.client.CloseableHttpClient
 import org.apache.http.impl.client.HttpClients
 import org.apache.http.message.BasicHeader
@@ -125,10 +126,15 @@ object CalendarProcessor {
         // Remove any events in a sequence which have a recurrence
         removeEventsWithRecurrences(recurrencesById, futures)
 
+        // Remove duplicate events
+        removeDuplicateEvents(futures, discordEvents)
+
         // Add all the events simultaneously, adding them to the uidMap after, then wait for all of them to complete.
-        CompletableFuture.allOf(*futures.mapNotNull { it.third.submit().whenComplete { discordEvent, _ ->
-            uidMap[discordEvent.idLong] = it.first.uid.value
-        }}.toTypedArray()).join()
+        CompletableFuture.allOf(*futures.mapNotNull {
+            it.third.submit().whenComplete { discordEvent, _ ->
+                uidMap[discordEvent.idLong] = it.first.uid.value
+            }
+        }.toTypedArray()).join()
 
         // Remove invalid events
         removeInvalidEvents(discordEvents, calEventsById, uidMap, recurrencesById)
@@ -153,8 +159,8 @@ object CalendarProcessor {
                     uidMap[currentDiscordEvent.idLong] = event.uid.value
                     continue@outer
                 }
-                futures.addAll(addCalendarEventToDiscord(guild, event))
             }
+            futures.addAll(addCalendarEventToDiscord(guild, event))
         }
         return futures
     }
@@ -191,6 +197,24 @@ object CalendarProcessor {
         }
     }
 
+    private fun removeDuplicateEvents(
+        futures: MutableList<Triple<VEvent, Period, ScheduledEventAction>>,
+        discordEvents: List<ScheduledEvent>
+    ) {
+        val futureIter = futures.iterator()
+        while (futureIter.hasNext()) {
+            val (event, period, _) = futureIter.next()
+            for (discordEvent in discordEvents) {
+                if (event.summary.value == discordEvent.name) {
+                    if (period.start.toInstant().toEpochMilli() == discordEvent.startTime.toInstant().toEpochMilli()) {
+                        futureIter.remove()
+                        break
+                    }
+                }
+            }
+        }
+    }
+
     private fun removeEventsWithRecurrences(
         recurrencesById: MutableMap<String, MutableList<VEvent>>,
         futures: MutableList<Triple<VEvent, Period, ScheduledEventAction>>
@@ -201,9 +225,12 @@ object CalendarProcessor {
                 val (event, period, _) = futureIter.next()
                 for (recurrence in recurrences) {
                     val recurrenceStart = recurrence.recurrenceId.date
-                    if (event.uid.value == recurrence.uid.value && recurrenceStart == period.start) {
-                        // There's a recurrence to replace this event
-                        futureIter.remove()
+                    if (event.uid.value == recurrence.uid.value && recurrenceStart != period.start) {
+                        if ((event.recurrenceId == null || event.getProperty<RRule>("RRULE") != null)) {
+                            // There's a recurrence to replace this event
+                            futureIter.remove()
+                            break
+                        }
                     }
                 }
             }
@@ -278,7 +305,7 @@ fun VEvent.equalEnough(dEvent: ScheduledEvent?): Boolean {
 
 fun VEvent.getOccurrences(): PeriodList {
     val now = Instant.now()
-    return this.getConsumedTime(now.toIDate(), now.plus(DAYS, ChronoUnit.DAYS).toIDate(), true)
+    return this.calculateRecurrenceSet(Period(now.toIDate(), now.plus(DAYS, ChronoUnit.DAYS).toIDate()))
 }
 
 @SuppressWarnings("LongMethod")
