@@ -19,6 +19,7 @@ import net.fortuna.ical4j.model.Period
 import net.fortuna.ical4j.model.PeriodList
 import net.fortuna.ical4j.model.component.VEvent
 import net.fortuna.ical4j.model.property.RRule
+import net.fortuna.ical4j.model.property.RecurrenceId
 import org.apache.http.impl.client.CloseableHttpClient
 import org.apache.http.impl.client.HttpClients
 import org.apache.http.message.BasicHeader
@@ -116,7 +117,6 @@ object CalendarProcessor {
         )
     }
 
-    private val uidRegex = Regex("[a-z0-9-]{36}")
     private fun syncToDiscord(guild: Guild, calEvents: List<VEvent>, discordEvents: List<ScheduledEvent>): String {
         val uidMap = mutableMapOf<Long, String>()
         val calEventsById = mutableMapOf<String, VEvent>()
@@ -137,7 +137,7 @@ object CalendarProcessor {
         }.toTypedArray()).join()
 
         // Remove invalid events
-        removeInvalidEvents(discordEvents, calEventsById, uidMap, recurrencesById)
+        removeInvalidEvents(discordEvents, calEventsById, recurrencesById)
         return "Calendar synced successfully."
     }
 
@@ -165,32 +165,19 @@ object CalendarProcessor {
         return futures
     }
 
+    private val uidRegex = Regex("[a-z0-9-]{36}")
     private fun removeInvalidEvents(
         discordEvents: List<ScheduledEvent>,
         calEventsById: MutableMap<String, VEvent>,
-        uidMap: MutableMap<Long, String>,
         recurrencesById: MutableMap<String, MutableList<VEvent>>
     ) {
         for (discordEvent in discordEvents) {
             val uid = discordEvent.description?.takeLast(UID_LENGTH)?.trim()
             val calEvent = calEventsById[uid]
-            if (calEvent == null || uid == null || !uidRegex.matches(uid))
+            if (calEvent == null || uid == null || !uidRegex.matches(uid)) {
                 continue
-            if (uidMap[discordEvent.idLong] != uid) {
-                discordEvent.delete().queue()
             } else if (!calEvent.equalEnough(discordEvent)) {
-                // This means the date has changed, or there's a recurrence
-                if (uid in recurrencesById) {
-                    for (recurrence in recurrencesById[uid]!!) {
-                        val recurrenceStart = recurrence.recurrenceId.date
-                        if (calEvent.uid.value == uid &&
-                            recurrenceStart.time == discordEvent.startTime.toInstant().toEpochMilli()
-                        ) {
-                            // There's a recurrence to replace this event
-                            discordEvent.delete().queue()
-                        }
-                    }
-                } else {
+                if (uid !in recurrencesById) {
                     discordEvent.delete().queue()
                 }
             }
@@ -224,12 +211,14 @@ object CalendarProcessor {
             while (futureIter.hasNext()) {
                 val (event, period, _) = futureIter.next()
                 for (recurrence in recurrences) {
-                    val recurrenceStart = recurrence.recurrenceId.date
-                    if (event.uid.value == recurrence.uid.value && recurrenceStart != period.start) {
-                        if ((event.recurrenceId == null || event.getProperty<RRule>("RRULE") != null)) {
-                            // There's a recurrence to replace this event
-                            futureIter.remove()
-                            break
+                    for (recurrenceId in recurrence.getProperties<RecurrenceId>("RECURRENCE-ID")) {
+                        val recurrenceStart = recurrenceId.date
+                        if (event.uid.value == recurrence.uid.value && recurrenceStart != period.start) {
+                            if ((event.recurrenceId == null || event.getProperty<RRule>("RRULE") != null)) {
+                                // There's a recurrence to replace this event
+                                futureIter.remove()
+                                break
+                            }
                         }
                     }
                 }

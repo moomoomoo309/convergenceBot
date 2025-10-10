@@ -73,8 +73,6 @@ fun brotherLine(args: List<String>): OutgoingMessage {
     val name = args.joinToString(" ").lowercase()
     val startInfo = getBrotherInfo(name) { it.getName() }
         ?: return SimpleOutgoingMessage("No brothers found searching for \"$name\".")
-    if (startInfo.rosterNumber.toInt() > 800)
-        return SimpleOutgoingMessage("800-and? Never heard of 'em.")
 
     val node = brotherMap["${startInfo.firstName} ${startInfo.lastName}".lowercase()]
         ?: return SimpleOutgoingMessage(
@@ -102,8 +100,6 @@ fun fullTree(args: List<String>): OutgoingMessage {
     val name = args.joinToString(" ").lowercase()
     val startInfo = getBrotherInfo(name) { it.getName() }
         ?: return SimpleOutgoingMessage("No brothers found searching for \"$name\".")
-    if (startInfo.rosterNumber.toInt() > 800)
-        return SimpleOutgoingMessage("800-and? Never heard of 'em.")
 
     val node = brotherMap["${startInfo.firstName} ${startInfo.lastName}".lowercase()]
         ?: return SimpleOutgoingMessage(
@@ -151,8 +147,6 @@ fun fullLine(args: List<String>): OutgoingMessage {
     val name = args.joinToString(" ").lowercase()
     val startInfo = getBrotherInfo(name) { it.getName() }
         ?: return SimpleOutgoingMessage("No brothers found searching for \"$name\".")
-    if (startInfo.rosterNumber.toInt() > 800)
-        return SimpleOutgoingMessage("800-and? Never heard of 'em.")
 
     val node = brotherMap["${startInfo.firstName} ${startInfo.lastName}".lowercase()]
         ?: return SimpleOutgoingMessage(
@@ -192,8 +186,6 @@ fun brotherBigs(args: List<String>): OutgoingMessage {
     val name = args.joinToString(" ").lowercase()
     val startInfo = getBrotherInfo(name) { it.firstName + " " + it.lastName }
         ?: return SimpleOutgoingMessage("No brothers found searching for \"$name\".")
-    if (startInfo.rosterNumber.toInt() > 800)
-        return SimpleOutgoingMessage("800-and? Never heard of 'em.")
 
     var node: BrotherTreeNode? = brotherMap["${startInfo.firstName} ${startInfo.lastName}".lowercase()]
         ?: return SimpleOutgoingMessage(
