@@ -1,6 +1,7 @@
 package convergence.discord.frat
 
 import convergence.*
+import convergence.discord.DiscordIncomingMessage
 import convergence.discord.DiscordOutgoingMessage
 import convergence.discord.DiscordProtocol
 import guru.nidi.graphviz.attribute.Color
@@ -184,10 +185,10 @@ fun fullLine(args: List<String>): OutgoingMessage {
 
 fun brotherBigs(args: List<String>): OutgoingMessage {
     val name = args.joinToString(" ").lowercase()
-    val startInfo = getBrotherInfo(name) { it.firstName + " " + it.lastName }
+    val startInfo = getBrotherInfo(name) { it.getName() }
         ?: return SimpleOutgoingMessage("No brothers found searching for \"$name\".")
 
-    var node: BrotherTreeNode? = brotherMap["${startInfo.firstName} ${startInfo.lastName}".lowercase()]
+    var node: BrotherTreeNode? = brotherMap[startInfo.getName().lowercase()]
         ?: return SimpleOutgoingMessage(
             "No brothers found searching for " +
                     "\"${startInfo.firstName} ${startInfo.lastName}\"."
@@ -205,7 +206,7 @@ fun brotherBigs(args: List<String>): OutgoingMessage {
 
     val msg = MessageCreateBuilder()
     val embeds = EmbedBuilder()
-        .setTitle("Line for Brother #${startInfo.rosterNumber} ${startInfo.firstName} ${startInfo.lastName}")
+        .setTitle("Line for Brother #${startInfo.rosterNumber} ${startInfo.getName()}")
 
     for (brother in line) {
         embeds.addField(
@@ -379,13 +380,17 @@ fun registerFratCommands() {
         )
     )
     callbacks.getOrPut(MentionedUser::class) { mutableListOf() }.add(
-        MentionedUser { chat: Chat, _: IncomingMessage, sender: User, users: Set<User> ->
-            for (user in users) {
-                val mentions = mentionChats
-                    .getOrPut(chat) { mutableMapOf() }
-                    .getOrPut(user) { mutableMapOf() }
-                mentions[sender] = mentions.getOrDefault(sender, 0) + 1
-                Settings.update()
+        MentionedUser { chat: Chat, msg: IncomingMessage, sender: User, users: Set<User> ->
+            if (msg is DiscordIncomingMessage) {
+                for (user in users) {
+                    val mentions = (mentionChats[chat] ?: return@MentionedUser true)
+                        .getOrPut(user) { mutableMapOf() }
+                    for (mentionedUser in msg.data.mentions.users) {
+                        mentions[DiscordProtocol.getUser(mentionedUser.idLong) ?: continue] =
+                            mentions.getOrDefault(sender, 0) + 1
+                    }
+                    Settings.update()
+                }
             }
             true
         }
@@ -394,12 +399,12 @@ fun registerFratCommands() {
 }
 
 private fun nextMonth(): OffsetDateTime {
-    // If it's the first of the month, we should schedule it for 8AM today
+    // If it's the first of the month, we should schedule it for Noon today
     val now = OffsetDateTime.now()
     val thisMonth = now
         .withDayOfMonth(1)
         .with(LocalTime.MIN)
-        .plusHours(8)
+        .plusHours(12)
     // But if it isn't, it should be scheduled for next month
     if (thisMonth < now)
         return thisMonth.plusMonths(1)
@@ -411,6 +416,9 @@ private fun mentionStatsFct() {
     for ((chat, _) in mentionChats) {
         sendMessage(chat, "Monthly mention stats:\n${mentionStats(chat)}")
     }
+    for ((_, stats) in mentionChats)
+        stats.clear()
+    Settings.update()
     // Schedule it again for next month
     CommandScheduler.taskList.add(ScheduledTask(nextMonth(), ::mentionStatsFct))
 }

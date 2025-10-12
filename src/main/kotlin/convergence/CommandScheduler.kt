@@ -56,7 +56,7 @@ object CommandScheduler: Thread() {
             while (iter.hasNext()) {
                 val task = iter.next()
                 if (now.isAfter(task.time)) {
-                    task()
+                    task.fct.run()
                     iter.remove()
                 }
             }
@@ -118,9 +118,7 @@ interface Schedulable {
 data class ScheduledTask(
     override val time: OffsetDateTime,
     val fct: Runnable
-): Schedulable {
-    operator fun invoke() = ::fct
-}
+): Schedulable
 
 data class ScheduledCommand(
     override val time: OffsetDateTime,
