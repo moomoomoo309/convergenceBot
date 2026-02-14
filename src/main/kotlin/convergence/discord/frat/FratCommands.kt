@@ -222,8 +222,6 @@ fun brotherInfo(args: List<String>, searchCriteria: (BrotherInfo) -> String?): D
     val name = args.joinToString(" ").lowercase()
     val info = getBrotherInfo(name, searchCriteria)
         ?: return DiscordOutgoingMessage("No brothers found searching for \"$name\".")
-    if (info.rosterNumber.toInt() > 800)
-        return DiscordOutgoingMessage("800-and? Never heard of 'em.")
 
     return DiscordOutgoingMessage(
         MessageCreateBuilder()
@@ -246,6 +244,7 @@ fun brotherInfo(args: List<String>, searchCriteria: (BrotherInfo) -> String?): D
             ).build()
     )
 }
+
 @Suppress("LongMethod")
 fun registerFratCommands() {
     registerCommand(
@@ -380,14 +379,14 @@ fun registerFratCommands() {
         )
     )
     callbacks.getOrPut(MentionedUser::class) { mutableListOf() }.add(
-        MentionedUser { chat: Chat, msg: IncomingMessage, sender: User, users: Set<User> ->
+        MentionedUser { chat: Chat, msg: IncomingMessage, _: User, users: Set<User> ->
             if (msg is DiscordIncomingMessage) {
                 for (user in users) {
                     val mentions = (mentionChats[chat] ?: return@MentionedUser true)
                         .getOrPut(user) { mutableMapOf() }
                     for (mentionedUser in msg.data.mentions.users) {
-                        mentions[DiscordProtocol.getUser(mentionedUser.idLong) ?: continue] =
-                            mentions.getOrDefault(sender, 0) + 1
+                        val discordUser = DiscordProtocol.getUser(mentionedUser.idLong) ?: continue
+                        mentions[discordUser] = mentions.getOrDefault(discordUser, 0) + 1
                     }
                     Settings.update()
                 }

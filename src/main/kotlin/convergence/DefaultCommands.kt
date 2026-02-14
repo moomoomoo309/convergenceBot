@@ -302,7 +302,7 @@ private fun addEventToBuilder(
         val commandDelimiter = commandDelimiters.getOrDefault(chat, DEFAULT_COMMAND_DELIMITER)
         val name = event.commandName
         val argsStr = event.args.joinToString(" ")
-        builder.append("\t[$id] $time: \"$commandDelimiter$name $argsStr\"")
+        builder.append("\t[$id] $time (${event.time}): \"$commandDelimiter$name $argsStr\"")
     }
 }
 
@@ -404,7 +404,8 @@ fun resetTimer(args: List<String>): String {
     val oldVal = timers[name]
     timers[name] = OffsetDateTime.now()
     Settings.update()
-    return "Timer reset. The time it was created or last time the timer was reset was ${formatTime(oldVal!!)}."
+    return "Timer reset. The time it was created or last time the timer was reset was " +
+            "${formatTime(oldVal!!)} ($oldVal)."
 }
 
 fun checkTimer(args: List<String>): String {
@@ -415,7 +416,7 @@ fun checkTimer(args: List<String>): String {
         return "That timer doesn't exist!"
     val oldVal = timers[name]
     Settings.update()
-    return "The time it was created or last time the timer was reset was ${formatTime(oldVal!!)}."
+    return "The time it was created or last time the timer was reset was ${formatTime(oldVal!!)} ($oldVal)."
 }
 
 @Suppress("LongMethod")

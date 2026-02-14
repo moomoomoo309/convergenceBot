@@ -82,7 +82,7 @@ object CommandScheduler: Thread() {
         serializedCommands[cmd.id] = cmd
         Settings.update()
         return "Scheduled ${getUserName(chat, sender)} to run " +
-                "\"$commandName ${args.joinToString(" ")}\" ${formatTime(time)}."
+                "\"$commandName ${args.joinToString(" ")}\" ${formatTime(time)} ($time)."
     }
 
     /**

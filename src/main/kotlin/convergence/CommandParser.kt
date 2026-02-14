@@ -15,7 +15,7 @@ class InvalidCommandParseException: Exception {
 data class CommandData(var command: Command, var args: List<String>) {
     constructor(alias: Alias, args: List<String>): this(alias.command, alias.args + args)
 
-    operator fun invoke(args: List<String>, chat: Chat, sender: User) = command::function
+    operator fun invoke(args: List<String>, chat: Chat, sender: User) = command.function(args, chat, sender)
 }
 
 class InvalidEscapeSequenceException(message: String): Exception(message)
@@ -28,9 +28,13 @@ private fun <CommandType: CommandLike, ScopeType> commandAvailable(
 
 fun getCommand(command: String, chat: Chat): CommandLike {
     return when {
+        // Chat Alias
         commandAvailable(aliases, chat, command) -> aliases[chat]!![command]
-        chat is HasServer<*> && commandAvailable(aliases, chat.server, command) -> aliases[chat]!![command]
+        // Server Alias
+        chat is HasServer<*> && commandAvailable(aliases, chat.server, command) -> aliases[chat.server]!![command]
+        // Protocol Command
         commandAvailable(commands, chat.protocol, command) -> commands[chat.protocol]!![command]
+        // Universal Command
         commandAvailable(commands, UniversalProtocol, command) -> commands[UniversalProtocol]!![command]
         else -> null
     } ?: throw CommandDoesNotExist(command)
@@ -46,16 +50,6 @@ private val escapeMap = mapOf(
     '"' to '"',
     '\\' to '\\'
 )
-
-// This function replaces the escape sequences with their replaced variants, and ignores quotes, so the quotes don't
-// show up in the argument text.
-fun CommonToken.text() = when(this.type) {
-    CommandLexer.OctalEscape -> Integer.parseInt(this.text.substring(1), 8).toChar()
-    CommandLexer.UnicodeEscape -> Integer.parseInt(this.text.substring(2), 16).toChar()
-    CommandLexer.RegularEscape -> escapeMap[this.text[1]] ?: throw InvalidEscapeSequenceException(this.text)
-    CommandLexer.Quote -> "" // This prevents quoted arguments from having the quotes around the text.
-    else -> this.text
-}.toString()
 
 fun parseCommand(command: String, chat: Chat): CommandData? =
     parseCommand(command, commandDelimiters.getOrDefault(chat, DEFAULT_COMMAND_DELIMITER), chat)
@@ -109,6 +103,16 @@ fun parseCommand(command: String, commandDelimiter: String, chat: Chat): Command
         is Alias -> CommandData(cmd, args)
     }
 }
+
+// This function replaces the escape sequences with their replaced variants, and ignores quotes, so the quotes don't
+// show up in the argument text.
+fun CommonToken.text() = when(this.type) {
+    CommandLexer.OctalEscape -> Integer.parseInt(this.text.substring(1), 8).toChar()
+    CommandLexer.UnicodeEscape -> Integer.parseInt(this.text.substring(2), 16).toChar()
+    CommandLexer.RegularEscape -> escapeMap[this.text[1]] ?: throw InvalidEscapeSequenceException(this.text)
+    CommandLexer.Quote -> "" // This prevents quoted arguments from having the quotes around the text.
+    else -> this.text
+}.toString()
 
 private fun tokenArgsToStringArgs(tree: CommandParser.CommandContext): List<String> = tree.argument().map {
     (it.children.first() as ParserRuleContext).children.joinToString("") { tokOrRule ->
