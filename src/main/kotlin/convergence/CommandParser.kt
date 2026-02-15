@@ -12,7 +12,7 @@ class InvalidCommandParseException: Exception {
     constructor(e: Exception): super(e)
 }
 
-data class CommandData(var command: Command, var args: List<String>) {
+data class CommandWithArgs(var command: Command, var args: List<String>) {
     constructor(alias: Alias, args: List<String>): this(alias.command, alias.args + args)
 
     operator fun invoke(args: List<String>, chat: Chat, sender: User) = command.function(args, chat, sender)
@@ -51,11 +51,11 @@ private val escapeMap = mapOf(
     '\\' to '\\'
 )
 
-fun parseCommand(command: String, chat: Chat): CommandData? =
+fun parseCommand(command: String, chat: Chat): CommandWithArgs? =
     parseCommand(command, commandDelimiters.getOrDefault(chat, DEFAULT_COMMAND_DELIMITER), chat)
 
 @SuppressWarnings("ThrowsCount")
-fun parseCommand(command: String, commandDelimiter: String, chat: Chat): CommandData? {
+fun parseCommand(command: String, commandDelimiter: String, chat: Chat): CommandWithArgs? {
     // Check for the command delimiter, so the grammar doesn't have to worry about it
     if (!command.startsWith(commandDelimiter) || command.isEmpty() || command == commandDelimiter)
         return null
@@ -99,8 +99,8 @@ fun parseCommand(command: String, commandDelimiter: String, chat: Chat): Command
 
     val cmd = commandName?.let { getCommand(it.lowercase(), chat) } ?: return null
     return when(cmd) {
-        is Command -> CommandData(cmd, args)
-        is Alias -> CommandData(cmd, args)
+        is Command -> CommandWithArgs(cmd, args)
+        is Alias -> CommandWithArgs(cmd, args)
     }
 }
 

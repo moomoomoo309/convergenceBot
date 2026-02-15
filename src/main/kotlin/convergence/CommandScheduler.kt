@@ -115,11 +115,17 @@ interface Schedulable {
     val time: OffsetDateTime
 }
 
+/**
+ * A function that will run at a future time.
+ */
 data class ScheduledTask(
     override val time: OffsetDateTime,
     val fct: Runnable
 ): Schedulable
 
+/**
+ * A command sent by a user to run at a future time.
+ */
 data class ScheduledCommand(
     override val time: OffsetDateTime,
     val chat: Chat,

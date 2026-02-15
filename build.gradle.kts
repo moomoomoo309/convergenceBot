@@ -76,9 +76,6 @@ tasks.wrapper {
 }
 
 tasks {
-    build {
-        dependsOn(named("generateGrammarSource"))
-    }
     compileKotlin {
         dependsOn(named("generateGrammarSource"))
     }

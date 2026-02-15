@@ -156,6 +156,8 @@ interface CanMentionUsers {
     fun mention(chat: Chat, user: User) = mention(chat, user, null)
     fun mentionedUsers(chat: Chat, message: IncomingMessage, sender: User, users: Set<User>) =
         runCallbacks<MentionedUser>(chat, message, sender, users)
+    fun getUserFromMentionText(chat: Chat, mention: String): User?
+    fun getMentions(message: IncomingMessage): List<User>
 }
 
 interface HasTypingStatus {

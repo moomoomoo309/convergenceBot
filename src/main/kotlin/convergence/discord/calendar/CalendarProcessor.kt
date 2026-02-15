@@ -250,11 +250,9 @@ object CalendarProcessor {
         while (futureIter.hasNext()) {
             val (event, _) = futureIter.next()
             for (discordEvent in discordEvents) {
-                if (event.summary == discordEvent.name) {
-                    if (event.start.toInstant().toEpochMilli() == discordEvent.startTime.toInstant().toEpochMilli()) {
-                        futureIter.remove()
-                        break
-                    }
+                if (event.summary == discordEvent.name && event.start == discordEvent.startTime) {
+                    futureIter.remove()
+                    break
                 }
             }
         }
@@ -268,8 +266,8 @@ object CalendarProcessor {
         return if (eventInstance.start.toInstant() < Instant.now())
             null
         else
-            Pair(
-                eventInstance, guild.createScheduledEvent(
+            Pair(eventInstance,
+                guild.createScheduledEvent(
                     vevent.summary?.value ?: "Unnamed event",
                     if (vevent.location?.value.isNullOrBlank()) "No Location" else vevent.location.value,
                     eventInstance.start.toOffsetDateTime(),
@@ -433,3 +431,5 @@ fun registerCalendarCommands() {
 }
 
 fun OffsetDateTime?.equals(date: java.util.Date) = this?.toInstant()?.toEpochMilli() == date.time
+fun OffsetDateTime?.equals(date: Date) = this?.toInstant()?.toEpochMilli() == date.toInstant().toEpochMilli()
+fun Date.equals(offsetDateTime: OffsetDateTime?) = offsetDateTime == this

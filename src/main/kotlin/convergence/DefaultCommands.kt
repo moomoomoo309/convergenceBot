@@ -32,6 +32,11 @@ inline fun unregisteredChat(chat: Chat) {
 fun getUserFromName(chat: Chat, name: String): User? {
     var alternateOption: User? = null
     val protocol = chat.protocol
+    if (protocol is CanMentionUsers) {
+        protocol.getUserFromMentionText(chat, name)?.let {
+            return it
+        }
+    }
     for (user in protocol.getUsers(chat)) {
         val currentName = protocol.getUserName(chat, user)
         if (currentName == name)
@@ -223,15 +228,15 @@ fun schedule(args: List<String>, chat: Chat, sender: User): String {
     val timeList = dateTimeParser.parse(args[0])
     val delimiter = commandDelimiters[chat] ?: DEFAULT_COMMAND_DELIMITER
     val command = (if (args[1].startsWith(delimiter)) "" else delimiter) + args[1]
-    val commandData = getCommandData(chat, command, sender)
-    if (commandData != null)
+    val commandWithArgs = parseCommand(chat, command, sender)
+    if (commandWithArgs != null)
         for (group in timeList)
             for (time in group.dates)
                 CommandScheduler.schedule(
                     chat,
                     sender,
-                    commandData.command.name,
-                    commandData.args,
+                    commandWithArgs.command.name,
+                    commandWithArgs.args,
                     time.toOffsetDatetime()
                 )
     Settings.update()

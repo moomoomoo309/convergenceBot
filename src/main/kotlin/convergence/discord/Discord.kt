@@ -237,7 +237,7 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
     }
 
     override fun configLoaded() {
-        jda.guilds.map { guild ->
+        jda.guilds.forEach { guild ->
             val slashCommands = guild.updateCommands()
             slashCommands.addCommands(
                 listOf(commands[DiscordProtocol]!!, commands[UniversalProtocol]!!)
@@ -491,6 +491,22 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
         sendMessage(chat, jda.retrieveUserById((user as DiscordUser).id).complete().asMention + message?.let { " $it" })
     }
 
+    val discordMentionRegex = Regex("^<@([0-9]{1,20})>$")
+    override fun getUserFromMentionText(chat: Chat, mention: String): User? {
+        val match = discordMentionRegex.matchEntire(mention)
+        val discordId = match?.groupValues?.first() ?: return null
+        return jda.getUserById(discordId)?.let { DiscordUser(it) }
+    }
+
+    override fun getMentions(message: IncomingMessage): List<User> {
+        if (message is DiscordIncomingMessage) {
+            return message.data.mentions.users.map {
+                DiscordUser(it)
+            }
+        }
+        return emptyList()
+    }
+
     override fun react(message: IncomingMessage, emoji: IEmoji) {
         if (message !is DiscordIncomingMessage)
             return
@@ -620,10 +636,10 @@ object MessageListener: ListenerAdapter() {
         val chat = DiscordProtocol.getChats().firstOrNull { it.channel == event.guildChannel } ?: return
         val sender = DiscordProtocol.getUsers().firstOrNull { it.id == event.member!!.user.idLong } ?: return
         val commandDelimiter = commandDelimiters[chat] ?: commandDelimiters[chat.server] ?: DEFAULT_COMMAND_DELIMITER
-        val commandData =
+        val commandWithArgs =
             parseCommand(commandDelimiter + event.name + event.options.joinToString(" ", " ") { it.asString }, chat)
                 ?: return
-        val msg = replaceAliasVars(chat, commandData.command.function(commandData.args, chat, sender), sender)
+        val msg = replaceAliasVars(chat, commandWithArgs.command.function(commandWithArgs.args, chat, sender), sender)
         event.reply((msg as? DiscordOutgoingMessage ?: DiscordOutgoingMessage(msg!!.toSimple().text)).data).queue()
     }
     val forwardedMessages = mutableMapOf<Long, MutableSet<Long>>()

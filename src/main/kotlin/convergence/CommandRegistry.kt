@@ -45,7 +45,7 @@ fun registerAlias(alias: Alias): Boolean {
     return true
 }
 
-fun getCommandData(chat: Chat, message: String, sender: User): CommandData? = try {
+fun parseCommand(chat: Chat, message: String, sender: User): CommandWithArgs? = try {
     parseCommand(message, chat)
 } catch(e: CommandDoesNotExist) {
     sendMessage(chat, sender, "No command exists with name \"${e.message}\".")
@@ -70,7 +70,7 @@ fun runCommand(chat: Chat, message: IncomingMessage, sender: User, images: Array
     )
     forwardToLinkedChats(chat, message.toOutgoing(), sender, images)
     try {
-        getCommandData(chat, text, sender)?.let { (command, args) ->
+        parseCommand(chat, text, sender)?.let { (command, args) ->
             runCommand(chat, sender, command, args)
         }
     } catch(e: Exception) {

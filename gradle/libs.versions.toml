@@ -8,9 +8,9 @@ gradle = "8.12"
 graaljs = "25.0.2"
 graphviz = "0.18.1"
 jackson = "2.21.0"
-jda = "6.3.0"
+jda = "6.3.1"
 kotlin = "2.3.10"
-logback = "1.5.29"
+logback = "1.5.31"
 natty = "1.1.2"
 poi = "5.5.1"
 prettytime = "5.0.9.Final"
@@ -37,6 +37,7 @@ poi-core = { module = "org.apache.poi:poi", version.ref = "poi" }
 poi-ooxml = { module = "org.apache.poi:poi-ooxml", version.ref = "poi" }
 prettytime = { module = "org.ocpsoft.prettytime:prettytime", version.ref = "prettytime" }
 sardine = { module = "com.github.lookfirst:sardine", version.ref = "sardine" }
+
 [plugins]
 kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
