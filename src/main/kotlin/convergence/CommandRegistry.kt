@@ -65,8 +65,9 @@ fun getStackTraceText(e: Exception): String = ByteArrayOutputStream().let {
  */
 fun runCommand(chat: Chat, message: IncomingMessage, sender: User, images: Array<Image> = emptyArray()) {
     val text = message.toSimple().text
-    defaultLogger.info(
-        "[${getUserName(chat, sender)}]: $text${if (images.isNotEmpty()) " +${images.size} images" else ""}"
+    messageLogger.info(
+        "[${if (chat is HasServer<*>) chat.server.name + "#" else ""}${chat.name}] ${getUserName(chat, sender)}: " +
+                "$text${if (images.isNotEmpty()) " +${images.size} images" else ""}"
     )
     forwardToLinkedChats(chat, message.toOutgoing(), sender, images)
     try {

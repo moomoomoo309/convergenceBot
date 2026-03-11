@@ -153,7 +153,7 @@ object CalendarProcessor {
     }
 
     @Suppress("UNUSED_PARAMETER")
-    fun syncCommand(args: List<String>, chat: Chat, sender: User): String {
+    fun syncCommand(args: List<String>, chat: Chat): String {
         if (args.size != 1)
             return "Expected 1 argument, got ${args.size}."
         if (chat !is DiscordChat)

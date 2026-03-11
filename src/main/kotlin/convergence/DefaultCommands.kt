@@ -130,9 +130,9 @@ fun removeServerAlias(args: List<String>, chat: Chat): String {
     if (chat in aliases && aliases[server] is MutableMap && args[0] in aliases[server]!!) {
         aliases[server]!!.remove(args[0])
         Settings.update()
-        return "Alias \"${args[0]}\" removed."
+        return "Server alias \"${args[0]}\" removed."
     }
-    return "No alias with name \"${args[0]}\" found."
+    return "No server alias with name \"${args[0]}\" found."
 }
 
 fun removeAlias(args: List<String>, chat: Chat): String {
@@ -378,6 +378,7 @@ fun setCommandDelimiter(chat: Chat, commandDelimiter: String): Boolean {
     if (commandDelimiter.any { it.isWhitespace() || it == '"' })
         return false
     commandDelimiters[chat] = commandDelimiter
+    Settings.update()
     return true
 }
 

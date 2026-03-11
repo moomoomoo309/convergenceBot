@@ -61,7 +61,7 @@ fun generateGraphGoingDown(
     callback: (BrotherTreeNode, MutableNode?, MutableNode) -> Unit
 ) {
     for (little in node.littles) {
-        val name = little.brother.getName()
+        val name = little.brother.getNodeName()
         val newNode = mutNode(name)
         callback(node, mutNode, newNode)
         mutNode?.addLink(newNode)
@@ -82,7 +82,7 @@ fun brotherLine(args: List<String>): OutgoingMessage {
     // Convert the brother tree into graphviz nodes
     val graph = mutGraph("$name's line")
         .setDirected(true)
-    val rootNode = mutNode(node.brother.getName())
+    val rootNode = mutNode(node.brother.getNodeName())
     graph.add(rootNode)
     generateGraphGoingDown(graph, node, rootNode)
 
@@ -120,7 +120,7 @@ fun fullTree(args: List<String>): OutgoingMessage {
     var big = node.big
     // Add the line going up
     while (big != null) {
-        brotherLine.add(big.brother.getName())
+        brotherLine.add(big.brother.getNodeName())
         big = big.big
     }
 
@@ -157,14 +157,14 @@ fun fullLine(args: List<String>): OutgoingMessage {
     // Convert the brother tree into graphviz nodes
     val graph = mutGraph("$name's line")
         .setDirected(true)
-    val rootNode = mutNode(node.brother.getName())
+    val rootNode = mutNode(node.brother.getNodeName())
     graph.add(rootNode)
     generateGraphGoingDown(graph, node, rootNode)
     var big = node.big
     var previousNode = rootNode
     // Add the line going all the way up
     while (big != null) {
-        val newNode = mutNode(big.brother.getName())
+        val newNode = mutNode(big.brother.getNodeName())
         newNode.addLink(previousNode)
         graph.add(newNode)
         previousNode = newNode

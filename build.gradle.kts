@@ -54,6 +54,7 @@ dependencies {
     implementation(libs.poi.core)
     implementation(libs.poi.ooxml)
     implementation(libs.graphviz)
+    implementation(libs.graalpolyglot)
     implementation(libs.graaljs)
     testImplementation(kotlin("test"))
 }
@@ -85,5 +86,8 @@ tasks {
 }
 
 tasks.shadowJar {
+    manifest {
+        attributes(mapOf("Multi-Release" to "true"))
+    }
     this.isZip64 = true
 }

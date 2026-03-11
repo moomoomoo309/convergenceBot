@@ -4,7 +4,7 @@ argparse4j = "0.9.0"
 caldav4j = "1.0.5"
 commonstext = "1.15.0"
 emoji4j = "16.0.0"
-gradle = "8.12"
+gradle = "9.4.0"
 graaljs = "25.0.2"
 graphviz = "0.18.1"
 jackson = "2.21.0"
@@ -24,7 +24,8 @@ argparse4j = { module = "net.sourceforge.argparse4j:argparse4j", version.ref = "
 caldav4j = { module = "com.github.caldav4j:caldav4j", version.ref = "caldav4j" }
 commonstext = { module = "org.apache.commons:commons-text", version.ref = "commonstext" }
 emoji4j = { module = "com.sigpwned:emoji4j-core", version.ref = "emoji4j" }
-graaljs = { module = "org.graalvm.js:js", version.ref = "graaljs" }
+graalpolyglot = { module = "org.graalvm.polyglot:polyglot", version.ref = "graaljs" }
+graaljs = { module = "org.graalvm.polyglot:js-community", version.ref = "graaljs" }
 graphviz = { module = "guru.nidi:graphviz-kotlin", version.ref = "graphviz" }
 jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
 jackson-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson" }

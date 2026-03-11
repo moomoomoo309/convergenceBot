@@ -14,8 +14,6 @@ class InvalidCommandParseException: Exception {
 
 data class CommandWithArgs(var command: Command, var args: List<String>) {
     constructor(alias: Alias, args: List<String>): this(alias.command, alias.args + args)
-
-    operator fun invoke(args: List<String>, chat: Chat, sender: User) = command.function(args, chat, sender)
 }
 
 class InvalidEscapeSequenceException(message: String): Exception(message)
