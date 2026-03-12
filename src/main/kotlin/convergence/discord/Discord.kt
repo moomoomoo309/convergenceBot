@@ -639,7 +639,7 @@ object MessageListener: ListenerAdapter() {
         val commandWithArgs =
             parseCommand(commandDelimiter + event.name + event.options.joinToString(" ", " ") { it.asString }, chat)
                 ?: return
-        val msg = replaceAliasVars(chat, commandWithArgs.command.function(commandWithArgs.args, chat, sender), sender)
+        val msg = commandWithArgs.command(commandWithArgs.args, chat, sender)
         event.reply((msg as? DiscordOutgoingMessage ?: DiscordOutgoingMessage(msg!!.toSimple().text)).data).queue()
     }
     val forwardedMessages = mutableMapOf<Long, MutableSet<Long>>()

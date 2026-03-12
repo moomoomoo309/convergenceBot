@@ -245,6 +245,13 @@ fun brotherInfo(args: List<String>, searchCriteria: (BrotherInfo) -> String?): D
     )
 }
 
+val pledgeRegex = Regex("(3[5-9][0-9]|[0-9]{3})\\s\\S\\s")
+val isNotPledge = { _: List<String>, chat: Chat, sender: User ->
+    if (!sender.protocol.getUserName(chat, sender).matches(pledgeRegex))
+        "Nice try, pledge"
+    null
+}
+
 @Suppress("LongMethod")
 fun registerFratCommands() {
     registerCommand(
@@ -254,7 +261,8 @@ fun registerFratCommands() {
             listOf(ArgumentSpec("Roster", ArgumentType.STRING)),
             { args: List<String> -> brotherInfo(args) { it.rosterNumber } },
             "Gets information about a particular brother based on their roster number.",
-            "brotherbyroster (roster number)"
+            "brotherbyroster (roster number)",
+            isNotPledge
         )
     )
     registerCommand(
@@ -264,7 +272,8 @@ fun registerFratCommands() {
             listOf(ArgumentSpec("Name", ArgumentType.STRING)),
             { args -> brotherInfo(args) { it.getName() } },
             "Gets information about a particular brother based on their first and last name.",
-            "brotherbyname (name)"
+            "brotherbyname (name)",
+            isNotPledge
         )
     )
     registerCommand(
@@ -274,7 +283,8 @@ fun registerFratCommands() {
             listOf(ArgumentSpec("Nickname", ArgumentType.STRING)),
             { args -> brotherInfo(args) { it.nickName } },
             "Gets information about a particular brother based on their nickname.",
-            "brotherbynickname (nickname)"
+            "brotherbynickname (nickname)",
+            isNotPledge
         )
     )
     registerCommand(
@@ -284,7 +294,8 @@ fun registerFratCommands() {
             listOf(ArgumentSpec("Name", ArgumentType.STRING)),
             { args -> brotherLine(args) },
             "Gets information about a particular brother's line going down.",
-            "brotherLine (name)"
+            "brotherLine (name)",
+            isNotPledge
         )
     )
     registerCommand(
@@ -294,7 +305,8 @@ fun registerFratCommands() {
             listOf(ArgumentSpec("Name", ArgumentType.STRING)),
             { args -> brotherBigs(args) },
             "Gets information about a particular brother's line going up.",
-            "brotherBigs (name)"
+            "brotherBigs (name)",
+            isNotPledge
         )
     )
     registerCommand(
@@ -304,7 +316,8 @@ fun registerFratCommands() {
             listOf(ArgumentSpec("Name", ArgumentType.STRING)),
             { args -> fullLine(args) },
             "Gets information about a particular brother's line going up and down.",
-            "fullLine (name)"
+            "fullLine (name)",
+            isNotPledge
         )
     )
     registerCommand(
@@ -314,7 +327,8 @@ fun registerFratCommands() {
             listOf(ArgumentSpec("Name", ArgumentType.STRING)),
             { args -> fullTree(args) },
             "Shows the full tree, with a particular brother's line going up and down highlighted.",
-            "fullTree (name)"
+            "fullTree (name)",
+            isNotPledge
         )
     )
     registerCommand(
@@ -349,7 +363,8 @@ fun registerFratCommands() {
                 "Chat registered."
             },
             "Registers this chat with the given user as a mention chat.",
-            "registerMentionChat (user)"
+            "registerMentionChat (user)",
+            isNotPledge
         )
     )
     registerCommand(
@@ -365,7 +380,8 @@ fun registerFratCommands() {
                 "Mention users cleared from this chat."
             },
             "Removes all mention users from this chat.",
-            "removeMentionChat (takes no arguments)"
+            "removeMentionChat (takes no arguments)",
+            isNotPledge
         )
     )
     registerCommand(
@@ -375,7 +391,8 @@ fun registerFratCommands() {
             listOf(ArgumentSpec("user", ArgumentType.STRING)),
             { _, chat, _ -> "Mention chat stats for this channel:\n${mentionStats(chat)}" },
             "Lists the stats for this mention chat.",
-            "mentionChatStats (takes no arguments)"
+            "mentionChatStats (takes no arguments)",
+            isNotPledge
         )
     )
     callbacks.getOrPut(MentionedUser::class) { mutableListOf() }.add(
