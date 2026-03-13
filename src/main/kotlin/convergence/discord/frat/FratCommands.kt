@@ -1,6 +1,7 @@
 package convergence.discord.frat
 
 import convergence.*
+import convergence.discord.DiscordChat
 import convergence.discord.DiscordIncomingMessage
 import convergence.discord.DiscordOutgoingMessage
 import convergence.discord.DiscordProtocol
@@ -245,11 +246,15 @@ fun brotherInfo(args: List<String>, searchCriteria: (BrotherInfo) -> String?): D
     )
 }
 
-val pledgeRegex = Regex("(3[5-9][0-9]|[0-9]{3})\\s\\S\\s")
+val pledgeRegex = Regex("^(3[5-9][0-9]|[4-9][0-9]{2})")
 val isNotPledge = { _: List<String>, chat: Chat, sender: User ->
-    if (!sender.protocol.getUserName(chat, sender).matches(pledgeRegex))
-        "Nice try, pledge"
-    null
+    val protocol = sender.protocol as DiscordProtocol
+    val senderName = protocol.getUserNickname(chat, sender) ?: protocol.getUserName(chat, sender)
+    val serverName = (chat as DiscordChat).server.name
+    if (serverName == "Alpha Sigma Phi Alpha Rho" && !pledgeRegex.containsMatchIn(senderName))
+        SimpleOutgoingMessage("Nice try, pledge.")
+    else
+        null
 }
 
 @Suppress("LongMethod")
