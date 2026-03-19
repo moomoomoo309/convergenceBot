@@ -272,7 +272,7 @@ object CalendarProcessor {
                     if (vevent.location?.value.isNullOrBlank()) "No Location" else vevent.location.value,
                     eventInstance.start.toOffsetDateTime(),
                     eventInstance.end.toOffsetDateTime()
-                ).setDescription(addUIDToDescription(vevent.description.value ?: "", eventInstance.uid ?: ""))
+                ).setDescription(addUIDToDescription(vevent.description?.value ?: "", eventInstance.uid ?: ""))
             )
     }
 
