@@ -205,11 +205,13 @@ object CalendarProcessor {
         }
 
         // Remove invalid events
-        removeInvalidEvents(discordEvents, calEvents, dry)
+        val invalidEvents = removeInvalidEvents(discordEvents, calEvents, dry)
 
         // Remove duplicate discord events
-        removeDuplicateDiscordEvents(discordEvents, dry)
-        return "Calendar synced successfully."
+        val duplicateEvents = removeDuplicateDiscordEvents(discordEvents, dry)
+        return "Added: ${futures.joinToString(", ") { it.first.summary!! }}\n" +
+                "Invalid: ${invalidEvents.joinToString(", ") { it.name }}\n" +
+                "Duplicates: ${duplicateEvents.joinToString(", ") { it.name }}"
     }
 
     private fun getFutures(
@@ -235,7 +237,8 @@ object CalendarProcessor {
         discordEvents: List<ScheduledEvent>,
         calEvents: List<EventInstance>,
         dry: Boolean
-    ) {
+    ): MutableList<ScheduledEvent> {
+        val removed = mutableListOf<ScheduledEvent>()
         outer@for (discordEvent in discordEvents) {
             val uid = discordEvent.description?.takeLast(UID_LENGTH)?.trim()
             if (uid == null || !uidRegex.matches(uid))
@@ -246,9 +249,11 @@ object CalendarProcessor {
             for (possibleEvent in possibleEvents)
                 if (possibleEvent.vevent.equalEnough(discordEvent))
                     continue@outer
+            removed.add(discordEvent)
             if (!dry)
                 discordEvent.delete().queue()
         }
+        return removed
     }
 
     private fun removeDuplicateEvents(
@@ -268,8 +273,8 @@ object CalendarProcessor {
         }
     }
 
-    private fun removeDuplicateDiscordEvents(discordEvents: List<ScheduledEvent>, dry: Boolean) {
-        val toRemove = mutableSetOf<ScheduledEvent>()
+    private fun removeDuplicateDiscordEvents(discordEvents: List<ScheduledEvent>, dry: Boolean): List<ScheduledEvent> {
+        val toRemove = mutableListOf<ScheduledEvent>()
         for (i in discordEvents.indices) {
             val event = discordEvents[i]
             for (i2 in discordEvents.indices) {
@@ -287,6 +292,7 @@ object CalendarProcessor {
             if (!dry)
                 event.delete().queue()
         }
+        return toRemove
     }
 
     private fun addCalendarEventToDiscord(
@@ -330,8 +336,7 @@ object CalendarProcessor {
                 for (serverId in serverIDs)
                     syncToDiscord(syncedCalendars.filter { it.guildId == serverId }, dry)
             } else {
-                syncToDiscord(syncedCalendars.filter { it.guildId == chat.server.guild.idLong }, dry)
-                sendMessage(chat, "Syncing complete.")
+                sendMessage(chat, syncToDiscord(syncedCalendars.filter { it.guildId == chat.server.guild.idLong }, dry))
             }
         }.start()
         lastCalendarUpdateTime = Instant.now()
@@ -356,7 +361,8 @@ fun VEvent.equalEnough(dEvent: ScheduledEvent?): Boolean {
     @Suppress("IDENTITY_SENSITIVE_OPERATIONS_WITH_VALUE_TYPE")
     return dEvent != null
             && (this.summary?.value ?: "Unnamed event") == dEvent.name
-            && periodList.any { dEvent.startTime == it.start && dEvent.endTime == it.end }
+            && periodList.any { dEvent.startTime.toInstant() == it.start.toInstant() &&
+                dEvent.endTime?.toInstant() == it.end.toInstant() }
 }
 
 fun VEvent.getOccurrences(): PeriodList {
@@ -402,8 +408,8 @@ fun registerCalendarCommands() {
             "dryResyncCalendar",
             listOf(),
             { _, chat -> CalendarProcessor.syncCalendars(chat as? DiscordChat, true) },
-            "Resyncs all calendars in all servers.",
-            "resyncCalendar (Takes no parameters)"
+            "Tries to resyncs all calendars in this server, but does not actually add or remove anything.",
+            "dryResyncCalendar (Takes no parameters)"
         )
     )
     registerCommand(
