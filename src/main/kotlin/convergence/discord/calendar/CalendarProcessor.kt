@@ -168,7 +168,7 @@ object CalendarProcessor {
         return syncToDiscord(syncedCalendars.filter { it.guildId == chat.channel.guild.idLong })
     }
 
-    fun syncToDiscord(cals: List<SyncedCalendar>): String {
+    fun syncToDiscord(cals: List<SyncedCalendar>, dry: Boolean = false): String {
         val calendarEvents = mutableListOf<EventInstance>()
         val guildId = cals.first().guildId
         for (cal in cals) {
@@ -181,14 +181,16 @@ object CalendarProcessor {
         return syncToDiscord(
             jda.getGuildById(guildId) ?: return "No guild found with ID $guildId.",
             calendarEvents,
-            getDiscordEventsNextDays(jda, guildId)
+            getDiscordEventsNextDays(jda, guildId),
+            dry
         )
     }
 
     private fun syncToDiscord(
         guild: Guild,
         calEvents: List<EventInstance>,
-        discordEvents: List<ScheduledEvent>
+        discordEvents: List<ScheduledEvent>,
+        dry: Boolean = false
     ): String {
         val futures = getFutures(calEvents, discordEvents, guild)
 
@@ -196,12 +198,17 @@ object CalendarProcessor {
         removeDuplicateEvents(futures, discordEvents)
 
         // Add all the events simultaneously, adding them to the uidMap after, then wait for all of them to complete.
-        CompletableFuture.allOf(*futures.map {
-            it.second.submit()
-        }.toTypedArray()).join()
+        if (!dry) {
+            CompletableFuture.allOf(*futures.map {
+                it.second.submit()
+            }.toTypedArray()).join()
+        }
 
         // Remove invalid events
-        removeInvalidEvents(discordEvents, calEvents)
+        removeInvalidEvents(discordEvents, calEvents, dry)
+
+        // Remove duplicate discord events
+        removeDuplicateDiscordEvents(discordEvents, dry)
         return "Calendar synced successfully."
     }
 
@@ -227,6 +234,7 @@ object CalendarProcessor {
     private fun removeInvalidEvents(
         discordEvents: List<ScheduledEvent>,
         calEvents: List<EventInstance>,
+        dry: Boolean
     ) {
         outer@for (discordEvent in discordEvents) {
             val uid = discordEvent.description?.takeLast(UID_LENGTH)?.trim()
@@ -238,7 +246,8 @@ object CalendarProcessor {
             for (possibleEvent in possibleEvents)
                 if (possibleEvent.vevent.equalEnough(discordEvent))
                     continue@outer
-            discordEvent.delete().queue()
+            if (!dry)
+                discordEvent.delete().queue()
         }
     }
 
@@ -250,11 +259,33 @@ object CalendarProcessor {
         while (futureIter.hasNext()) {
             val (event, _) = futureIter.next()
             for (discordEvent in discordEvents) {
-                if (event.summary == discordEvent.name && event.start == discordEvent.startTime) {
+                if (event.summary == discordEvent.name &&
+                    event.start.toInstant() == discordEvent.startTime.toInstant()) {
                     futureIter.remove()
                     break
                 }
             }
+        }
+    }
+
+    private fun removeDuplicateDiscordEvents(discordEvents: List<ScheduledEvent>, dry: Boolean) {
+        val toRemove = mutableSetOf<ScheduledEvent>()
+        for (i in discordEvents.indices) {
+            val event = discordEvents[i]
+            for (i2 in discordEvents.indices) {
+                if (i2 == i)
+                    continue
+                val otherEvent = discordEvents[i2]
+                if (event.name == otherEvent.name && event.description == otherEvent.description &&
+                    event.startTime == otherEvent.startTime && event.endTime == otherEvent.endTime) {
+                    toRemove.add(event)
+                    break
+                }
+            }
+        }
+        for (event in toRemove) {
+            if (!dry)
+                event.delete().queue()
         }
     }
 
@@ -291,14 +322,20 @@ object CalendarProcessor {
         }
     }
 
-    fun syncCalendars() {
+    fun syncCalendars(chat: DiscordChat? = null, dry: Boolean = false): String {
         defaultLogger.info("Syncing calendars...")
         Thread {
-            val serverIDs = syncedCalendars.map { it.guildId }.toSet()
-            for (serverId in serverIDs)
-                syncToDiscord(syncedCalendars.filter { it.guildId == serverId })
+            if (chat == null) {
+                val serverIDs = syncedCalendars.map { it.guildId }.toSet()
+                for (serverId in serverIDs)
+                    syncToDiscord(syncedCalendars.filter { it.guildId == serverId }, dry)
+            } else {
+                syncToDiscord(syncedCalendars.filter { it.guildId == chat.server.guild.idLong }, dry)
+                sendMessage(chat, "Syncing complete.")
+            }
         }.start()
         lastCalendarUpdateTime = Instant.now()
+        return "Resyncing calendars..."
     }
 }
 
@@ -344,57 +381,27 @@ fun registerCalendarCommands() {
             DiscordProtocol,
             "resyncCalendar",
             listOf(),
-            { -> CalendarProcessor.syncCalendars(); "Resyncing calendars..." },
-            "Resyncs all calendars in all servers.",
+            { _, chat -> CalendarProcessor.syncCalendars(chat as? DiscordChat) },
+            "Resyncs all calendars in this server.",
             "resyncCalendar (Takes no parameters)"
         )
     )
     registerCommand(
         Command.of(
             DiscordProtocol,
-            "unsyncCalendar",
-            listOf(ArgumentSpec("URL", ArgumentType.STRING)),
-            { args, chat ->
-                val removed = syncedCalendars.remove(syncedCalendars.firstOrNull {
-                    it.guildId == (chat as DiscordChat).server.guild.idLong && it.calURL == args[0]
-                })
-                if (removed) "Calendar removed." else "No calendar with URL ${args[0]} found."
-            },
-            "Removes a synced calendar.",
-            "unsyncCalendar (URL)"
-        )
-    )
-    registerCommand(
-        Command.of(
-            DiscordProtocol,
-            "syncedCalendars",
+            "resyncAllCalendars",
             listOf(),
-            { _, chat ->
-                syncedCalendars.filter {
-                    it.guildId == (chat as DiscordChat).server.guild.idLong
-                }.joinToString(", ").ifEmpty { "No calendars are synced in this chat." }
-            },
-            "Prints out all the synced calendars in this chat.",
-            "syncedCalendars (Takes no parameters)"
-        )
-    )
-
-    registerCommand(
-        Command.of(
-            DiscordProtocol,
-            "syncCalendar",
-            listOf(ArgumentSpec("URL", ArgumentType.STRING)),
-            CalendarProcessor::syncCommand,
-            "Sync a CalDAV calendar to discord events.",
-            "syncCalendar (URL)"
+            { -> CalendarProcessor.syncCalendars() },
+            "Resyncs all calendars in all servers.",
+            "resyncAllCalendars (Takes no parameters)"
         )
     )
     registerCommand(
         Command.of(
             DiscordProtocol,
-            "resyncCalendar",
+            "dryResyncCalendar",
             listOf(),
-            { -> CalendarProcessor.syncCalendars(); "Resyncing calendars..." },
+            { _, chat -> CalendarProcessor.syncCalendars(chat as? DiscordChat, true) },
             "Resyncs all calendars in all servers.",
             "resyncCalendar (Takes no parameters)"
         )
