@@ -14,13 +14,13 @@ RegularEscape: Backslash [tbnrf'"\\];
 UnicodeEscape: Backslash U UnicodeDigit UnicodeDigit UnicodeDigit UnicodeDigit;
 
 OctalEscape: Backslash (ThreeHundredAndOver | TwoHundredOrLess);
-fragment ThreeHundredAndOver: THREE (SEVEN ZeroToSeven | ZeroToSix Number);
-fragment TwoHundredOrLess: ZeroToTwo Number Number | OneToNine Number | Number;
+fragment ThreeHundredAndOver: THREE (SEVEN ZeroToSeven | ZeroToSix ZeroToSeven);
+fragment TwoHundredOrLess: ZeroToTwo ZeroToSeven ZeroToSeven | OneToSeven ZeroToSeven | ZeroToSeven;
 
 InvalidEscape: Backslash (InvalidRegularEscape | InvalidUnicodeEscape | InvalidOctalEscape)?;
 fragment InvalidRegularEscape: ~[tbnrf'"\\u0-9];
 fragment InvalidUnicodeEscape: U UnicodeDigit? UnicodeDigit? UnicodeDigit? NotUnicodeDigit | U UnicodeDigit UnicodeDigit? UnicodeDigit?;
-fragment InvalidOctalEscape: FourToNine Number Number | THREE EightOrNine Number | THREE SEVEN EightOrNine;
+fragment InvalidOctalEscape: FourToNine Number Number | THREE EightOrNine Number | THREE SEVEN EightOrNine | EightOrNine;
 
 Alnum: [a-zA-Z0-9]+;
 Whitespace: [\p{White_Space}]+;
@@ -35,6 +35,7 @@ fragment ZeroToSeven: [0-7];
 fragment FourToNine: [4-9];
 fragment EightOrNine: [89];
 fragment OneToNine: [1-9];
+fragment OneToSeven: [1-7];
 fragment Number: [0-9];
 fragment Backslash: '\\';
 fragment U: 'u';

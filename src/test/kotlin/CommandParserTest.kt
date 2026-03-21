@@ -1,6 +1,8 @@
 import convergence.*
-import org.antlr.v4.runtime.InputMismatchException
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertNull
 
 class TestChat: Chat(UniversalProtocol, "Test") {
     override fun toKey() = "TestChat(Test)"
@@ -8,6 +10,7 @@ class TestChat: Chat(UniversalProtocol, "Test") {
 
 object TestProtocol: Protocol("Test") {
     override fun init() {
+        // Do nothing
     }
 
     override fun configLoaded() {
@@ -109,7 +112,7 @@ class CommandParserTest {
 
     @Test
     fun invalidCommand() {
-        assertFailsWith<InputMismatchException>("Did not fail on invalid command.") {
+        assertFailsWith<InvalidCommandParseException>("Did not fail on invalid command.") {
             loadCommandWithArgs("!test2.5 abc\"def")
         }
     }

@@ -194,8 +194,14 @@ object CalendarProcessor {
     ): String {
         val futures = getFutures(calEvents, discordEvents, guild)
 
-        // Remove duplicate events
+        // Do not add calendar events which already exist on discord
         removeDuplicateEvents(futures, discordEvents)
+
+        // Remove invalid events
+        val invalidEvents = removeInvalidEvents(discordEvents, calEvents, dry)
+
+        // Remove duplicate discord events
+        val duplicateEvents = removeDuplicateDiscordEvents(discordEvents, dry)
 
         // Add all the events simultaneously, adding them to the uidMap after, then wait for all of them to complete.
         if (!dry) {
@@ -204,11 +210,6 @@ object CalendarProcessor {
             }.toTypedArray()).join()
         }
 
-        // Remove invalid events
-        val invalidEvents = removeInvalidEvents(discordEvents, calEvents, dry)
-
-        // Remove duplicate discord events
-        val duplicateEvents = removeDuplicateDiscordEvents(discordEvents, dry)
         return "Added: ${futures.joinToString(", ") { it.first.summary!! }}\n" +
                 "Invalid: ${invalidEvents.joinToString(", ") { it.name }}\n" +
                 "Duplicates: ${duplicateEvents.joinToString(", ") { it.name }}"
@@ -265,7 +266,8 @@ object CalendarProcessor {
             val (event, _) = futureIter.next()
             for (discordEvent in discordEvents) {
                 if (event.summary == discordEvent.name &&
-                    event.start.toInstant() == discordEvent.startTime.toInstant()) {
+                    event.start.toInstant() == discordEvent.startTime.toInstant()
+                ) {
                     futureIter.remove()
                     break
                 }
@@ -282,7 +284,8 @@ object CalendarProcessor {
                     continue
                 val otherEvent = discordEvents[i2]
                 if (event.name == otherEvent.name && event.description == otherEvent.description &&
-                    event.startTime == otherEvent.startTime && event.endTime == otherEvent.endTime) {
+                    event.startTime == otherEvent.startTime && event.endTime == otherEvent.endTime
+                ) {
                     toRemove.add(event)
                     break
                 }
@@ -324,20 +327,25 @@ object CalendarProcessor {
 
     fun onUpdate() {
         if ((lastCalendarUpdateTime + calendarUpdateFrequency).isBefore(Instant.now())) {
-            syncCalendars()
+            syncAllCalendars()
         }
     }
 
-    fun syncCalendars(chat: DiscordChat? = null, dry: Boolean = false): String {
-        defaultLogger.info("Syncing calendars...")
+    fun syncCalendars(chat: DiscordChat, dry: Boolean = false): String {
         Thread {
-            if (chat == null) {
-                val serverIDs = syncedCalendars.map { it.guildId }.toSet()
-                for (serverId in serverIDs)
-                    syncToDiscord(syncedCalendars.filter { it.guildId == serverId }, dry)
-            } else {
+            sendMessage(chat, syncToDiscord(syncedCalendars.filter { it.guildId == chat.server.guild.idLong }, dry))
+        }.start()
+        lastCalendarUpdateTime = Instant.now()
+        return "Resyncing calendars..."
+    }
+
+    fun syncAllCalendars(chat: DiscordChat? = null, dry: Boolean = false): String {
+        Thread {
+            val serverIDs = syncedCalendars.map { it.guildId }.toSet()
+            for (serverId in serverIDs)
+                syncToDiscord(syncedCalendars.filter { it.guildId == serverId }, dry)
+            if (chat != null)
                 sendMessage(chat, syncToDiscord(syncedCalendars.filter { it.guildId == chat.server.guild.idLong }, dry))
-            }
         }.start()
         lastCalendarUpdateTime = Instant.now()
         return "Resyncing calendars..."
@@ -387,7 +395,7 @@ fun registerCalendarCommands() {
             DiscordProtocol,
             "resyncCalendar",
             listOf(),
-            { _, chat -> CalendarProcessor.syncCalendars(chat as? DiscordChat) },
+            { _, chat -> CalendarProcessor.syncCalendars(chat as DiscordChat) },
             "Resyncs all calendars in this server.",
             "resyncCalendar (Takes no parameters)"
         )
@@ -395,9 +403,19 @@ fun registerCalendarCommands() {
     registerCommand(
         Command.of(
             DiscordProtocol,
+            "dryResyncCalendar",
+            listOf(),
+            { _, chat -> CalendarProcessor.syncCalendars(chat as DiscordChat, true) },
+            "Tries to resyncs all calendars in this server, but does not actually add or remove anything.",
+            "dryResyncCalendar (Takes no parameters)"
+        )
+    )
+    registerCommand(
+        Command.of(
+            DiscordProtocol,
             "resyncAllCalendars",
             listOf(),
-            { -> CalendarProcessor.syncCalendars() },
+            { _, chat -> CalendarProcessor.syncAllCalendars(chat as DiscordChat) },
             "Resyncs all calendars in all servers.",
             "resyncAllCalendars (Takes no parameters)"
         )
@@ -405,11 +423,11 @@ fun registerCalendarCommands() {
     registerCommand(
         Command.of(
             DiscordProtocol,
-            "dryResyncCalendar",
+            "dryResyncAllCalendars",
             listOf(),
-            { _, chat -> CalendarProcessor.syncCalendars(chat as? DiscordChat, true) },
-            "Tries to resyncs all calendars in this server, but does not actually add or remove anything.",
-            "dryResyncCalendar (Takes no parameters)"
+            { _, chat -> CalendarProcessor.syncAllCalendars(chat as DiscordChat, true) },
+            "Tries to resync all calendars in all servers, but does not actually add or remove anything.",
+            "dryResyncAllCalendars (Takes no parameters)"
         )
     )
     registerCommand(
@@ -442,7 +460,3 @@ fun registerCalendarCommands() {
         )
     )
 }
-
-fun OffsetDateTime?.equals(date: java.util.Date) = this?.toInstant()?.toEpochMilli() == date.time
-fun OffsetDateTime?.equals(date: Date) = this?.toInstant()?.toEpochMilli() == date.toInstant().toEpochMilli()
-fun Date.equals(offsetDateTime: OffsetDateTime?) = offsetDateTime == this

@@ -12,7 +12,7 @@ class CommandDoesNotExist(cmd: String): Exception(cmd)
 fun registerCommand(command: Command): Boolean {
     val protocol = command.protocol
     if (protocol !in commands || commands[protocol] !is MutableMap)
-        commands[protocol] = mutableMapOf(command.name.lowercase() to command)
+        commands[protocol] = mutableMapOf()
     val commandsInProtocol = commands[protocol] ?: return false
 
     if (command.name.lowercase() in commandsInProtocol)

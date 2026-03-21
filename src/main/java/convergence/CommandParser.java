@@ -3,6 +3,7 @@ package convergence;
 import org.antlr.v4.runtime.atn.*;
 import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.*;
+import org.antlr.v4.runtime.misc.*;
 import org.antlr.v4.runtime.tree.*;
 import java.util.List;
 
@@ -121,11 +122,6 @@ public class CommandParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof CommandListener ) ((CommandListener)listener).exitCommand(this);
 		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof CommandVisitor ) return ((CommandVisitor<? extends T>)visitor).visitCommand(this);
-			else return visitor.visitChildren(this);
-		}
 	}
 
 	public final CommandContext command() throws RecognitionException {
@@ -230,11 +226,6 @@ public class CommandParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof CommandListener ) ((CommandListener)listener).exitArgument(this);
 		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof CommandVisitor ) return ((CommandVisitor<? extends T>)visitor).visitArgument(this);
-			else return visitor.visitChildren(this);
-		}
 	}
 
 	public final ArgumentContext argument() throws RecognitionException {
@@ -316,11 +307,6 @@ public class CommandParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof CommandListener ) ((CommandListener)listener).exitNonQuoteArgument(this);
 		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof CommandVisitor ) return ((CommandVisitor<? extends T>)visitor).visitNonQuoteArgument(this);
-			else return visitor.visitChildren(this);
-		}
 	}
 
 	public final NonQuoteArgumentContext nonQuoteArgument() throws RecognitionException {
@@ -389,11 +375,6 @@ public class CommandParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof CommandListener ) ((CommandListener)listener).exitQuoteArgument(this);
 		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof CommandVisitor ) return ((CommandVisitor<? extends T>)visitor).visitQuoteArgument(this);
-			else return visitor.visitChildren(this);
-		}
 	}
 
 	public final QuoteArgumentContext quoteArgument() throws RecognitionException {
@@ -455,11 +436,6 @@ public class CommandParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof CommandListener ) ((CommandListener)listener).exitNotQuote(this);
 		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof CommandVisitor ) return ((CommandVisitor<? extends T>)visitor).visitNotQuote(this);
-			else return visitor.visitChildren(this);
-		}
 	}
 
 	public final NotQuoteContext notQuote() throws RecognitionException {
@@ -509,11 +485,6 @@ public class CommandParser extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof CommandListener ) ((CommandListener)listener).exitCommandName(this);
-		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof CommandVisitor ) return ((CommandVisitor<? extends T>)visitor).visitCommandName(this);
-			else return visitor.visitChildren(this);
 		}
 	}
 
