@@ -7,15 +7,17 @@ emoji4j = "16.0.0"
 gradle = "9.4.0"
 graaljs = "25.0.2"
 graphviz = "0.18.1"
-jackson = "2.21.0"
-jda = "6.3.1"
-kotlin = "2.3.10"
-logback = "1.5.31"
+jackson = "2.21.2"
+jda = "6.3.2"
+kotlin = "2.3.20"
+logback = "1.5.32"
 natty = "1.1.2"
 poi = "5.5.1"
 prettytime = "5.0.9.Final"
 sardine = "5.13"
-shadow = "8.3.0"
+shadow = "9.4.0"
+mockk = "1.13.17"
+versions = "0.53.0"
 
 
 [libraries]
@@ -38,7 +40,9 @@ poi-core = { module = "org.apache.poi:poi", version.ref = "poi" }
 poi-ooxml = { module = "org.apache.poi:poi-ooxml", version.ref = "poi" }
 prettytime = { module = "org.ocpsoft.prettytime:prettytime", version.ref = "prettytime" }
 sardine = { module = "com.github.lookfirst:sardine", version.ref = "sardine" }
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 
 [plugins]
 kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
+versions = { id = "com.github.ben-manes.versions", version.ref = "versions" }

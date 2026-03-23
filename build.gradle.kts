@@ -5,6 +5,7 @@ import java.nio.file.Paths
 plugins {
     alias(libs.plugins.kotlin)
     alias(libs.plugins.shadow)
+    alias(libs.plugins.versions)
     application
     antlr
 }
@@ -57,6 +58,7 @@ dependencies {
     implementation(libs.graalpolyglot)
     implementation(libs.graaljs)
     testImplementation(kotlin("test"))
+    testImplementation(libs.mockk)
 }
 
 application {

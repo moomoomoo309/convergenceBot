@@ -16,38 +16,41 @@ import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.ScheduledEvent
 import net.dv8tion.jda.api.requests.restaction.ScheduledEventAction
-import net.fortuna.ical4j.model.*
 import net.fortuna.ical4j.model.Calendar
 import net.fortuna.ical4j.model.Date
+import net.fortuna.ical4j.model.DateTime
+import net.fortuna.ical4j.model.Period
 import net.fortuna.ical4j.model.component.VEvent
 import net.fortuna.ical4j.model.property.Status
 import org.apache.http.impl.client.CloseableHttpClient
 import org.apache.http.impl.client.HttpClients
 import org.apache.http.message.BasicHeader
-import java.time.Duration
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit
 import java.util.*
 import java.util.concurrent.CompletableFuture
-import kotlin.contracts.ExperimentalContracts
-import kotlin.contracts.contract
 
 val base64Encoder: Base64.Encoder = Base64.getEncoder()
 val calendarCache = hashMapOf<String, CalDAVCollection>()
-val httpClient: CloseableHttpClient = HttpClients.custom().setDefaultHeaders(
-    listOf(
-        BasicHeader(
-            "Authorization", "Basic ${base64Encoder.encodeToString(("bot:" + fratConfig.botPassword).toByteArray())}"
+val httpClient: CloseableHttpClient by lazy {
+    HttpClients.custom().setDefaultHeaders(
+        listOf(
+            BasicHeader(
+                "Authorization",
+                "Basic ${base64Encoder.encodeToString(("bot:" + fratConfig.botPassword).toByteArray())}"
+            )
         )
-    )
-).build()
+    ).build()
+}
 
 const val UID_LENGTH = 36
 const val DAYS = 30L
 private var lastCalendarUpdateTime = Instant.now().plusSeconds(10)
-private val calendarUpdateFrequency = Duration.ofMinutes(15L)
+private val calendarUpdateFrequency = java.time.Duration.ofMinutes(15L)
+
+internal val uidRegex = Regex("[a-z0-9-]{36}")
 
 data class EventInstance(
     val vevent: VEvent,
@@ -58,6 +61,60 @@ data class EventInstance(
     val summary: String? get() = vevent.summary?.value
 }
 
+interface CalendarEvent {
+    val name: String
+    val description: String
+    val start: Instant
+    val end: Instant?
+    val uid: String?
+    val location: String
+}
+
+data class VEventWrapper(val eventInstance: EventInstance): CalendarEvent {
+    override val name: String get() = eventInstance.summary ?: "Unnamed event"
+    override val description: String get() = eventInstance.vevent.description?.value ?: ""
+    override val start: Instant get() = eventInstance.start.toInstant()
+    override val end: Instant get() = eventInstance.end.toInstant()
+    override val uid: String? get() = eventInstance.uid
+    override val location: String
+        get() = if (eventInstance.vevent.location?.value.isNullOrBlank()) "No Location"
+        else eventInstance.vevent.location!!.value
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        return when(other) {
+            is VEventWrapper -> name == other.name && start == other.start && end == other.end && description == other.description
+            is DiscordEventWrapper -> name == other.name && start == other.start && end == other.end
+            else -> false
+        }
+    }
+
+    override fun hashCode(): Int = Objects.hash(name, start, end)
+}
+
+data class DiscordEventWrapper(val event: ScheduledEvent): CalendarEvent {
+    override val name: String get() = event.name
+    override val description: String get() = event.description ?: ""
+    override val start: Instant get() = event.startTime.toInstant()
+    override val end: Instant? get() = event.endTime?.toInstant()
+    override val uid: String?
+        get() = event.description?.takeLast(UID_LENGTH)?.trim()?.takeIf { uidRegex.matches(it) }
+    override val location: String get() = "No Location"
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        return when(other) {
+            is DiscordEventWrapper -> name == other.name && description == other.description &&
+                    start == other.start && end == other.end
+
+            is VEventWrapper -> name == other.name && start == other.start && end == other.end
+            else -> false
+        }
+    }
+
+    override fun hashCode(): Int = Objects.hash(name, start, end)
+}
+
 object CalendarProcessor {
     init {
         System.setProperty(
@@ -65,6 +122,7 @@ object CalendarProcessor {
             "net.fortuna.ical4j.util.MapTimeZoneCache"
         )
     }
+
     fun getAndCacheCalendar(url: String): CalDAVCollection? {
         calendarCache[url]?.let {
             return it
@@ -144,12 +202,12 @@ object CalendarProcessor {
         return events.sortedBy { it.start }
     }
 
-    private fun getDiscordEventsNextDays(jda: JDA, guildId: Long): List<ScheduledEvent> {
+    private fun getDiscordEventsNextDays(jda: JDA, guildId: Long): List<DiscordEventWrapper> {
         return jda.scheduledEvents.filter {
             it.startTime.isAfter(OffsetDateTime.now())
                     && it.startTime.isBefore(OffsetDateTime.now().plus(DAYS, ChronoUnit.DAYS))
                     && it.guild.idLong == guildId
-        }.sortedBy { it.startTime }
+        }.sortedBy { it.startTime }.map { DiscordEventWrapper(it) }
     }
 
     @Suppress("UNUSED_PARAMETER")
@@ -169,12 +227,12 @@ object CalendarProcessor {
     }
 
     fun syncToDiscord(cals: List<SyncedCalendar>, dry: Boolean = false): String {
-        val calendarEvents = mutableListOf<EventInstance>()
+        val calendarEvents = mutableListOf<VEventWrapper>()
         val guildId = cals.first().guildId
         for (cal in cals) {
             val calCollection = getAndCacheCalendar(cal.calURL) ?: return "No calendar found at URL \"${cal.calURL}\"."
             val cals = calCollection.queryCalendars(httpClient, buildCalendarQuery(Instant.now()))
-            calendarEvents.addAll(getCalDAVEventsNextDays(cals))
+            calendarEvents.addAll(getCalDAVEventsNextDays(cals).map { VEventWrapper(it) })
             if (cal.guildId != guildId)
                 return "The guild IDs of each calendar don't match!"
         }
@@ -188,8 +246,8 @@ object CalendarProcessor {
 
     private fun syncToDiscord(
         guild: Guild,
-        calEvents: List<EventInstance>,
-        discordEvents: List<ScheduledEvent>,
+        calEvents: List<VEventWrapper>,
+        discordEvents: List<DiscordEventWrapper>,
         dry: Boolean = false
     ): String {
         val futures = getFutures(calEvents, discordEvents, guild)
@@ -210,114 +268,101 @@ object CalendarProcessor {
             }.toTypedArray()).join()
         }
 
-        return "Added: ${futures.joinToString(", ") { it.first.summary!! }}\n" +
+        return "Added: ${futures.joinToString(", ") { it.first.name }}\n" +
                 "Invalid: ${invalidEvents.joinToString(", ") { it.name }}\n" +
                 "Duplicates: ${duplicateEvents.joinToString(", ") { it.name }}"
     }
 
     private fun getFutures(
-        calEvents: List<EventInstance>,
-        discordEvents: List<ScheduledEvent>,
+        calEvents: List<VEventWrapper>,
+        discordEvents: List<DiscordEventWrapper>,
         guild: Guild
-    ): MutableList<Pair<EventInstance, ScheduledEventAction>> {
-        val futures = mutableListOf<Pair<EventInstance, ScheduledEventAction>>()
-        outer@ for (eventInstance in calEvents) {
-            val vevent = eventInstance.vevent
-            for (currentDiscordEvent in discordEvents)
-                if (vevent.equalEnough(currentDiscordEvent))
+    ): MutableList<Pair<VEventWrapper, ScheduledEventAction>> {
+        val futures = mutableListOf<Pair<VEventWrapper, ScheduledEventAction>>()
+        outer@ for (wrapper in calEvents) {
+            for (discordEvent in discordEvents)
+                if (wrapper == discordEvent)
                     continue@outer
-            addCalendarEventToDiscord(guild, eventInstance)?.let {
+            addCalendarEventToDiscord(guild, wrapper)?.let {
                 futures.add(it)
             }
         }
         return futures
     }
 
-    private val uidRegex = Regex("[a-z0-9-]{36}")
     private fun removeInvalidEvents(
-        discordEvents: List<ScheduledEvent>,
-        calEvents: List<EventInstance>,
+        discordEvents: List<DiscordEventWrapper>,
+        calEvents: List<VEventWrapper>,
         dry: Boolean
-    ): MutableList<ScheduledEvent> {
-        val removed = mutableListOf<ScheduledEvent>()
-        outer@for (discordEvent in discordEvents) {
-            val uid = discordEvent.description?.takeLast(UID_LENGTH)?.trim()
-            if (uid == null || !uidRegex.matches(uid))
-                continue
-            val possibleEvents = calEvents.filter {
-                it.uid == uid
-            }
-            for (possibleEvent in possibleEvents)
-                if (possibleEvent.vevent.equalEnough(discordEvent))
+    ): List<DiscordEventWrapper> {
+        val removed = mutableListOf<DiscordEventWrapper>()
+        outer@ for (discordWrapper in discordEvents) {
+            val uid = discordWrapper.uid ?: continue
+            for (calEvent in calEvents.filter { it.uid == uid })
+                if (calEvent == discordWrapper)
                     continue@outer
-            removed.add(discordEvent)
+            removed.add(discordWrapper)
             if (!dry)
-                discordEvent.delete().queue()
+                discordWrapper.event.delete().queue()
         }
         return removed
     }
 
     private fun removeDuplicateEvents(
-        futures: MutableList<Pair<EventInstance, ScheduledEventAction>>,
-        discordEvents: List<ScheduledEvent>
+        futures: MutableList<Pair<VEventWrapper, ScheduledEventAction>>,
+        discordEvents: List<DiscordEventWrapper>
     ) {
         val futureIter = futures.iterator()
         while (futureIter.hasNext()) {
-            val (event, _) = futureIter.next()
-            for (discordEvent in discordEvents) {
-                if (event.summary == discordEvent.name &&
-                    event.start.toInstant() == discordEvent.startTime.toInstant()
-                ) {
-                    futureIter.remove()
-                    break
-                }
+            val (wrapper, _) = futureIter.next()
+            if (discordEvents.any { wrapper == it }) {
+                futureIter.remove()
             }
         }
     }
 
-    private fun removeDuplicateDiscordEvents(discordEvents: List<ScheduledEvent>, dry: Boolean): List<ScheduledEvent> {
-        val toRemove = mutableListOf<ScheduledEvent>()
+    private fun removeDuplicateDiscordEvents(
+        discordEvents: List<DiscordEventWrapper>,
+        dry: Boolean
+    ): List<DiscordEventWrapper> {
+        val toRemove = mutableListOf<DiscordEventWrapper>()
         for (i in discordEvents.indices) {
-            val event = discordEvents[i]
             for (i2 in discordEvents.indices) {
                 if (i2 == i)
                     continue
-                val otherEvent = discordEvents[i2]
-                if (event.name == otherEvent.name && event.description == otherEvent.description &&
-                    event.startTime == otherEvent.startTime && event.endTime == otherEvent.endTime
-                ) {
-                    toRemove.add(event)
+                if (discordEvents[i] == discordEvents[i2]) {
+                    toRemove.add(discordEvents[i])
                     break
                 }
             }
         }
-        for (event in toRemove) {
+        for (wrapper in toRemove) {
             if (!dry)
-                event.delete().queue()
+                wrapper.event.delete().queue()
         }
         return toRemove
     }
 
     private fun addCalendarEventToDiscord(
         guild: Guild,
-        eventInstance: EventInstance
-    ): Pair<EventInstance, ScheduledEventAction>? {
-        val vevent = eventInstance.vevent
-        return if (eventInstance.start.toInstant() < Instant.now())
+        wrapper: VEventWrapper
+    ): Pair<VEventWrapper, ScheduledEventAction>? {
+        return if (wrapper.start < Instant.now())
             null
         else
-            Pair(eventInstance,
+            Pair(
+                wrapper,
                 guild.createScheduledEvent(
-                    vevent.summary?.value ?: "Unnamed event",
-                    if (vevent.location?.value.isNullOrBlank()) "No Location" else vevent.location.value,
-                    eventInstance.start.toOffsetDateTime(),
-                    eventInstance.end.toOffsetDateTime()
-                ).setDescription(addUIDToDescription(vevent.description?.value ?: "", eventInstance.uid ?: ""))
+                    wrapper.name,
+                    wrapper.location,
+                    wrapper.start.toOffsetDateTime(),
+                    wrapper.end.toOffsetDateTime()
+                ).setDescription(addUIDToDescription(wrapper.description, wrapper.uid ?: ""))
             )
     }
 
-    private fun addUIDToDescription(description: String?, uid: String): String {
-        if (description.isNullOrEmpty()) {
+    internal fun addUIDToDescription(description: String, uid: String): String {
+        if (description.isEmpty()) {
             return uid
         } else if (description.endsWith(uid)) {
             return description
@@ -352,30 +397,11 @@ object CalendarProcessor {
     }
 }
 
-fun Date.toOffsetDateTime(): OffsetDateTime = this.toInstant().atOffset(defaultZoneOffset)
 val defaultZoneOffset: ZoneOffset = OffsetDateTime.now().offset
 
+fun Instant.toOffsetDateTime(): OffsetDateTime = this.atOffset(defaultZoneOffset)
 fun Instant.toIDate(): DateTime {
     return DateTime(Date.from(this))
-}
-
-@OptIn(ExperimentalContracts::class)
-fun VEvent.equalEnough(dEvent: ScheduledEvent?): Boolean {
-    contract {
-        returns(true) implies (dEvent != null)
-    }
-    val periodList = this.getOccurrences()
-    // More fields can be added here if needed, but this should be alright
-    @Suppress("IDENTITY_SENSITIVE_OPERATIONS_WITH_VALUE_TYPE")
-    return dEvent != null
-            && (this.summary?.value ?: "Unnamed event") == dEvent.name
-            && periodList.any { dEvent.startTime.toInstant() == it.start.toInstant() &&
-                dEvent.endTime?.toInstant() == it.end.toInstant() }
-}
-
-fun VEvent.getOccurrences(): PeriodList {
-    val now = Instant.now()
-    return this.calculateRecurrenceSet(Period(now.toIDate(), now.plus(DAYS, ChronoUnit.DAYS).toIDate()))
 }
 
 @SuppressWarnings("LongMethod")

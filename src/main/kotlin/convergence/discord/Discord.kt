@@ -122,6 +122,19 @@ class DiscordUser(val name: String, override val id: Long, val author: DUser):
     override fun toString(): String = "DiscordUser($name)"
 }
 
+class DiscordRole(val role: net.dv8tion.jda.api.entities.Role) : Role(role.name) {
+    val id: Long get() = role.idLong
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is DiscordRole) return false
+        return id == other.id
+    }
+
+    override fun hashCode() = id.hashCode()
+    override fun toString() = "DiscordRole($name)"
+}
+
 data class DiscordEmoji(
     override val url: String,
     override val name: String,
@@ -196,7 +209,7 @@ fun ArgumentType.toDiscord() = when(this) {
 
 object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, HasImages, CanMentionUsers,
     HasMessageHistory, CanEditOtherMessages, HasUserAvailability, HasCustomEmoji, HasServers<DiscordServer>,
-    HasReactions {
+    HasReactions, HasRoles<DiscordRole> {
     override fun init() {
         println("Discord Plugin initialized.")
         jda = try {
@@ -392,6 +405,17 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
         if (user !is DiscordUser)
             return emptyList()
         return getMessages(chat, since).filter { it.sender == user }
+    }
+
+    override fun getRoles(server: Server): List<DiscordRole> {
+        if (server !is DiscordServer) return emptyList()
+        return server.guild.roles.map { DiscordRole(it) }
+    }
+
+    override fun getUserRoles(server: Server, user: User): List<DiscordRole> {
+        if (server !is DiscordServer || user !is DiscordUser) return emptyList()
+        val member = server.guild.getMember(user.author) ?: return emptyList()
+        return member.roles.map { DiscordRole(it) }
     }
 
     override fun setBotAvailability(chat: Chat, availability: Availability) {

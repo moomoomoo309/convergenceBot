@@ -28,7 +28,8 @@ class FratConfig(
     val aaFolder: String,
     val attendanceFolder: String,
     val debugMode: Boolean,
-    val rosterURL: String
+    val rosterURL: String,
+    val pledgeRoleID: Long
 )
 
 val fratConfigPath: Path = Paths.get("/", "opt", "bots", "config.json")

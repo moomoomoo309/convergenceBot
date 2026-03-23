@@ -268,6 +268,15 @@ interface HasServers<T: Server> {
     fun getServers(): List<T>
 }
 
+abstract class Role(val name: String)
+
+interface HasRoles<R: Role> {
+    fun getRoles(server: Server): List<R>
+    fun getUserRoles(server: Server, user: User): List<R>
+    fun userHasRole(server: Server, user: User, role: R): Boolean =
+        getUserRoles(server, user).any { it == role }
+}
+
 abstract class IncomingMessage {
     abstract fun toSimple(): SimpleIncomingMessage
     abstract fun toOutgoing(): OutgoingMessage
