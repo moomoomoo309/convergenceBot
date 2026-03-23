@@ -88,8 +88,21 @@ tasks {
 }
 
 tasks.shadowJar {
+    // Shadow 9.x tries to open every resolved classpath artifact as a ZIP. GraalVM's transitive dependency
+    // org.graalvm.js:js-community is POM-packaged (no JAR), so Shadow fails trying to unzip a .pom file.
+    // Fix: use an artifactView filtered to JAR_TYPE so Shadow only sees actual JARs, then disable Shadow's
+    // default classpath resolution (configurations = emptyList()) to prevent it from processing the full
+    // unfiltered classpath on its own.
+    val runtimeJars = project.configurations.runtimeClasspath.get().incoming.artifactView {
+        attributes {
+            attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, ArtifactTypeDefinition.JAR_TYPE)
+        }
+        isLenient = true
+    }.files
+    configurations = emptyList()
+    from(runtimeJars.elements.map { it.map { f -> zipTree(f.asFile) } })
     manifest {
         attributes(mapOf("Multi-Release" to "true"))
     }
-    this.isZip64 = true
+    isZip64 = true
 }

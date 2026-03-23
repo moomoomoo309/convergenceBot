@@ -63,8 +63,8 @@ fun help(args: List<String>, chat: Chat): String {
     return when(pageOrCommand) {
         is Int -> {
             val helpText = StringBuilder("Help page $pageOrCommand/$numPages:\n")
-            for (i in 0..COMMANDS_PER_PAGE) {
-                val index = i + (pageOrCommand - 1) * (COMMANDS_PER_PAGE + 1)
+            for (i in 0 until COMMANDS_PER_PAGE) {
+                val index = i + (pageOrCommand - 1) * COMMANDS_PER_PAGE
                 if (index >= sortedHelpText.size)
                     break
                 val currentCommand = sortedHelpText[index]
@@ -127,7 +127,7 @@ fun removeServerAlias(args: List<String>, chat: Chat): String {
         return "Only one argument should be passed."
     }
     val server = chat.server
-    if (chat in aliases && aliases[server] is MutableMap && args[0] in aliases[server]!!) {
+    if (server in aliases && aliases[server] is MutableMap && args[0] in aliases[server]!!) {
         aliases[server]!!.remove(args[0])
         Settings.update()
         return "Server alias \"${args[0]}\" removed."
@@ -201,7 +201,7 @@ fun targetNick(args: List<String>, chat: Chat): String {
     val protocol = chat.protocol as HasNicknames
     val user = getUserFromName(chat, args[args.size - 1])
         ?: return "No user by the name \"${args[args.size - 1]}\" found."
-    return args.subList(0, args.size - 1).joinToString(" ").replace("%target", protocol.getUserNickname(chat, user)!!)
+    return args.subList(0, args.size - 1).joinToString(" ").replace("%target", protocol.getUserNickname(chat, user) ?: chat.protocol.getUserName(chat, user))
 }
 
 fun commands(unused: List<String>, chat: Chat): String {

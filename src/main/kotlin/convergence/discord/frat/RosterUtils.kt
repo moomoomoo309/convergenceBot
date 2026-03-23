@@ -44,8 +44,8 @@ fun getNewRoster(): List<BrotherInfo> {
     while (i < 1000) {
         if (row.getCell(0).readString().isNotBlank())
             brotherInfoList.add(extractInfoFromRow(row))
-        if (worksheet.getRow(i + 1).getCell(0).readString().isBlank() &&
-            worksheet.getRow(i + 2).getCell(0).readString().isBlank()) {
+        if ((worksheet.getRow(i + 1)?.getCell(0)?.readString()?.isBlank() != false) &&
+            (worksheet.getRow(i + 2)?.getCell(0)?.readString()?.isBlank() != false)) {
             break
         }
         i += 1

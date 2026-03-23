@@ -270,10 +270,10 @@ interface HasServers<T: Server> {
 
 abstract class Role(val name: String)
 
-interface HasRoles<R: Role> {
-    fun getRoles(server: Server): List<R>
-    fun getUserRoles(server: Server, user: User): List<R>
-    fun userHasRole(server: Server, user: User, role: R): Boolean =
+interface HasRoles<RoleType: Role> {
+    fun getRoles(server: Server): List<RoleType>
+    fun getUserRoles(server: Server, user: User): List<RoleType>
+    fun userHasRole(server: Server, user: User, role: RoleType): Boolean =
         getUserRoles(server, user).any { it == role }
 }
 

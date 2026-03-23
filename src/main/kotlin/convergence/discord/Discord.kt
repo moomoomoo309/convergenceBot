@@ -29,6 +29,7 @@ import net.dv8tion.jda.api.interactions.commands.build.Commands
 import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import net.dv8tion.jda.api.requests.GatewayIntent
 import net.dv8tion.jda.api.utils.FileUpload
+import net.dv8tion.jda.api.utils.MemberCachePolicy
 import net.dv8tion.jda.api.utils.cache.CacheFlag
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder
 import net.dv8tion.jda.api.utils.messages.MessageCreateData
@@ -43,7 +44,7 @@ import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
-import kotlin.math.max
+import kotlin.math.min
 
 lateinit var jda: JDA
 
@@ -79,7 +80,7 @@ class DiscordChat(name: String, override val id: Long, @JsonIgnore val channel: 
     constructor(id: Long): this(jda.getGuildChannelById(id) as GuildMessageChannel)
     constructor(msgEvent: MessageReceivedEvent): this(msgEvent.message)
 
-    override val server = serverCache.getOrPut(id) { DiscordServer(channel.guild) }
+    override val server = serverCache.getOrPut(channel.guild.idLong) { DiscordServer(channel.guild) }
 
     override fun hashCode() = id.hashCode()
     override fun equals(other: Any?) =
@@ -230,6 +231,7 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
                     )
                 )
                 .setToken(Files.readString(convergencePath.resolve("discordToken")).trim())
+                .setMemberCachePolicy(MemberCachePolicy.ALL)
                 .disableCache(CacheFlag.VOICE_STATE)
             it.build()
         } catch(_: FileNotFoundException) {
@@ -275,7 +277,7 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
             is DiscordChat -> alias.scope.server
             else -> return
         }.guild.updateCommands()
-        val startIndex = max(alias.command.argSpecs.size, alias.args.size)
+        val startIndex = min(alias.args.size, alias.command.argSpecs.size)
         slashCommands.addCommands(
             Commands.slash(
                 alias.name.lowercase(),

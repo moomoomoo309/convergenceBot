@@ -29,12 +29,12 @@ object CommandScheduler: Thread() {
     override fun run() {
         while (isAlive) {
             val now = OffsetDateTime.now()
+            val timesToRemove = mutableListOf<OffsetDateTime>()
             for ((cmdTime, cmdList) in scheduledCommands) {
                 if (cmdTime.isBefore(now)) {
                     if (cmdTime.until(now, ChronoUnit.SECONDS) in 0..allowedTimeDifferenceSeconds) {
                         for (cmd in cmdList) {
                             cmd()
-                            scheduledCommands.remove(cmd.time)
                             commandsList.remove(cmd.id)
                             Settings.serializedCommands.remove(cmd.id)
                         }
@@ -42,16 +42,17 @@ object CommandScheduler: Thread() {
                             Settings.update()
                     } else {
                         for (cmd in cmdList) {
-                            scheduledCommands.remove(cmd.time)
                             commandsList.remove(cmd.id)
                             Settings.serializedCommands.remove(cmd.id)
                         }
                         if (cmdList.isNotEmpty())
                             Settings.update()
                     }
+                    timesToRemove.add(cmdTime)
                 } else // It's already sorted chronologically, so all following events are early.
                     break
             }
+            timesToRemove.forEach { scheduledCommands.remove(it) }
             val iter = taskList.iterator()
             while (iter.hasNext()) {
                 val task = iter.next()

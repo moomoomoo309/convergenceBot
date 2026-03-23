@@ -5,6 +5,8 @@ import convergence.discord.DiscordChat
 import convergence.discord.DiscordIncomingMessage
 import convergence.discord.DiscordOutgoingMessage
 import convergence.discord.DiscordProtocol
+import convergence.discord.DiscordRole
+import convergence.discord.jda
 import guru.nidi.graphviz.attribute.Color
 import guru.nidi.graphviz.attribute.Style
 import guru.nidi.graphviz.engine.Format
@@ -246,12 +248,14 @@ fun brotherInfo(args: List<String>, searchCriteria: (BrotherInfo) -> String?): D
     )
 }
 
+private val pledgeRole: DiscordRole? by lazy {
+    jda.getRoleById(fratConfig.pledgeRoleID)?.let { DiscordRole(it) }
+}
+
 val isNotPledge = { _: List<String>, chat: Chat, sender: User ->
     val server = (chat as? DiscordChat)?.server
-    val pledgeRole = server?.let {
-        DiscordProtocol.getRoles(it).find { role -> role.id == fratConfig.pledgeRoleID }
-    }
-    if (pledgeRole != null && DiscordProtocol.userHasRole(server, sender, pledgeRole))
+    val role = pledgeRole
+    if (server != null && role != null && DiscordProtocol.userHasRole(server, sender, role))
         SimpleOutgoingMessage("Nice try, pledge.")
     else
         null
