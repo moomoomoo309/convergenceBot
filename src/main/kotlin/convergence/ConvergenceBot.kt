@@ -1,5 +1,3 @@
-@file:Suppress("unused")
-
 package convergence
 
 import convergence.console.ConsoleProtocol

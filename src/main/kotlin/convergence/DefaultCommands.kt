@@ -1,33 +1,11 @@
-@file:Suppress("unused", "UNUSED_PARAMETER")
-
 package convergence
 
 import convergence.CommandScheduler.getCommands
 import org.natty.Parser
-import java.io.PrintWriter
-import java.io.StringWriter
-import java.time.Duration
 import java.time.OffsetDateTime
 import kotlin.math.ceil
 import kotlin.reflect.jvm.jvmName
 import kotlin.system.exitProcess
-
-class UnregisteredChat: Exception()
-
-@Suppress("NOTHING_TO_INLINE") // It's inlined so that it won't show up in the stack trace.
-inline fun unregisteredChat(chat: Chat) {
-    try {
-        throw UnregisteredChat()
-    } catch(e: UnregisteredChat) {
-        val writer = StringWriter()
-        @Suppress("PrintStackTrace")
-        e.printStackTrace(PrintWriter(writer))
-        chat.protocol.sendMessage(
-            chat, "Bot error: Chat is missing a protocol.\nStack Trace:\n$writer"
-        )
-        writer.close()
-    }
-}
 
 fun getUserFromName(chat: Chat, name: String): User? {
     var alternateOption: User? = null
@@ -45,14 +23,6 @@ fun getUserFromName(chat: Chat, name: String): User? {
             alternateOption = user
     }
     return alternateOption
-}
-
-fun getFullName(chat: Chat, name: String): String? {
-    val user = getUserFromName(chat, name)
-    if (chat.protocol in protocols)
-        return user?.let { chat.protocol.getUserName(chat, user) }
-    unregisteredChat(chat)
-    return null
 }
 
 
@@ -107,7 +77,7 @@ fun addAlias(args: List<String>, chat: Chat, scope: CommandScope): String {
     val commandStr = "$commandDelimiter$commandName ${args.subList(2, args.size).joinToString(" ")}"
     val command = parseCommand(commandStr, commandDelimiter, chat)
         ?: return "Alias does not refer to a valid command!"
-    if (!registerAlias(Alias(chat, args[0], command.command, command.args)))
+    if (!registerAlias(Alias(scope, args[0], command.command, command.args)))
         return "An alias with that name is already registered!"
     Settings.update()
     return "Alias \"${args[0]}\" registered to \"$commandStr\"."
@@ -180,9 +150,6 @@ fun chats(): String {
 
 val dateTimeParser = Parser()
 
-val defaultDuration = Duration.ofMinutes(45)!!
-private val locations = HashMap<User, Pair<OffsetDateTime, String>>()
-
 fun target(args: List<String>, chat: Chat): String {
     if (args.isEmpty()) {
         return "You need to pass some arguments! Syntax: " + commands[UniversalProtocol]!!["target"]!!.syntaxText
@@ -201,10 +168,11 @@ fun targetNick(args: List<String>, chat: Chat): String {
     val protocol = chat.protocol as HasNicknames
     val user = getUserFromName(chat, args[args.size - 1])
         ?: return "No user by the name \"${args[args.size - 1]}\" found."
-    return args.subList(0, args.size - 1).joinToString(" ").replace("%target", protocol.getUserNickname(chat, user) ?: chat.protocol.getUserName(chat, user))
+    return args.subList(0, args.size - 1).joinToString(" ")
+        .replace("%target", protocol.getUserNickname(chat, user) ?: chat.protocol.getUserName(chat, user))
 }
 
-fun commands(unused: List<String>, chat: Chat): String {
+fun commands(chat: Chat): String {
     val commandList = mutableListOf<String>()
     commands[chat.protocol]?.forEach { commandList.add(it.key) }
     commands[UniversalProtocol]?.forEach { commandList.add(it.key) }
@@ -213,7 +181,7 @@ fun commands(unused: List<String>, chat: Chat): String {
     return if (commandList.isNotEmpty()) commandList.joinToString(", ") else "No commands found."
 }
 
-fun aliases(unused: List<String>, chat: Chat): String {
+fun aliases(chat: Chat): String {
     val aliasList = mutableListOf<String>()
     aliases[chat]?.forEach { aliasList.add(it.key) }
     aliases[UniversalChat]?.forEach { aliasList.add(it.key) }
@@ -246,7 +214,7 @@ fun schedule(args: List<String>, chat: Chat, sender: User): String {
 /**
  * Gets all the currently scheduled events sorted by ID.
  */
-fun events(unused: List<String>, chat: Chat): String {
+fun events(chat: Chat): String {
     val commands = getCommands()
     if (commands.isEmpty())
         return "No events are currently scheduled."
@@ -269,7 +237,7 @@ private fun getUserEvents(sender: User): Map<User, MutableList<ScheduledCommand>
     return eventMap
 }
 
-fun eventsFromUser(unused: List<String>, chat: Chat, sender: User): String {
+fun eventsFromUser(chat: Chat, sender: User): String {
     val eventMap = getUserEvents(sender)
     if (eventMap.isEmpty())
         return "No events are currently scheduled."
@@ -283,7 +251,7 @@ fun eventsFromUser(unused: List<String>, chat: Chat, sender: User): String {
     return builder.toString()
 }
 
-fun eventsByUser(unused: List<String>, chat: Chat, sender: User): String {
+fun eventsByUser(chat: Chat, sender: User): String {
     val eventMap = getUserEvents(sender)
     if (eventMap.isEmpty())
         return "No events are currently scheduled."
@@ -314,7 +282,7 @@ private fun addEventToBuilder(
 fun unschedule(args: List<String>): String {
     val index: Int = try {
         Integer.parseInt(args[0])
-    } catch(e: NumberFormatException) {
+    } catch(_: NumberFormatException) {
         return "${args[0]} is not an event ID!"
     }
 
@@ -328,7 +296,7 @@ fun unschedule(args: List<String>): String {
 fun link(args: List<String>, chat: Chat): String {
     val index: Int = try {
         Integer.parseInt(args[0])
-    } catch(e: NumberFormatException) {
+    } catch(_: NumberFormatException) {
         return "${args[0]} is not a chat ID!"
     }
 
@@ -346,7 +314,7 @@ fun link(args: List<String>, chat: Chat): String {
 fun unlink(args: List<String>, chat: Chat): String {
     val index: Int = try {
         Integer.parseInt(args[0])
-    } catch(e: NumberFormatException) {
+    } catch(_: NumberFormatException) {
         return "${args[0]} is not a chat ID!"
     }
     val toUnlink = chatMap[index] ?: return "No chat with ID $index found."
@@ -364,7 +332,7 @@ fun unlink(args: List<String>, chat: Chat): String {
     }
 }
 
-fun links(unused: List<String>, chat: Chat): String {
+fun links(chat: Chat): String {
     return if (chat in linkedChats)
         "Linked chats: ${linkedChats[chat]!!.joinToString(", ") { c: Chat -> "$c (${reverseChatMap[c]})" }}"
     else
@@ -519,7 +487,7 @@ fun registerDefaultCommands() {
         Command.of(
             UniversalProtocol, "commands",
             listOf(),
-            ::commands,
+            { _, chat -> commands(chat) },
             "Lists all of the commands in this chat.",
             "commands (Takes no arguments)"
         )
@@ -528,7 +496,7 @@ fun registerDefaultCommands() {
         Command.of(
             UniversalProtocol, "aliases",
             listOf(),
-            ::aliases,
+            { _, chat -> aliases(chat) },
             "Lists all of the aliases in this chat.",
             "aliases (Takes no arguments)"
         )
@@ -558,7 +526,7 @@ fun registerDefaultCommands() {
         Command.of(
             UniversalProtocol, "events",
             listOf(),
-            ::eventsFromUser,
+            { _, chat, sender -> eventsFromUser(chat, sender)},
             "Lists all of the events you've made.",
             "events (Takes no arguments)"
         )
@@ -567,7 +535,7 @@ fun registerDefaultCommands() {
         Command.of(
             UniversalProtocol, "allevents",
             listOf(),
-            ::events,
+            { _, chat -> events(chat) },
             "Lists all of the events in chronological order.",
             "allevents (Takes no arguments)"
         )
@@ -576,7 +544,7 @@ fun registerDefaultCommands() {
         Command.of(
             UniversalProtocol, "eventsbyuser",
             listOf(),
-            ::eventsByUser,
+            { _, chat, sender -> eventsByUser(chat, sender) },
             "Lists all events by user, then in chronological order.",
             "eventsbyuser (Takes no arguments)"
         )
@@ -603,7 +571,7 @@ fun registerDefaultCommands() {
         Command.of(
             UniversalProtocol, "links",
             listOf(),
-            ::links,
+            { _, chat -> links(chat) },
             "Lists all of the chats linked to this one.",
             "links (Takes no arguments)"
         )

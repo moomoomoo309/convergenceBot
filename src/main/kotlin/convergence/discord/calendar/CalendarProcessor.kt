@@ -210,7 +210,6 @@ object CalendarProcessor {
         }.sortedBy { it.startTime }.map { DiscordEventWrapper(it) }
     }
 
-    @Suppress("UNUSED_PARAMETER")
     fun syncCommand(args: List<String>, chat: Chat): String {
         if (args.size != 1)
             return "Expected 1 argument, got ${args.size}."
