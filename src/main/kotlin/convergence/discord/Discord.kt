@@ -217,11 +217,9 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
             val it = JDABuilder
                 .create(
                     setOf(
-                        GatewayIntent.GUILD_PRESENCES,
                         GatewayIntent.GUILD_MESSAGE_TYPING,
                         GatewayIntent.GUILD_MESSAGE_REACTIONS,
                         GatewayIntent.GUILD_MESSAGES,
-                        GatewayIntent.GUILD_MEMBERS,
                         GatewayIntent.GUILD_EXPRESSIONS,
                         GatewayIntent.DIRECT_MESSAGE_TYPING,
                         GatewayIntent.DIRECT_MESSAGE_REACTIONS,
@@ -231,7 +229,7 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
                     )
                 )
                 .setToken(Files.readString(convergencePath.resolve("discordToken")).trim())
-                .setMemberCachePolicy(MemberCachePolicy.ALL)
+                .setMemberCachePolicy(MemberCachePolicy.DEFAULT)
                 .disableCache(CacheFlag.VOICE_STATE)
             it.build()
         } catch(_: FileNotFoundException) {
@@ -329,7 +327,7 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
 
     override fun getUserNickname(chat: Chat, user: User): String? {
         if (user is DiscordUser && chat is DiscordChat && chat.channel is TextChannel)
-            return chat.channel.guild.getMember(user.author)?.nickname
+            return chat.channel.guild.retrieveMember(user.author).onErrorMap { null }.complete()?.nickname
         return null
     }
 
@@ -416,7 +414,7 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
 
     override fun getUserRoles(server: Server, user: User): List<DiscordRole> {
         if (server !is DiscordServer || user !is DiscordUser) return emptyList()
-        val member = server.guild.getMember(user.author) ?: return emptyList()
+        val member = server.guild.retrieveMember(user.author).onErrorMap { null }.complete() ?: return emptyList()
         return member.roles.map { DiscordRole(it) }
     }
 
@@ -427,7 +425,8 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
 
     override fun getUserAvailability(chat: Chat, user: User): DiscordAvailability {
         if (user is DiscordUser && chat is DiscordChat && chat.channel is TextChannel) {
-            val member = chat.channel.guild.getMember(user.author) ?: return DiscordAvailability(OnlineStatus.UNKNOWN)
+            val member = chat.channel.guild.retrieveMember(user.author).onErrorMap { null }.complete()
+                ?: return DiscordAvailability(OnlineStatus.UNKNOWN)
             return DiscordAvailability(member.onlineStatus)
         }
         return DiscordAvailability(OnlineStatus.UNKNOWN)
@@ -507,10 +506,8 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
 
     override fun getUsers(chat: Chat): List<User> {
         val channel = (chat as DiscordChat).channel
-        return jda.users.filter {
-            channel.canTalk(channel.guild.getMember(it) ?: return@filter false)
-        }.map { userCache[it.idLong] ?: DiscordUser(it).also { user -> userCache[it.idLong] = user } }
-    }
+        return channel.guild.members.map { userCache.getOrPut(it.user.idLong) { DiscordUser(it.user) } }
+}
 
     override fun getChatName(chat: Chat): String = if (chat is DiscordChat) chat.name else ""
     override fun mention(chat: Chat, user: User, message: OutgoingMessage?) {

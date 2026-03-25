@@ -305,7 +305,7 @@ class DefaultCommandsExtendedTest {
 
     @Test
     fun linksReportsNoneWhenEmpty() {
-        assertEquals("No chats are linked to this one.", links(listOf(), testChat))
+        assertEquals("No chats are linked to this one.", links(testChat))
     }
 
     @Test
@@ -314,7 +314,7 @@ class DefaultCommandsExtendedTest {
         chatMap[42] = chat
         reverseChatMap[chat] = 42
         linkedChats[testChat] = mutableSetOf(chat)
-        val result = links(listOf(), testChat)
+        val result = links(testChat)
         assertTrue(result.startsWith("Linked chats:"), "Unexpected prefix: $result")
         assertTrue(result.contains("42"), "Expected chat ID 42 in result")
     }
@@ -356,7 +356,7 @@ class DefaultCommandsExtendedTest {
 
     @Test
     fun commandsReturnsNoneWhenNothingRegistered() {
-        assertEquals("No commands found.", commands(listOf(), testProtocolChat))
+        assertEquals("No commands found.", commands(testProtocolChat))
     }
 
     @Test
@@ -365,7 +365,7 @@ class DefaultCommandsExtendedTest {
             "alpha" to Command.of(TestProtocol, "alpha", listOf(), { -> null }, "help", "syntax"),
             "beta"  to Command.of(TestProtocol, "beta",  listOf(), { -> null }, "help", "syntax"),
         )
-        val result = commands(listOf(), testProtocolChat)
+        val result = commands(testProtocolChat)
         assertEquals("alpha, beta", result, "Commands should be sorted alphabetically")
     }
 
@@ -377,7 +377,7 @@ class DefaultCommandsExtendedTest {
         commands[UniversalProtocol] = mutableMapOf(
             "ping" to Command.of(UniversalProtocol, "ping", listOf(), ::ping, "Pong!", "ping")
         )
-        val result = commands(listOf(), testProtocolChat)
+        val result = commands(testProtocolChat)
         assertTrue(result.contains("mycmd"), "Protocol-specific command should appear")
         assertTrue(result.contains("ping"), "Universal command should appear")
     }
@@ -386,7 +386,7 @@ class DefaultCommandsExtendedTest {
 
     @Test
     fun aliasesReturnsNoneWhenNothingRegistered() {
-        assertEquals("No aliases found.", aliases(listOf(), testChat))
+        assertEquals("No aliases found.", aliases(testChat))
     }
 
     @Test
@@ -395,7 +395,7 @@ class DefaultCommandsExtendedTest {
         aliases[testChat] = mutableMapOf(
             "greet" to Alias(testChat, "greet", cmd, listOf("hello"))
         )
-        val result = aliases(listOf(), testChat)
+        val result = aliases(testChat)
         assertTrue(result.startsWith("Aliases:"), "Unexpected prefix: $result")
         assertTrue(result.contains("greet"), "Expected alias name in result")
     }
@@ -407,7 +407,7 @@ class DefaultCommandsExtendedTest {
             "a1" to Alias(testChat, "a1", cmd, listOf()),
             "a2" to Alias(testChat, "a2", cmd, listOf()),
         )
-        val result = aliases(listOf(), testChat)
+        val result = aliases(testChat)
         assertTrue(result.contains("a1"))
         assertTrue(result.contains("a2"))
     }
