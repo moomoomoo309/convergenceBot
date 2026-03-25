@@ -414,7 +414,10 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
 
     override fun getUserRoles(server: Server, user: User): List<DiscordRole> {
         if (server !is DiscordServer || user !is DiscordUser) return emptyList()
-        val member = server.guild.retrieveMember(user.author).onErrorMap { null }.complete() ?: return emptyList()
+        // Use getMember (cache) rather than retrieveMember(...).complete() — blocking REST calls on JDA's event
+        // dispatch thread throw IllegalStateException. Offline members won't be in the cache with the default
+        // MemberCachePolicy, but anyone actively sending commands will be online and thus cached.
+        val member = server.guild.getMember(user.author) ?: return emptyList()
         return member.roles.map { DiscordRole(it) }
     }
 
@@ -511,7 +514,7 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
 
     override fun getChatName(chat: Chat): String = if (chat is DiscordChat) chat.name else ""
     override fun mention(chat: Chat, user: User, message: OutgoingMessage?) {
-        sendMessage(chat, jda.retrieveUserById((user as DiscordUser).id).complete().asMention + message?.let { " $it" })
+        sendMessage(chat, ((user as DiscordUser).author.asMention + message?.let { " $it" }))
     }
 
     val discordMentionRegex = Regex("^<@([0-9]{1,20})>$")
