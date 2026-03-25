@@ -327,7 +327,7 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
 
     override fun getUserNickname(chat: Chat, user: User): String? {
         if (user is DiscordUser && chat is DiscordChat && chat.channel is TextChannel)
-            return chat.channel.guild.retrieveMember(user.author).onErrorMap { null }.complete()?.nickname
+            return chat.channel.guild.getMember(user.author)?.nickname
         return null
     }
 
@@ -428,7 +428,7 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
 
     override fun getUserAvailability(chat: Chat, user: User): DiscordAvailability {
         if (user is DiscordUser && chat is DiscordChat && chat.channel is TextChannel) {
-            val member = chat.channel.guild.retrieveMember(user.author).onErrorMap { null }.complete()
+            val member = chat.channel.guild.getMember(user.author)
                 ?: return DiscordAvailability(OnlineStatus.UNKNOWN)
             return DiscordAvailability(member.onlineStatus)
         }
@@ -446,7 +446,7 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
                 else -> {
                     val text = message.toSimple().text
                     if (text.isNotEmpty())
-                        chat.channel.sendMessage(text.take(2000)).complete()
+                        chat.channel.sendMessage(text.take(2000)).queue()
                 }
             }
         } catch(e: Exception) {
