@@ -101,7 +101,7 @@ class DiscordUser(val name: String, override val id: Long, val author: DUser):
     User(DiscordProtocol), DiscordObject {
 
     constructor(msgEvent: MessageReceivedEvent): this(msgEvent.author)
-    constructor(id: Long): this(jda.getUserById(id)!!)
+    constructor(id: Long): this(jda.getUserById(id) ?: jda.retrieveUserById(id).complete())
     constructor(author: DUser): this(author.name, author.idLong, author)
     constructor(author: Member): this(author.user)
 
@@ -217,9 +217,11 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
             val it = JDABuilder
                 .create(
                     setOf(
+                        GatewayIntent.GUILD_PRESENCES,
                         GatewayIntent.GUILD_MESSAGE_TYPING,
                         GatewayIntent.GUILD_MESSAGE_REACTIONS,
                         GatewayIntent.GUILD_MESSAGES,
+                        GatewayIntent.GUILD_MEMBERS,
                         GatewayIntent.GUILD_EXPRESSIONS,
                         GatewayIntent.DIRECT_MESSAGE_TYPING,
                         GatewayIntent.DIRECT_MESSAGE_REACTIONS,
@@ -521,7 +523,7 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
     override fun getUserFromMentionText(chat: Chat, mention: String): User? {
         val match = discordMentionRegex.matchEntire(mention)
         val discordId = match?.groupValues?.first() ?: return null
-        return jda.getUserById(discordId)?.let { DiscordUser(it) }
+        return (jda.getUserById(discordId) ?: jda.retrieveUserById(discordId).complete())?.let { DiscordUser(it) }
     }
 
     override fun getMentions(message: IncomingMessage): List<User> {
