@@ -11,9 +11,7 @@ class CommandDoesNotExist(cmd: String): Exception(cmd)
  */
 fun registerCommand(command: Command): Boolean {
     val protocol = command.protocol
-    if (protocol !in commands || commands[protocol] !is MutableMap)
-        commands[protocol] = mutableMapOf()
-    val commandsInProtocol = commands[protocol] ?: return false
+    val commandsInProtocol = commands.getOrPut(protocol) { mutableMapOf() }
 
     if (command.name.lowercase() in commandsInProtocol)
         return false
@@ -33,9 +31,7 @@ fun registerCommand(command: Command): Boolean {
 fun registerAlias(alias: Alias): Boolean {
     val chat = alias.scope
     val aliases = aliases
-    if (chat !in aliases || aliases[chat] !is MutableMap<String, Alias>)
-        aliases[chat] = mutableMapOf()
-    val aliasesInChat = aliases[chat]!!
+    val aliasesInChat = aliases.getOrPut(chat) { mutableMapOf() }
 
     if (alias.name.lowercase() in aliasesInChat)
         return false

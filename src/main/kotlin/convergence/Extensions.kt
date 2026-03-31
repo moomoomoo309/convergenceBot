@@ -46,11 +46,11 @@ fun String.titleCase() = "${first().uppercase()}${substring(1).lowercase()}"
 fun Date.toOffsetDatetime(): OffsetDateTime = this.toInstant().atOffset(defaultZoneOffset)
 
 fun String.toEmoji(): Emoji? {
-    val grapheme = GraphemeMatcher(this).results().findFirst().getOrNull()?.grapheme()
-    return if (grapheme?.type == Grapheme.Type.EMOJI)
-        grapheme as Emoji
-    else
-        null
+    val result = GraphemeMatcher(this).results().findFirst().getOrNull() ?: return null
+    // Ensure the match covers the entire string, not just a substring
+    if (result.start() != 0 || result.end() != this.length) return null
+    val grapheme = result.grapheme()
+    return if (grapheme?.type == Grapheme.Type.EMOJI) grapheme as Emoji else null
 }
 
 fun <K, V> MutableMap<K, V>.clearThen() = this.apply { this.clear() }

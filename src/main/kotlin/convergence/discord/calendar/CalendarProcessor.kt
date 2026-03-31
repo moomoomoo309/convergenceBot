@@ -77,16 +77,15 @@ data class VEventWrapper(val eventInstance: EventInstance): CalendarEvent {
     override val end: Instant get() = eventInstance.end.toInstant()
     override val uid: String? get() = eventInstance.uid
     override val location: String
-        get() = if (eventInstance.vevent.location?.value.isNullOrBlank()) "No Location"
-        else eventInstance.vevent.location!!.value
+        get() = eventInstance.vevent.location?.value?.takeUnless { it.isBlank() } ?: "No Location"
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        return when(other) {
-            is VEventWrapper -> name == other.name && start == other.start && end == other.end && description == other.description
-            is DiscordEventWrapper -> name == other.name && start == other.start && end == other.end
-            else -> false
-        }
+        return other is CalendarEvent
+                && name == other.name
+                && start == other.start
+                && end == other.end
+                && description == other.description
     }
 
     override fun hashCode(): Int = Objects.hash(name, start, end)
@@ -99,17 +98,15 @@ data class DiscordEventWrapper(val event: ScheduledEvent): CalendarEvent {
     override val end: Instant? get() = event.endTime?.toInstant()
     override val uid: String?
         get() = event.description?.takeLast(UID_LENGTH)?.trim()?.takeIf { uidRegex.matches(it) }
-    override val location: String get() = "No Location"
+    override val location: String get() = event.location
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        return when(other) {
-            is DiscordEventWrapper -> name == other.name && description == other.description &&
-                    start == other.start && end == other.end
-
-            is VEventWrapper -> name == other.name && start == other.start && end == other.end
-            else -> false
-        }
+        return other is CalendarEvent
+                && name == other.name
+                && start == other.start
+                && end == other.end
+                && description == other.description
     }
 
     override fun hashCode(): Int = Objects.hash(name, start, end)
@@ -124,9 +121,7 @@ object CalendarProcessor {
     }
 
     fun getAndCacheCalendar(url: String): CalDAVCollection? {
-        calendarCache[url]?.let {
-            return it
-        }
+        calendarCache[url]?.let { return it }
         val cal = CalDAVCollection(url)
         try {
             cal.testConnection(httpClient)

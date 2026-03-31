@@ -31,18 +31,17 @@ fun help(args: List<String>, chat: Chat): String {
     val numPages = ceil(sortedHelpText.size.toDouble() / COMMANDS_PER_PAGE).toInt()
     val pageOrCommand = if (args.isEmpty()) 1 else args[0].toIntOrNull()?.coerceIn(1..numPages) ?: args[0]
     return when(pageOrCommand) {
-        is Int -> {
-            val helpText = StringBuilder("Help page $pageOrCommand/$numPages:\n")
+        is Int -> buildString {
+            append("Help page $pageOrCommand/$numPages:\n")
             for (i in 0 until COMMANDS_PER_PAGE) {
                 val index = i + (pageOrCommand - 1) * COMMANDS_PER_PAGE
                 if (index >= sortedHelpText.size)
                     break
                 val currentCommand = sortedHelpText[index]
                 val indicator = if (currentCommand is Command) 'C' else 'A'
-                helpText.append("($indicator) ${currentCommand.name}" +
+                append("($indicator) ${currentCommand.name}" +
                         "${if (currentCommand is Command) " - " + (currentCommand.helpText) else ""}\n")
             }
-            helpText.toString()
         }
 
         is String -> {
@@ -218,9 +217,7 @@ fun events(chat: Chat): String {
     val commands = getCommands()
     if (commands.isEmpty())
         return "No events are currently scheduled."
-    val builder = StringBuilder()
-    addEventToBuilder(commands.sortedBy { it.time } as MutableList<ScheduledCommand>, chat, builder)
-    return builder.toString()
+    return buildString { addEventToBuilder(commands.sortedBy { it.time } as MutableList<ScheduledCommand>, chat, this) }
 }
 
 /**
@@ -230,9 +227,7 @@ private fun getUserEvents(sender: User): Map<User, MutableList<ScheduledCommand>
     val eventsList = getCommands(sender)
     val eventMap = HashMap<User, MutableList<ScheduledCommand>>()
     for (event in eventsList) {
-        if (!eventMap.containsKey(event.sender))
-            eventMap[event.sender] = mutableListOf()
-        eventMap[event.sender]!!.add(event)
+        eventMap.getOrPut(event.sender) { mutableListOf() }.add(event)
     }
     return eventMap
 }
@@ -275,16 +270,12 @@ private fun addEventToBuilder(
         val commandDelimiter = commandDelimiters.getOrDefault(chat, DEFAULT_COMMAND_DELIMITER)
         val name = event.commandName
         val argsStr = event.args.joinToString(" ")
-        builder.append("\t[$id] $time (${event.time}): \"$commandDelimiter$name $argsStr\"")
+        builder.append("\t[$id] $time (${event.time}): \"$commandDelimiter$name $argsStr\"\n")
     }
 }
 
 fun unschedule(args: List<String>): String {
-    val index: Int = try {
-        Integer.parseInt(args[0])
-    } catch(_: NumberFormatException) {
-        return "${args[0]} is not an event ID!"
-    }
+    val index = args[0].toIntOrNull() ?: return "${args[0]} is not an event ID!"
 
     Settings.update()
     return if (CommandScheduler.unschedule(index))
@@ -294,17 +285,11 @@ fun unschedule(args: List<String>): String {
 }
 
 fun link(args: List<String>, chat: Chat): String {
-    val index: Int = try {
-        Integer.parseInt(args[0])
-    } catch(_: NumberFormatException) {
-        return "${args[0]} is not a chat ID!"
-    }
+    val index = args[0].toIntOrNull() ?: return "${args[0]} is not a chat ID!"
 
     val chatToLink = chatMap[index]
     return if (chatToLink != null) {
-        if (chat !in linkedChats)
-            linkedChats[chat] = mutableSetOf()
-        linkedChats[chat]!!.add(chatToLink)
+        linkedChats.getOrPut(chat) { mutableSetOf() }.add(chatToLink)
         Settings.update()
         "${chatToLink.name} linked to ${chat.name}."
     } else
@@ -312,11 +297,7 @@ fun link(args: List<String>, chat: Chat): String {
 }
 
 fun unlink(args: List<String>, chat: Chat): String {
-    val index: Int = try {
-        Integer.parseInt(args[0])
-    } catch(_: NumberFormatException) {
-        return "${args[0]} is not a chat ID!"
-    }
+    val index = args[0].toIntOrNull() ?: return "${args[0]} is not a chat ID!"
     val toUnlink = chatMap[index] ?: return "No chat with ID $index found."
 
     return when {

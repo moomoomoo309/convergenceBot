@@ -38,16 +38,14 @@ object CommandScheduler: Thread() {
                             commandsList.remove(cmd.id)
                             Settings.serializedCommands.remove(cmd.id)
                         }
-                        if (cmdList.isNotEmpty())
-                            Settings.update()
                     } else {
                         for (cmd in cmdList) {
                             commandsList.remove(cmd.id)
                             Settings.serializedCommands.remove(cmd.id)
                         }
-                        if (cmdList.isNotEmpty())
-                            Settings.update()
                     }
+                    if (cmdList.isNotEmpty())
+                        Settings.update()
                     timesToRemove.add(cmdTime)
                 } else // It's already sorted chronologically, so all following events are early.
                     break
@@ -71,12 +69,10 @@ object CommandScheduler: Thread() {
      * @return The response the user will get from the command.
      */
     fun schedule(chat: Chat, sender: User, commandName: String, args: List<String>, time: OffsetDateTime): String {
-        if (time !in scheduledCommands)
-            scheduledCommands[time] = mutableListOf()
-        val cmd = ScheduledCommand(time, chat, sender, chat.protocol.name, commandName, args, currentId)
-        while (commandsList.containsKey(currentId))
+        while (currentId in commandsList)
             currentId++
-        scheduledCommands[time]!!.add(cmd)
+        val cmd = ScheduledCommand(time, chat, sender, chat.protocol.name, commandName, args, currentId)
+        scheduledCommands.getOrPut(time) { mutableListOf() }.add(cmd)
         if (cmd.id in commandsList)
             defaultLogger.error("Duplicate IDs in schedulerThread!")
         commandsList[cmd.id] = cmd

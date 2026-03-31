@@ -368,7 +368,7 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
 
     override fun getMessages(chat: Chat, since: OffsetDateTime?, until: OffsetDateTime?): List<DiscordMessageHistory> {
         if (chat !is DiscordChat ||
-            (since != null && since !in (OffsetDateTime.now()..(until ?: OffsetDateTime.MAX))))
+            (since != null && until != null && since.isAfter(until)))
             return emptyList()
         val history = chat.channel.history
 
@@ -378,7 +378,7 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
                 if (until == null) {
                     for ((i2, msg) in history.retrievedHistory.withIndex())
                         if (msg.timeCreated.isAfter(since))
-                            return history.retrievedHistory.subList(i2, history.size() - 1)
+                            return history.retrievedHistory.subList(i2, history.size())
                                 .map { DiscordMessageHistory(it) }
                 } else {
                     var startIndex = 0

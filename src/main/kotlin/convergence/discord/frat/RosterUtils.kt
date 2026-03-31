@@ -31,28 +31,29 @@ data class BrotherInfo(
 }
 
 fun getNewRoster(): List<BrotherInfo> {
-    val workbook = WorkbookFactory.create(URI(fratConfig.rosterURL).toURL().openStream())
-    val worksheet = workbook.getSheet("Rosters 350+")
-    var i = 0
-    var row = worksheet.getRow(i)
-    formulaEvaluator = XSSFFormulaEvaluator(workbook as XSSFWorkbook)
-    while (row.getCell(0).readString() != "351") {
-        i += 1
-        row = worksheet.getRow(i)
-    }
-    val brotherInfoList = mutableListOf<BrotherInfo>()
-    while (i < 1000) {
-        if (row.getCell(0).readString().isNotBlank())
-            brotherInfoList.add(extractInfoFromRow(row))
-        if ((worksheet.getRow(i + 1)?.getCell(0)?.readString()?.isBlank() != false) &&
-            (worksheet.getRow(i + 2)?.getCell(0)?.readString()?.isBlank() != false)) {
-            break
+    return WorkbookFactory.create(URI(fratConfig.rosterURL).toURL().openStream()).use { workbook ->
+        val worksheet = workbook.getSheet("Rosters 350+")
+        var i = 0
+        var row = worksheet.getRow(i)
+        formulaEvaluator = XSSFFormulaEvaluator(workbook as XSSFWorkbook)
+        while (row.getCell(0).readString() != "351") {
+            i += 1
+            row = worksheet.getRow(i)
         }
-        i += 1
-        row = worksheet.getRow(i)
+        val brotherInfoList = mutableListOf<BrotherInfo>()
+        while (i < 1000) {
+            if (row.getCell(0).readString().isNotBlank())
+                brotherInfoList.add(extractInfoFromRow(row))
+            if ((worksheet.getRow(i + 1)?.getCell(0)?.readString()?.isBlank() != false) &&
+                (worksheet.getRow(i + 2)?.getCell(0)?.readString()?.isBlank() != false)) {
+                break
+            }
+            i += 1
+            row = worksheet.getRow(i)
+        }
+        brotherPairLazy.reset()
+        brotherInfoList.filter { it.rosterNumber !in illegalRosters }
     }
-    brotherPairLazy.reset()
-    return brotherInfoList.filter { it.rosterNumber !in illegalRosters }
 }
 
 private fun getOrdinal(day: Int): String {
