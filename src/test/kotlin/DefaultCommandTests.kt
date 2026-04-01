@@ -9,7 +9,7 @@ val testChat = TestChat()
 
 class TestUser: User(TestProtocol) {
     override fun toKey(): String {
-        TODO("Not yet implemented")
+        TODO("Not needed for tests")
     }
 }
 

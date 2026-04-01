@@ -102,11 +102,13 @@ data class DiscordEventWrapper(val event: ScheduledEvent): CalendarEvent {
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        return other is CalendarEvent
-                && name == other.name
-                && start == other.start
-                && end == other.end
-                && description == other.description
+        return when(other) {
+            is DiscordEventWrapper -> name == other.name && description == other.description &&
+                    start == other.start && end == other.end
+
+            is VEventWrapper -> name == other.name && start == other.start && end == other.end
+            else -> false
+        }
     }
 
     override fun hashCode(): Int = Objects.hash(name, start, end)
@@ -309,7 +311,7 @@ object CalendarProcessor {
         val futureIter = futures.iterator()
         while (futureIter.hasNext()) {
             val (wrapper, _) = futureIter.next()
-            if (discordEvents.any { wrapper == it }) {
+            if (discordEvents.any { it == wrapper }) {
                 futureIter.remove()
             }
         }
