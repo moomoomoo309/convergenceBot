@@ -326,7 +326,7 @@ fun registerFratCommands() {
                     .getOrPut(chat) { mutableMapOf() }
                     .putIfAbsent(target, mutableMapOf())
                 Settings.update()
-                "Chat registered."
+                "Chat registered to mention ${getUserName(chat, target)}."
             },
             "Registers this chat with the given user as a mention chat.",
             "registerMentionChat (user)",
@@ -362,17 +362,28 @@ fun registerFratCommands() {
         )
     )
     callbacks.getOrPut(MentionedUser::class) { mutableListOf() }.add(
-        MentionedUser { chat: Chat, msg: IncomingMessage, _: User, users: Set<User> ->
+        MentionedUser { chat: Chat, msg: IncomingMessage, sender: User, users: List<User> ->
             if (msg is DiscordIncomingMessage) {
+                if (sender !is DiscordUser)
+                    return@MentionedUser true
+                val newMentions = mutableMapOf<DiscordUser, Int>()
                 for (user in users) {
-                    val mentions = (mentionChats[chat] ?: return@MentionedUser true)
-                        .getOrPut(user) { mutableMapOf() }
-                    for (mentionedUser in msg.data.mentions.users) {
-                        val discordUser = DiscordProtocol.getUser(mentionedUser.idLong) ?: continue
-                        mentions[discordUser] = mentions.getOrDefault(discordUser, 0) + 1
-                    }
-                    Settings.update()
+                    user as? DiscordUser ?: continue
+                    val mentions = (mentionChats[chat] ?: return@MentionedUser true)[user] ?: return@MentionedUser true
+                    val mentionCount = mentions.getOrDefault(sender, 0) + 1
+                    mentions[sender] = mentionCount
+                    newMentions[user] = mentionCount
                 }
+                Settings.update()
+                val parts = newMentions.toList().map { (user, count) ->
+                    "${user.name} $count time${if (count > 1) "s" else ""}"
+                }
+                val mentionStr = when (parts.size) {
+                    1 -> parts[0]
+                    2 -> "${parts[0]} and ${parts[1]}"
+                    else -> "${parts.dropLast(1).joinToString(", ")}, and ${parts.last()}"
+                }
+                sendMessage(chat, "You mentioned $mentionStr.")
             }
             true
         }
@@ -399,7 +410,8 @@ private fun mentionStatsFct() {
         sendMessage(chat, "Monthly mention stats:\n${mentionStats(chat)}")
     }
     for ((_, stats) in mentionChats)
-        stats.clear()
+        for ((_, mentioners) in stats)
+            mentioners.clear()
     Settings.update()
     // Schedule it again for next month
     CommandScheduler.taskList.add(ScheduledTask(nextMonth(), ::mentionStatsFct))
@@ -412,7 +424,7 @@ fun mentionStats(chat: Chat) = mentionChats
             mentions.toList().joinToString(
                 "\n\t",
                 transform = { (user, count) ->
-                    "${DiscordProtocol.getUserName(chat, user)}: $count"
+                    "${getUserName(chat, user)}: $count"
                 })
         }"
     }.joinToString()

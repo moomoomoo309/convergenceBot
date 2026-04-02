@@ -185,9 +185,10 @@ class EditMessage(val fct: (oldMessage: String, sender: User, newMessage: String
     fun invoke(oldMessage: String, sender: User, newMessage: String): Boolean = fct(oldMessage, sender, newMessage)
 }
 
-class MentionedUser(val fct: (Chat, message: IncomingMessage, sender: User, users: Set<User>) -> Boolean): ChatEvent {
+class MentionedUser(val fct: (Chat, message: IncomingMessage, sender: User, users: List<User>) -> Boolean): ChatEvent {
     override fun invoke(vararg args: Any) = invokeTyped(fct, args)
-    fun invoke(chat: Chat, message: IncomingMessage, sender: User, users: Set<User>) = fct(chat, message, sender, users)
+    fun invoke(chat: Chat, message: IncomingMessage, sender: User, users: List<User>) =
+        fct(chat, message, sender, users)
 }
 
 class StartedTyping(val fct: (Chat, User) -> Boolean): ChatEvent {

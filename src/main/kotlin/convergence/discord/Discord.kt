@@ -522,7 +522,7 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
     val discordMentionRegex = Regex("^<@([0-9]{1,20})>$")
     override fun getUserFromMentionText(chat: Chat, mention: String): User? {
         val match = discordMentionRegex.matchEntire(mention)
-        val discordId = match?.groupValues?.first() ?: return null
+        val discordId = match?.groupValues?.getOrNull(1) ?: return null
         return (jda.getUserById(discordId) ?: jda.retrieveUserById(discordId).submit().join())?.let { DiscordUser(it) }
     }
 
@@ -637,18 +637,22 @@ private val reactionChannelCallback =
         return@ReactionChanged true
     }
 
+val mentionRegex = Regex("<@!?(\\d+)>")
 object MessageListener: ListenerAdapter() {
     override fun onMessageReceived(event: MessageReceivedEvent) {
         val chat = DiscordChat(event)
         val sender = DiscordUser(event)
         val message = DiscordIncomingMessage(event.message)
-        val mentionedMembers = event.message.mentions.members
+        // If I just grab this from mentions.members, it's deduplicated. We have to pull it out manually.
+        val mentionedMembers = mentionRegex.findAll(event.message.contentRaw)
+            .mapNotNull { event.guild.getMemberById(it.groupValues[1]) }
+            .toList()
         if (mentionedMembers.isNotEmpty())
             DiscordProtocol.mentionedUsers(
                 chat,
                 DiscordIncomingMessage(event.message),
                 sender,
-                mentionedMembers.map { DiscordUser(it) }.toSet()
+                mentionedMembers.map { DiscordUser(it) }
             )
         val images = event.message.attachments
             .filter { it.isImage }
