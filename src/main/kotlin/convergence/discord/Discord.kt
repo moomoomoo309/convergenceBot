@@ -335,6 +335,26 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
 
     override fun getBotNickname(chat: Chat): String? = getUserNickname(chat, getBot(chat))
 
+    override fun setUserNickname(chat: Chat, user: User, newName: String): String? {
+        if (user !is DiscordUser)
+            return "Not a discord user"
+        if (chat !is DiscordChat)
+            return "Not a discord chat"
+        val guild = chat.server.guild
+        guild.modifyNickname(guild.getMember(user.author) ?: return "User not in this server", newName)
+            .submit().join()
+        return null
+    }
+
+    override fun setBotNickname(chat: Chat, newName: String): String? {
+        if (chat !is DiscordChat)
+            return "Not a discord chat"
+        val user = getBot(chat) as DiscordUser
+        val guild = chat.server.guild
+        guild.modifyNickname(guild.getMember(user.author) ?: return "Bot not in this server", newName)
+        return null
+    }
+
 
     override fun sendImages(chat: Chat, message: OutgoingMessage, sender: User, vararg images: Image) {
         if (chat is DiscordChat && images.isArrayOf<DiscordImage>()) {

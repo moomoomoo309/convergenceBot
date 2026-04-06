@@ -205,6 +205,20 @@ fun brotherInfo(args: List<String>, searchCriteria: (BrotherInfo) -> String?): D
     )
 }
 
+private fun setAlumnusNickname(args: List<String>, chat: Chat, sender: User): String {
+    if (args.size != 1)
+        return "Syntax: setAlumnusNickname (roster number)"
+    if (sender !is DiscordUser || chat !is DiscordChat)
+        return "This command only works on Discord."
+    if (chat.server.guild.idLong != fratConfig.aaServerID)
+        return "You can only run this command on the alumni association server."
+    val brotherInfo = getBrotherInfo(args[0]) { it.rosterNumber }
+        ?: return "No brother with roster number ${args[0]} found."
+    val nickname = "${brotherInfo.rosterNumber} - ${brotherInfo.getName()} (${brotherInfo.realPledgeClass})"
+    DiscordProtocol.setUserNickname(chat, sender, nickname)
+    return "Nickname updated."
+}
+
 private val pledgeRole: DiscordRole? by lazy {
     jda.getRoleById(fratConfig.pledgeRoleID)?.let { DiscordRole(it) }
 }
@@ -357,8 +371,17 @@ fun registerFratCommands() {
             listOf(ArgumentSpec("user", ArgumentType.STRING)),
             { _, chat, _ -> "Mention chat stats for this channel:\n${mentionStats(chat)}" },
             "Lists the stats for this mention chat.",
-            "mentionChatStats (takes no arguments)",
-            isNotPledge
+            "mentionChatStats (takes no arguments)"
+        )
+    )
+    registerCommand(
+        Command.of(
+            DiscordProtocol,
+            "setAlumnusNickname",
+            listOf(ArgumentSpec("rosternumber", ArgumentType.NUMBER)),
+            ::setAlumnusNickname,
+            "Sets an alumnus's nickname for the alumni association server.",
+            "setAlumnusNickname (roster number)"
         )
     )
     callbacks.getOrPut(MentionedUser::class) { mutableListOf() }.add(

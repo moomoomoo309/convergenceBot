@@ -112,6 +112,8 @@ object UniversalChat: Chat(UniversalProtocol, "Universal") {
 interface HasNicknames {
     fun getUserNickname(chat: Chat, user: User): String?
     fun getBotNickname(chat: Chat): String?
+    fun setUserNickname(chat: Chat, user: User, newName: String): String?
+    fun setBotNickname(chat: Chat, newName: String): String?
 
     fun changedNickname(chat: Chat, user: User, oldName: String) = runCallbacks<ChangedNickname>(chat, user, oldName)
 }
