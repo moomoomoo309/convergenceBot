@@ -28,19 +28,18 @@ fun getUserFromName(chat: Chat, name: String): User? {
 
 const val COMMANDS_PER_PAGE = 10
 fun help(args: List<String>, chat: Chat): String {
-    val numPages = ceil(sortedHelpText.size.toDouble() / COMMANDS_PER_PAGE).toInt()
+    val sortedCommands = commands.values.flatMap { it.values }.sortedBy { it.name }
+    val numPages = ceil(sortedCommands.size.toDouble() / COMMANDS_PER_PAGE).toInt()
     val pageOrCommand = if (args.isEmpty()) 1 else args[0].toIntOrNull()?.coerceIn(1..numPages) ?: args[0]
     return when(pageOrCommand) {
         is Int -> buildString {
             append("Help page $pageOrCommand/$numPages:\n")
             for (i in 0 until COMMANDS_PER_PAGE) {
                 val index = i + (pageOrCommand - 1) * COMMANDS_PER_PAGE
-                if (index >= sortedHelpText.size)
+                if (index >= sortedCommands.size)
                     break
-                val currentCommand = sortedHelpText[index]
-                val indicator = if (currentCommand is Command) 'C' else 'A'
-                append("($indicator) ${currentCommand.name}" +
-                        "${if (currentCommand is Command) " - " + (currentCommand.helpText) else ""}\n")
+                val currentCommand = sortedCommands[index]
+                append("${currentCommand.name} - ${currentCommand.helpText}\n")
             }
         }
 
@@ -57,8 +56,11 @@ fun help(args: List<String>, chat: Chat): String {
                     append(currentCommand.helpText)
                     append("\nUsage: ")
                     append(currentCommand.syntaxText)
-                } else
-                    append("A)")
+                } else {
+                    append("A) - Runs \"")
+                    append((currentCommand as Alias).commandText())
+                    append("\"")
+                }
             }
         }
 

@@ -71,7 +71,7 @@ interface CalendarEvent {
 }
 
 data class VEventWrapper(val eventInstance: EventInstance): CalendarEvent {
-    override val name: String get() = eventInstance.summary ?: "Unnamed event"
+    override val name: String get() = eventInstance.summary?.trim() ?: "Unnamed event"
     override val description: String get() = eventInstance.vevent.description?.value ?: ""
     override val start: Instant get() = eventInstance.start.toInstant()
     override val end: Instant get() = eventInstance.end.toInstant()
@@ -81,11 +81,11 @@ data class VEventWrapper(val eventInstance: EventInstance): CalendarEvent {
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        return other is CalendarEvent
-                && name == other.name
-                && start == other.start
-                && end == other.end
-                && description == other.description
+        return when (other) {
+            is VEventWrapper -> name == other.name && start == other.start && end == other.end && description == other.description
+            is CalendarEvent -> name == other.name && start == other.start && end == other.end
+            else -> false
+        }
     }
 
     override fun hashCode(): Int = Objects.hash(name, start, end)
@@ -227,8 +227,13 @@ object CalendarProcessor {
         val guildId = cals.first().guildId
         for (cal in cals) {
             val calCollection = getAndCacheCalendar(cal.calURL) ?: return "No calendar found at URL \"${cal.calURL}\"."
-            val cals = calCollection.queryCalendars(httpClient, buildCalendarQuery(Instant.now()))
-            calendarEvents.addAll(getCalDAVEventsNextDays(cals).map { VEventWrapper(it) })
+            // ical4j's timezone registry may not be fully populated on the first query, causing some
+            // calendar objects to fail parsing (returning null). If that happens, retry once — the first
+            // query will have warmed up the registry so the second succeeds.
+            var queriedCals = calCollection.queryCalendars(httpClient, buildCalendarQuery(Instant.now()))
+            if (queriedCals.any { it == null })
+                queriedCals = calCollection.queryCalendars(httpClient, buildCalendarQuery(Instant.now()))
+            calendarEvents.addAll(getCalDAVEventsNextDays(queriedCals.filterNotNull()).map { VEventWrapper(it) })
             if (cal.guildId != guildId)
                 return "The guild IDs of each calendar don't match!"
         }
@@ -262,6 +267,13 @@ object CalendarProcessor {
             CompletableFuture.allOf(*futures.map {
                 it.second.submit()
             }.toTypedArray()).join()
+        } else {
+            println("To Add")
+            println(objectMapper.writeValueAsString(futures.map { it.first }))
+            println("Invalid")
+            println(objectMapper.writeValueAsString(invalidEvents))
+            println("Duplicate")
+            println(objectMapper.writeValueAsString(duplicateEvents))
         }
 
         return "Added: ${futures.joinToString(", ") { it.first.name }}\n" +

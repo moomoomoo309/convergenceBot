@@ -242,7 +242,6 @@ val chatMap: MutableMap<Int, Chat> = mutableMapOf()
 val reverseChatMap: MutableMap<Chat, Int> = mutableMapOf()
 val commands: MutableMap<Protocol, MutableMap<String, Command>> = mutableMapOf()
 val protocols: MutableList<Protocol> = mutableListOf()
-val sortedHelpText: MutableList<CommandLike> = mutableListOf()
 var currentChatID: Int = 0
 val aliasVars: MutableMap<String, (chat: Chat, sender: User) -> String?> = mutableMapOf(
     "%sender" to { c: Chat, s: User -> c.protocol.getUserName(c, s) },

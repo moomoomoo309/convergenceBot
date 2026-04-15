@@ -13,6 +13,10 @@
         </encoder>
     </appender>
 
+    <!-- caldav4j logs a WARN for every unparseable calendar object (e.g. malformed ATTENDEE line-folding);
+         we handle null calendars ourselves via filterNotNull, so suppress the noise. -->
+    <logger name="com.github.caldav4j.model.response.CalendarDataProperty" level="ERROR"/>
+
     <root level="info">
         <appender-ref ref="STDOUT"/>
         <appender-ref ref="FILE"/>

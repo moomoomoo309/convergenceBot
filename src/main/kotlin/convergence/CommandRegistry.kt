@@ -16,10 +16,6 @@ fun registerCommand(command: Command): Boolean {
     if (command.name.lowercase() in commandsInProtocol)
         return false
 
-    if (sortedHelpText.isEmpty())
-        sortedHelpText.add(command)
-    else
-        sortedHelpText.add(-sortedHelpText.binarySearch(command) - 1, command)
     commandsInProtocol[command.name.lowercase()] = command
     return true
 }

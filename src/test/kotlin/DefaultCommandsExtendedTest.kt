@@ -12,7 +12,7 @@ import kotlin.test.assertTrue
  * Extended unit tests for the default commands defined in DefaultCommands.kt.
  *
  * Each test group is isolated: global state (timers, aliases, linkedChats, chatMap,
- * commands, sortedHelpText, commandDelimiters) is reset before and after every test.
+ * commands, commandDelimiters) is reset before and after every test.
  */
 class DefaultCommandsExtendedTest {
 
@@ -32,7 +32,6 @@ class DefaultCommandsExtendedTest {
         linkedChats.clear()
         chatMap.clear()
         reverseChatMap.clear()
-        sortedHelpText.clear()
         commands.remove(TestProtocol)
         commands.remove(UniversalProtocol)
         commandDelimiters.clear()
@@ -46,7 +45,6 @@ class DefaultCommandsExtendedTest {
         linkedChats.clear()
         chatMap.clear()
         reverseChatMap.clear()
-        sortedHelpText.clear()
         commands.remove(TestProtocol)
         commands.remove(UniversalProtocol)
         commandDelimiters.clear()

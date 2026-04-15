@@ -1,9 +1,5 @@
 
-import convergence.discord.calendar.CalendarProcessor
-import convergence.discord.calendar.DAYS
-import convergence.discord.calendar.DiscordEventWrapper
-import convergence.discord.calendar.EventInstance
-import convergence.discord.calendar.VEventWrapper
+import convergence.discord.calendar.*
 import io.mockk.every
 import io.mockk.mockk
 import net.dv8tion.jda.api.entities.ScheduledEvent
@@ -76,6 +72,7 @@ class CalendarProcessorTest {
         every { mock.description } returns description
         every { mock.startTime } returns makeOffsetDateTime(start)
         every { mock.endTime } returns end?.let { makeOffsetDateTime(it) }
+        every { mock.location } returns "No Location"
         return mock
     }
 
@@ -135,6 +132,35 @@ class CalendarProcessorTest {
         val vevent = makeVEvent(testUid, "My Event", soon, hourLater)
         val wrapper = VEventWrapper(EventInstance(vevent, makeDateTime(soon), makeDateTime(hourLater)))
         assertEquals("My Event", wrapper.name)
+    }
+
+    @Test
+    fun vEventWrapperNameTrimsTrailingWhitespace() {
+        val vevent = makeVEvent(testUid, "Andrew Kocur's Birthday ", soon, hourLater)
+        val wrapper = VEventWrapper(EventInstance(vevent, makeDateTime(soon), makeDateTime(hourLater)))
+        assertEquals("Andrew Kocur's Birthday", wrapper.name)
+    }
+
+    @Test
+    fun vEventWrapperNameTrimsLeadingWhitespace() {
+        val vevent = makeVEvent(testUid, "  Leading Space", soon, hourLater)
+        val wrapper = VEventWrapper(EventInstance(vevent, makeDateTime(soon), makeDateTime(hourLater)))
+        assertEquals("Leading Space", wrapper.name)
+    }
+
+    /**
+     * Regression: if a calendar event summary has a trailing space, Discord trims it when storing
+     * the event name. On the next sync the VEventWrapper name (with space) would not match the
+     * DiscordEventWrapper name (without space), causing the event to be re-added every sync cycle.
+     */
+    @Test
+    fun vEventWrapperWithTrailingSpaceInSummaryEqualsDiscordEventWrapperWithTrimmedName() {
+        val vevent = makeVEvent(testUid, "Andrew Kocur's Birthday ", soon, hourLater)
+        val vWrapper = VEventWrapper(EventInstance(vevent, makeDateTime(soon), makeDateTime(hourLater)))
+        // Discord stores/returns the name trimmed
+        val dWrapper = DiscordEventWrapper(makeDiscordEvent("Andrew Kocur's Birthday", testUid, soon, hourLater))
+        assertEquals<Any>(vWrapper, dWrapper, "VEventWrapper with trailing space should equal DiscordEventWrapper with trimmed name")
+        assertEquals<Any>(dWrapper, vWrapper, "DiscordEventWrapper with trimmed name should equal VEventWrapper with trailing space")
     }
 
     @Test

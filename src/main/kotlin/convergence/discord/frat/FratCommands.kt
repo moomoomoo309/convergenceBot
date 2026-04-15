@@ -73,7 +73,7 @@ fun generateGraphGoingDown(
 private fun resolveNode(args: List<String>): Pair<String, BrotherTreeNode>? {
     val name = args.joinToString(" ").lowercase()
     val startInfo = getBrotherInfo(name) { it.getName() } ?: return null
-    val node = brotherMap["${startInfo.firstName} ${startInfo.lastName}".lowercase()] ?: return null
+    val node = brotherMap[startInfo.getName().lowercase()] ?: return null
     return name to node
 }
 
@@ -151,7 +151,7 @@ fun brotherBigs(args: List<String>): OutgoingMessage {
     var node: BrotherTreeNode? = brotherMap[startInfo.getName().lowercase()]
         ?: return SimpleOutgoingMessage(
             "No brothers found searching for " +
-                    "\"${startInfo.firstName} ${startInfo.lastName}\"."
+                    "\"${startInfo.getName()}\"."
         )
     // Add the line going up
     val line = mutableListOf(node!!.brother)

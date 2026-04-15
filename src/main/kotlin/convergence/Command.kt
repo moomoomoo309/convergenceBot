@@ -171,4 +171,5 @@ data class Alias(
         scope.protocol.name,
         args
     )
+    fun commandText() = "${command.name} ${args.joinToString(" ")}"
 }
