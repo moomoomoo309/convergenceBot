@@ -225,10 +225,13 @@ private val pledgeRole: DiscordRole? by lazy {
 
 val isNotPledge = { _: List<String>, chat: Chat, sender: User ->
     val server = (chat as? DiscordChat)?.server
-    val role = pledgeRole
-    if (server != null && role != null && DiscordProtocol.userHasRole(server, sender, role))
-        SimpleOutgoingMessage("Nice try, pledge.")
-    else
+    if (fratConfig.pledgeRoleID != 0L && chat is DiscordChat) {
+        val role = chat.server.guild.getRoleById(fratConfig.pledgeRoleID)?.let { DiscordRole(it) }
+        if (server != null && role != null && DiscordProtocol.userHasRole(server, sender, role))
+            SimpleOutgoingMessage("Nice try, pledge.")
+        else
+            null
+    } else
         null
 }
 
@@ -237,29 +240,29 @@ fun registerFratCommands() {
     registerCommand(
         Command(
             DiscordProtocol,
-            "brotherbyroster",
+            "brotherByRoster",
             listOf(ArgumentSpec("Roster", ArgumentType.STRING)),
             { args: List<String> -> brotherInfo(args) { it.rosterNumber } },
             "Gets information about a particular brother based on their roster number.",
-            "brotherbyroster (roster number)",
+            "brotherByRoster (roster number)",
             isNotPledge
         )
     )
     registerCommand(
         Command(
             DiscordProtocol,
-            "brotherbyname",
+            "brotherByName",
             listOf(ArgumentSpec("Name", ArgumentType.STRING)),
             { args -> brotherInfo(args) { it.getName() } },
             "Gets information about a particular brother based on their first and last name.",
-            "brotherbyname (name)",
+            "brotherByName (name)",
             isNotPledge
         )
     )
     registerCommand(
         Command(
             DiscordProtocol,
-            "brotherbynickname",
+            "brotherByNickname",
             listOf(ArgumentSpec("Nickname", ArgumentType.STRING)),
             { args -> brotherInfo(args) { it.nickName } },
             "Gets information about a particular brother based on their nickname.",
@@ -270,7 +273,7 @@ fun registerFratCommands() {
     registerCommand(
         Command(
             DiscordProtocol,
-            "brotherline",
+            "brotherLine",
             listOf(ArgumentSpec("Name", ArgumentType.STRING)),
             { args -> brotherLine(args) },
             "Gets information about a particular brother's line going down.",
@@ -281,7 +284,7 @@ fun registerFratCommands() {
     registerCommand(
         Command(
             DiscordProtocol,
-            "brotherbigs",
+            "brotherBigs",
             listOf(ArgumentSpec("Name", ArgumentType.STRING)),
             { args -> brotherBigs(args) },
             "Gets information about a particular brother's line going up.",
@@ -292,7 +295,7 @@ fun registerFratCommands() {
     registerCommand(
         Command(
             DiscordProtocol,
-            "fullline",
+            "fullLine",
             listOf(ArgumentSpec("Name", ArgumentType.STRING)),
             { args -> fullLine(args) },
             "Gets information about a particular brother's line going up and down.",
@@ -303,7 +306,7 @@ fun registerFratCommands() {
     registerCommand(
         Command(
             DiscordProtocol,
-            "fulltree",
+            "fullTree",
             listOf(ArgumentSpec("Name", ArgumentType.STRING)),
             { args -> fullTree(args) },
             "Shows the full tree, with a particular brother's line going up and down highlighted.",

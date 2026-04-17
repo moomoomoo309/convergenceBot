@@ -443,6 +443,14 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
         return member.roles.map { DiscordRole(it) }
     }
 
+    override fun userHasRole(server: Server, user: User, role: DiscordRole): Boolean {
+        if (server !is DiscordServer || user !is DiscordUser)
+            return false
+        val guild = server.guild
+        val member = guild.getMember(user.author) ?: guild.retrieveMember(user.author).submit().join()
+        return member?.roles?.contains(role.role) ?: false
+    }
+
     override fun setBotAvailability(chat: Chat, availability: Availability) {
         if (availability is DiscordAvailability)
             jda.presence.setPresence(availability.status, true)

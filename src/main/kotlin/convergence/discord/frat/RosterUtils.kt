@@ -24,7 +24,8 @@ data class BrotherInfo(
     @JsonIgnore
     fun getName() = "$firstName $lastName"
 
-    val realPledgeClass: String by lazy { pledgeClass.map { englishToGreek[it] }.joinToString("") }
+    @JsonIgnore
+    val realPledgeClass: String = pledgeClass.map { englishToGreek[it] }.joinToString("")
 
     @JsonIgnore
     fun getNodeName() = "${getName()}\n$rosterNumber - $realPledgeClass"
