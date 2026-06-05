@@ -329,7 +329,8 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
 
     override fun getUserNickname(chat: Chat, user: User): String? {
         if (user is DiscordUser && chat is DiscordChat && chat.channel is TextChannel)
-            return chat.channel.guild.getMember(user.author)?.nickname
+            return (chat.channel.guild.getMember(user.author) ?:
+                chat.channel.guild.retrieveMember(user.author).submit().join())?.nickname
         return null
     }
 
@@ -341,8 +342,10 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
         if (chat !is DiscordChat)
             return "Not a discord chat"
         val guild = chat.server.guild
-        guild.modifyNickname(guild.getMember(user.author) ?: return "User not in this server", newName)
-            .submit().join()
+        guild.modifyNickname(guild.getMember(user.author)
+            ?: guild.retrieveMember(user.author).submit().join()
+            ?: return "User not in this server", newName
+        ).submit().join()
         return null
     }
 
@@ -351,7 +354,11 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
             return "Not a discord chat"
         val user = getBot(chat) as DiscordUser
         val guild = chat.server.guild
-        guild.modifyNickname(guild.getMember(user.author) ?: return "Bot not in this server", newName)
+        guild.modifyNickname(
+            guild.getMember(user.author)
+            ?: guild.retrieveMember(user.author).submit().join()
+            ?: return "Bot not in this server", newName
+        ).submit().join()
         return null
     }
 
@@ -436,10 +443,9 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
 
     override fun getUserRoles(server: Server, user: User): List<DiscordRole> {
         if (server !is DiscordServer || user !is DiscordUser) return emptyList()
-        // Use getMember (cache) rather than retrieveMember(...).complete() — blocking REST calls on JDA's event
-        // dispatch thread throw IllegalStateException. Offline members won't be in the cache with the default
-        // MemberCachePolicy, but anyone actively sending commands will be online and thus cached.
-        val member = server.guild.getMember(user.author) ?: return emptyList()
+        val member = server.guild.getMember(user.author)
+            ?: server.guild.retrieveMember(user.author).submit().join()
+            ?: return emptyList()
         return member.roles.map { DiscordRole(it) }
     }
 
@@ -447,7 +453,8 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
         if (server !is DiscordServer || user !is DiscordUser)
             return false
         val guild = server.guild
-        val member = guild.getMember(user.author) ?: guild.retrieveMember(user.author).submit().join()
+        val member = guild.getMember(user.author)
+            ?: guild.retrieveMember(user.author).submit().join()
         return member?.roles?.contains(role.role) ?: false
     }
 
@@ -459,6 +466,7 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
     override fun getUserAvailability(chat: Chat, user: User): DiscordAvailability {
         if (user is DiscordUser && chat is DiscordChat && chat.channel is TextChannel) {
             val member = chat.channel.guild.getMember(user.author)
+                ?: chat.channel.guild.retrieveMember(user.author).submit().join()
                 ?: return DiscordAvailability(OnlineStatus.UNKNOWN)
             return DiscordAvailability(member.onlineStatus)
         }
@@ -615,11 +623,8 @@ private fun forwardMessageToReactChannel(
             mutableSetOf()
         )
     ) {
-        config.destination.channel.sendMessage(
-            MessageCreateBuilder()
-                .addContent(message.data.member!!.asMention)
-                .build()
-        ).queue()
+        val member = (message.data.member ?: message.data.guild.retrieveMember(message.data.author).submit().join())
+        config.destination.channel.sendMessage(MessageCreateBuilder().addContent(member.asMention).build()).queue()
         message.data.forwardTo(config.destination.channel).queue { fwd ->
             forwardedMessages.getOrPut(server.guild.idLong) { mutableSetOf() }.add(fwd.idLong)
             val discordEmoji =
@@ -656,7 +661,6 @@ private val reactionChannelCallback =
             return@ReactionChanged false
 
         for (config in configs) {
-            message.data.member ?: continue
             val neededScore = config.emojis[emoji.asString()] ?: continue
             if (newAmount == neededScore) {
                 forwardMessageToReactChannel(message, config, server, emoji)
@@ -673,7 +677,10 @@ object MessageListener: ListenerAdapter() {
         val message = DiscordIncomingMessage(event.message)
         // If I just grab this from mentions.members, it's deduplicated. We have to pull it out manually.
         val mentionedMembers = mentionRegex.findAll(event.message.contentRaw)
-            .mapNotNull { event.guild.getMemberById(it.groupValues[1]) }
+            .map {
+                event.guild.getMemberById(it.groupValues[1]) ?:
+                    event.guild.retrieveMemberById(it.groupValues[1]).submit().join()
+            }
             .toList()
         if (mentionedMembers.isNotEmpty())
             DiscordProtocol.mentionedUsers(

@@ -15,12 +15,23 @@ fun getUserFromName(chat: Chat, name: String): User? {
             return it
         }
     }
-    for (user in protocol.getUsers(chat)) {
-        val currentName = protocol.getUserName(chat, user)
-        if (currentName == name)
-            return user
-        else if (alternateOption == null && name in currentName)
-            alternateOption = user
+    if (protocol is HasNicknames) {
+        for (user in protocol.getUsers(chat)) {
+            val currentName = protocol.getUserName(chat, user)
+            val nickname = protocol.getUserNickname(chat, user)
+            if (nickname == name || currentName == name)
+                return user
+            else if (alternateOption == null && name in currentName)
+                alternateOption = user
+        }
+    } else {
+        for (user in protocol.getUsers(chat)) {
+            val currentName = protocol.getUserName(chat, user)
+            if (currentName == name)
+                return user
+            else if (alternateOption == null && name in currentName)
+                alternateOption = user
+        }
     }
     return alternateOption
 }

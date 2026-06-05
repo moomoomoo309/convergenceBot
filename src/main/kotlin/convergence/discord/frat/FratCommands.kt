@@ -42,6 +42,7 @@ val englishToGreek = mapOf(
     'F' to 'Φ',
     'C' to 'Χ',
     'Y' to 'Ψ',
+    '0' to 'Ω'
 )
 
 fun getBrotherInfo(name: String, searchCriteria: (BrotherInfo) -> String?): BrotherInfo? {
@@ -217,10 +218,6 @@ private fun setAlumnusNickname(args: List<String>, chat: Chat, sender: User): St
     val nickname = "${brotherInfo.rosterNumber} - ${brotherInfo.getName()} (${brotherInfo.realPledgeClass})"
     DiscordProtocol.setUserNickname(chat, sender, nickname)
     return "Nickname updated."
-}
-
-private val pledgeRole: DiscordRole? by lazy {
-    jda.getRoleById(fratConfig.pledgeRoleID)?.let { DiscordRole(it) }
 }
 
 val isNotPledge = { _: List<String>, chat: Chat, sender: User ->
@@ -401,15 +398,17 @@ fun registerFratCommands() {
                     newMentions[user] = mentionCount
                 }
                 Settings.update()
-                val parts = newMentions.toList().map { (user, count) ->
-                    "${user.name} $count time${if (count > 1) "s" else ""}"
+                if (debugMode) {
+                    val parts = newMentions.toList().map { (user, count) ->
+                        "${DiscordProtocol.getUserNickname(chat, user)} $count time${if (count > 1) "s" else ""}"
+                    }
+                    val mentionStr = when(parts.size) {
+                        1 -> parts[0]
+                        2 -> "${parts[0]} and ${parts[1]}"
+                        else -> "${parts.dropLast(1).joinToString(", ")}, and ${parts.last()}"
+                    }
+                    sendMessage(chat, "You mentioned $mentionStr.")
                 }
-                val mentionStr = when (parts.size) {
-                    1 -> parts[0]
-                    2 -> "${parts[0]} and ${parts[1]}"
-                    else -> "${parts.dropLast(1).joinToString(", ")}, and ${parts.last()}"
-                }
-                sendMessage(chat, "You mentioned $mentionStr.")
             }
             true
         }
@@ -446,7 +445,7 @@ private fun mentionStatsFct() {
 fun mentionStats(chat: Chat) = mentionChats
     .getOrDefault(chat, mutableMapOf())
     .map { (target, mentions) ->
-        "${DiscordProtocol.getUserName(chat, target)}:\n\t${
+        "${getUserName(chat, target)}:\n\t${
             mentions.toList().joinToString(
                 "\n\t",
                 transform = { (user, count) ->

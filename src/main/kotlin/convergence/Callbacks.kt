@@ -47,14 +47,15 @@ fun <T1, T2, T3, T4, T5, T6> invokeTyped(
         in 0..5 -> throw IllegalArgumentException("invokeTyped called with ${args.size} parameters, but 6 expected")
         else -> defaultLogger.error("invokeTyped called with ${args.size} parameters, but 6 expected")
     }
-    val arg1 = args.getOrNull(0) ?: default1
-    val arg2 = args.getOrNull(1) ?: default2
-    val arg3 = args.getOrNull(2) ?: default3
-    val arg4 = args.getOrNull(3) ?: default4
-    val arg5 = args.getOrNull(4) ?: default5
-    val arg6 = args.getOrNull(5) ?: default6
 
-    return fct(arg1 as T1, arg2 as T2, arg3 as T3, arg4 as T4, arg5 as T5, arg6 as T6)
+    return fct(
+        (args.getOrNull(0) ?: default1) as T1,
+        (args.getOrNull(1) ?: default2) as T2,
+        (args.getOrNull(2) ?: default3) as T3,
+        (args.getOrNull(3) ?: default4) as T4,
+        (args.getOrNull(4) ?: default5) as T5,
+        (args.getOrNull(5) ?: default6) as T6
+    )
 }
 
 fun <T1, T2, T3, T4, T5> invokeTyped(
@@ -73,13 +74,14 @@ fun <T1, T2, T3, T4, T5> invokeTyped(
         in 0..4 -> throw IllegalArgumentException("invokeTyped called with ${args.size} parameters, but 5 expected")
         else -> defaultLogger.error("invokeTyped called with ${args.size} parameters, but 5 expected")
     }
-    val arg1 = args.getOrNull(0) ?: default1
-    val arg2 = args.getOrNull(1) ?: default2
-    val arg3 = args.getOrNull(2) ?: default3
-    val arg4 = args.getOrNull(3) ?: default4
-    val arg5 = args.getOrNull(4) ?: default5
 
-    return fct(arg1 as T1, arg2 as T2, arg3 as T3, arg4 as T4, arg5 as T5)
+    return fct(
+        (args.getOrNull(0) ?: default1) as T1,
+        (args.getOrNull(1) ?: default2) as T2,
+        (args.getOrNull(2) ?: default3) as T3,
+        (args.getOrNull(3) ?: default4) as T4,
+        (args.getOrNull(4) ?: default5) as T5
+    )
 }
 
 /**
@@ -100,12 +102,13 @@ fun <T1, T2, T3, T4> invokeTyped(
         0, 1, 2, 3 -> throw IllegalArgumentException("invokeTyped called with ${args.size} parameters, but 4 expected")
         else -> defaultLogger.error("invokeTyped called with ${args.size} parameters, but 4 expected")
     }
-    val arg1 = args.getOrNull(0) ?: default1
-    val arg2 = args.getOrNull(1) ?: default2
-    val arg3 = args.getOrNull(2) ?: default3
-    val arg4 = args.getOrNull(3) ?: default4
 
-    return fct(arg1 as T1, arg2 as T2, arg3 as T3, arg4 as T4)
+    return fct(
+        (args.getOrNull(0) ?: default1) as T1,
+        (args.getOrNull(1) ?: default2) as T2,
+        (args.getOrNull(2) ?: default3) as T3,
+        (args.getOrNull(3) ?: default4) as T4
+    )
 }
 
 fun <T1, T2, T3> invokeTyped(
@@ -122,11 +125,12 @@ fun <T1, T2, T3> invokeTyped(
         0, 1, 2 -> throw IllegalArgumentException("invokeTyped called with ${args.size} parameters, but 3 expected")
         else -> defaultLogger.error("invokeTyped called with ${args.size} parameters, but 3 expected")
     }
-    val arg1 = args.getOrNull(0) ?: default1
-    val arg2 = args.getOrNull(1) ?: default2
-    val arg3 = args.getOrNull(2) ?: default3
 
-    return fct(arg1 as T1, arg2 as T2, arg3 as T3)
+    return fct(
+        (args.getOrNull(0) ?: default1) as T1,
+        (args.getOrNull(1) ?: default2) as T2,
+        (args.getOrNull(2) ?: default3) as T3
+    )
 }
 
 fun <T1, T2> invokeTyped(
@@ -142,10 +146,11 @@ fun <T1, T2> invokeTyped(
         0, 1 -> throw IllegalArgumentException("invokeTyped called with ${args.size} parameters, but 2 expected")
         else -> defaultLogger.error("invokeTyped called with ${args.size} parameters, but 2 expected")
     }
-    val arg1 = args.getOrNull(0) ?: default1
-    val arg2 = args.getOrNull(1) ?: default2
 
-    return fct(arg1 as T1, arg2 as T2)
+    return fct(
+        (args.getOrNull(0) ?: default1) as T1,
+        (args.getOrNull(1) ?: default2) as T2
+    )
 }
 
 fun <T> invokeTyped(fct: (T) -> Boolean, args: Array<out Any>, default: T? = null): Boolean {
@@ -176,8 +181,8 @@ class ChangedNickname(val fct: (chat: Chat, user: User, oldName: String) -> Bool
 class ReceivedImages(val fct: (chat: Chat, message: IncomingMessage?, sender: User, image: Array<Image>) -> Boolean):
     ChatEvent {
     override fun invoke(vararg args: Any): Boolean = invokeTyped(fct, args)
-    fun invoke(chat: Chat, message: IncomingMessage?, sender: User, image: Array<Image>): Boolean =
-        fct(chat, message ?: SimpleIncomingMessage(""), sender, image)
+    fun invoke(chat: Chat, message: IncomingMessage?, sender: User, images: Array<Image>): Boolean =
+        fct(chat, message ?: SimpleIncomingMessage(""), sender, images)
 }
 
 class EditMessage(val fct: (oldMessage: String, sender: User, newMessage: String) -> Boolean): ChatEvent {

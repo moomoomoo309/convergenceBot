@@ -19,7 +19,10 @@ fun sendMessage(chat: Chat, sender: User, message: String?) =
 fun sendMessage(chat: Chat, message: OutgoingMessage?) {
     if (message == null)
         return
-    chat.protocol.sendMessage(chat, message)
+    if (debugMode)
+        chat.protocol.sendMessage(chat, "[Test Mode]: $message")
+    else
+        chat.protocol.sendMessage(chat, message)
 }
 
 fun sendMessage(chat: Chat, message: String?) = message?.let { sendMessage(chat, SimpleOutgoingMessage(message)) }
