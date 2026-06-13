@@ -584,7 +584,7 @@ fun registerDefaultCommands() {
             UniversalProtocol,
             "dumpSettings",
             listOf(),
-            { -> Settings.toDTO().toString() },
+            { -> objectMapper.writeValueAsString(Settings) },
             "Prints out the content of the settings file.",
             "dumpSettings (takes no arguments)"
         )

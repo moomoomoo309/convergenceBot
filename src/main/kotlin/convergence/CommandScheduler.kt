@@ -1,5 +1,7 @@
 package convergence
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
+import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import convergence.discord.calendar.CalendarProcessor
 import org.ocpsoft.prettytime.PrettyTime
 import org.ocpsoft.prettytime.units.JustNow
@@ -123,6 +125,8 @@ data class ScheduledTask(
 /**
  * A command sent by a user to run at a future time.
  */
+@JsonSerialize(converter = ScheduledCommandToDTOConverter::class)
+@JsonDeserialize(converter = DTOToScheduledCommandConverter::class)
 data class ScheduledCommand(
     override val time: OffsetDateTime,
     val chat: Chat,

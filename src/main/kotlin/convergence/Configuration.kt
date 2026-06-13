@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
+import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import convergence.discord.DiscordChat
@@ -62,6 +64,8 @@ data class ScheduledCommandDTO(
     }
 }
 
+@JsonSerialize(converter = ReactConfigToDTOConverter::class)
+@JsonDeserialize(converter = DTOToReactConfigConverter::class)
 data class ReactConfig(val destination: DiscordChat, val emojis: MutableMap<String, Int>) {
     fun toDTO() = ReactConfigDTO(destination, emojis)
 }
@@ -76,21 +80,22 @@ data class ReactConfigDTO(val destination: String, val emojis: MutableMap<String
 }
 
 private fun strToProtocol(s: String) = protocols.firstOrNull { it.name == s }
-private fun scopeStrToProtocol(s: String) = protocols.sortedBy { -it.name.length }
+internal fun scopeStrToProtocol(s: String) = protocols.sortedBy { -it.name.length }
     .firstOrNull { s.substringBefore("(").startsWith(it.name) }
 
-private fun strToChat(s: String): CommandScope? = scopeStrToProtocol(s)?.commandScopeFromKey(s)
-
-data class SettingsDTO(
-    var aliases: MutableMap<String, MutableMap<String, AliasDTO>> = mutableMapOf(),
-    var commandDelimiters: MutableMap<String, String> = mutableMapOf(),
-    var linkedChats: MutableMap<String, MutableSet<String>> = mutableMapOf(),
-    var serializedCommands: MutableMap<Int, ScheduledCommandDTO> = mutableMapOf(),
+// Mirror of Settings used purely as a (de)serialization target — Settings itself is a singleton object,
+// which Jackson can't instantiate. The domain-object keys/values round-trip via convergenceModule and the
+// per-type converters, so this holder needs no string-keyed mirror or hand-written conversion logic.
+data class SettingsData(
+    var aliases: MutableMap<CommandScope, MutableMap<String, Alias>> = mutableMapOf(),
+    var commandDelimiters: MutableMap<CommandScope, String> = mutableMapOf(),
+    var linkedChats: MutableMap<Chat, MutableSet<Chat>> = mutableMapOf(),
+    var serializedCommands: MutableMap<Int, ScheduledCommand> = mutableMapOf(),
     var syncedCalendars: MutableList<SyncedCalendar> = mutableListOf(),
     var timers: MutableMap<String, OffsetDateTime> = mutableMapOf(),
-    var imageUploadChannels: MutableMap<String, String> = mutableMapOf(),
-    var reactServers: MutableMap<String, List<ReactConfigDTO>> = mutableMapOf(),
-    var mentionChats: MutableMap<String, MutableMap<String, MutableMap<String, Int>>> = mutableMapOf(),
+    var imageUploadChannels: MutableMap<Chat, URI> = mutableMapOf(),
+    var reactServers: MutableMap<Server, MutableList<ReactConfig>> = mutableMapOf(),
+    var mentionChats: MutableMap<Chat, MutableMap<User, MutableMap<User, Int>>> = mutableMapOf(),
     var debugMode: Boolean = false
 )
 
@@ -127,103 +132,34 @@ object Settings {
         }
     }
 
-    private fun <T> mapFromDTO(map: Map<String, T>): Map<out CommandScope, T> {
-        return map.mapNotNull { (k, v) ->
-            strToChat(k)?.to(v)
-        }.toMap()
+    // Replace the live settings in place from a freshly-deserialized holder. The element conversions
+    // (domain object <-> key string, Alias/ScheduledCommand/ReactConfig <-> DTO) are all handled by Jackson
+    // via convergenceModule and the per-type converters, so this is a straight field-by-field copy.
+    fun updateFrom(data: SettingsData) {
+        aliases.clearThen().putAll(data.aliases)
+        commandDelimiters.clearThen().putAll(data.commandDelimiters)
+        linkedChats.clearThen().putAll(data.linkedChats)
+        serializedCommands.clearThen().putAll(data.serializedCommands)
+        syncedCalendars.clearThen().addAll(data.syncedCalendars)
+        timers.clearThen().putAll(data.timers)
+        imageUploadChannels.clearThen().putAll(data.imageUploadChannels)
+        reactServers.clearThen().putAll(data.reactServers)
+        mentionChats.clearThen().putAll(data.mentionChats)
+        debugMode = data.debugMode
     }
-
-    private fun linkedChatsFromDTO(linkedChats: MutableMap<String, MutableSet<String>>):
-            MutableMap<Chat, MutableSet<Chat>> {
-        return mutableMapOf(*linkedChats.mapNotNull { (k, v) ->
-            (strToChat(k) as? Chat)?.to(v.mapNotNull { strToChat(it) as? Chat }.toMutableSet())
-        }.toTypedArray())
-    }
-
-    private fun <T> mapToDTO(map: Map<out CommandScope, T>): MutableMap<String, T> {
-        return map.mapKeys { (k, _) ->
-            k.toKey()
-        }.mutable()
-    }
-
-    private fun mapAliasesToDTO(aliases: MutableMap<CommandScope, MutableMap<String, Alias>>):
-            MutableMap<String, MutableMap<String, AliasDTO>> {
-        return aliases.mapEntries { (k, v) ->
-            k.toKey() to v.mapValues { (_, alias) -> alias.toDTO() }.toMutableMap()
-        }.mutable()
-    }
-
-    private fun mapAliasesFromDTO(aliasesDTO: MutableMap<String, MutableMap<String, AliasDTO>>):
-            MutableMap<CommandScope, MutableMap<String, Alias>> {
-        return aliasesDTO.mapEntries { (k, v) ->
-            val protocol = scopeStrToProtocol(k)!!
-            protocol.commandScopeFromKey(k)!! to v.mapValues { (_, aliasDTO) -> aliasDTO.toAlias() }.toMutableMap()
-        }.mutable()
-    }
-
-    fun updateFrom(settingsDTO: SettingsDTO) {
-        this.aliases.clearThen().putAll(mapAliasesFromDTO(settingsDTO.aliases))
-        this.commandDelimiters.clearThen().putAll(mapFromDTO(settingsDTO.commandDelimiters))
-        this.linkedChats.clearThen().putAll(linkedChatsFromDTO(settingsDTO.linkedChats))
-        this.serializedCommands.clearThen().putAll(settingsDTO.serializedCommands.mapValues { (_, dto) ->
-            dto.toScheduledCommand()!!
-        } as MutableMap<Int, ScheduledCommand>)
-        this.syncedCalendars.clearThen().addAll(settingsDTO.syncedCalendars)
-        this.timers.clearThen().putAll(settingsDTO.timers)
-        this.imageUploadChannels.clearThen().putAll(settingsDTO.imageUploadChannels.map { (k, v) ->
-            val protocol = scopeStrToProtocol(k)!!
-            protocol.commandScopeFromKey(k) as Chat to URI(v)
-        })
-        this.reactServers.clearThen().putAll(settingsDTO.reactServers.mapEntries { (k, v) ->
-            val protocol = scopeStrToProtocol(k)!!
-            protocol.commandScopeFromKey(k) as Server to v.map { it.toConfig() }.mutable()
-        })
-        this.mentionChats.clearThen().putAll(settingsDTO.mentionChats.mapEntries { (k, v) ->
-            val protocol = scopeStrToProtocol(k)!!
-            val chat = protocol.commandScopeFromKey(k) as Chat
-            chat to v.mapEntries { (receiver, mentions) ->
-                protocol.userFromKey(receiver)!! to mentions.mapKeys { (user, _) -> protocol.userFromKey(user)!! }
-                    .mutable()
-            }.mutable()
-        })
-        this.debugMode = settingsDTO.debugMode
-    }
-
-    fun toDTO() = SettingsDTO(
-        mapAliasesToDTO(aliases),
-        mapToDTO(commandDelimiters),
-        mapToDTO(linkedChats.mapValues { (_, v) -> v.map { it.toKey() }.toMutableSet() }),
-        serializedCommands.mapValues { (_, serializedCommands) ->
-            serializedCommands.toDTO()
-        } as MutableMap<Int, ScheduledCommandDTO>,
-        syncedCalendars,
-        timers,
-        imageUploadChannels.mapEntries { (k, v) ->
-            k.toKey() to v.toString()
-        }.mutable(),
-        reactServers.mapEntries { (k, v) ->
-            k.toKey() to v.map { it.toDTO() }
-        }.mutable(),
-        mentionChats.mapEntries { (k, v) ->
-            k.toKey() to v.mapEntries { (receiver, mentions) ->
-                receiver.toKey() to mentions.mapKeys { (user, _) -> user.toKey() }.mutable()
-            }.mutable()
-        }.mutable(),
-        debugMode
-    )
 }
 
 
 private fun writeSettingsToFile() {
     settingsLogger.info("Writing settings to ${settingsPath}:")
-    val settingsAsString = objectMapper.writeValueAsString(Settings.toDTO())
+    val settingsAsString = objectMapper.writeValueAsString(Settings)
     settingsPath.toFile().writeText(settingsAsString)
     settingsLogger.info("Settings written.")
 }
 
 fun readSettings() {
     try {
-        val settings = objectMapper.readValue<SettingsDTO>(settingsPath.toFile())
+        val settings = objectMapper.readValue<SettingsData>(settingsPath.toFile())
         Settings.updateFrom(settings)
         writeSettingsToFile()
     } catch(_: java.io.FileNotFoundException) {
@@ -261,5 +197,6 @@ val objectMapper: ObjectMapper = ObjectMapper()
     .configure(SerializationFeature.INDENT_OUTPUT, true)
     .configure(JsonParser.Feature.INCLUDE_SOURCE_IN_LOCATION, true)
     .registerKotlinModule()
+    .registerModule(convergenceModule)
     .findAndRegisterModules()
 val settingsPath: Path by lazy { convergencePath.resolve("settings.json") }

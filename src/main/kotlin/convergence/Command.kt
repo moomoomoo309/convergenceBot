@@ -1,6 +1,8 @@
 package convergence
 
 import com.fasterxml.jackson.annotation.JsonIgnore
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
+import com.fasterxml.jackson.databind.annotation.JsonSerialize
 
 
 enum class ArgumentType {
@@ -158,6 +160,8 @@ data class Command(
     }
 }
 
+@JsonSerialize(converter = AliasToDTOConverter::class)
+@JsonDeserialize(converter = DTOToAliasConverter::class)
 data class Alias(
     val scope: CommandScope,
     override val name: String,
