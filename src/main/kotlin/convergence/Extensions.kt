@@ -20,8 +20,10 @@ fun <K, V, K2, V2> Map<K, V>.mapEntries(fct: (Map.Entry<K, V>) -> Pair<K2, V2>):
     }
     return destination
 }
-fun <K, V> Map<K, V>.mutable() = this as MutableMap<K, V>
-fun <T> List<T>.mutable() = this as MutableList<T>
+// Reuse the receiver when it's already mutable (avoiding a copy), otherwise make a safe mutable copy.
+// This avoids the ClassCastException that a blind `as MutableMap` cast would throw on a read-only collection.
+fun <K, V> Map<K, V>.mutable(): MutableMap<K, V> = this as? MutableMap<K, V> ?: toMutableMap()
+fun <T> List<T>.mutable(): MutableList<T> = this as? MutableList<T> ?: toMutableList()
 
 
 // This is copied straight from the Kotlin stdlib.

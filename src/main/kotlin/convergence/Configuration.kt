@@ -12,6 +12,9 @@ import java.net.URI
 import java.nio.file.Path
 import java.time.OffsetDateTime
 import java.util.*
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.system.exitProcess
 
 const val DEFAULT_COMMAND_DELIMITER = "!"
@@ -104,18 +107,23 @@ object Settings {
     var debugMode: Boolean = false
 
     @JsonIgnore
-    var updateIsScheduled = false
+    private val updateIsScheduled = AtomicBoolean(false)
+
+    @JsonIgnore
+    private val updateExecutor = Executors.newSingleThreadScheduledExecutor { runnable ->
+        Thread(runnable, "settings-writer").apply { isDaemon = true }
+    }
+
     fun update() {
-        // Don't update the settings multiple times per second, limit it to one per second
-        if (!updateIsScheduled) {
-            updateIsScheduled = true
-            // Coroutines are _probably_ a better approach for this, but it's not a big deal.
-            Thread {
-                Thread.sleep(1000L)
+        // Don't update the settings multiple times per second, limit it to one per second.
+        // compareAndSet ensures only one write is ever scheduled even under concurrent callers, and
+        // the shared single-thread executor avoids spawning a fresh thread per write.
+        if (updateIsScheduled.compareAndSet(false, true)) {
+            updateExecutor.schedule({
                 settingsLogger.info("Updating settings file...")
                 writeSettingsToFile()
-                updateIsScheduled = false
-            }.start()
+                updateIsScheduled.set(false)
+            }, 1000L, TimeUnit.MILLISECONDS)
         }
     }
 
@@ -235,7 +243,7 @@ val timers = Settings.timers
 val imageUploadChannels: MutableMap<Chat, URI> = Settings.imageUploadChannels
 val reactServers: MutableMap<Server, MutableList<ReactConfig>> = Settings.reactServers
 val mentionChats: MutableMap<Chat, MutableMap<User, MutableMap<User, Int>>> = Settings.mentionChats
-val debugMode = Settings.debugMode
+val debugMode get() = Settings.debugMode
 
 lateinit var convergencePath: Path
 val chatMap: MutableMap<Int, Chat> = mutableMapOf()
