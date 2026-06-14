@@ -1,7 +1,6 @@
 package convergence
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize
-import com.fasterxml.jackson.databind.annotation.JsonSerialize
+import com.fasterxml.jackson.annotation.JsonProperty
 import convergence.discord.calendar.CalendarProcessor
 import org.ocpsoft.prettytime.PrettyTime
 import org.ocpsoft.prettytime.units.JustNow
@@ -125,20 +124,22 @@ data class ScheduledTask(
 /**
  * A command sent by a user to run at a future time.
  */
-@JsonSerialize(converter = ScheduledCommandToDTOConverter::class)
-@JsonDeserialize(converter = DTOToScheduledCommandConverter::class)
 data class ScheduledCommand(
     override val time: OffsetDateTime,
+    // chat/sender persist as their key strings (via the Chat/User value (de)serializers in convergenceModule);
+    // the property names are pinned for backwards compatibility with settings files written before this type
+    // serialized directly.
+    @param:JsonProperty("chatKey")
+    @get:JsonProperty("chatKey")
     val chat: Chat,
+    @param:JsonProperty("senderKey")
+    @get:JsonProperty("senderKey")
     val sender: User,
+    
     val protocolName: String,
     val commandName: String,
     val args: List<String>,
     val id: Int,
 ): Schedulable {
-    fun toDTO() = ScheduledCommandDTO(
-        time, chat.toKey(), sender.toKey(), protocolName, commandName, args, id
-    )
-
     operator fun invoke() = runCommand(chat, sender, getCommand(commandName.lowercase(), chat) as Command, args)
 }

@@ -1,5 +1,11 @@
 import convergence.*
+import com.fasterxml.jackson.core.JsonParser
+import com.fasterxml.jackson.databind.DeserializationContext
+import com.fasterxml.jackson.databind.JsonDeserializer
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import org.junit.After
 import org.junit.Before
 import java.net.URI
@@ -48,6 +54,9 @@ object SerProtocol: Protocol("SerTest") {
     override fun userFromKey(key: String): User? =
         if (key.startsWith("SerTestUser(")) SerUser(key.substringBetween("SerTestUser(", ")").toInt()) else null
 }
+
+// Mirrors ReactConfig: a data class whose field is declared as a *concrete* Chat subtype rather than Chat.
+data class ReactLike(val destination: SerChat, val emojis: MutableMap<String, Int>)
 
 class SerializationTest {
     private val time: OffsetDateTime = OffsetDateTime.of(2026, 6, 13, 10, 0, 0, 0, ZoneOffset.UTC)
@@ -101,6 +110,36 @@ class SerializationTest {
     fun roundTripsSettingsData() {
         val json = objectMapper.writeValueAsString(sampleData())
         assertMatches(objectMapper.readValue<SettingsData>(json))
+    }
+
+    @Test
+    fun concreteChatSubtypeFieldRoundTrips() {
+        // This is the exact mechanism ReactConfig.destination relies on now that ReactConfigDTO is gone: the
+        // base-type Chat value serializer must apply to a concrete-subtype-declared field, and a subtype-exact
+        // deserializer must rebuild it from the key. (ReactConfig itself can't be exercised offline — a real
+        // DiscordChat needs a live JDA channel — so we validate the Jackson behavior with the test protocol.)
+        val mapper = ObjectMapper().registerKotlinModule().registerModule(
+            SimpleModule().apply {
+                addSerializer(Chat::class.java, ScopeValueSerializer)
+                addDeserializer(SerChat::class.java, object: JsonDeserializer<SerChat>() {
+                    override fun deserialize(p: JsonParser, ctxt: DeserializationContext) =
+                        SerProtocol.commandScopeFromKey(p.valueAsString) as SerChat
+                })
+            }
+        )
+        val original = ReactLike(SerChat(9), mutableMapOf("x" to 1))
+        val json = mapper.writeValueAsString(original)
+        assert(json.contains("\"destination\":\"SerTestChat(9)\"")) { "destination not serialized as key:\n$json" }
+        assertEquals(original, mapper.readValue<ReactLike>(json), "concrete-subtype field did not round-trip")
+    }
+
+    @Test
+    fun scheduledCommandKeepsLegacyFieldNames() {
+        // ScheduledCommand serializes directly (no DTO) but must keep the chatKey/senderKey field names so
+        // settings files written by the old DTO-based format still load.
+        val json = objectMapper.writeValueAsString(sampleData())
+        assert(json.contains("\"chatKey\"")) { "expected chatKey in serialized output:\n$json" }
+        assert(json.contains("\"senderKey\"")) { "expected senderKey in serialized output:\n$json" }
     }
 
     @Test

@@ -4,8 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize
-import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import convergence.discord.DiscordChat
@@ -42,44 +40,10 @@ data class AliasDTO(
     }
 }
 
-data class ScheduledCommandDTO(
-    val time: OffsetDateTime,
-    val chatKey: String,
-    val senderKey: String,
-    val protocolName: String,
-    val commandName: String,
-    val args: List<String>,
-    val id: Int,
-) {
-    fun toScheduledCommand() = strToProtocol(protocolName)?.let { protocol ->
-        ScheduledCommand(
-            time,
-            protocol.commandScopeFromKey(chatKey) as Chat,
-            protocol.userFromKey(senderKey)!!,
-            protocolName,
-            commandName,
-            args,
-            id
-        )
-    }
-}
+// destination persists as its key string (DiscordChat is serialized by the Chat value serializer and rebuilt
+// by the DiscordChat value deserializer in convergenceModule); emojis is a plain map Jackson handles natively.
+data class ReactConfig(val destination: DiscordChat, val emojis: MutableMap<String, Int>)
 
-@JsonSerialize(converter = ReactConfigToDTOConverter::class)
-@JsonDeserialize(converter = DTOToReactConfigConverter::class)
-data class ReactConfig(val destination: DiscordChat, val emojis: MutableMap<String, Int>) {
-    fun toDTO() = ReactConfigDTO(destination, emojis)
-}
-
-data class ReactConfigDTO(val destination: String, val emojis: MutableMap<String, Int>) {
-    constructor(chat: DiscordChat, emojis: MutableMap<String, Int>): this(chat.toKey(), emojis)
-
-    fun toConfig() = ReactConfig(
-        scopeStrToProtocol(destination)!!.commandScopeFromKey(destination) as DiscordChat,
-        emojis
-    )
-}
-
-private fun strToProtocol(s: String) = protocols.firstOrNull { it.name == s }
 internal fun scopeStrToProtocol(s: String) = protocols.sortedBy { -it.name.length }
     .firstOrNull { s.substringBefore("(").startsWith(it.name) }
 
@@ -133,8 +97,8 @@ object Settings {
     }
 
     // Replace the live settings in place from a freshly-deserialized holder. The element conversions
-    // (domain object <-> key string, Alias/ScheduledCommand/ReactConfig <-> DTO) are all handled by Jackson
-    // via convergenceModule and the per-type converters, so this is a straight field-by-field copy.
+    // (domain object <-> key string, and the Alias <-> AliasDTO converter) are all handled by Jackson via
+    // convergenceModule, so this is a straight field-by-field copy.
     fun updateFrom(data: SettingsData) {
         aliases.clearThen().putAll(data.aliases)
         commandDelimiters.clearThen().putAll(data.commandDelimiters)
