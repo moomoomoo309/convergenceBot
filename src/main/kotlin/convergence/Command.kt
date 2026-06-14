@@ -160,20 +160,13 @@ data class Command(
     }
 }
 
-@JsonSerialize(converter = AliasToDTOConverter::class)
-@JsonDeserialize(converter = DTOToAliasConverter::class)
+@JsonSerialize(using = AliasSerializer::class)
+@JsonDeserialize(using = AliasDeserializer::class)
 data class Alias(
     val scope: CommandScope,
     override val name: String,
     val command: Command,
     val args: List<String>
 ): CommandLike(scope.protocol, name) {
-    fun toDTO() = AliasDTO(
-        scope.toKey(),
-        name,
-        command.name,
-        scope.protocol.name,
-        args
-    )
     fun commandText() = "${command.name} ${args.joinToString(" ")}"
 }

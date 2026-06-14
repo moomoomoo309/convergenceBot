@@ -25,21 +25,6 @@ data class SyncedCalendar(val guildId: Long, val calURL: String) {
     }
 }
 
-data class AliasDTO(
-    val scopeName: String,
-    val name: String,
-    val commandName: String,
-    val protocolName: String,
-    val args: List<String>
-) {
-    fun toAlias(): Alias {
-        val protocol = protocols.first { protocolName == it.name }
-        val scope = protocol.commandScopeFromKey(scopeName) as Chat
-        val command = getCommand(commandName.lowercase(), scope) as Command
-        return Alias(scope, name, command, args)
-    }
-}
-
 // destination persists as its key string (DiscordChat is serialized by the Chat value serializer and rebuilt
 // by the DiscordChat value deserializer in convergenceModule); emojis is a plain map Jackson handles natively.
 data class ReactConfig(val destination: DiscordChat, val emojis: MutableMap<String, Int>)
@@ -97,7 +82,7 @@ object Settings {
     }
 
     // Replace the live settings in place from a freshly-deserialized holder. The element conversions
-    // (domain object <-> key string, and the Alias <-> AliasDTO converter) are all handled by Jackson via
+    // (domain object <-> key string, and the Alias serializer/deserializer) are all handled by Jackson via
     // convergenceModule, so this is a straight field-by-field copy.
     fun updateFrom(data: SettingsData) {
         aliases.clearThen().putAll(data.aliases)

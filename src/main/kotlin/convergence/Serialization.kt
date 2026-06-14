@@ -2,20 +2,15 @@ package convergence
 
 import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.core.JsonParser
-import com.fasterxml.jackson.databind.DeserializationContext
-import com.fasterxml.jackson.databind.JsonDeserializer
-import com.fasterxml.jackson.databind.JsonSerializer
-import com.fasterxml.jackson.databind.KeyDeserializer
-import com.fasterxml.jackson.databind.SerializerProvider
+import com.fasterxml.jackson.databind.*
 import com.fasterxml.jackson.databind.module.SimpleModule
-import com.fasterxml.jackson.databind.util.StdConverter
 import convergence.discord.DiscordChat
 
 // Domain objects (Chat/Server/User/CommandScope) can't be serialized directly: they wrap live protocol
 // state (JDA channels, etc.). Each one exposes a stable string key via toKey(), and every protocol can
 // rebuild the object from that key via commandScopeFromKey()/userFromKey(). The (de)serializers below encode
 // that single contract once, so the whole Settings graph — including the nested maps keyed by domain
-// objects — round-trips through Jackson without a hand-written DTO mirror of the settings structure.
+// objects — round-trips through Jackson.
 //
 // Keys are self-describing: every key starts with its protocol's name (e.g. "DiscordChat(…)" starts with
 // "Discord"), so scopeStrToProtocol() recovers the owning protocol from the key string alone.
@@ -75,16 +70,33 @@ object UserValueDeserializer: JsonDeserializer<User>() {
 }
 
 // Alias holds a live Command whose resolution is contextual — getCommand(name, scope) needs the alias's
-// scope — so it can't be rebuilt from a single self-contained key. It round-trips through its DTO mirror via
-// Jackson converters, reusing the same toDTO()/toAlias() logic the rest of the code relies on. The other
-// persisted domain types serialize directly: their fields are either plain strings or Chat/User/CommandScope
-// values handled by the (de)serializers above.
-class AliasToDTOConverter: StdConverter<Alias, AliasDTO>() {
-    override fun convert(value: Alias): AliasDTO = value.toDTO()
+// scope — so it can't be rebuilt from a single self-contained key. Instead it serializes as a small JSON
+// object of its self-contained parts (the scope's key string, the command name, and the args), and the
+// deserializer rebuilds the live Command via getCommand() against the resolved scope. The other persisted
+// domain types serialize directly: their fields are either plain strings or Chat/User/CommandScope values
+// handled by the (de)serializers above.
+object AliasSerializer: JsonSerializer<Alias>() {
+    override fun serialize(value: Alias, gen: JsonGenerator, serializers: SerializerProvider) {
+        gen.writeStartObject()
+        gen.writeStringField("scope", value.scope.toKey())
+        gen.writeStringField("name", value.name)
+        gen.writeStringField("commandName", value.command.name)
+        gen.writeArrayFieldStart("args")
+        value.args.forEach { gen.writeString(it) }
+        gen.writeEndArray()
+        gen.writeEndObject()
+    }
 }
 
-class DTOToAliasConverter: StdConverter<AliasDTO, Alias>() {
-    override fun convert(value: AliasDTO): Alias = value.toAlias()
+object AliasDeserializer: JsonDeserializer<Alias>() {
+    override fun deserialize(p: JsonParser, ctxt: DeserializationContext): Alias {
+        val node = p.readValueAsTree<com.fasterxml.jackson.databind.JsonNode>()
+        val scope = resolveScope(node["scope"].asText()) as Chat
+        val name = node["name"].asText()
+        val command = getCommand(node["commandName"].asText().lowercase(), scope) as Command
+        val args = node["args"].map { it.asText() }
+        return Alias(scope, name, command, args)
+    }
 }
 
 val convergenceModule: SimpleModule = SimpleModule("ConvergenceDomain").apply {
