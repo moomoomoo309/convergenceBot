@@ -1,9 +1,16 @@
 package convergence.discord
 
 import com.fasterxml.jackson.annotation.JsonIgnore
-import com.github.sardine.Sardine
-import com.github.sardine.SardineFactory
 import convergence.*
+import org.apache.http.auth.AuthScope
+import org.apache.http.auth.UsernamePasswordCredentials
+import org.apache.http.client.methods.HttpPut
+import org.apache.http.entity.ByteArrayEntity
+import org.apache.http.entity.ContentType
+import org.apache.http.impl.client.BasicCredentialsProvider
+import org.apache.http.impl.client.CloseableHttpClient
+import org.apache.http.impl.client.HttpClients
+import org.apache.http.util.EntityUtils
 import convergence.discord.MessageListener.forwardedMessages
 import convergence.discord.calendar.registerCalendarCommands
 import convergence.discord.frat.fratConfig
@@ -162,14 +169,23 @@ class DiscordImage(val image: Message.Attachment): Image() {
     override fun getStream(): InputStream = image.proxy.download().get()
 }
 
-val sardine: Sardine by lazy { SardineFactory.begin("bot", fratConfig.botPassword) }
+private val webdavClient: CloseableHttpClient by lazy {
+    val credentials = BasicCredentialsProvider().apply {
+        setCredentials(AuthScope.ANY, UsernamePasswordCredentials("bot", fratConfig.botPassword))
+    }
+    HttpClients.custom().setDefaultCredentialsProvider(credentials).build()
+}
+
 fun uploadImage(discordURL: URI, uploadURL: URI?, filename: String) {
     if (uploadURL == null)
         return
     val connection = discordURL.toURL().openConnection()
     val encoding = connection.contentEncoding
     val content = connection.getInputStream().readAllBytes()
-    sardine.put(uploadURL.toString() + "/" + URLEncoder.encode(filename, "UTF8"), content, encoding)
+    val put = HttpPut(uploadURL.toString() + "/" + URLEncoder.encode(filename, "UTF8")).apply {
+        entity = ByteArrayEntity(content, encoding?.let { ContentType.create(it) })
+    }
+    webdavClient.execute(put).use { it.entity?.let(EntityUtils::consumeQuietly) }
 }
 
 class DiscordOutgoingMessage(val data: MessageCreateData): OutgoingMessage() {

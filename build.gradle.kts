@@ -51,7 +51,6 @@ dependencies {
     implementation(libs.logback)
     implementation(libs.natty)
     implementation(libs.prettytime)
-    implementation(libs.sardine)
     implementation(libs.poi.core)
     implementation(libs.poi.ooxml)
     implementation(libs.graphviz)

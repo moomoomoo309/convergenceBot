@@ -14,7 +14,6 @@ logback = "1.5.32"
 natty = "1.1.2"
 poi = "5.5.1"
 prettytime = "5.0.9.Final"
-sardine = "5.13"
 shadow = "9.4.0"
 mockk = "1.13.17"
 versions = "0.53.0"
@@ -39,7 +38,6 @@ natty = { module = "io.github.natty-parser:natty", version.ref = "natty" }
 poi-core = { module = "org.apache.poi:poi", version.ref = "poi" }
 poi-ooxml = { module = "org.apache.poi:poi-ooxml", version.ref = "poi" }
 prettytime = { module = "org.ocpsoft.prettytime:prettytime", version.ref = "prettytime" }
-sardine = { module = "com.github.lookfirst:sardine", version.ref = "sardine" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 
 [plugins]

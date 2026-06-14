@@ -55,9 +55,9 @@ java -jar build/libs/convergence.bot-1.0-SNAPSHOT-all.jar
 The bot reads its config from `~/.convergence/` by default (override with
 `-c` / `--convergence-path`):
 
-| File | Purpose |
-| --- | --- |
-| `~/.convergence/discordToken` | Discord bot token (plain text). Required for the Discord protocol. |
+| File                           | Purpose                                                                                                                 |
+|--------------------------------|-------------------------------------------------------------------------------------------------------------------------|
+| `~/.convergence/discordToken`  | Discord bot token (plain text). Required for the Discord protocol.                                                      |
 | `~/.convergence/settings.json` | Persisted settings — aliases, linked chats, scheduled commands, synced calendars, etc. Created automatically if absent. |
 
 For local development you can exercise the **Console protocol** without any Discord
@@ -117,6 +117,7 @@ of `println`.
 ## Key dependencies
 
 JDA (Discord) · Jackson (settings serialization) · ANTLR4 (command grammar) · Natty
-(natural-language dates) · caldav4j / sardine (CalDAV sync) · Apache POI (spreadsheets) ·
+(natural-language dates) · caldav4j (CalDAV sync; also provides the Apache HttpClient used for
+WebDAV image uploads) · Apache POI (spreadsheets) ·
 GraalVM polyglot + graaljs (JS scripting) · argparse4j (CLI args) · logback (logging) ·
 MockK + kotlin.test (testing). Versions are centralized in `gradle/libs.versions.toml`.
