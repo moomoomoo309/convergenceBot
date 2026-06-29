@@ -7,11 +7,7 @@ import com.github.caldav4j.model.request.CompFilter
 import com.github.caldav4j.model.request.TimeRange
 import com.github.caldav4j.util.GenerateQuery
 import convergence.*
-import convergence.discord.DiscordChat
-import convergence.discord.DiscordProtocol
-import convergence.discord.discordLogger
-import convergence.discord.frat.fratConfig
-import convergence.discord.jda
+import convergence.discord.*
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.ScheduledEvent
@@ -39,7 +35,7 @@ val httpClient: CloseableHttpClient by lazy {
         listOf(
             BasicHeader(
                 "Authorization",
-                "Basic ${base64Encoder.encodeToString(("bot:" + fratConfig.botPassword).toByteArray())}"
+                "Basic ${base64Encoder.encodeToString(("bot:" + (nextcloudPassword ?: "")).toByteArray())}"
             )
         )
     ).build()
@@ -81,9 +77,14 @@ data class VEventWrapper(val eventInstance: EventInstance): CalendarEvent {
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        return when (other) {
-            is VEventWrapper -> name == other.name && start == other.start && end == other.end && description == other.description
-            is CalendarEvent -> name == other.name && start == other.start && end == other.end
+        return when(other) {
+            is VEventWrapper -> name == other.name &&
+                    start == other.start &&
+                    end == other.end &&
+                    description == other.description
+            is CalendarEvent -> name == other.name &&
+                    start == other.start &&
+                    end == other.end
             else -> false
         }
     }

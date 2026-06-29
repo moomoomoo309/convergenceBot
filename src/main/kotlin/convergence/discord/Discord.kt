@@ -13,8 +13,6 @@ import org.apache.http.impl.client.HttpClients
 import org.apache.http.util.EntityUtils
 import convergence.discord.MessageListener.forwardedMessages
 import convergence.discord.calendar.registerCalendarCommands
-import convergence.discord.frat.fratConfig
-import convergence.discord.frat.registerFratCommands
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.OnlineStatus
@@ -171,7 +169,7 @@ class DiscordImage(val image: Message.Attachment): Image() {
 
 private val webdavClient: CloseableHttpClient by lazy {
     val credentials = BasicCredentialsProvider().apply {
-        setCredentials(AuthScope.ANY, UsernamePasswordCredentials("bot", fratConfig.botPassword))
+        setCredentials(AuthScope.ANY, UsernamePasswordCredentials("bot", nextcloudPassword ?: ""))
     }
     HttpClients.custom().setDefaultCredentialsProvider(credentials).build()
 }
@@ -259,7 +257,7 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
         }
         registerDiscordCommands()
         registerCalendarCommands()
-        registerFratCommands()
+        tryRegisterFratCommands()
         discordLogger.info("JDA Initialized.")
         jda.addEventListener(MessageListener)
         callbacks.getOrPut(ReceivedImages::class) { mutableListOf() }.add(imageUploadChannelCallback)

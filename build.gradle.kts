@@ -1,5 +1,6 @@
 @file:Suppress("LocalVariableName")
 
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import java.nio.file.Paths
 
 plugins {
@@ -60,6 +61,30 @@ dependencies {
     testImplementation(libs.mockk)
 }
 
+sourceSets {
+    create("lite") {
+        kotlin {
+            srcDir("src/main/kotlin")
+            exclude("**/discord/frat/**")
+        }
+        java {
+            srcDir("src/main/java")
+        }
+        resources {
+            srcDir("src/main/resources")
+        }
+    }
+}
+
+configurations {
+    "liteImplementation" {
+        extendsFrom(configurations.implementation.get())
+    }
+    "liteRuntimeOnly" {
+        extendsFrom(configurations.runtimeOnly.get())
+    }
+}
+
 application {
     mainClass.set("convergence.ConvergenceBot")
 }
@@ -73,6 +98,12 @@ tasks.named<JavaExec>("run") {
     standardInput = System.`in`
 }
 
+tasks.register<JavaExec>("runLite") {
+    classpath = sourceSets["lite"].runtimeClasspath
+    mainClass.set("convergence.ConvergenceBot")
+    standardInput = System.`in`
+}
+
 tasks.wrapper {
     gradleVersion = libs.versions.gradle.get()
 }
@@ -83,6 +114,9 @@ tasks {
     }
     compileTestKotlin {
         dependsOn(named("generateTestGrammarSource"))
+    }
+    named("compileLiteKotlin") {
+        dependsOn(named("generateGrammarSource"))
     }
 }
 
@@ -104,4 +138,31 @@ tasks.shadowJar {
         attributes(mapOf("Multi-Release" to "true"))
     }
     isZip64 = true
+}
+
+val liteJar by tasks.registering(ShadowJar::class) {
+    archiveBaseName.set("convergence.bot-lite")
+    from(sourceSets["lite"].output)
+
+    val runtimeJars = project.configurations.getByName("liteRuntimeClasspath").incoming.artifactView {
+        attributes {
+            attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, ArtifactTypeDefinition.JAR_TYPE)
+        }
+        isLenient = true
+    }.files
+    configurations = emptyList()
+    from(runtimeJars.elements.map { locs: Set<FileSystemLocation> ->
+        locs.map { loc: FileSystemLocation ->
+            zipTree(loc.asFile) as Any }
+        }
+    )
+    manifest {
+        attributes(mapOf("Multi-Release" to "true"))
+    }
+    isZip64 = true
+}
+
+tasks.register("buildLite") {
+    dependsOn("compileLiteKotlin")
+    dependsOn(liteJar)
 }

@@ -70,7 +70,7 @@ object UserValueDeserializer: JsonDeserializer<User>() {
 }
 
 // Alias holds a live Command whose resolution is contextual — getCommand(name, scope) needs the alias's
-// scope — so it can't be rebuilt from a single self-contained key. Instead it serializes as a small JSON
+// scope — so it can't be rebuilt from a single self-contained key. Instead, it serializes as a small JSON
 // object of its self-contained parts (the scope's key string, the command name, and the args), and the
 // deserializer rebuilds the live Command via getCommand() against the resolved scope. The other persisted
 // domain types serialize directly: their fields are either plain strings or Chat/User/CommandScope values
@@ -90,7 +90,7 @@ object AliasSerializer: JsonSerializer<Alias>() {
 
 object AliasDeserializer: JsonDeserializer<Alias>() {
     override fun deserialize(p: JsonParser, ctxt: DeserializationContext): Alias {
-        val node = p.readValueAsTree<com.fasterxml.jackson.databind.JsonNode>()
+        val node = p.readValueAsTree<JsonNode>()
         val scope = resolveScope(node["scope"].asText()) as Chat
         val name = node["name"].asText()
         val command = getCommand(node["commandName"].asText().lowercase(), scope) as Command

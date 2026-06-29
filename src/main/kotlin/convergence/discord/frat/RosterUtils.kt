@@ -32,7 +32,8 @@ data class BrotherInfo(
 }
 
 fun getNewRoster(): List<BrotherInfo> {
-    return WorkbookFactory.create(URI(fratConfig.rosterURL).toURL().openStream()).use { workbook ->
+    val config = fratConfig ?: return emptyList()
+    return WorkbookFactory.create(URI(config.rosterURL).toURL().openStream()).use { workbook ->
         val worksheet = workbook.getSheet("Rosters 350+")
         var i = 0
         var row = worksheet.getRow(i)
@@ -99,8 +100,10 @@ data class BrotherTreeNode(
 )
 
 private fun getBrotherTree(): Pair<Map<String, BrotherTreeNode>, BrotherTreeNode> {
+    val info = brotherInfo ?: return emptyMap<String, BrotherTreeNode>() to
+            BrotherTreeNode(BrotherInfo(firstName="Root"), null, mutableListOf())
     val brotherMap = mutableMapOf<String, BrotherTreeNode>()
-    for (brother in brotherInfo) {
+    for (brother in info) {
         val node = BrotherTreeNode(brother, null, mutableListOf())
         brotherMap.putIfAbsent("${brother.firstName} ${brother.lastName}".lowercase(), node)
         val big = brotherMap[brother.bigBrother.lowercase()]
@@ -108,7 +111,7 @@ private fun getBrotherTree(): Pair<Map<String, BrotherTreeNode>, BrotherTreeNode
         node.big = big
     }
     val rootNode = BrotherTreeNode(BrotherInfo(firstName="Root"), null, mutableListOf())
-    for (brother in brotherInfo) {
+    for (brother in info) {
         if (brother.bigBrother == "= = = = = =")
             brotherMap[brother.getName().lowercase()]?.let { rootNode.littles.add(it) }
         else

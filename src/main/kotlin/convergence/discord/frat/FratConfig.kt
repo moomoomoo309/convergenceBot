@@ -34,6 +34,18 @@ class FratConfig(
 )
 
 val fratConfigPath: Path = Paths.get("/", "opt", "bots", "config.json")
-val fratConfig: FratConfig by lazy { objectMapper.readValue(fratConfigPath.toFile()) }
+val fratConfig: FratConfig? by lazy {
+    try {
+        objectMapper.readValue(fratConfigPath.toFile())
+    } catch(_: Exception) {
+        null
+    }
+}
 val brotherInfoPath: Path = Paths.get("/", "opt", "bots", "convergence", "brotherInfo.json")
-val brotherInfo: MutableList<BrotherInfo> by lazy { objectMapper.readValue(brotherInfoPath.toFile()) }
+val brotherInfo: MutableList<BrotherInfo>? by lazy {
+    try {
+        objectMapper.readValue(brotherInfoPath.toFile())
+    } catch(_: Exception) {
+        null
+    }
+}

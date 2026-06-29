@@ -46,10 +46,11 @@ val englishToGreek = mapOf(
 )
 
 fun getBrotherInfo(name: String, searchCriteria: (BrotherInfo) -> String?): BrotherInfo? {
+    val info = brotherInfo ?: return null
     val lowerName = name.lowercase()
-    return brotherInfo.firstOrNull { searchCriteria(it)?.lowercase() == lowerName }
-        ?: brotherInfo.firstOrNull { searchCriteria(it)?.lowercase()?.startsWith(lowerName) == true }
-        ?: brotherInfo.firstOrNull { searchCriteria(it)?.lowercase()?.contains(lowerName) == true }
+    return info.firstOrNull { searchCriteria(it)?.lowercase() == lowerName }
+        ?: info.firstOrNull { searchCriteria(it)?.lowercase()?.startsWith(lowerName) == true }
+        ?: info.firstOrNull { searchCriteria(it)?.lowercase()?.contains(lowerName) == true }
 }
 
 fun generateGraphGoingDown(graph: MutableGraph, node: BrotherTreeNode, mutNode: MutableNode?) =
@@ -207,11 +208,12 @@ fun brotherInfo(args: List<String>, searchCriteria: (BrotherInfo) -> String?): D
 }
 
 private fun setAlumnusNickname(args: List<String>, chat: Chat, sender: User): String {
+    val config = fratConfig ?: return "Frat config not available."
     if (args.size != 1)
         return "Syntax: setAlumnusNickname (roster number)"
     if (sender !is DiscordUser || chat !is DiscordChat)
         return "This command only works on Discord."
-    if (chat.server.guild.idLong != fratConfig.aaServerID)
+    if (chat.server.guild.idLong != config.aaServerID)
         return "You can only run this command on the alumni association server."
     val brotherInfo = getBrotherInfo(args[0]) { it.rosterNumber }
         ?: return "No brother with roster number ${args[0]} found."
@@ -220,20 +222,29 @@ private fun setAlumnusNickname(args: List<String>, chat: Chat, sender: User): St
     return "Nickname updated."
 }
 
-val isNotPledge = { _: List<String>, chat: Chat, sender: User ->
-    val server = (chat as? DiscordChat)?.server
-    if (fratConfig.pledgeRoleID != 0L && chat is DiscordChat) {
-        val role = chat.server.guild.getRoleById(fratConfig.pledgeRoleID)?.let { DiscordRole(it) }
-        if (server != null && role != null && DiscordProtocol.userHasRole(server, sender, role))
-            SimpleOutgoingMessage("Nice try, pledge.")
-        else
-            null
-    } else
-        null
-}
+val isNotPledge: (List<String>, Chat, User) -> OutgoingMessage? =
+    { _: List<String>, chat: Chat, sender: User ->
+        val config = fratConfig
+        if (config == null) null
+        else {
+            val server = (chat as? DiscordChat)?.server
+            if (config.pledgeRoleID != 0L && chat is DiscordChat) {
+                val role = chat.server.guild.getRoleById(config.pledgeRoleID)?.let { DiscordRole(it) }
+                if (server != null && role != null && DiscordProtocol.userHasRole(server, sender, role))
+                    SimpleOutgoingMessage("Nice try, pledge.")
+                else null
+            } else null
+        }
+    }
 
-@Suppress("LongMethod")
+@Suppress("LongMethod", "unused")
 fun registerFratCommands() {
+    val config = fratConfig
+    if (config == null) {
+        discordLogger.warn("Frat config not available — skipping frat command registration.")
+        return
+    }
+
     registerCommand(
         Command(
             DiscordProtocol,
@@ -318,8 +329,8 @@ fun registerFratCommands() {
             listOf(),
             { ->
                 val newRoster = getNewRoster()
-                brotherInfo.clear()
-                brotherInfo.addAll(newRoster)
+                brotherInfo?.clear()
+                brotherInfo?.addAll(newRoster)
                 Files.write(brotherInfoPath, objectMapper.writeValueAsBytes(newRoster))
                 "Roster updated."
             },
@@ -384,6 +395,11 @@ fun registerFratCommands() {
             "setAlumnusNickname (roster number)"
         )
     )
+    registerMentionCallback()
+    CommandScheduler.taskList.add(ScheduledTask(nextMonth(), ::mentionStatsFct))
+}
+
+private fun registerMentionCallback() {
     callbacks.getOrPut(MentionedUser::class) { mutableListOf() }.add(
         MentionedUser { chat: Chat, msg: IncomingMessage, sender: User, users: List<User> ->
             if (msg is DiscordIncomingMessage) {
@@ -413,7 +429,6 @@ fun registerFratCommands() {
             true
         }
     )
-    CommandScheduler.taskList.add(ScheduledTask(nextMonth(), ::mentionStatsFct))
 }
 
 private fun nextMonth(): OffsetDateTime {
