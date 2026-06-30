@@ -25,6 +25,20 @@ data class SyncedCalendar(val guildId: Long, val calURL: String) {
     }
 }
 
+data class CalendarNotificationChannel(
+    val guildId: Long,
+    val channelId: Long,
+    val calURL: String,
+    val mentionUserId: Long? = null
+) {
+    override fun toString(): String {
+        val guildName = jda.getGuildById(guildId)?.name ?: guildId
+        val channelName = jda.getGuildChannelById(channelId)?.name ?: channelId
+        val mention = mentionUserId?.let { " (mention: <$it>)" } ?: ""
+        return "CalendarNotificationChannel(guild=$guildName, channel=$channelName, calURL=$calURL$mention)"
+    }
+}
+
 // destination persists as its key string (DiscordChat is serialized by the Chat value serializer and rebuilt
 // by the DiscordChat value deserializer in convergenceModule); emojis is a plain map Jackson handles natively.
 data class ReactConfig(val destination: DiscordChat, val emojis: MutableMap<String, Int>)
@@ -41,6 +55,7 @@ data class SettingsData(
     var linkedChats: MutableMap<Chat, MutableSet<Chat>> = mutableMapOf(),
     var serializedCommands: MutableMap<Int, ScheduledCommand> = mutableMapOf(),
     var syncedCalendars: MutableList<SyncedCalendar> = mutableListOf(),
+    var notificationChannels: MutableList<CalendarNotificationChannel> = mutableListOf(),
     var timers: MutableMap<String, OffsetDateTime> = mutableMapOf(),
     var imageUploadChannels: MutableMap<Chat, URI> = mutableMapOf(),
     var reactServers: MutableMap<Server, MutableList<ReactConfig>> = mutableMapOf(),
@@ -54,6 +69,7 @@ object Settings {
     var linkedChats: MutableMap<Chat, MutableSet<Chat>> = mutableMapOf()
     var serializedCommands: MutableMap<Int, ScheduledCommand> = mutableMapOf()
     var syncedCalendars: MutableList<SyncedCalendar> = mutableListOf()
+    var notificationChannels: MutableList<CalendarNotificationChannel> = mutableListOf()
     var timers: MutableMap<String, OffsetDateTime> = mutableMapOf()
     var imageUploadChannels: MutableMap<Chat, URI> = mutableMapOf()
     var reactServers: MutableMap<Server, MutableList<ReactConfig>> = TreeMap()
@@ -90,6 +106,7 @@ object Settings {
         linkedChats.clearThen().putAll(data.linkedChats)
         serializedCommands.clearThen().putAll(data.serializedCommands)
         syncedCalendars.clearThen().addAll(data.syncedCalendars)
+        notificationChannels.clearThen().addAll(data.notificationChannels)
         timers.clearThen().putAll(data.timers)
         imageUploadChannels.clearThen().putAll(data.imageUploadChannels)
         reactServers.clearThen().putAll(data.reactServers)
@@ -124,6 +141,7 @@ val linkedChats = Settings.linkedChats
 val aliases = Settings.aliases
 val serializedCommands = Settings.serializedCommands
 val syncedCalendars = Settings.syncedCalendars
+val notificationChannels = Settings.notificationChannels
 val timers = Settings.timers
 val imageUploadChannels: MutableMap<Chat, URI> = Settings.imageUploadChannels
 val reactServers: MutableMap<Server, MutableList<ReactConfig>> = Settings.reactServers

@@ -5,10 +5,13 @@ import io.mockk.mockk
 import net.dv8tion.jda.api.entities.ScheduledEvent
 import net.fortuna.ical4j.model.Calendar
 import net.fortuna.ical4j.model.DateTime
+import net.fortuna.ical4j.model.Dur
 import net.fortuna.ical4j.model.Recur
+import net.fortuna.ical4j.model.component.VAlarm
 import net.fortuna.ical4j.model.component.VEvent
 import net.fortuna.ical4j.model.property.*
 import org.junit.Before
+import java.time.Duration
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
@@ -586,5 +589,110 @@ class CalendarProcessorTest {
         val cal = makeCalendar(vevent)
         val result = CalendarProcessor.getCalDAVEventsNextDays(listOf(cal))
         assertEquals(1, result.size)
+    }
+
+    // ─── CalendarNotificationProcessor: extractAlarms ──────────────────────────
+
+    @Test
+    fun extractAlarmsReturnsEmptyListWhenNoAlarms() {
+        val vevent = makeVEvent(testUid, "Event", soon, hourLater)
+        val alarms = CalendarNotificationProcessor.extractAlarms(vevent)
+        assertTrue(alarms.isEmpty())
+    }
+
+    @Test
+    fun extractAlarmsReturnsEmptyForNonDisplayAction() {
+        val vevent = makeVEvent(testUid, "Event", soon, hourLater)
+        val alarm = VAlarm(Dur("-PT15M"))
+        alarm.properties.add(Action("EMAIL"))
+        vevent.alarms.add(alarm)
+        val alarms = CalendarNotificationProcessor.extractAlarms(vevent)
+        assertTrue(alarms.isEmpty())
+    }
+
+    @Test
+    fun extractAlarmsReturnsTriggerDurationAndDescription() {
+        val vevent = makeVEvent(testUid, "Event", soon, hourLater)
+        val alarm = VAlarm(Dur("-PT30M"))
+        alarm.properties.add(Action("DISPLAY"))
+        alarm.properties.add(Description("Test reminder"))
+        vevent.alarms.add(alarm)
+
+        val alarms = CalendarNotificationProcessor.extractAlarms(vevent)
+        assertEquals(1, alarms.size)
+        assertEquals(Duration.ofMinutes(-30), alarms[0].first)
+        assertEquals("Test reminder", alarms[0].second)
+    }
+
+    @Test
+    fun extractAlarmsReturnsDefaultDescriptionWhenMissing() {
+        val vevent = makeVEvent(testUid, "Event", soon, hourLater)
+        val alarm = VAlarm(Dur("-PT1H"))
+        alarm.properties.add(Action("DISPLAY"))
+        vevent.alarms.add(alarm)
+
+        val alarms = CalendarNotificationProcessor.extractAlarms(vevent)
+        assertEquals(1, alarms.size)
+        assertEquals(Duration.ofHours(-1), alarms[0].first)
+        assertEquals("Reminder", alarms[0].second)
+    }
+
+    @Test
+    fun extractAlarmsHandlesMultipleAlarms() {
+        val vevent = makeVEvent(testUid, "Event", soon, hourLater)
+        val alarm1 = VAlarm(Dur("-P1D"))
+        alarm1.properties.add(Action("DISPLAY"))
+        alarm1.properties.add(Description("1 day before"))
+        vevent.alarms.add(alarm1)
+
+        val alarm2 = VAlarm(Dur("-PT15M"))
+        alarm2.properties.add(Action("DISPLAY"))
+        alarm2.properties.add(Description("15 minutes before"))
+        vevent.alarms.add(alarm2)
+
+        val alarms = CalendarNotificationProcessor.extractAlarms(vevent)
+        assertEquals(2, alarms.size)
+        assertEquals(Duration.ofDays(-1), alarms[0].first)
+        assertEquals("1 day before", alarms[0].second)
+        assertEquals(Duration.ofMinutes(-15), alarms[1].first)
+        assertEquals("15 minutes before", alarms[1].second)
+    }
+
+    @Test
+    fun extractAlarmsConvertsDurationCorrectly() {
+        val vevent = makeVEvent(testUid, "Event", soon, hourLater)
+        val alarm = VAlarm(Dur("-PT1H30M"))
+        alarm.properties.add(Action("DISPLAY"))
+        vevent.alarms.add(alarm)
+
+        val alarms = CalendarNotificationProcessor.extractAlarms(vevent)
+        assertEquals(1, alarms.size)
+        assertEquals(Duration.ofMinutes(-90), alarms[0].first)
+    }
+
+    // ─── CalendarNotificationProcessor: calculateNotificationTime ──────────────
+
+    @Test
+    fun calculateNotificationTimeSubtractsDuration() {
+        val eventStart = Instant.parse("2024-01-15T10:00:00Z")
+        val triggerDuration = Duration.ofMinutes(-30)
+        val notifyAt = CalendarNotificationProcessor.calculateNotificationTime(eventStart, triggerDuration)
+        assertEquals(Instant.parse("2024-01-15T09:30:00Z"), notifyAt)
+    }
+
+    @Test
+    fun calculateNotificationTimeHandlesOneDayBefore() {
+        val eventStart = Instant.parse("2024-01-15T10:00:00Z")
+        val triggerDuration = Duration.ofDays(-1)
+        val notifyAt = CalendarNotificationProcessor.calculateNotificationTime(eventStart, triggerDuration)
+        assertEquals(Instant.parse("2024-01-14T10:00:00Z"), notifyAt)
+    }
+
+    @Test
+    fun calculateNotificationTimeHandlesMultipleHoursAndMinutes() {
+        val eventStart = Instant.parse("2024-01-15T10:00:00Z")
+        val triggerDuration = Duration.ofHours(-2).plusMinutes(-45)
+        val notifyAt = CalendarNotificationProcessor.calculateNotificationTime(eventStart, triggerDuration)
+        assertEquals(Instant.parse("2024-01-15T07:15:00Z"), notifyAt)
     }
 }

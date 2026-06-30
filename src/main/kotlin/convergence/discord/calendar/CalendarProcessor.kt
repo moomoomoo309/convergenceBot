@@ -382,6 +382,25 @@ object CalendarProcessor {
     fun onUpdate() {
         if ((lastCalendarUpdateTime + calendarUpdateFrequency).isBefore(Instant.now())) {
             syncAllCalendars()
+            scheduleAllNotifications()
+        }
+    }
+
+    /**
+     * Schedules notifications for all registered notification channels, independent of Discord sync.
+     * This ensures notifications work even for calendars not synced to Discord events.
+     */
+    fun scheduleAllNotifications() {
+        val calURLs = notificationChannels.map { it.calURL }.toSet()
+        for (calURL in calURLs) {
+            val calCollection = getAndCacheCalendar(calURL) ?: continue
+            var queriedCals = calCollection.queryCalendars(httpClient, buildCalendarQuery(Instant.now()))
+            if (queriedCals.any { it == null })
+                queriedCals = calCollection.queryCalendars(httpClient, buildCalendarQuery(Instant.now()))
+            val eventInstances = getCalDAVEventsNextDays(queriedCals.filterNotNull())
+
+            val channelsForCalendar = notificationChannels.filter { it.calURL == calURL }
+            CalendarNotificationProcessor.scheduleNotificationsForEvents(eventInstances, channelsForCalendar)
         }
     }
 
@@ -494,4 +513,95 @@ fun registerCalendarCommands() {
             "syncedCalendars (Takes no parameters)"
         )
     )
+    registerCommand(
+        Command.of(
+            DiscordProtocol,
+            "addCalendarNotification",
+            listOf(
+                ArgumentSpec("URL", ArgumentType.STRING),
+                ArgumentSpec("mention", ArgumentType.STRING, optional = true)
+            ),
+            ::addCalendarNotificationCommand,
+            "Registers this channel to receive event notifications from a CalDAV calendar.",
+            "addCalendarNotification (URL) [mention @user]"
+        )
+    )
+    registerCommand(
+        Command.of(
+            DiscordProtocol,
+            "removeCalendarNotification",
+            listOf(ArgumentSpec("URL", ArgumentType.STRING)),
+            ::removeCalendarNotificationCommand,
+            "Removes notification registration for a CalDAV calendar.",
+            "removeCalendarNotification (URL)"
+        )
+    )
+    registerCommand(
+        Command.of(
+            DiscordProtocol,
+            "listCalendarNotifications",
+            listOf(),
+            { _, chat ->
+                notificationChannels.filter {
+                    it.guildId == (chat as DiscordChat).server.guild.idLong
+                }.joinToString("\n").ifEmpty { "No calendar notifications are registered in this server." }
+            },
+            "Lists all registered calendar notification channels in this server.",
+            "listCalendarNotifications (Takes no parameters)"
+        )
+    )
+}
+
+private fun addCalendarNotificationCommand(args: List<String>, chat: Chat): String {
+    if (chat !is DiscordChat)
+        return "This command can only be run on Discord."
+    if (args.isEmpty())
+        return "Please provide a CalDAV URL."
+
+    val calURL = args[0]
+    val mentionStr = args.getOrNull(1)
+
+    // Parse mention if provided
+    val mentionUserId = mentionStr?.let { str ->
+        val mentionRegex = Regex("<@(\\d+)>")
+        val match = mentionRegex.find(str)
+        match?.groupValues?.get(1)?.toLongOrNull()
+    }
+
+    // Validate the calendar URL exists
+    if (CalendarProcessor.getAndCacheCalendar(calURL) == null)
+        return "No calendar found at URL \"$calURL\"."
+
+    val guildId = chat.server.guild.idLong
+    val channelId = chat.channel.idLong
+
+    // Check if already registered
+    val existing = notificationChannels.firstOrNull {
+        it.guildId == guildId && it.calURL == calURL && it.channelId == channelId
+    }
+    if (existing != null)
+        return "This channel is already registered for notifications from that calendar."
+
+    notificationChannels.add(CalendarNotificationChannel(guildId, channelId, calURL, mentionUserId))
+    Settings.update()
+
+    return "Registered this channel to receive notifications from calendar: $calURL" +
+        (mentionUserId?.let { " (mentioning <@$it>)" } ?: "")
+}
+
+private fun removeCalendarNotificationCommand(args: List<String>, chat: Chat): String {
+    if (chat !is DiscordChat)
+        return "This command can only be run on Discord."
+    if (args.isEmpty())
+        return "Please provide a CalDAV URL."
+
+    val calURL = args[0]
+    val guildId = chat.server.guild.idLong
+    val channelId = chat.channel.idLong
+
+    val removed = notificationChannels.remove(notificationChannels.firstOrNull {
+        it.guildId == guildId && it.calURL == calURL && it.channelId == channelId
+    })
+
+    return if (removed) "Notification registration removed." else "No notification registration found for URL: $calURL"
 }
