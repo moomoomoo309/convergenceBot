@@ -121,9 +121,6 @@ maintainer's server — don't run it unless you are that maintainer.
 
 ## Gotchas
 
-- `src/main/kotlin/convergence/NewFile.kt` is a stray scaffold file
-  (`object NewFile { fun main() ... "Hello, World!" }`) and is untracked. It's
-  not part of the bot — safe to ignore or delete.
 - The Shadow jar config in `build.gradle.kts` is deliberately non-default: it
   filters the classpath to real JARs because GraalVM's `js-community` is
   POM-only and breaks Shadow's default zip-everything behavior. Don't "simplify"

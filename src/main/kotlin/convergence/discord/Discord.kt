@@ -2,15 +2,6 @@ package convergence.discord
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import convergence.*
-import org.apache.http.auth.AuthScope
-import org.apache.http.auth.UsernamePasswordCredentials
-import org.apache.http.client.methods.HttpPut
-import org.apache.http.entity.ByteArrayEntity
-import org.apache.http.entity.ContentType
-import org.apache.http.impl.client.BasicCredentialsProvider
-import org.apache.http.impl.client.CloseableHttpClient
-import org.apache.http.impl.client.HttpClients
-import org.apache.http.util.EntityUtils
 import convergence.discord.MessageListener.forwardedMessages
 import convergence.discord.calendar.registerCalendarCommands
 import net.dv8tion.jda.api.JDA
@@ -38,6 +29,15 @@ import net.dv8tion.jda.api.utils.MemberCachePolicy
 import net.dv8tion.jda.api.utils.cache.CacheFlag
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder
 import net.dv8tion.jda.api.utils.messages.MessageCreateData
+import org.apache.http.auth.AuthScope
+import org.apache.http.auth.UsernamePasswordCredentials
+import org.apache.http.client.methods.HttpPut
+import org.apache.http.entity.ByteArrayEntity
+import org.apache.http.entity.ContentType
+import org.apache.http.impl.client.BasicCredentialsProvider
+import org.apache.http.impl.client.CloseableHttpClient
+import org.apache.http.impl.client.HttpClients
+import org.apache.http.util.EntityUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.FileNotFoundException
@@ -124,6 +124,8 @@ class DiscordUser(val name: String, override val id: Long, val author: DUser):
     override fun hashCode(): Int {
         return id.hashCode()
     }
+
+    fun getNickname(chat: Chat) = DiscordProtocol.getUserNickname(chat, this)
 
     override fun toString(): String = "DiscordUser($name)"
 }

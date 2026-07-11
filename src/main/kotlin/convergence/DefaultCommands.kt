@@ -1,6 +1,6 @@
 package convergence
 
-import convergence.CommandScheduler.getCommands
+import convergence.Scheduler.getCommands
 import org.natty.Parser
 import java.time.OffsetDateTime
 import kotlin.math.ceil
@@ -212,7 +212,7 @@ fun schedule(args: List<String>, chat: Chat, sender: User): String {
     if (commandWithArgs != null)
         for (group in timeList)
             for (time in group.dates)
-                CommandScheduler.schedule(
+                Scheduler.schedule(
                     chat,
                     sender,
                     commandWithArgs.command.name,
@@ -291,7 +291,7 @@ fun unschedule(args: List<String>): String {
     val index = args[0].toIntOrNull() ?: return "${args[0]} is not an event ID!"
 
     Settings.update()
-    return if (CommandScheduler.unschedule(index))
+    return if (Scheduler.unschedule(index))
         "Unscheduled event with index $index."
     else
         "No event with index $index found."

@@ -79,15 +79,23 @@ object CalendarNotificationProcessor {
                 // Only schedule if notification time is in the future
                 if (notifyAt.isBefore(Instant.now())) continue
 
-                // Find which channels should receive this notification
+                // Notify each channel that is configured to receive it
                 for (channel in notificationChannels) {
+                    // Filter out which users to mention based on the pattern they provided (it defaults to "")
+                    val mentionIds = channel.mentions.mapNotNull { (userId, pattern) ->
+                        val regex = channel.regexes.computeIfAbsent(pattern) { Regex(pattern) }
+                        if (regex.containsMatchIn(eventSummary)) {
+                            userId
+                        } else null
+                    }
+
                     scheduleNotification(
                         eventSummary = eventSummary,
                         eventStart = eventStart,
                         channelId = channel.channelId,
                         notifyAt = notifyAt,
                         description = description,
-                        mentionUserId = channel.mentionUserId
+                        mentionUserIds = mentionIds
                     )
                 }
             }
@@ -103,19 +111,19 @@ object CalendarNotificationProcessor {
         channelId: Long,
         notifyAt: Instant,
         description: String,
-        mentionUserId: Long?
+        mentionUserIds: List<Long>
     ) {
         val notifyAtOffset = notifyAt.atOffset(ZoneOffset.UTC)
         val eventStartOffset = eventStart.atOffset(ZoneOffset.UTC)
 
-        CommandScheduler.taskList.add(
+        Scheduler.taskList.add(
             ScheduledTask(notifyAtOffset) {
                 sendNotification(
                     channelId = channelId,
                     eventSummary = eventSummary,
                     eventStart = eventStartOffset,
                     description = description,
-                    mentionUserId = mentionUserId
+                    mentionUserIds = mentionUserIds
                 )
             }
         )
@@ -129,25 +137,16 @@ object CalendarNotificationProcessor {
         eventSummary: String,
         eventStart: OffsetDateTime,
         description: String,
-        mentionUserId: Long?
+        mentionUserIds: List<Long>
     ) {
         val chat = DiscordChat(channelId)
         val timeUntil = formatTime(eventStart)
-        val mentionStr = mentionUserId?.let { "<@$it> " } ?: ""
+        val mentionStr = mentionUserIds.joinToString(" ") { "<@$it> " }
 
-        val message = buildString {
-            append(mentionStr)
-            append("Reminder: ")
-            append(eventSummary)
-            append(" starts in ")
-            append(timeUntil)
-            append("\nEvent time: ")
-            append(eventStart)
+        val message = "$mentionStr Reminder: $eventSummary starts in $timeUntil\nEvent time: $eventStart" +
             if (description.isNotBlank() && description != "Reminder") {
-                append("\n")
-                append(description)
-            }
-        }
+                "\n$description"
+            } else ""
 
         sendMessage(chat, message)
     }

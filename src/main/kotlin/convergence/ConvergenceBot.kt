@@ -45,8 +45,8 @@ object ConvergenceBot {
         loadProtocolConfig()
 
         defaultLogger.info("Starting command scheduler...")
-        CommandScheduler.loadFromFile()
-        CommandScheduler.start()
+        Scheduler.loadFromFile()
+        Scheduler.start()
     }
 }
 

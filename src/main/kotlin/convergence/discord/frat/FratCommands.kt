@@ -396,7 +396,7 @@ fun registerFratCommands() {
         )
     )
     registerMentionCallback()
-    CommandScheduler.taskList.add(ScheduledTask(nextMonth(), ::mentionStatsFct))
+    Scheduler.taskList.add(ScheduledTask(nextMonth(), ::mentionStatsFct))
 }
 
 private fun registerMentionCallback() {
@@ -454,7 +454,7 @@ private fun mentionStatsFct() {
             mentioners.clear()
     Settings.update()
     // Schedule it again for next month
-    CommandScheduler.taskList.add(ScheduledTask(nextMonth(), ::mentionStatsFct))
+    Scheduler.taskList.add(ScheduledTask(nextMonth(), ::mentionStatsFct))
 }
 
 fun mentionStats(chat: Chat) = mentionChats

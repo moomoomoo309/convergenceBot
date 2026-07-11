@@ -177,7 +177,7 @@ object CalendarProcessor {
 
                 val status = ex.getProperty<Status>("STATUS")?.value
                 if (status == "CANCELLED") {
-                    // Remove cancelled occurrence
+                    // Remove canceled occurrence
                     occurrences.removeIf { it.start == rid }
                 } else {
                     // Override: replace original occurrence with this one
@@ -268,13 +268,6 @@ object CalendarProcessor {
             CompletableFuture.allOf(*futures.map {
                 it.second.submit()
             }.toTypedArray()).join()
-        } else {
-            println("To Add")
-            println(objectMapper.writeValueAsString(futures.map { it.first }))
-            println("Invalid")
-            println(objectMapper.writeValueAsString(invalidEvents))
-            println("Duplicate")
-            println(objectMapper.writeValueAsString(duplicateEvents))
         }
 
         return "Added: ${futures.joinToString(", ") { it.first.name }}\n" +
@@ -519,11 +512,12 @@ fun registerCalendarCommands() {
             "addCalendarNotification",
             listOf(
                 ArgumentSpec("URL", ArgumentType.STRING),
-                ArgumentSpec("mention", ArgumentType.STRING, optional = true)
+                ArgumentSpec("mention", ArgumentType.STRING, optional = true),
+                ArgumentSpec("pattern", ArgumentType.STRING, optional = true)
             ),
             ::addCalendarNotificationCommand,
             "Registers this channel to receive event notifications from a CalDAV calendar.",
-            "addCalendarNotification (URL) [mention @user]"
+            "addCalendarNotification (URL) [mention @user] [regex pattern to filter events to be mentioned for]"
         )
     )
     registerCommand(
@@ -560,6 +554,7 @@ private fun addCalendarNotificationCommand(args: List<String>, chat: Chat): Stri
 
     val calURL = args[0]
     val mentionStr = args.getOrNull(1)
+    val pattern = args.getOrNull(2)
 
     // Parse mention if provided
     val mentionUserId = mentionStr?.let { str ->
@@ -569,8 +564,10 @@ private fun addCalendarNotificationCommand(args: List<String>, chat: Chat): Stri
     }
 
     // Validate the calendar URL exists
-    if (CalendarProcessor.getAndCacheCalendar(calURL) == null)
+    val cal = CalendarProcessor.getAndCacheCalendar(calURL) ?:
         return "No calendar found at URL \"$calURL\"."
+
+    val calName = cal.getCalendarCollectionRoot().trimEnd('/').substringAfterLast('/')
 
     val guildId = chat.server.guild.idLong
     val channelId = chat.channel.idLong
@@ -579,14 +576,28 @@ private fun addCalendarNotificationCommand(args: List<String>, chat: Chat): Stri
     val existing = notificationChannels.firstOrNull {
         it.guildId == guildId && it.calURL == calURL && it.channelId == channelId
     }
-    if (existing != null)
+
+    // Error if it's already registered with no mentions
+    if (existing != null && mentionUserId == null && pattern == null)
         return "This channel is already registered for notifications from that calendar."
 
-    notificationChannels.add(CalendarNotificationChannel(guildId, channelId, calURL, mentionUserId))
+    if (existing == null) {
+        val mentions = mutableMapOf<Long, String>()
+        if (mentionUserId != null)
+            mentions[mentionUserId] = pattern ?: ""
+        notificationChannels.add(CalendarNotificationChannel(guildId, channelId, calURL, mentions))
+    } else if (mentionUserId != null)
+        existing.mentions[mentionUserId] = pattern ?: ""
     Settings.update()
 
-    return "Registered this channel to receive notifications from calendar: $calURL" +
-        (mentionUserId?.let { " (mentioning <@$it>)" } ?: "")
+    val mentionText = if (mentionUserId != null) {
+        val user = DiscordProtocol.getUser(mentionUserId)
+        " (mentioning ${user?.getNickname(chat)}"
+    } else ""
+    val filterText = if (pattern != null) {
+        " on messages that match the regular expression `$pattern`)"
+    } else ")"
+    return "Registered this channel to receive notifications from calendar \"$calName\"$mentionText"
 }
 
 private fun removeCalendarNotificationCommand(args: List<String>, chat: Chat): String {

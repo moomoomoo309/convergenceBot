@@ -8,10 +8,11 @@ import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
 
 /**
- * Checks if commands scheduled for later are ready to be run yet. Can give information on the commands in its queue.
+ * Checks if commands or tasks scheduled for later are ready to be run yet.
+ * Can give information on what's in its queue.
  */
 @Suppress("ConstPropertyName")
-object CommandScheduler: Thread() {
+object Scheduler: Thread() {
     private const val allowedTimeDifferenceSeconds = 30
     private const val updatesPerSecond = 1
 
