@@ -524,10 +524,13 @@ fun registerCalendarCommands() {
         Command.of(
             DiscordProtocol,
             "removeCalendarNotification",
-            listOf(ArgumentSpec("URL", ArgumentType.STRING)),
+            listOf(
+                ArgumentSpec("URL", ArgumentType.STRING),
+                ArgumentSpec("mention", ArgumentType.STRING, optional = true)
+            ),
             ::removeCalendarNotificationCommand,
             "Removes notification registration for a CalDAV calendar.",
-            "removeCalendarNotification (URL)"
+            "removeCalendarNotification (URL) [mention]"
         )
     )
     registerCommand(
@@ -557,11 +560,7 @@ private fun addCalendarNotificationCommand(args: List<String>, chat: Chat): Stri
     val pattern = args.getOrNull(2)
 
     // Parse mention if provided
-    val mentionUserId = mentionStr?.let { str ->
-        val mentionRegex = Regex("<@(\\d+)>")
-        val match = mentionRegex.find(str)
-        match?.groupValues?.get(1)?.toLongOrNull()
-    }
+    val mentionUserId = getIdFromMention(mentionStr)
 
     // Validate the calendar URL exists
     val cal = CalendarProcessor.getAndCacheCalendar(calURL) ?:
@@ -581,6 +580,7 @@ private fun addCalendarNotificationCommand(args: List<String>, chat: Chat): Stri
     if (existing != null && mentionUserId == null && pattern == null)
         return "This channel is already registered for notifications from that calendar."
 
+    // Add a new channel, or add the mention to the existing one
     if (existing == null) {
         val mentions = mutableMapOf<Long, String>()
         if (mentionUserId != null)
@@ -590,6 +590,7 @@ private fun addCalendarNotificationCommand(args: List<String>, chat: Chat): Stri
         existing.mentions[mentionUserId] = pattern ?: ""
     Settings.update()
 
+    // Format the response text
     val mentionText = if (mentionUserId != null) {
         val user = DiscordProtocol.getUser(mentionUserId)
         " (mentioning ${user?.getNickname(chat)}"
@@ -597,7 +598,7 @@ private fun addCalendarNotificationCommand(args: List<String>, chat: Chat): Stri
     val filterText = if (pattern != null) {
         " on messages that match the regular expression `$pattern`)"
     } else ")"
-    return "Registered this channel to receive notifications from calendar \"$calName\"$mentionText"
+    return "Registered this channel to receive notifications from calendar \"$calName\"$mentionText$filterText"
 }
 
 private fun removeCalendarNotificationCommand(args: List<String>, chat: Chat): String {
@@ -607,12 +608,36 @@ private fun removeCalendarNotificationCommand(args: List<String>, chat: Chat): S
         return "Please provide a CalDAV URL."
 
     val calURL = args[0]
+    val mentionStr = args.getOrNull(1)
     val guildId = chat.server.guild.idLong
     val channelId = chat.channel.idLong
 
-    val removed = notificationChannels.remove(notificationChannels.firstOrNull {
-        it.guildId == guildId && it.calURL == calURL && it.channelId == channelId
-    })
+    // Parse mention if provided
+    val mentionUserId = getIdFromMention(mentionStr)
 
-    return if (removed) "Notification registration removed." else "No notification registration found for URL: $calURL"
+    val channel = notificationChannels.firstOrNull {
+        it.guildId == guildId && it.calURL == calURL && it.channelId == channelId
+    }
+
+    return if (mentionUserId == null)
+        // Remove the channel notification entirely
+        if (notificationChannels.remove(channel))
+            "Notification registration removed."
+        else
+            "No notification registration found for URL: $calURL"
+    else
+        // Remove the user being mentioned from the notification
+        if (channel?.mentions?.remove(mentionUserId) != null)
+            "Notification mention removed."
+        else
+            "That user is not mentioned in this channel!"
+}
+
+private fun getIdFromMention(mentionStr: String?): Long? {
+    val mentionUserId = mentionStr?.let { str ->
+        val mentionRegex = Regex("<@(\\d+)>")
+        val match = mentionRegex.find(str)
+        match?.groupValues?.get(1)?.toLongOrNull()
+    }
+    return mentionUserId
 }
