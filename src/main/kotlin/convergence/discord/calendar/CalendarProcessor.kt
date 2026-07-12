@@ -1,7 +1,9 @@
 package convergence.discord.calendar
 
 import com.github.caldav4j.CalDAVCollection
+import com.github.caldav4j.CalDAVConstants
 import com.github.caldav4j.exceptions.CalDAV4JException
+import com.github.caldav4j.methods.HttpPropFindMethod
 import com.github.caldav4j.model.request.CalendarQuery
 import com.github.caldav4j.model.request.CompFilter
 import com.github.caldav4j.model.request.TimeRange
@@ -21,6 +23,8 @@ import net.fortuna.ical4j.model.property.Status
 import org.apache.http.impl.client.CloseableHttpClient
 import org.apache.http.impl.client.HttpClients
 import org.apache.http.message.BasicHeader
+import org.apache.jackrabbit.webdav.property.DavPropertyName
+import org.apache.jackrabbit.webdav.property.DavPropertyNameSet
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
@@ -123,6 +127,8 @@ object CalendarProcessor {
         )
     }
 
+    val calendarNames = mutableMapOf<CalDAVCollection, String>()
+
     fun getAndCacheCalendar(url: String): CalDAVCollection? {
         calendarCache[url]?.let { return it }
         val cal = CalDAVCollection(url)
@@ -133,6 +139,18 @@ object CalendarProcessor {
             return null
         }
         calendarCache[url] = cal
+        try {
+            val propNameSet = DavPropertyNameSet()
+            propNameSet.add(DavPropertyName.DISPLAYNAME)
+            val propFindMethod = HttpPropFindMethod(url, propNameSet, CalDAVConstants.DEPTH_0)
+            val response = httpClient.execute(propFindMethod)
+            val displayName = propFindMethod.getDisplayName(response, url)
+            if (displayName.isNotBlank()) {
+                calendarNames[cal] = displayName
+            }
+        } catch(e: Exception) {
+            discordLogger.warn("Could not retrieve display name for calendar at $url: ${e.message}")
+        }
         return cal
     }
 
@@ -396,6 +414,9 @@ object CalendarProcessor {
         for (calURL in calURLs) {
             val calCollection = getAndCacheCalendar(calURL) ?: continue
             var queriedCals = calCollection.queryCalendars(httpClient, buildCalendarQuery(Instant.now()))
+            // ical4j's timezone registry may not be fully populated on the first query, causing some
+            // calendar objects to fail parsing (returning null). If that happens, retry once — the first
+            // query will have warmed up the registry so the second succeeds.
             if (queriedCals.any { it == null })
                 queriedCals = calCollection.queryCalendars(httpClient, buildCalendarQuery(Instant.now()))
             val eventInstances = getCalDAVEventsNextDays(queriedCals.filterNotNull())
@@ -558,20 +579,6 @@ fun registerCalendarCommands() {
     registerCommand(
         Command.of(
             DiscordProtocol,
-            "listCalendarNotifications",
-            listOf(),
-            { _, chat ->
-                notificationChannels.filter {
-                    it.guildId == (chat as DiscordChat).server.guild.idLong
-                }.joinToString("\n").ifEmpty { "No calendar notifications are registered in this server." }
-            },
-            "Lists all registered calendar notification channels in this server.",
-            "listCalendarNotifications (Takes no arguments)"
-        )
-    )
-    registerCommand(
-        Command.of(
-            DiscordProtocol,
             "syncCalendarNotifications",
             listOf(),
             { ->
@@ -595,14 +602,9 @@ private fun addCalendarNotificationCommand(args: List<String>, chat: Chat): Stri
     val mentionStr = args.getOrNull(1)
     val pattern = args.getOrNull(2)
 
-    // Parse mention if provided
-    val mentionUserId = getIdFromMention(mentionStr)
-
     // Validate the calendar URL exists
-    val cal = CalendarProcessor.getAndCacheCalendar(calURL) ?:
-        return "No calendar found at URL \"$calURL\"."
-
-    val calName = cal.getCalendarCollectionRoot().trimEnd('/').substringAfterLast('/')
+    val cal = CalendarProcessor.getAndCacheCalendar(calURL) ?: return "No calendar found at URL \"$calURL\"."
+    val calName = CalendarProcessor.calendarNames[cal]!!
 
     val guildId = chat.server.guild.idLong
     val channelId = chat.channel.idLong
@@ -612,33 +614,30 @@ private fun addCalendarNotificationCommand(args: List<String>, chat: Chat): Stri
         it.guildId == guildId && it.calURL == calURL && it.channelId == channelId
     }
 
-    // Error if it's already registered with no mentions
-    if (existing != null && mentionUserId == null && pattern == null)
-        return "This channel is already registered for notifications from that calendar."
-
-    // Add a new channel, or add the mention to the existing one
-    if (existing == null) {
-        val mentions = mutableMapOf<Long, String>()
-        if (mentionUserId != null)
-            mentions[mentionUserId] = pattern ?: ""
-        notificationChannels.add(CalendarNotificationChannel(guildId, channelId, calURL, mentions))
-    } else if (mentionUserId != null)
-        existing.mentions[mentionUserId] = pattern ?: ""
-    Settings.update()
-
-    // Format the response text
-    val mentionText = if (mentionUserId != null) {
+    if (mentionStr == null) {
+        // Error if it's already registered
+        if (existing != null)
+            return "This channel is already registered for notifications from that calendar."
+        notificationChannels.add(CalendarNotificationChannel(guildId, channelId, calURL, mutableMapOf()))
+        return "Registered this channel to receive notifications from calendar \"$calName\"."
+    } else {
+        val mentionUserId = getIdFromMention(mentionStr) ?: return "Invalid @ for mentions."
+        // Add a new channel, or add the mention to the existing one
+        if (existing == null) {
+            val mentions = mutableMapOf(mentionUserId to (pattern ?: ""))
+            notificationChannels.add(CalendarNotificationChannel(guildId, channelId, calURL, mentions))
+        } else
+            existing.mentions[mentionUserId] = pattern ?: ""
+        Settings.update()
+        // Format the response text
         val user = DiscordProtocol.getUser(mentionUserId)
-        " (mentioning ${user?.getNickname(chat)}"
-    } else ""
-    val filterText = if (pattern != null)
-        " on messages that match the regular expression `$pattern`)"
-    else
-        if (mentionUserId != null)
-            ")"
+        val mentionText = " (mentioning ${user?.getNickname(chat)}"
+        val filterText = if (pattern != null)
+            " on messages that match the regular expression `$pattern`)"
         else
-            ""
-    return "Registered this channel to receive notifications from calendar \"$calName\"$mentionText$filterText"
+            ")"
+        return "Registered this channel to receive notifications from calendar \"$calName\"$mentionText$filterText."
+    }
 }
 
 private fun removeCalendarNotificationCommand(args: List<String>, chat: Chat): String {
@@ -675,9 +674,9 @@ private fun removeCalendarNotificationCommand(args: List<String>, chat: Chat): S
             "That user is not mentioned in this channel!"
 }
 
+private val mentionRegex = Regex("<@(\\d+)>")
 private fun getIdFromMention(mentionStr: String?): Long? {
     val mentionUserId = mentionStr?.let { str ->
-        val mentionRegex = Regex("<@(\\d+)>")
         val match = mentionRegex.find(str)
         match?.groupValues?.get(1)?.toLongOrNull()
     }
