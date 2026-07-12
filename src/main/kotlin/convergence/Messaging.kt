@@ -19,8 +19,8 @@ fun sendMessage(chat: Chat, sender: User, message: String?) =
 fun sendMessage(chat: Chat, message: OutgoingMessage?) {
     if (message == null)
         return
-    if (debugMode)
-        chat.protocol.sendMessage(chat, "[Test Mode]: $message")
+    if (debugMode && message is SimpleOutgoingMessage)
+        chat.protocol.sendMessage(chat, "[Test Mode]: ${message.text}")
     else
         chat.protocol.sendMessage(chat, message)
 }

@@ -6,7 +6,6 @@ import net.fortuna.ical4j.model.component.VEvent
 import java.time.Duration
 import java.time.Instant
 import java.time.OffsetDateTime
-import java.time.ZoneOffset
 
 object CalendarNotificationProcessor {
 
@@ -20,8 +19,8 @@ object CalendarNotificationProcessor {
         val result = mutableListOf<Pair<Duration, String>>()
 
         for (alarm in alarms) {
-            val action = alarm.action ?: continue
-            if (action.value != "DISPLAY") continue
+            if (alarm.action == null)
+                continue
 
             val trigger = alarm.trigger ?: continue
             val dur = trigger.duration ?: continue
@@ -83,7 +82,7 @@ object CalendarNotificationProcessor {
                 for (channel in notificationChannels) {
                     // Filter out which users to mention based on the pattern they provided (it defaults to "")
                     val mentionIds = channel.mentions.mapNotNull { (userId, pattern) ->
-                        val regex = channel.regexes.computeIfAbsent(pattern) { Regex(pattern) }
+                        val regex = channel.regexes.computeIfAbsent(pattern) { Regex(pattern, RegexOption.IGNORE_CASE) }
                         if (regex.containsMatchIn(eventSummary)) {
                             userId
                         } else null
@@ -113,9 +112,9 @@ object CalendarNotificationProcessor {
         description: String,
         mentionUserIds: List<Long>
     ) {
-        val notifyAtOffset = notifyAt.atOffset(ZoneOffset.UTC)
-        val eventStartOffset = eventStart.atOffset(ZoneOffset.UTC)
-
+        val notifyAtOffset = notifyAt.atOffset(defaultZoneOffset)
+        val eventStartOffset = eventStart.atOffset(defaultZoneOffset)
+        println("Scheduled mention of $eventSummary in ${formatTime(eventStartOffset)} mentioning $mentionUserIds")
         Scheduler.taskList.add(
             ScheduledTask(notifyAtOffset) {
                 sendNotification(

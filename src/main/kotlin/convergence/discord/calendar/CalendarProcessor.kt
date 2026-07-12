@@ -136,6 +136,14 @@ object CalendarProcessor {
         return cal
     }
 
+    fun validateCalDAVUrl(url: String): String? {
+        if (url.contains("/public-calendars/")) {
+            return "This is a public calendar URL. Public calendars strip alarms (VALARM) and other data. " +
+                "Please use an authenticated CalDAV URL instead (e.g. /remote.php/dav/calendars/bot/<calname>/)."
+        }
+        return null
+    }
+
     fun buildCalendarQuery(now: Instant): CalendarQuery {
         val calendarQuery = GenerateQuery().generate()
         val calFilter = CompFilter("VCALENDAR")
@@ -544,7 +552,34 @@ fun registerCalendarCommands() {
                 }.joinToString("\n").ifEmpty { "No calendar notifications are registered in this server." }
             },
             "Lists all registered calendar notification channels in this server.",
-            "listCalendarNotifications (Takes no parameters)"
+            "listCalendarNotifications (Takes no arguments)"
+        )
+    )
+    registerCommand(
+        Command.of(
+            DiscordProtocol,
+            "listCalendarNotifications",
+            listOf(),
+            { _, chat ->
+                notificationChannels.filter {
+                    it.guildId == (chat as DiscordChat).server.guild.idLong
+                }.joinToString("\n").ifEmpty { "No calendar notifications are registered in this server." }
+            },
+            "Lists all registered calendar notification channels in this server.",
+            "listCalendarNotifications (Takes no arguments)"
+        )
+    )
+    registerCommand(
+        Command.of(
+            DiscordProtocol,
+            "syncCalendarNotifications",
+            listOf(),
+            { ->
+                CalendarProcessor.scheduleAllNotifications()
+                "Notifications synced."
+            },
+            "Manually syncs calendar notifications.",
+            "syncCalendarNotifications (Takes no arguments)"
         )
     )
 }
@@ -556,6 +591,7 @@ private fun addCalendarNotificationCommand(args: List<String>, chat: Chat): Stri
         return "Please provide a CalDAV URL."
 
     val calURL = args[0]
+    CalendarProcessor.validateCalDAVUrl(calURL)?.let { return it }
     val mentionStr = args.getOrNull(1)
     val pattern = args.getOrNull(2)
 
@@ -595,9 +631,13 @@ private fun addCalendarNotificationCommand(args: List<String>, chat: Chat): Stri
         val user = DiscordProtocol.getUser(mentionUserId)
         " (mentioning ${user?.getNickname(chat)}"
     } else ""
-    val filterText = if (pattern != null) {
+    val filterText = if (pattern != null)
         " on messages that match the regular expression `$pattern`)"
-    } else ")"
+    else
+        if (mentionUserId != null)
+            ")"
+        else
+            ""
     return "Registered this channel to receive notifications from calendar \"$calName\"$mentionText$filterText"
 }
 
@@ -621,15 +661,17 @@ private fun removeCalendarNotificationCommand(args: List<String>, chat: Chat): S
 
     return if (mentionUserId == null)
         // Remove the channel notification entirely
-        if (notificationChannels.remove(channel))
+        if (notificationChannels.remove(channel)) {
+            Settings.update()
             "Notification registration removed."
-        else
+        } else
             "No notification registration found for URL: $calURL"
     else
         // Remove the user being mentioned from the notification
-        if (channel?.mentions?.remove(mentionUserId) != null)
+        if (channel?.mentions?.remove(mentionUserId) != null) {
+            Settings.update()
             "Notification mention removed."
-        else
+        } else
             "That user is not mentioned in this channel!"
 }
 
