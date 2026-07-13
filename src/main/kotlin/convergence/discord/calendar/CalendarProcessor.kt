@@ -620,24 +620,24 @@ private fun addCalendarNotificationCommand(args: List<String>, chat: Chat): Stri
             return "This channel is already registered for notifications from that calendar."
         notificationChannels.add(CalendarNotificationChannel(guildId, channelId, calURL, mutableMapOf()))
         return "Registered this channel to receive notifications from calendar \"$calName\"."
-    } else {
-        val mentionUserId = getIdFromMention(mentionStr) ?: return "Invalid @ for mentions."
-        // Add a new channel, or add the mention to the existing one
-        if (existing == null) {
-            val mentions = mutableMapOf(mentionUserId to (pattern ?: ""))
-            notificationChannels.add(CalendarNotificationChannel(guildId, channelId, calURL, mentions))
-        } else
-            existing.mentions[mentionUserId] = pattern ?: ""
-        Settings.update()
-        // Format the response text
-        val user = DiscordProtocol.getUser(mentionUserId)
-        val mentionText = " (mentioning ${user?.getNickname(chat)}"
-        val filterText = if (pattern != null)
-            " on messages that match the regular expression `$pattern`)"
-        else
-            ")"
-        return "Registered this channel to receive notifications from calendar \"$calName\"$mentionText$filterText."
     }
+
+    val mentionUserId = getIdFromMention(mentionStr) ?: return "Invalid @ for mentions."
+    // Add a new channel, or add the mention to the existing one
+    if (existing == null) {
+        val mentions = mutableMapOf(mentionUserId to (pattern ?: ""))
+        notificationChannels.add(CalendarNotificationChannel(guildId, channelId, calURL, mentions))
+    } else
+        existing.mentions[mentionUserId] = pattern ?: ""
+    Settings.update()
+    // Format the response text
+    val user = DiscordProtocol.getUser(mentionUserId)
+    val mentionText = " (mentioning ${user?.getNickname(chat)}"
+    val filterText = if (pattern != null)
+        " on messages that match the regular expression `$pattern`"
+    else
+        ""
+    return "Registered this channel to receive notifications from calendar \"$calName\"$mentionText$filterText)."
 }
 
 private fun removeCalendarNotificationCommand(args: List<String>, chat: Chat): String {
@@ -674,8 +674,7 @@ private fun removeCalendarNotificationCommand(args: List<String>, chat: Chat): S
             "That user is not mentioned in this channel!"
 }
 
-private val mentionRegex = Regex("<@(\\d+)>")
-private fun getIdFromMention(mentionStr: String?): Long? {
+fun getIdFromMention(mentionStr: String?): Long? {
     val mentionUserId = mentionStr?.let { str ->
         val match = mentionRegex.find(str)
         match?.groupValues?.get(1)?.toLongOrNull()
