@@ -91,7 +91,7 @@ fun addAlias(args: List<String>, chat: Chat, scope: CommandScope): String {
         ?: return "Alias does not refer to a valid command!"
     if (!registerAlias(Alias(scope, args[0], command.command, command.args)))
         return "An alias with that name is already registered!"
-    Settings.update()
+    updateSettings()
     return "Alias \"${args[0]}\" registered to \"$commandStr\"."
 }
 
@@ -111,7 +111,7 @@ fun removeServerAlias(args: List<String>, chat: Chat): String {
     val server = chat.server
     if (server in aliases && aliases[server] is MutableMap && args[0] in aliases[server]!!) {
         aliases[server]!!.remove(args[0])
-        Settings.update()
+        updateSettings()
         return "Server alias \"${args[0]}\" removed."
     }
     return "No server alias with name \"${args[0]}\" found."
@@ -123,7 +123,7 @@ fun removeAlias(args: List<String>, chat: Chat): String {
     }
     if (chat in aliases && aliases[chat] is MutableMap && args[0] in aliases[chat]!!) {
         aliases[chat]!!.remove(args[0])
-        Settings.update()
+        updateSettings()
         return "Alias \"${args[0]}\" removed."
     }
     return "No alias with name \"${args[0]}\" found."
@@ -219,7 +219,7 @@ fun schedule(args: List<String>, chat: Chat, sender: User): String {
                     commandWithArgs.args,
                     time.toOffsetDatetime()
                 )
-    Settings.update()
+    updateSettings()
     return "Scheduled \"$command\" to run in ${args[0]}."
 }
 
@@ -290,7 +290,7 @@ private fun addEventToBuilder(
 fun unschedule(args: List<String>): String {
     val index = args[0].toIntOrNull() ?: return "${args[0]} is not an event ID!"
 
-    Settings.update()
+    updateSettings()
     return if (Scheduler.unschedule(index))
         "Unscheduled event with index $index."
     else
@@ -303,7 +303,7 @@ fun link(args: List<String>, chat: Chat): String {
     val chatToLink = chatMap[index]
     return if (chatToLink != null) {
         linkedChats.getOrPut(chat) { mutableSetOf() }.add(chatToLink)
-        Settings.update()
+        updateSettings()
         "${chatToLink.name} linked to ${chat.name}."
     } else
         "No chat with ID $index found."
@@ -318,7 +318,7 @@ fun unlink(args: List<String>, chat: Chat): String {
         linkedChats[chat]!!.remove(toUnlink) -> {
             if (linkedChats[chat]!!.isEmpty())
                 linkedChats.remove(chat)
-            Settings.update()
+            updateSettings()
             "Removed ${toUnlink.name} from this chat's links."
         }
 
@@ -340,13 +340,13 @@ fun setCommandDelimiter(chat: Chat, commandDelimiter: String): Boolean {
     if (commandDelimiter.any { it.isWhitespace() || it == '"' })
         return false
     commandDelimiters[chat] = commandDelimiter
-    Settings.update()
+    updateSettings()
     return true
 }
 
 fun setDelimiter(args: List<String>, chat: Chat): String = when {
     args.isEmpty() -> "You need to pass the new delimiter!"
-    setCommandDelimiter(chat, args[0]) -> "Command delimiter set to \"${args[0]}\".".also { Settings.update() }
+    setCommandDelimiter(chat, args[0]) -> "Command delimiter set to \"${args[0]}\".".also { updateSettings() }
     else -> "\"${args[0]}\" is not a valid command delimiter!"
 }
 
@@ -358,7 +358,7 @@ fun createTimer(args: List<String>): String {
     if (name in timers)
         return "That timer already exists!"
     timers[name] = OffsetDateTime.now()
-    Settings.update()
+    updateSettings()
     return "New timer \"$name\" created."
 }
 
@@ -371,7 +371,7 @@ fun resetTimer(args: List<String>): String {
         return "That timer doesn't exist!"
     val oldVal = timers[name]
     timers[name] = OffsetDateTime.now()
-    Settings.update()
+    updateSettings()
     return "Timer reset. The time it was created or last time the timer was reset was " +
             "${formatTime(oldVal!!)} ($oldVal)."
 }
@@ -383,7 +383,7 @@ fun checkTimer(args: List<String>): String {
     if (name !in timers)
         return "That timer doesn't exist!"
     val oldVal = timers[name]
-    Settings.update()
+    updateSettings()
     return "The time it was created or last time the timer was reset was ${formatTime(oldVal!!)} ($oldVal)."
 }
 
@@ -584,7 +584,7 @@ fun registerDefaultCommands() {
             UniversalProtocol,
             "dumpSettings",
             listOf(),
-            { -> objectMapper.writeValueAsString(Settings) },
+            { -> objectMapper.writeValueAsString(settings) },
             "Prints out the content of the settings file.",
             "dumpSettings (takes no arguments)"
         )

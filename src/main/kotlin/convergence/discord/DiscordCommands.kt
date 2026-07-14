@@ -30,7 +30,7 @@ private fun registerReactChannel(args: List<String>, chat: Chat): String {
         reactConfigs.add(reactConfig)
     }
     reactConfig.emojis[emoji] = threshold
-    Settings.update()
+    updateSettings()
     return "Registered messages to be forwarded to this channel " +
             "if they are reacted with $emoji $threshold times or more."
 }
@@ -45,7 +45,7 @@ private fun uploadImagesTo(args: List<String>, chat: Chat): String {
         return "\"${args[0]}\" is not a valid URL."
     }
     imageUploadChannels[chat] = url
-    Settings.update()
+    updateSettings()
     return "Images will now be uploaded to $url."
 }
 
@@ -65,7 +65,7 @@ fun registerDiscordCommands() {
         listOf(),
         { _, chat: Chat ->
             imageUploadChannels.remove(chat)
-            Settings.update()
+            updateSettings()
             "Images will no longer be uploaded."
         },
         "Stops images in this channel from being uploaded anywhere.",
@@ -87,7 +87,7 @@ fun registerDiscordCommands() {
             if (chat !is DiscordChat)
                 return@cmd "This command can only be run on discord."
             reactServers.remove(chat.server)
-            Settings.update()
+            updateSettings()
             "Messages will no longer be forwarded to this channel based on reactions."
         },
         "Removes messages being forwarded to this channel based on reactions.",

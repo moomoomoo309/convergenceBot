@@ -1,11 +1,7 @@
 import convergence.*
 import org.junit.After
 import org.junit.Before
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
-import kotlin.test.assertNotNull
-import kotlin.test.assertNull
+import kotlin.test.*
 
 class TestChat: Chat(UniversalProtocol, "Test") {
     override fun toKey() = "TestChat(Test)"
@@ -153,6 +149,7 @@ class CommandParserTest {
     }
 
 
+    @Suppress("SameParameterValue")
     private fun loadAliasData(command: String): CommandWithArgs? {
         val testChat = TestChat()
         val testAliasStr = command.substringBefore(" ").substringAfter(DEFAULT_COMMAND_DELIMITER).lowercase()
@@ -192,8 +189,16 @@ class CommandParserTest {
     fun validCommandWithQuotes() {
         val testCommandWithArgs = loadCommandWithArgs("!schedule \"5 seconds\" \"!echo hi\"")
         assertEquals("schedule", testCommandWithArgs?.command?.name, "Did not parse valid command correctly.")
-        assertEquals("5 seconds", testCommandWithArgs?.args?.get(0), "Did not parse first valid quoted argument correctly.")
-        assertEquals("!echo hi", testCommandWithArgs?.args?.get(1), "Did not parse second valid quoted argument correctly.")
+        assertEquals(
+            "5 seconds",
+            testCommandWithArgs?.args?.get(0),
+            "Did not parse first valid quoted argument correctly."
+        )
+        assertEquals(
+            "!echo hi",
+            testCommandWithArgs?.args?.get(1),
+            "Did not parse second valid quoted argument correctly."
+        )
     }
 
     @Test
@@ -204,7 +209,11 @@ class CommandParserTest {
             testCommandWithArgs?.command?.name,
             "Did not parse valid command with double-quoted arguments correctly."
         )
-        assertEquals("Hi mailman!", testCommandWithArgs?.args?.get(0), "Did not parse double-quoted arguments correctly.")
+        assertEquals(
+            "Hi mailman!",
+            testCommandWithArgs?.args?.get(0),
+            "Did not parse double-quoted arguments correctly."
+        )
     }
 
     @Before

@@ -354,7 +354,7 @@ fun registerFratCommands() {
                 mentionChats
                     .getOrPut(chat) { mutableMapOf() }
                     .putIfAbsent(target, mutableMapOf())
-                Settings.update()
+                updateSettings()
                 "Chat registered to mention ${getUserName(chat, target)}."
             },
             "Registers this chat with the given user as a mention chat.",
@@ -371,7 +371,7 @@ fun registerFratCommands() {
                 mentionChats
                     .getOrDefault(chat, mutableMapOf())
                     .clear()
-                Settings.update()
+                updateSettings()
                 "Mention users cleared from this chat."
             },
             "Removes all mention users from this chat.",
@@ -420,7 +420,7 @@ private fun registerMentionCallback() {
                     mentions[sender] = mentionCount
                     newMentions[user] = mentionCount
                 }
-                Settings.update()
+                updateSettings()
                 if (debugMode) {
                     val parts = newMentions.toList().map { (user, count) ->
                         "${DiscordProtocol.getUserNickname(chat, user)} $count time${if (count > 1) "s" else ""}"
@@ -459,7 +459,7 @@ private fun mentionStatsFct() {
     for ((_, stats) in mentionChats)
         for ((_, mentioners) in stats)
             mentioners.clear()
-    Settings.update()
+    updateSettings()
     // Schedule it again for next month
     Scheduler.taskList.add(ScheduledTask(nextMonth(), ::mentionStatsFct))
 }

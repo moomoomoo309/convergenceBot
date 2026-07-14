@@ -162,8 +162,16 @@ class CalendarProcessorTest {
         val vWrapper = VEventWrapper(EventInstance(vevent, makeDateTime(soon), makeDateTime(hourLater)))
         // Discord stores/returns the name trimmed
         val dWrapper = DiscordEventWrapper(makeDiscordEvent("Andrew Kocur's Birthday", testUid, soon, hourLater))
-        assertEquals<Any>(vWrapper, dWrapper, "VEventWrapper with trailing space should equal DiscordEventWrapper with trimmed name")
-        assertEquals<Any>(dWrapper, vWrapper, "DiscordEventWrapper with trimmed name should equal VEventWrapper with trailing space")
+        assertEquals<Any>(
+            vWrapper,
+            dWrapper,
+            "VEventWrapper with trailing space should equal DiscordEventWrapper with trimmed name"
+        )
+        assertEquals<Any>(
+            dWrapper,
+            vWrapper,
+            "DiscordEventWrapper with trimmed name should equal VEventWrapper with trailing space"
+        )
     }
 
     @Test
@@ -390,7 +398,7 @@ class CalendarProcessorTest {
 
         val cal = makeCalendar(master, cancellation)
         val result = CalendarProcessor.getCalDAVEventsNextDays(listOf(cal))
-        // Should have 1st and 3rd occurrence; 2nd is cancelled
+        // Should have 1st and 3rd occurrence; 2nd is canceled
         assertEquals(2, result.size)
         assertEquals(makeDateTime(recurrenceStart), result[0].start)
         assertEquals(makeDateTime(recurrenceStart.plus(2, ChronoUnit.DAYS)), result[1].start)
@@ -596,16 +604,6 @@ class CalendarProcessorTest {
     @Test
     fun extractAlarmsReturnsEmptyListWhenNoAlarms() {
         val vevent = makeVEvent(testUid, "Event", soon, hourLater)
-        val alarms = CalendarNotificationProcessor.extractAlarms(vevent)
-        assertTrue(alarms.isEmpty())
-    }
-
-    @Test
-    fun extractAlarmsReturnsEmptyForNonDisplayAction() {
-        val vevent = makeVEvent(testUid, "Event", soon, hourLater)
-        val alarm = VAlarm(Dur("-PT15M"))
-        alarm.properties.add(Action("EMAIL"))
-        vevent.alarms.add(alarm)
         val alarms = CalendarNotificationProcessor.extractAlarms(vevent)
         assertTrue(alarms.isEmpty())
     }

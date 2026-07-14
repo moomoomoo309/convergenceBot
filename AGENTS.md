@@ -4,7 +4,7 @@ Guidance for AI agents (and humans) working in the Convergence Bot repo.
 
 ## What this is
 
-Convergence Bot is a Kotlin chat bot designed to **bridge messages between
+Convergence Bot is a Kotlin chatbot designed to **bridge messages between
 different chat protocols** (e.g. Discord ↔ Console) and to run a shared command
 system across all of them. A message arriving on one protocol can be relayed to
 linked chats on others, and commands work uniformly regardless of which protocol
@@ -60,7 +60,7 @@ src/test/kotlin/             Tests (kotlin.test + MockK).
   Keys are self-describing — they start with the protocol name (e.g.
   `DiscordChat(...)`), which is how `scopeStrToProtocol()` finds the owner. When
   adding new persisted domain types, follow this pattern in `Serialization.kt`
-  and register in `convergenceModule`; avoid hand-written DTO mirrors.
+  and register in `convergenceModule`; avoid handwritten DTO mirrors.
 
 ## Build / test / run
 

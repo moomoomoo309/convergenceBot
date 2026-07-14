@@ -1,4 +1,3 @@
-import convergence.*
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.DeserializationContext
 import com.fasterxml.jackson.databind.JsonDeserializer
@@ -6,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import convergence.*
 import org.junit.After
 import org.junit.Before
 import java.net.URI
@@ -24,7 +24,9 @@ class SerChat(val cid: Int): Chat(SerProtocol, "chat$cid") {
 
 class SerServer(val sid: Int): Server("srv$sid", SerProtocol) {
     override fun toKey() = "SerTestServer($sid)"
-    override fun compareTo(other: Server) = if (other is SerServer) sid.compareTo(other.sid) else name.compareTo(other.name)
+    override fun compareTo(other: Server) =
+        if (other is SerServer) sid.compareTo(other.sid) else name.compareTo(other.name)
+
     override fun equals(other: Any?) = other is SerServer && other.sid == sid
     override fun hashCode() = sid
 }
@@ -35,6 +37,7 @@ class SerUser(val uid: Int): User(SerProtocol) {
     override fun hashCode() = uid
 }
 
+@Suppress("EmptyFunctionBlock")
 object SerProtocol: Protocol("SerTest") {
     override fun init() {}
     override fun configLoaded() {}
@@ -51,6 +54,7 @@ object SerProtocol: Protocol("SerTest") {
         key.startsWith("SerTestServer(") -> SerServer(key.substringBetween("SerTestServer(", ")").toInt())
         else -> null
     }
+
     override fun userFromKey(key: String): User? =
         if (key.startsWith("SerTestUser(")) SerUser(key.substringBetween("SerTestUser(", ")").toInt()) else null
 }
@@ -73,35 +77,51 @@ class SerializationTest {
     fun teardown() {
         protocols.remove(SerProtocol)
         commands.remove(SerProtocol)
-        Settings.updateFrom(SettingsData()) // reset the global singleton so other tests see a clean slate
+        settings.aliases.clear()
+        settings.commandDelimiters.clear()
+        settings.linkedChats.clear()
+        settings.serializedCommands.clear()
+        settings.syncedCalendars.clear()
+        settings.notificationChannels.clear()
+        settings.timers.clear()
+        settings.imageUploadChannels.clear()
+        settings.reactServers.clear()
+        settings.mentionChats.clear()
+        settings.debugMode = false
     }
 
-    private fun sampleData() = SettingsData(
-        aliases = mutableMapOf(
+    private fun sampleData(): Settings {
+        val s = Settings()
+        s.aliases = mutableMapOf(
             SerChat(1) to mutableMapOf(
                 "myalias" to Alias(SerChat(1), "myalias", testCommand, listOf("a", "b"))
             )
-        ),
-        commandDelimiters = mutableMapOf(SerChat(1) to "?"),
-        linkedChats = mutableMapOf(SerChat(1) to mutableSetOf(SerChat(2), SerChat(3))),
-        serializedCommands = mutableMapOf(
+        )
+        s.commandDelimiters = mutableMapOf(SerChat(1) to "?")
+        s.linkedChats = mutableMapOf(SerChat(1) to mutableSetOf(SerChat(2), SerChat(3)))
+        s.serializedCommands = mutableMapOf(
             7 to ScheduledCommand(time, SerChat(1), SerUser(5), "SerTest", "testcmd", listOf("x"), 7)
-        ),
-        syncedCalendars = mutableListOf(SyncedCalendar(123L, "http://example.com/cal")),
-        timers = mutableMapOf("t1" to time),
-        imageUploadChannels = mutableMapOf(SerChat(1) to URI("http://example.com/img")),
-        mentionChats = mutableMapOf(SerChat(1) to mutableMapOf(SerUser(2) to mutableMapOf(SerUser(3) to 4))),
-        debugMode = true
-    )
+        )
+        s.syncedCalendars = mutableListOf(SyncedCalendar(123L, "https://example.com/cal"))
+        s.timers = mutableMapOf("t1" to time)
+        s.imageUploadChannels = mutableMapOf(SerChat(1) to URI("https://example.com/img"))
+        s.mentionChats = mutableMapOf(SerChat(1) to mutableMapOf(SerUser(2) to mutableMapOf(SerUser(3) to 4)))
+        s.debugMode = true
+        return s
+    }
 
-    private fun assertMatches(data: SettingsData) {
+    private fun assertMatches(data: Settings) {
         assertEquals(sampleData().aliases, data.aliases, "aliases did not round-trip")
         assertEquals(sampleData().commandDelimiters, data.commandDelimiters, "commandDelimiters did not round-trip")
         assertEquals(sampleData().linkedChats, data.linkedChats, "linkedChats did not round-trip")
         assertEquals(sampleData().serializedCommands, data.serializedCommands, "serializedCommands did not round-trip")
         assertEquals(sampleData().syncedCalendars, data.syncedCalendars, "syncedCalendars did not round-trip")
         assertEquals(sampleData().timers, data.timers, "timers did not round-trip")
-        assertEquals(sampleData().imageUploadChannels, data.imageUploadChannels, "imageUploadChannels did not round-trip")
+        assertEquals(
+            sampleData().imageUploadChannels,
+            data.imageUploadChannels,
+            "imageUploadChannels did not round-trip"
+        )
         assertEquals(sampleData().mentionChats, data.mentionChats, "mentionChats did not round-trip")
         assertEquals(sampleData().debugMode, data.debugMode, "debugMode did not round-trip")
     }
@@ -109,7 +129,7 @@ class SerializationTest {
     @Test
     fun roundTripsSettingsData() {
         val json = objectMapper.writeValueAsString(sampleData())
-        assertMatches(objectMapper.readValue<SettingsData>(json))
+        assertMatches(objectMapper.readValue<Settings>(json))
     }
 
     @Test
@@ -144,9 +164,18 @@ class SerializationTest {
 
     @Test
     fun roundTripsThroughSettingsSingleton() {
-        // Exercises the exact production path: write the Settings object, read back into a SettingsData holder.
-        Settings.updateFrom(sampleData())
-        val json = objectMapper.writeValueAsString(Settings)
-        assertMatches(objectMapper.readValue<SettingsData>(json))
+        // Exercises the exact production path: write the settings object, read back into a Settings instance.
+        val data = sampleData()
+        settings.aliases.clearThen().putAll(data.aliases)
+        settings.commandDelimiters.clearThen().putAll(data.commandDelimiters)
+        settings.linkedChats.clearThen().putAll(data.linkedChats)
+        settings.serializedCommands.clearThen().putAll(data.serializedCommands)
+        settings.syncedCalendars.clearThen().addAll(data.syncedCalendars)
+        settings.timers.clearThen().putAll(data.timers)
+        settings.imageUploadChannels.clearThen().putAll(data.imageUploadChannels)
+        settings.mentionChats.clearThen().putAll(data.mentionChats)
+        settings.debugMode = data.debugMode
+        val json = objectMapper.writeValueAsString(settings)
+        assertMatches(objectMapper.readValue<Settings>(json))
     }
 }

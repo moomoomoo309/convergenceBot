@@ -245,7 +245,7 @@ object CalendarProcessor {
         if (syncedCalendar in syncedCalendars)
             return "That calendar is already synced!"
         syncedCalendars.add(syncedCalendar)
-        Settings.update()
+        updateSettings()
         return syncToDiscord(syncedCalendars.filter { it.guildId == chat.channel.guild.idLong })
     }
 
@@ -629,7 +629,7 @@ private fun addCalendarNotificationCommand(args: List<String>, chat: Chat): Stri
         notificationChannels.add(CalendarNotificationChannel(guildId, channelId, calURL, mentions))
     } else
         existing.mentions[mentionUserId] = pattern ?: ""
-    Settings.update()
+    updateSettings()
     // Format the response text
     val user = DiscordProtocol.getUser(mentionUserId)
     val mentionText = " (mentioning ${user?.getNickname(chat)}"
@@ -661,14 +661,14 @@ private fun removeCalendarNotificationCommand(args: List<String>, chat: Chat): S
     return if (mentionUserId == null)
         // Remove the channel notification entirely
         if (notificationChannels.remove(channel)) {
-            Settings.update()
+            updateSettings()
             "Notification registration removed."
         } else
             "No notification registration found for URL: $calURL"
     else
         // Remove the user being mentioned from the notification
         if (channel?.mentions?.remove(mentionUserId) != null) {
-            Settings.update()
+            updateSettings()
             "Notification mention removed."
         } else
             "That user is not mentioned in this channel!"

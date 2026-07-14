@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import convergence.discord.DiscordChat
 import convergence.discord.jda
@@ -52,10 +51,7 @@ data class ReactConfig(val destination: DiscordChat, val emojis: MutableMap<Stri
 internal fun scopeStrToProtocol(s: String) = protocols.sortedBy { -it.name.length }
     .firstOrNull { s.substringBefore("(").startsWith(it.name) }
 
-// Mirror of Settings used purely as a (de)serialization target — Settings itself is a singleton object,
-// which Jackson can't instantiate. The domain-object keys/values round-trip via convergenceModule and the
-// per-type converters, so this holder needs no string-keyed mirror or hand-written conversion logic.
-data class SettingsData(
+data class Settings(
     var aliases: MutableMap<CommandScope, MutableMap<String, Alias>> = mutableMapOf(),
     var commandDelimiters: MutableMap<CommandScope, String> = mutableMapOf(),
     var linkedChats: MutableMap<Chat, MutableSet<Chat>> = mutableMapOf(),
@@ -64,75 +60,41 @@ data class SettingsData(
     var notificationChannels: MutableList<CalendarNotificationChannel> = mutableListOf(),
     var timers: MutableMap<String, OffsetDateTime> = mutableMapOf(),
     var imageUploadChannels: MutableMap<Chat, URI> = mutableMapOf(),
-    var reactServers: MutableMap<Server, MutableList<ReactConfig>> = mutableMapOf(),
+    var reactServers: MutableMap<Server, MutableList<ReactConfig>> = TreeMap(),
     var mentionChats: MutableMap<Chat, MutableMap<User, MutableMap<User, Int>>> = mutableMapOf(),
     var debugMode: Boolean = false
 )
 
-object Settings {
-    var aliases: MutableMap<CommandScope, MutableMap<String, Alias>> = mutableMapOf()
-    var commandDelimiters: MutableMap<CommandScope, String> = mutableMapOf()
-    var linkedChats: MutableMap<Chat, MutableSet<Chat>> = mutableMapOf()
-    var serializedCommands: MutableMap<Int, ScheduledCommand> = mutableMapOf()
-    var syncedCalendars: MutableList<SyncedCalendar> = mutableListOf()
-    var notificationChannels: MutableList<CalendarNotificationChannel> = mutableListOf()
-    var timers: MutableMap<String, OffsetDateTime> = mutableMapOf()
-    var imageUploadChannels: MutableMap<Chat, URI> = mutableMapOf()
-    var reactServers: MutableMap<Server, MutableList<ReactConfig>> = TreeMap()
-    var mentionChats: MutableMap<Chat, MutableMap<User, MutableMap<User, Int>>> = mutableMapOf()
-    var debugMode: Boolean = false
+val settings = Settings()
 
-    @JsonIgnore
-    private val updateIsScheduled = AtomicBoolean(false)
+@JsonIgnore
+private val updateIsScheduled = AtomicBoolean(false)
 
-    @JsonIgnore
-    private val updateExecutor = Executors.newSingleThreadScheduledExecutor { runnable ->
-        Thread(runnable, "settings-writer").apply { isDaemon = true }
-    }
+@JsonIgnore
+private val updateExecutor = Executors.newSingleThreadScheduledExecutor { runnable ->
+    Thread(runnable, "settings-writer").apply { isDaemon = true }
+}
 
-    fun update() {
-        // Don't update the settings multiple times per second, limit it to one per second.
-        // compareAndSet ensures only one write is ever scheduled even under concurrent callers, and
-        // the shared single-thread executor avoids spawning a fresh thread per write.
-        if (updateIsScheduled.compareAndSet(false, true)) {
-            updateExecutor.schedule({
-                settingsLogger.info("Updating settings file...")
-                writeSettingsToFile()
-                updateIsScheduled.set(false)
-            }, 1000L, TimeUnit.MILLISECONDS)
-        }
-    }
-
-    // Replace the live settings in place from a freshly-deserialized holder. The element conversions
-    // (domain object <-> key string, and the Alias serializer/deserializer) are all handled by Jackson via
-    // convergenceModule, so this is a straight field-by-field copy.
-    fun updateFrom(data: SettingsData) {
-        aliases.clearThen().putAll(data.aliases)
-        commandDelimiters.clearThen().putAll(data.commandDelimiters)
-        linkedChats.clearThen().putAll(data.linkedChats)
-        serializedCommands.clearThen().putAll(data.serializedCommands)
-        syncedCalendars.clearThen().addAll(data.syncedCalendars)
-        notificationChannels.clearThen().addAll(data.notificationChannels)
-        timers.clearThen().putAll(data.timers)
-        imageUploadChannels.clearThen().putAll(data.imageUploadChannels)
-        reactServers.clearThen().putAll(data.reactServers)
-        mentionChats.clearThen().putAll(data.mentionChats)
-        debugMode = data.debugMode
+fun updateSettings() {
+    if (updateIsScheduled.compareAndSet(false, true)) {
+        updateExecutor.schedule({
+            settingsLogger.info("Updating settings file...")
+            writeSettingsToFile()
+            updateIsScheduled.set(false)
+        }, 1000L, TimeUnit.MILLISECONDS)
     }
 }
 
-
 private fun writeSettingsToFile() {
     settingsLogger.info("Writing settings to ${settingsPath}:")
-    val settingsAsString = objectMapper.writeValueAsString(Settings)
+    val settingsAsString = objectMapper.writeValueAsString(settings)
     settingsPath.toFile().writeText(settingsAsString)
     settingsLogger.info("Settings written.")
 }
 
 fun readSettings() {
     try {
-        val settings = objectMapper.readValue<SettingsData>(settingsPath.toFile())
-        Settings.updateFrom(settings)
+        objectMapper.readerForUpdating(settings).readValue<Settings>(settingsPath.toFile())
         writeSettingsToFile()
     } catch(_: java.io.FileNotFoundException) {
         writeSettingsToFile()
@@ -142,17 +104,17 @@ fun readSettings() {
     }
 }
 
-val commandDelimiters = Settings.commandDelimiters
-val linkedChats = Settings.linkedChats
-val aliases = Settings.aliases
-val serializedCommands = Settings.serializedCommands
-val syncedCalendars = Settings.syncedCalendars
-val notificationChannels = Settings.notificationChannels
-val timers = Settings.timers
-val imageUploadChannels: MutableMap<Chat, URI> = Settings.imageUploadChannels
-val reactServers: MutableMap<Server, MutableList<ReactConfig>> = Settings.reactServers
-val mentionChats: MutableMap<Chat, MutableMap<User, MutableMap<User, Int>>> = Settings.mentionChats
-val debugMode get() = Settings.debugMode
+val commandDelimiters = settings.commandDelimiters
+val linkedChats = settings.linkedChats
+val aliases = settings.aliases
+val serializedCommands = settings.serializedCommands
+val syncedCalendars = settings.syncedCalendars
+val notificationChannels = settings.notificationChannels
+val timers = settings.timers
+val imageUploadChannels: MutableMap<Chat, URI> = settings.imageUploadChannels
+val reactServers: MutableMap<Server, MutableList<ReactConfig>> = settings.reactServers
+val mentionChats: MutableMap<Chat, MutableMap<User, MutableMap<User, Int>>> = settings.mentionChats
+val debugMode get() = settings.debugMode
 
 lateinit var convergencePath: Path
 val chatMap: MutableMap<Int, Chat> = mutableMapOf()

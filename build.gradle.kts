@@ -1,4 +1,3 @@
-@file:Suppress("LocalVariableName")
 
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import java.nio.file.Paths
@@ -90,6 +89,7 @@ application {
 }
 
 tasks.register<Copy>("copyBot") {
+    description = "Build the bot, then copy it into the dot folder it lives in by default."
     from(tasks.named("shadowJar"))
     into(Paths.get(System.getProperty("user.home"), ".convergence"))
 }
@@ -99,6 +99,7 @@ tasks.named<JavaExec>("run") {
 }
 
 tasks.register<JavaExec>("runLite") {
+    description = "Run the bot without the frat components."
     classpath = sourceSets["lite"].runtimeClasspath
     mainClass.set("convergence.ConvergenceBot")
     standardInput = System.`in`
@@ -140,7 +141,8 @@ tasks.shadowJar {
     isZip64 = true
 }
 
-val liteJar by tasks.registering(ShadowJar::class) {
+tasks.register<ShadowJar>("liteJar") {
+    description = "Build a fat jar of the bot without the frat components."
     archiveBaseName.set("convergence.bot-lite")
     from(sourceSets["lite"].output)
 
@@ -163,6 +165,7 @@ val liteJar by tasks.registering(ShadowJar::class) {
 }
 
 tasks.register("buildLite") {
+    description = "Build the bot without the frat components."
     dependsOn("compileLiteKotlin")
-    dependsOn(liteJar)
+    dependsOn("liteJar")
 }

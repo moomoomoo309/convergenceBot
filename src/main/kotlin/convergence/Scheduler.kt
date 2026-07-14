@@ -38,16 +38,16 @@ object Scheduler: Thread() {
                         for (cmd in cmdList) {
                             cmd()
                             commandsList.remove(cmd.id)
-                            Settings.serializedCommands.remove(cmd.id)
+                            settings.serializedCommands.remove(cmd.id)
                         }
                     } else {
                         for (cmd in cmdList) {
                             commandsList.remove(cmd.id)
-                            Settings.serializedCommands.remove(cmd.id)
+                            settings.serializedCommands.remove(cmd.id)
                         }
                     }
                     if (cmdList.isNotEmpty())
-                        Settings.update()
+                        updateSettings()
                     timesToRemove.add(cmdTime)
                 } else // It's already sorted chronologically, so all following events are early.
                     break
@@ -79,7 +79,7 @@ object Scheduler: Thread() {
             defaultLogger.error("Duplicate IDs in schedulerThread!")
         commandsList[cmd.id] = cmd
         serializedCommands[cmd.id] = cmd
-        Settings.update()
+        updateSettings()
         return "Scheduled ${getUserName(chat, sender)} to run " +
                 "\"$commandName ${args.joinToString(" ")}\" ${formatTime(time)} ($time)."
     }
