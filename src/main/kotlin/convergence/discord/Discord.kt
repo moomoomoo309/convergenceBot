@@ -64,7 +64,10 @@ typealias DCustomEmoji = net.dv8tion.jda.api.entities.emoji.CustomEmoji
 class DiscordAvailability(val status: OnlineStatus): Availability(status.name)
 class DiscordServer(name: String, val guild: Guild): Server(name, DiscordProtocol) {
     constructor(guild: Guild): this(guild.name, guild)
-    constructor(id: Long): this(jda.getGuildById(id)!!)
+    constructor(id: Long): this(
+        jda.getGuildById(id)
+            ?: throw IllegalArgumentException("No guild found with ID $id")
+    )
 
     override fun compareTo(other: Server): Int {
         if (other !is DiscordServer) {
@@ -228,7 +231,7 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
     HasMessageHistory, CanEditOtherMessages, HasUserAvailability, HasCustomEmoji, HasServers<DiscordServer>,
     HasReactions, HasRoles<DiscordRole> {
     override fun init() {
-        println("Discord Plugin initialized.")
+        discordLogger.info("Discord Plugin initialized.")
         jda = try {
             val it = JDABuilder
                 .create(
@@ -271,14 +274,14 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
         jda.guilds.forEach { guild ->
             val slashCommands = guild.updateCommands()
             slashCommands.addCommands(
-                listOf(commands[DiscordProtocol]!!, commands[UniversalProtocol]!!)
+                listOf(bot.commands[DiscordProtocol]!!, bot.commands[UniversalProtocol]!!)
                     .flatMap { commandMap ->
                         commandMap.map { (name, command) ->
                             Commands.slash(name.lowercase(), command.helpText.take(100))
                                 .setContexts(InteractionContextType.GUILD)
                                 .addOptions(
                                     command.argSpecs.map {
-                                        OptionData(it.type.toDiscord(), it.name.lowercase(), "ligma", !it.optional)
+                                        OptionData(it.type.toDiscord(), it.name.lowercase(), it.name, !it.optional)
                                     }
                                 )
                         }
@@ -301,7 +304,7 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
             )
                 .setContexts(InteractionContextType.GUILD)
                 .addOptions(alias.command.argSpecs.subList(startIndex, alias.command.argSpecs.size).map {
-                    OptionData(it.type.toDiscord(), it.name.lowercase(), "ligma", !it.optional)
+                    OptionData(it.type.toDiscord(), it.name.lowercase(), it.name, !it.optional)
                 })
         ).queue()
     }
@@ -322,19 +325,19 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
         return when(scopeType) {
             "Chat" -> {
                 val id = key.substringBetween("(", ")").toLongOrNull() ?: return null
-                chatCache[id] ?: DiscordChat(
+                protocolChatCache[id] ?: DiscordChat(
                     jda.getGuildChannelById(id) as? GuildMessageChannel ?: return null
                 ).also { chat ->
-                    chatCache[id] = chat
+                    protocolChatCache[id] = chat
                 }
             }
 
             "Server" -> {
                 val id = key.substringBetween("(", ")").toLongOrNull() ?: return null
-                serverCache[id] ?: DiscordServer(
+                protocolServerCache[id] ?: DiscordServer(
                     jda.getGuildById(id) ?: return null
                 ).also { server ->
-                    serverCache[id] = server
+                    protocolServerCache[id] = server
                 }
             }
 
@@ -494,7 +497,7 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
     override fun sendMessage(chat: Chat, message: OutgoingMessage): Boolean {
         if (chat !is DiscordChat)
             return false
-        try {
+        return try {
             when(message) {
                 is DiscordOutgoingMessage -> chat.channel.sendMessage(message.data).queue()
                 else -> {
@@ -503,17 +506,18 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
                         chat.channel.sendMessage(text.take(2000)).queue()
                 }
             }
+            true
         } catch(e: Exception) {
             discordLogger.error("Failed to send message, exception: ", e)
+            false
         }
-        return true
     }
 
     private val botUser: DiscordUser by lazy { DiscordUser(jda.selfUser) }
     override fun getBot(chat: Chat): User = botUser
     override fun getUserName(chat: Chat, user: User): String = if (user is DiscordUser) user.name else ""
 
-    private val serverCache = mutableMapOf<Long, DiscordServer>()
+    private val protocolServerCache = mutableMapOf<Long, DiscordServer>()
     override fun getServers(): List<DiscordServer> = jda.guilds.map {
         getServer(it.idLong)!!
     }
@@ -524,12 +528,12 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
             this.returns(null) implies (id is Nothing?)
             this.returnsNotNull() implies (id is Long)
         }
-        return serverCache[id] ?: DiscordServer(id ?: return null).also { server ->
-            serverCache[id] = server
+        return protocolServerCache[id] ?: DiscordServer(id ?: return null).also { server ->
+            protocolServerCache[id] = server
         }
     }
 
-    private val chatCache = mutableMapOf<Long, DiscordChat>()
+    private val protocolChatCache = mutableMapOf<Long, DiscordChat>()
     override fun getChats(): List<DiscordChat> = jda.textChannels.map {
         getChat(it.idLong)!!
     }
@@ -540,12 +544,12 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
             this.returns(null) implies (id is Nothing?)
             this.returnsNotNull() implies (id is Long)
         }
-        return chatCache[id] ?: DiscordChat(id ?: return null).also { chat ->
-            chatCache[id] = chat
+        return protocolChatCache[id] ?: DiscordChat(id ?: return null).also { chat ->
+            protocolChatCache[id] = chat
         }
     }
 
-    private val userCache = mutableMapOf<Long, DiscordUser>()
+    private val protocolUserCache = mutableMapOf<Long, DiscordUser>()
     override fun getUsers(): List<DiscordUser> = jda.users.map {
         getUser(it.idLong)!!
     }
@@ -556,14 +560,14 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
             this.returns(null) implies (id is Nothing?) // Returns null
             this.returnsNotNull() implies (id is Long) // If the id is not null, it does not return null
         }
-        return userCache[id] ?: DiscordUser(id ?: return null).also { user ->
-            userCache[id] = user
+        return protocolUserCache[id] ?: DiscordUser(id ?: return null).also { user ->
+            protocolUserCache[id] = user
         }
     }
 
     override fun getUsers(chat: Chat): List<User> {
         val channel = (chat as DiscordChat).channel
-        return channel.guild.members.map { userCache.getOrPut(it.user.idLong) { DiscordUser(it.user) } }
+        return channel.guild.members.map { protocolUserCache.getOrPut(it.user.idLong) { DiscordUser(it.user) } }
 }
 
     override fun getChatName(chat: Chat): String = if (chat is DiscordChat) chat.name else ""
@@ -654,8 +658,8 @@ private fun forwardMessageToReactChannel(
 private val imageUploadChannelCallback =
     ReceivedImages { chat: Chat, _: IncomingMessage?, _: User, images: Array<Image> ->
         for (image in images) {
-            if (image is DiscordImage && chat in imageUploadChannels) {
-                val uploadURL = imageUploadChannels[chat]
+            if (image is DiscordImage && chat in settings.imageUploadChannels) {
+                val uploadURL = settings.imageUploadChannels[chat]
                 val timeCreated = image.image.timeCreated.format(DateTimeFormatter.ISO_INSTANT)
                 val filename = image.image.fileName.substringBeforeLast(".")
                 uploadImage(image.getURL(), uploadURL, "$filename-$timeCreated${image.image.fileExtension ?: ""}")
@@ -671,7 +675,7 @@ private val reactionChannelCallback =
         if (message !is DiscordIncomingMessage) return@ReactionChanged false
         if (emoji !is DiscordEmoji && emoji !is UnicodeEmoji) return@ReactionChanged false
         val server = chat.server
-        val configs = reactServers[server]?.filter { it.destination.channel.guild == chat.channel.guild }
+        val configs = settings.reactServers[server]?.filter { it.destination.channel.guild == chat.channel.guild }
             ?: return@ReactionChanged false
         if (configs.isEmpty())
             return@ReactionChanged false
@@ -718,7 +722,8 @@ object MessageListener: ListenerAdapter() {
     override fun onSlashCommandInteraction(event: SlashCommandInteractionEvent) {
         val chat = DiscordProtocol.getChats().firstOrNull { it.channel == event.guildChannel } ?: return
         val sender = DiscordProtocol.getUsers().firstOrNull { it.id == event.member!!.user.idLong } ?: return
-        val commandDelimiter = commandDelimiters[chat] ?: commandDelimiters[chat.server] ?: DEFAULT_COMMAND_DELIMITER
+        val commandDelimiter = settings.commandDelimiters[chat] ?:
+            settings.commandDelimiters[chat.server] ?: DEFAULT_COMMAND_DELIMITER
         val commandWithArgs =
             parseCommand(commandDelimiter + event.name + event.options.joinToString(" ", " ") { it.asString }, chat)
                 ?: return

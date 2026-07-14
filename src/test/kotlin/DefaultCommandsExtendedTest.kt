@@ -26,30 +26,10 @@ class DefaultCommandsExtendedTest {
     }
 
     @Before
-    fun setup() {
-        timers.clear()
-        aliases.clear()
-        linkedChats.clear()
-        chatMap.clear()
-        reverseChatMap.clear()
-        commands.remove(TestProtocol)
-        commands.remove(UniversalProtocol)
-        commandDelimiters.clear()
-        serializedCommands.clear()
-    }
+    fun setup() = resetGlobalState()
 
     @After
-    fun teardown() {
-        timers.clear()
-        aliases.clear()
-        linkedChats.clear()
-        chatMap.clear()
-        reverseChatMap.clear()
-        commands.remove(TestProtocol)
-        commands.remove(UniversalProtocol)
-        commandDelimiters.clear()
-        serializedCommands.clear()
-    }
+    fun teardown() = resetGlobalState()
 
     // ─── ping ─────────────────────────────────────────────────────────────────
 
@@ -86,14 +66,14 @@ class DefaultCommandsExtendedTest {
     fun createTimerSucceeds() {
         val result = createTimer(listOf("myTimer"))
         assertEquals("New timer \"myTimer\" created.", result)
-        assertTrue("myTimer" in timers)
+        assertTrue("myTimer" in settings.timers)
     }
 
     @Test
     fun createTimerSupportsMultiWordNames() {
         val result = createTimer(listOf("my", "timer"))
         assertEquals("New timer \"my timer\" created.", result)
-        assertTrue("my timer" in timers)
+        assertTrue("my timer" in settings.timers)
     }
 
     @Test
@@ -117,16 +97,16 @@ class DefaultCommandsExtendedTest {
     @Test
     fun resetTimerUpdatesTimestamp() {
         val pastTime = OffsetDateTime.now().minusMinutes(5)
-        timers["myTimer"] = pastTime
+        settings.timers["myTimer"] = pastTime
         val result = resetTimer(listOf("myTimer"))
         assertTrue(result.startsWith("Timer reset."), "Expected 'Timer reset.' prefix, got: $result")
-        assertTrue(timers["myTimer"]!!.isAfter(pastTime), "Expected timestamp to advance after reset")
+        assertTrue(settings.timers["myTimer"]!!.isAfter(pastTime), "Expected timestamp to advance after reset")
     }
 
     @Test
     fun resetTimerReportsOldTimestamp() {
         val fixedTime = OffsetDateTime.now().minusHours(1)
-        timers["myTimer"] = fixedTime
+        settings.timers["myTimer"] = fixedTime
         val result = resetTimer(listOf("myTimer"))
         assertTrue(result.contains(fixedTime.toString()), "Expected old timestamp in reset message")
     }
@@ -146,7 +126,7 @@ class DefaultCommandsExtendedTest {
     @Test
     fun checkTimerReturnsCreationInfo() {
         val fixedTime = OffsetDateTime.now().minusMinutes(10)
-        timers["myTimer"] = fixedTime
+        settings.timers["myTimer"] = fixedTime
         val result = checkTimer(listOf("myTimer"))
         assertTrue(result.startsWith("The time it was created"), "Unexpected prefix: $result")
         assertTrue(result.contains(fixedTime.toString()), "Expected fixed time in result")
@@ -155,9 +135,9 @@ class DefaultCommandsExtendedTest {
     @Test
     fun checkTimerDoesNotModifyTimestamp() {
         val fixedTime = OffsetDateTime.now().minusMinutes(10)
-        timers["myTimer"] = fixedTime
+        settings.timers["myTimer"] = fixedTime
         checkTimer(listOf("myTimer"))
-        assertEquals(fixedTime, timers["myTimer"], "checkTimer should not modify the stored time")
+        assertEquals(fixedTime, settings.timers["myTimer"], "checkTimer should not modify the stored time")
     }
 
     // ─── removeAlias ──────────────────────────────────────────────────────────
@@ -176,16 +156,16 @@ class DefaultCommandsExtendedTest {
     @Test
     fun removeAliasSucceeds() {
         val cmd = Command.of(UniversalProtocol, "echo", listOf(), ::echo, "test", "test")
-        aliases[testChat] = mutableMapOf("mything" to Alias(testChat, "mything", cmd, listOf()))
+        settings.aliases[testChat] = mutableMapOf("mything" to Alias(testChat, "mything", cmd, listOf()))
         assertEquals("Alias \"mything\" removed.", removeAlias(listOf("mything"), testChat))
-        assertTrue(aliases[testChat].isNullOrEmpty(), "Alias entry should be removed from the map")
+        assertTrue(settings.aliases[testChat].isNullOrEmpty(), "Alias entry should be removed from the map")
     }
 
     @Test
     fun removeAliasCaseSensitiveLookup() {
         // Keys are stored lowercase; passing a different case should not find the alias.
         val cmd = Command.of(UniversalProtocol, "echo", listOf(), ::echo, "test", "test")
-        aliases[testChat] = mutableMapOf("mything" to Alias(testChat, "mything", cmd, listOf()))
+        settings.aliases[testChat] = mutableMapOf("mything" to Alias(testChat, "mything", cmd, listOf()))
         assertEquals("No alias with name \"MyThing\" found.", removeAlias(listOf("MyThing"), testChat))
     }
 
@@ -229,23 +209,23 @@ class DefaultCommandsExtendedTest {
         val otherChat = object : Chat(UniversalProtocol, "Other") {
             override fun toKey() = "TestChat(Other)"
         }
-        chatMap[42] = otherChat
-        reverseChatMap[otherChat] = 42
+        bot.chatMap[42] = otherChat
+        bot.reverseChatMap[otherChat] = 42
         val result = link(listOf("42"), testChat)
         assertEquals("${otherChat.name} linked to ${testChat.name}.", result)
-        assertTrue(testChat in linkedChats, "testChat should now be in linkedChats")
-        assertTrue(otherChat in linkedChats[testChat]!!, "otherChat should be linked to testChat")
+        assertTrue(testChat in settings.linkedChats, "testChat should now be in settings.linkedChats")
+        assertTrue(otherChat in settings.linkedChats[testChat]!!, "otherChat should be linked to testChat")
     }
 
     @Test
     fun linkCanLinkMultipleChats() {
         val chat1 = object : Chat(UniversalProtocol, "C1") { override fun toKey() = "TestChat(C1)" }
         val chat2 = object : Chat(UniversalProtocol, "C2") { override fun toKey() = "TestChat(C2)" }
-        chatMap[1] = chat1
-        chatMap[2] = chat2
+        bot.chatMap[1] = chat1
+        bot.chatMap[2] = chat2
         link(listOf("1"), testChat)
         link(listOf("2"), testChat)
-        assertEquals(2, linkedChats[testChat]?.size, "Both chats should be linked")
+        assertEquals(2, settings.linkedChats[testChat]?.size, "Both chats should be linked")
     }
 
     // ─── unlink ───────────────────────────────────────────────────────────────
@@ -263,7 +243,7 @@ class DefaultCommandsExtendedTest {
     @Test
     fun unlinkFailsWhenNoLinksExist() {
         val chat = object : Chat(UniversalProtocol, "C") { override fun toKey() = "TestChat(C)" }
-        chatMap[42] = chat
+        bot.chatMap[42] = chat
         assertEquals("There are no chats linked to this one!", unlink(listOf("42"), testChat))
     }
 
@@ -271,32 +251,32 @@ class DefaultCommandsExtendedTest {
     fun unlinkFailsWhenChatIsNotLinked() {
         val chatInMap = object : Chat(UniversalProtocol, "InMap") { override fun toKey() = "TestChat(InMap)" }
         val chatLinked = object : Chat(UniversalProtocol, "Linked") { override fun toKey() = "TestChat(Linked)" }
-        chatMap[42] = chatInMap
-        chatMap[43] = chatLinked
-        linkedChats[testChat] = mutableSetOf(chatLinked) // only chatLinked is linked
+        bot.chatMap[42] = chatInMap
+        bot.chatMap[43] = chatLinked
+        settings.linkedChats[testChat] = mutableSetOf(chatLinked) // only chatLinked is linked
         assertEquals("That chat isn't linked to this one!", unlink(listOf("42"), testChat))
     }
 
     @Test
     fun unlinkRemovesEntry() {
         val chat = object : Chat(UniversalProtocol, "C") { override fun toKey() = "TestChat(C)" }
-        chatMap[42] = chat
-        linkedChats[testChat] = mutableSetOf(chat)
+        bot.chatMap[42] = chat
+        settings.linkedChats[testChat] = mutableSetOf(chat)
         val result = unlink(listOf("42"), testChat)
         assertEquals("Removed ${chat.name} from this chat's links.", result)
         // Map entry is cleaned up when the set becomes empty
-        assertFalse(testChat in linkedChats, "linkedChats entry should be removed when set is empty")
+        assertFalse(testChat in settings.linkedChats, "settings.linkedChats entry should be removed when set is empty")
     }
 
     @Test
     fun unlinkLeavesOtherLinksIntact() {
         val chat1 = object : Chat(UniversalProtocol, "C1") { override fun toKey() = "TestChat(C1)" }
         val chat2 = object : Chat(UniversalProtocol, "C2") { override fun toKey() = "TestChat(C2)" }
-        chatMap[1] = chat1
-        chatMap[2] = chat2
-        linkedChats[testChat] = mutableSetOf(chat1, chat2)
+        bot.chatMap[1] = chat1
+        bot.chatMap[2] = chat2
+        settings.linkedChats[testChat] = mutableSetOf(chat1, chat2)
         unlink(listOf("1"), testChat)
-        assertTrue(chat2 in linkedChats[testChat]!!, "chat2 should still be linked after unlinking chat1")
+        assertTrue(chat2 in settings.linkedChats[testChat]!!, "chat2 should still be linked after unlinking chat1")
     }
 
     // ─── links ────────────────────────────────────────────────────────────────
@@ -309,9 +289,9 @@ class DefaultCommandsExtendedTest {
     @Test
     fun linksListsLinkedChatsWithIds() {
         val chat = object : Chat(UniversalProtocol, "Other") { override fun toKey() = "TestChat(Other)" }
-        chatMap[42] = chat
-        reverseChatMap[chat] = 42
-        linkedChats[testChat] = mutableSetOf(chat)
+        bot.chatMap[42] = chat
+        bot.reverseChatMap[chat] = 42
+        settings.linkedChats[testChat] = mutableSetOf(chat)
         val result = links(testChat)
         assertTrue(result.startsWith("Linked chats:"), "Unexpected prefix: $result")
         assertTrue(result.contains("42"), "Expected chat ID 42 in result")
@@ -327,7 +307,7 @@ class DefaultCommandsExtendedTest {
     @Test
     fun setDelimiterAcceptsValidDelimiter() {
         assertEquals("Command delimiter set to \"/\".", setDelimiter(listOf("/"), testChat))
-        assertEquals("/", commandDelimiters[testChat])
+        assertEquals("/", settings.commandDelimiters[testChat])
     }
 
     @Test
@@ -346,7 +326,7 @@ class DefaultCommandsExtendedTest {
     fun setCommandDelimiterAcceptsVariousDelimiters() {
         for (delimiter in listOf("!", "/", "@", "#", "$", "|", "~")) {
             assertTrue(setCommandDelimiter(testChat, delimiter), "'$delimiter' should be accepted")
-            assertEquals(delimiter, commandDelimiters[testChat])
+            assertEquals(delimiter, settings.commandDelimiters[testChat])
         }
     }
 
@@ -359,7 +339,7 @@ class DefaultCommandsExtendedTest {
 
     @Test
     fun commandsListsProtocolSpecificCommands() {
-        commands[TestProtocol] = mutableMapOf(
+        bot.commands[TestProtocol] = mutableMapOf(
             "alpha" to Command.of(TestProtocol, "alpha", listOf(), { -> null }, "help", "syntax"),
             "beta"  to Command.of(TestProtocol, "beta",  listOf(), { -> null }, "help", "syntax"),
         )
@@ -369,10 +349,10 @@ class DefaultCommandsExtendedTest {
 
     @Test
     fun commandsIncludesUniversalProtocolCommands() {
-        commands[TestProtocol] = mutableMapOf(
+        bot.commands[TestProtocol] = mutableMapOf(
             "mycmd" to Command.of(TestProtocol, "mycmd", listOf(), { -> null }, "help", "syntax")
         )
-        commands[UniversalProtocol] = mutableMapOf(
+        bot.commands[UniversalProtocol] = mutableMapOf(
             "ping" to Command.of(UniversalProtocol, "ping", listOf(), ::ping, "Pong!", "ping")
         )
         val result = commands(testProtocolChat)
@@ -390,7 +370,7 @@ class DefaultCommandsExtendedTest {
     @Test
     fun aliasesListsAliasesForChat() {
         val cmd = Command.of(UniversalProtocol, "echo", listOf(), ::echo, "test", "test")
-        aliases[testChat] = mutableMapOf(
+        settings.aliases[testChat] = mutableMapOf(
             "greet" to Alias(testChat, "greet", cmd, listOf("hello"))
         )
         val result = aliases(testChat)
@@ -401,7 +381,7 @@ class DefaultCommandsExtendedTest {
     @Test
     fun aliasesListsMultipleAliases() {
         val cmd = Command.of(UniversalProtocol, "echo", listOf(), ::echo, "test", "test")
-        aliases[testChat] = mutableMapOf(
+        settings.aliases[testChat] = mutableMapOf(
             "a1" to Alias(testChat, "a1", cmd, listOf()),
             "a2" to Alias(testChat, "a2", cmd, listOf()),
         )

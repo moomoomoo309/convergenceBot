@@ -16,11 +16,11 @@ import convergence.discord.DiscordChat
 // "Discord"), so scopeStrToProtocol() recovers the owning protocol from the key string alone.
 
 private fun resolveScope(key: String): CommandScope =
-    scopeStrToProtocol(key)?.commandScopeFromKey(key)
+    bot.scopeStrToProtocol(key)?.commandScopeFromKey(key)
         ?: throw IllegalArgumentException("No protocol could resolve a command scope from key: $key")
 
 private fun resolveUser(key: String): User =
-    scopeStrToProtocol(key)?.userFromKey(key)
+    bot.scopeStrToProtocol(key)?.userFromKey(key)
         ?: throw IllegalArgumentException("No protocol could resolve a user from key: $key")
 
 object ScopeKeySerializer: JsonSerializer<CommandScope>() {
@@ -91,7 +91,10 @@ object AliasSerializer: JsonSerializer<Alias>() {
 object AliasDeserializer: JsonDeserializer<Alias>() {
     override fun deserialize(p: JsonParser, ctxt: DeserializationContext): Alias {
         val node = p.readValueAsTree<JsonNode>()
-        val scope = resolveScope(node["scope"].asText()) as Chat
+        val scopeKey = node["scope"].asText()
+        val scope = resolveScope(scopeKey)
+        if (scope !is Chat)
+            throw IllegalArgumentException("Alias scope is not a Chat: $scopeKey")
         val name = node["name"].asText()
         val command = getCommand(node["commandName"].asText().lowercase(), scope) as Command
         val args = node["args"].map { it.asText() }

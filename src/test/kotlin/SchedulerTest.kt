@@ -1,7 +1,7 @@
 import convergence.ScheduledCommand
 import convergence.Scheduler
 import convergence.User
-import convergence.serializedCommands
+import convergence.settings
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -16,14 +16,10 @@ class SchedulerTest {
     private val now: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC)
 
     @Before
-    fun setup() {
-        serializedCommands.clear()
-    }
+    fun setup() = resetGlobalState()
 
     @After
-    fun teardown() {
-        serializedCommands.clear()
-    }
+    fun teardown() = resetGlobalState()
 
     // ─── schedule ───────────────────────────────────────────────────────────
 
@@ -39,7 +35,7 @@ class SchedulerTest {
     fun scheduleAddsToSerializedCommands() {
         val time = now.plusMinutes(10)
         Scheduler.schedule(testChat, testUser, "ping", listOf(), time)
-        assertTrue(serializedCommands.isNotEmpty(), "serializedCommands should not be empty after scheduling")
+        assertTrue(settings.serializedCommands.isNotEmpty(), "serializedCommands should not be empty after scheduling")
     }
 
     @Test
@@ -47,7 +43,7 @@ class SchedulerTest {
         val time = now.plusMinutes(5)
         Scheduler.schedule(testChat, testUser, "echo", listOf("a"), time)
         Scheduler.schedule(testChat, testUser, "echo", listOf("b"), time)
-        val ids = serializedCommands.keys.toList()
+        val ids = settings.serializedCommands.keys.toList()
         assertEquals(2, ids.size, "Should have 2 scheduled commands")
         assertTrue(ids[0] != ids[1], "IDs should be different")
     }
@@ -58,9 +54,9 @@ class SchedulerTest {
     fun unscheduleRemovesExistingCommand() {
         val time = now.plusMinutes(5)
         Scheduler.schedule(testChat, testUser, "ping", listOf(), time)
-        val id = serializedCommands.keys.first()
+        val id = settings.serializedCommands.keys.first()
         assertTrue(Scheduler.unschedule(id))
-        assertFalse(serializedCommands.containsKey(id))
+        assertFalse(settings.serializedCommands.containsKey(id))
     }
 
     @Test
@@ -114,7 +110,7 @@ class SchedulerTest {
     fun loadFromFileLoadsSerializedCommands() {
         val time = now.plusMinutes(5)
         val cmd = ScheduledCommand(time, testChat, testUser, "Test", "echo", listOf("hi"), 42)
-        serializedCommands[42] = cmd
+        settings.serializedCommands[42] = cmd
         Scheduler.loadFromFile()
         val all = Scheduler.getCommands()
         assertTrue(all.any { it.id == 42 }, "Should have loaded command with id 42")

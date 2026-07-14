@@ -19,7 +19,7 @@ fun sendMessage(chat: Chat, sender: User, message: String?) =
 fun sendMessage(chat: Chat, message: OutgoingMessage?) {
     if (message == null)
         return
-    if (debugMode && message is SimpleOutgoingMessage)
+    if (settings.debugMode && message is SimpleOutgoingMessage)
         chat.protocol.sendMessage(chat, "[Test Mode]: ${message.text}")
     else
         chat.protocol.sendMessage(chat, message)
@@ -39,14 +39,16 @@ fun getUserName(chat: Chat, sender: User): String {
 }
 
 
-val pattern: Regex by lazy { Regex(aliasVars.keys.sortedBy { -it.length }.joinToString("|")) }
+val pattern: Regex by lazy { Regex(bot.aliasVars.keys.sortedBy { -it.length }.joinToString("|")) }
 /**
  * Replaces instances of the keys in [aliasVars] preceded by a percent sign with the result of the functions therein,
  * such as %sender with the name of the user who sent the message.
  */
 fun replaceAliasVars(chat: Chat, msg: OutgoingMessage?, sender: User): OutgoingMessage? {
     return if (msg is SimpleOutgoingMessage)
-        SimpleOutgoingMessage(pattern.replace(msg.text) { res -> aliasVars[res.value]!!(chat, sender) ?: res.value })
+        SimpleOutgoingMessage(pattern.replace(msg.text) { res ->
+            bot.aliasVars[res.value]!!(chat, sender) ?: res.value
+        })
     else
         msg
 }
@@ -73,8 +75,8 @@ fun forwardToLinkedChats(
     // Send the messages out to the linked chats if there are any. Don't error if there aren't any.
     val bot = chat.protocol.getBot(chat)
     if (isCommand || sender != bot)
-        if (chat in linkedChats)
-            for (linkedChat in linkedChats[chat]!!) {
+        if (chat in settings.linkedChats)
+            for (linkedChat in settings.linkedChats[chat]!!) {
                 val msg = "$boldOpen${getUserName(chat, if (isCommand) bot else sender)}:$boldClose $message"
                 if (linkedChat.protocol is HasImages && images.isNotEmpty())
                     (linkedChat.protocol as HasImages).sendImages(linkedChat, msg, sender, *images)

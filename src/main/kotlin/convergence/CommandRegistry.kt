@@ -11,7 +11,7 @@ class CommandDoesNotExist(cmd: String): Exception(cmd)
  */
 fun registerCommand(command: Command): Boolean {
     val protocol = command.protocol
-    val commandsInProtocol = commands.getOrPut(protocol) { mutableMapOf() }
+    val commandsInProtocol = bot.commands.getOrPut(protocol) { mutableMapOf() }
 
     if (command.name.lowercase() in commandsInProtocol)
         return false
@@ -26,7 +26,7 @@ fun registerCommand(command: Command): Boolean {
  */
 fun registerAlias(alias: Alias): Boolean {
     val chat = alias.scope
-    val aliases = aliases
+    val aliases = settings.aliases
     val aliasesInChat = aliases.getOrPut(chat) { mutableMapOf() }
 
     if (alias.name.lowercase() in aliasesInChat)
@@ -69,9 +69,9 @@ fun runCommand(chat: Chat, message: IncomingMessage, sender: User, images: Array
     } catch(e: Exception) {
         sendMessage(
             chat, sender,
-            "Error while running command! Stack trace:\n${if (debugMode) getStackTraceText(e) else e.message}"
+            "Error while running command! Stack trace:\n${if (settings.debugMode) getStackTraceText(e) else e.message}"
         )
-        if (!debugMode)
+        if (!settings.debugMode)
             defaultLogger.error("Error while running command!", e)
     }
 }

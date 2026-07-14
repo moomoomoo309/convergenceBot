@@ -17,17 +17,13 @@ class CommandTest {
 
     @Before
     fun setup() {
-        aliases.clear()
-        aliasVars.clear()
-        aliasVars["%sender"] = { c, s -> c.protocol.getUserName(c, s) }
-        aliasVars["%sendername"] = { _, _ -> "testuser" }
+        resetGlobalState()
+        bot.aliasVars["%sender"] = { c, s -> c.protocol.getUserName(c, s) }
+        bot.aliasVars["%sendername"] = { _, _ -> "testuser" }
     }
 
     @After
-    fun teardown() {
-        aliases.clear()
-        aliasVars.clear()
-    }
+    fun teardown() = resetGlobalState()
 
     // ─── Command.invoke: permissions ────────────────────────────────────────
 

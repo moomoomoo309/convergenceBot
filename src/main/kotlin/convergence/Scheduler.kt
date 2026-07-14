@@ -6,6 +6,7 @@ import org.ocpsoft.prettytime.PrettyTime
 import org.ocpsoft.prettytime.units.JustNow
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * Checks if commands or tasks scheduled for later are ready to be run yet.
@@ -18,11 +19,11 @@ object Scheduler: Thread() {
 
     private val scheduledCommands = sortedMapOf<OffsetDateTime, MutableList<ScheduledCommand>>()
     private val commandsList = sortedMapOf<Int, ScheduledCommand>()
-    private var currentId: Int = 0
+    private val currentId = AtomicInteger(0)
     val taskList = mutableListOf<ScheduledTask>()
 
     fun loadFromFile() {
-        serializedCommands.values.forEach { cmd ->
+        settings.serializedCommands.values.forEach { cmd ->
             commandsList[cmd.id] = cmd
             scheduledCommands.getOrPut(cmd.time) { mutableListOf(cmd) }
         }
@@ -71,14 +72,15 @@ object Scheduler: Thread() {
      * @return The response the user will get from the command.
      */
     fun schedule(chat: Chat, sender: User, commandName: String, args: List<String>, time: OffsetDateTime): String {
-        while (currentId in commandsList)
-            currentId++
-        val cmd = ScheduledCommand(time, chat, sender, chat.protocol.name, commandName, args, currentId)
+        var id = currentId.getAndIncrement()
+        while (id in commandsList)
+            id = currentId.getAndIncrement()
+        val cmd = ScheduledCommand(time, chat, sender, chat.protocol.name, commandName, args, id)
         scheduledCommands.getOrPut(time) { mutableListOf() }.add(cmd)
         if (cmd.id in commandsList)
             defaultLogger.error("Duplicate IDs in schedulerThread!")
         commandsList[cmd.id] = cmd
-        serializedCommands[cmd.id] = cmd
+        settings.serializedCommands[cmd.id] = cmd
         updateSettings()
         return "Scheduled ${getUserName(chat, sender)} to run " +
                 "\"$commandName ${args.joinToString(" ")}\" ${formatTime(time)} ($time)."
@@ -102,7 +104,7 @@ object Scheduler: Thread() {
      * Removes a command from the queue.
      */
     fun unschedule(index: Int) = commandsList.remove(index)?.let {
-        serializedCommands.remove(it.id)
+        settings.serializedCommands.remove(it.id)
         scheduledCommands[it.time]?.remove(it)
     } != null
 }

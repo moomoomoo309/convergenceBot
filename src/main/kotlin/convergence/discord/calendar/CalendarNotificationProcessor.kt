@@ -3,9 +3,12 @@ package convergence.discord.calendar
 import convergence.*
 import convergence.discord.DiscordChat
 import net.fortuna.ical4j.model.component.VEvent
+import org.slf4j.LoggerFactory
 import java.time.Duration
 import java.time.Instant
 import java.time.OffsetDateTime
+
+private val notificationLogger = LoggerFactory.getLogger("convergence.calendar.notification")
 
 object CalendarNotificationProcessor {
 
@@ -114,7 +117,7 @@ object CalendarNotificationProcessor {
     ) {
         val notifyAtOffset = notifyAt.atOffset(defaultZoneOffset)
         val eventStartOffset = eventStart.atOffset(defaultZoneOffset)
-        println("Scheduled mention of $eventSummary in ${formatTime(eventStartOffset)} mentioning $mentionUserIds")
+        notificationLogger.info("Scheduled mention of $eventSummary in ${formatTime(eventStartOffset)} mentioning $mentionUserIds")
         Scheduler.taskList.add(
             ScheduledTask(notifyAtOffset) {
                 sendNotification(

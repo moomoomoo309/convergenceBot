@@ -28,9 +28,9 @@ object ConvergenceBot {
             return
         }
 
-        protocols.add(UniversalProtocol)
-        protocols.add(ConsoleProtocol)
-        protocols.add(DiscordProtocol)
+        bot.protocols.add(UniversalProtocol)
+        bot.protocols.add(ConsoleProtocol)
+        bot.protocols.add(DiscordProtocol)
 
         convergencePath = Paths.get(commandLineArgs.get<List<String>>("convergencePath").first())
 
@@ -51,7 +51,7 @@ object ConvergenceBot {
 }
 
 private fun loadProtocolConfig() {
-    for (protocol in protocols) {
+    for (protocol in bot.protocols) {
         defaultLogger.info("Running ${protocol.name}.configLoaded...")
         try {
             protocol.configLoaded()
@@ -62,17 +62,16 @@ private fun loadProtocolConfig() {
 }
 
 private fun updateChatMap() {
-    for (protocol in protocols) {
+    for (protocol in bot.protocols) {
         defaultLogger.info("Initializing ${protocol.name}...")
         try {
             protocol.init()
             val chats = protocol.getChats()
             for (chat in chats) {
-                if (chat !in reverseChatMap) {
-                    while (currentChatID in chatMap)
-                        currentChatID++
-                    chatMap[currentChatID] = chat
-                    reverseChatMap[chat] = currentChatID
+                if (chat !in bot.reverseChatMap) {
+                    val id = bot.currentChatID.getAndIncrement()
+                    bot.chatMap[id] = chat
+                    bot.reverseChatMap[chat] = id
                 }
             }
         } catch(e: Exception) {

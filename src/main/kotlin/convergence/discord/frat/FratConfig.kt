@@ -1,6 +1,7 @@
 package convergence.discord.frat
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import convergence.defaultLogger
 import convergence.objectMapper
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -37,7 +38,8 @@ val fratConfigPath: Path = Paths.get("/", "opt", "bots", "config.json")
 val fratConfig: FratConfig? by lazy {
     try {
         objectMapper.readValue(fratConfigPath.toFile())
-    } catch(_: Exception) {
+    } catch(e: Exception) {
+        defaultLogger.warn("Could not load frat config from $fratConfigPath: ${e.message}")
         null
     }
 }
@@ -45,7 +47,8 @@ val brotherInfoPath: Path = Paths.get("/", "opt", "bots", "convergence", "brothe
 val brotherInfo: MutableList<BrotherInfo>? by lazy {
     try {
         objectMapper.readValue(brotherInfoPath.toFile())
-    } catch(_: Exception) {
+    } catch(e: Exception) {
+        defaultLogger.warn("Could not load brother info from $brotherInfoPath: ${e.message}")
         null
     }
 }

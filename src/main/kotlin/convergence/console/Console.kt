@@ -36,7 +36,7 @@ object ConsoleProtocol: Protocol("Console") {
 
     override fun getUserName(chat: Chat, user: User): String {
         if (user is ConsoleUser && chat is ConsoleChat)
-            return "ConsoleUser"
+            return user.name
         throw InputMismatchException("Invalid chat or user passed. Can only be ConsoleChat and ConsoleUser.")
     }
 
@@ -58,7 +58,7 @@ object ConsoleProtocol: Protocol("Console") {
 
     override fun init() {
         if (System.console() != null) {
-            Thread {
+            val thread = Thread({
                 print("consolePlugin initialized.\n\n> ")
 
                 System.out.flush() // Flush guarantees that the > shows up before stdin. IntelliJ doesn't listen to it.
@@ -78,7 +78,9 @@ object ConsoleProtocol: Protocol("Console") {
                     println() // The newline is just to make the output cleaner.
                     exitProcess(0)
                 }
-            }.start()
+            }, "console-input")
+            thread.isDaemon = true
+            thread.start()
         }
     }
 

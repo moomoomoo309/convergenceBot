@@ -39,7 +39,7 @@ fun getUserFromName(chat: Chat, name: String): User? {
 
 const val COMMANDS_PER_PAGE = 10
 fun help(args: List<String>, chat: Chat): String {
-    val sortedCommands = commands.values.flatMap { it.values }.sortedBy { it.name }
+    val sortedCommands = bot.commands.values.flatMap { it.values }.sortedBy { it.name }
     val numPages = ceil(sortedCommands.size.toDouble() / COMMANDS_PER_PAGE).toInt()
     val pageOrCommand = if (args.isEmpty()) 1 else args[0].toIntOrNull()?.coerceIn(1..numPages) ?: args[0]
     return when(pageOrCommand) {
@@ -84,7 +84,7 @@ fun echo(args: List<String>) = args.joinToString(" ")
 fun ping() = "Pong!"
 
 fun addAlias(args: List<String>, chat: Chat, scope: CommandScope): String {
-    val commandDelimiter = commandDelimiters.getOrDefault(chat, DEFAULT_COMMAND_DELIMITER)
+        val commandDelimiter = settings.commandDelimiters.getOrDefault(chat, DEFAULT_COMMAND_DELIMITER)
     val commandName = if (args[1].startsWith(commandDelimiter)) args[1].substringAfter(commandDelimiter) else args[1]
     val commandStr = "$commandDelimiter$commandName ${args.subList(2, args.size).joinToString(" ")}"
     val command = parseCommand(commandStr, commandDelimiter, chat)
@@ -109,8 +109,8 @@ fun removeServerAlias(args: List<String>, chat: Chat): String {
         return "Only one argument should be passed."
     }
     val server = chat.server
-    if (server in aliases && aliases[server] is MutableMap && args[0] in aliases[server]!!) {
-        aliases[server]!!.remove(args[0])
+    if (server in settings.aliases && settings.aliases[server] is MutableMap && args[0] in settings.aliases[server]!!) {
+        settings.aliases[server]!!.remove(args[0])
         updateSettings()
         return "Server alias \"${args[0]}\" removed."
     }
@@ -121,8 +121,8 @@ fun removeAlias(args: List<String>, chat: Chat): String {
     if (args.size != 1) {
         return "Only one argument should be passed."
     }
-    if (chat in aliases && aliases[chat] is MutableMap && args[0] in aliases[chat]!!) {
-        aliases[chat]!!.remove(args[0])
+    if (chat in settings.aliases && settings.aliases[chat] is MutableMap && args[0] in settings.aliases[chat]!!) {
+        settings.aliases[chat]!!.remove(args[0])
         updateSettings()
         return "Alias \"${args[0]}\" removed."
     }
@@ -137,24 +137,21 @@ fun me(args: List<String>, chat: Chat, sender: User): String {
 
 fun chats(): String {
     val builder = StringBuilder()
-    for (protocol in protocols) {
+    for (protocol in bot.protocols) {
         try {
             val chats = protocol.getChats()
             builder.append("${protocol.name}\n\t")
             chats.forEach {
-                if (it !in reverseChatMap) {
-                    while (currentChatID in chatMap)
-                        currentChatID++
-                    chatMap[currentChatID] = it
-                    reverseChatMap[it] = currentChatID
-                    builder.append(it).append(" (").append(currentChatID++).append("), ")
-                } else
-                    builder.append(it).append(" (").append(reverseChatMap[it]).append("), ")
+                val id = bot.reverseChatMap[it]
+                if (id != null)
+                    builder.append(it).append(" (").append(id).append("), ")
             }
-            builder.setLength(builder.length - 2) // Remove the last ", ".
+            if (chats.any { it in bot.reverseChatMap }) {
+                builder.setLength(builder.length - 2) // Remove the last ", ".
+            }
             builder.append('\n')
         } catch(e: Exception) {
-            println("Error getting chats for ${protocol.name}. Stack Trace:\n${getStackTraceText(e)}")
+            defaultLogger.error("Error getting chats for ${protocol.name}.", e)
         }
     }
     return builder.toString()
@@ -164,7 +161,7 @@ val dateTimeParser = Parser()
 
 fun target(args: List<String>, chat: Chat): String {
     if (args.isEmpty()) {
-        return "You need to pass some arguments! Syntax: " + commands[UniversalProtocol]!!["target"]!!.syntaxText
+        return "You need to pass some arguments! Syntax: " + bot.commands[UniversalProtocol]!!["target"]!!.syntaxText
     }
     val user = getUserFromName(chat, args[args.size - 1])
         ?: return "No user by the name \"${args[args.size - 1]}\" found."
@@ -173,7 +170,7 @@ fun target(args: List<String>, chat: Chat): String {
 
 fun targetNick(args: List<String>, chat: Chat): String {
     if (args.isEmpty()) {
-        return "You need to pass some arguments! Syntax: " + commands[UniversalProtocol]!!["target"]!!.syntaxText
+        return "You need to pass some arguments! Syntax: " + bot.commands[UniversalProtocol]!!["target"]!!.syntaxText
     }
     if (chat.protocol !is HasNicknames)
         return "This protocol doesn't support nicknames!"
@@ -186,18 +183,18 @@ fun targetNick(args: List<String>, chat: Chat): String {
 
 fun commands(chat: Chat): String {
     val commandList = mutableListOf<String>()
-    commands[chat.protocol]?.forEach { commandList.add(it.key) }
-    commands[UniversalProtocol]?.forEach { commandList.add(it.key) }
-    linkedChats[chat]?.forEach { linked -> commands[linked.protocol]?.forEach { commandList.add(it.key) } }
+    bot.commands[chat.protocol]?.forEach { commandList.add(it.key) }
+    bot.commands[UniversalProtocol]?.forEach { commandList.add(it.key) }
+    settings.linkedChats[chat]?.forEach { linked -> bot.commands[linked.protocol]?.forEach { commandList.add(it.key) } }
     commandList.sort()
     return if (commandList.isNotEmpty()) commandList.joinToString(", ") else "No commands found."
 }
 
 fun aliases(chat: Chat): String {
     val aliasList = mutableListOf<String>()
-    aliases[chat]?.forEach { aliasList.add(it.key) }
-    aliases[UniversalChat]?.forEach { aliasList.add(it.key) }
-    linkedChats[chat]?.forEach { linked -> aliases[linked]?.forEach { aliasList.add(it.key) } }
+    settings.aliases[chat]?.forEach { aliasList.add(it.key) }
+    settings.aliases[UniversalChat]?.forEach { aliasList.add(it.key) }
+    settings.linkedChats[chat]?.forEach { linked -> settings.aliases[linked]?.forEach { aliasList.add(it.key) } }
     aliasList.sort()
     return if (aliasList.isNotEmpty()) "Aliases: ${aliasList.joinToString(", ")}" else "No aliases found."
 }
@@ -206,19 +203,19 @@ fun schedule(args: List<String>, chat: Chat, sender: User): String {
     if (args.size != 2)
         return "Expected 2 arguments, got ${args.size} argument${if (args.size != 1) "s" else ""}."
     val timeList = dateTimeParser.parse(args[0])
-    val delimiter = commandDelimiters[chat] ?: DEFAULT_COMMAND_DELIMITER
+    val delimiter = settings.commandDelimiters[chat] ?: DEFAULT_COMMAND_DELIMITER
     val command = (if (args[1].startsWith(delimiter)) "" else delimiter) + args[1]
     val commandWithArgs = parseCommand(chat, command, sender)
-    if (commandWithArgs != null)
-        for (group in timeList)
-            for (time in group.dates)
-                Scheduler.schedule(
-                    chat,
-                    sender,
-                    commandWithArgs.command.name,
-                    commandWithArgs.args,
-                    time.toOffsetDatetime()
-                )
+        ?: return "\"$command\" does not refer to a valid command."
+    for (group in timeList)
+        for (time in group.dates)
+            Scheduler.schedule(
+                chat,
+                sender,
+                commandWithArgs.command.name,
+                commandWithArgs.args,
+                time.toOffsetDatetime()
+            )
     updateSettings()
     return "Scheduled \"$command\" to run in ${args[0]}."
 }
@@ -230,7 +227,7 @@ fun events(chat: Chat): String {
     val commands = getCommands()
     if (commands.isEmpty())
         return "No events are currently scheduled."
-    return buildString { addEventToBuilder(commands.sortedBy { it.time } as MutableList<ScheduledCommand>, chat, this) }
+    return buildString { addEventToBuilder(commands.sortedBy { it.time }, chat, this) }
 }
 
 /**
@@ -273,14 +270,14 @@ fun eventsByUser(chat: Chat, sender: User): String {
 }
 
 private fun addEventToBuilder(
-    events: MutableList<ScheduledCommand>,
+    events: List<ScheduledCommand>,
     chat: Chat,
     builder: StringBuilder
 ) {
     for (event in events) {
         val id = event.id
         val time = formatTime(event.time)
-        val commandDelimiter = commandDelimiters.getOrDefault(chat, DEFAULT_COMMAND_DELIMITER)
+    val commandDelimiter = settings.commandDelimiters.getOrDefault(chat, DEFAULT_COMMAND_DELIMITER)
         val name = event.commandName
         val argsStr = event.args.joinToString(" ")
         builder.append("\t[$id] $time (${event.time}): \"$commandDelimiter$name $argsStr\"\n")
@@ -300,9 +297,9 @@ fun unschedule(args: List<String>): String {
 fun link(args: List<String>, chat: Chat): String {
     val index = args[0].toIntOrNull() ?: return "${args[0]} is not a chat ID!"
 
-    val chatToLink = chatMap[index]
+    val chatToLink = bot.chatMap[index]
     return if (chatToLink != null) {
-        linkedChats.getOrPut(chat) { mutableSetOf() }.add(chatToLink)
+        settings.linkedChats.getOrPut(chat) { mutableSetOf() }.add(chatToLink)
         updateSettings()
         "${chatToLink.name} linked to ${chat.name}."
     } else
@@ -311,13 +308,13 @@ fun link(args: List<String>, chat: Chat): String {
 
 fun unlink(args: List<String>, chat: Chat): String {
     val index = args[0].toIntOrNull() ?: return "${args[0]} is not a chat ID!"
-    val toUnlink = chatMap[index] ?: return "No chat with ID $index found."
+    val toUnlink = bot.chatMap[index] ?: return "No chat with ID $index found."
 
     return when {
-        chat !in linkedChats -> "There are no chats linked to this one!"
-        linkedChats[chat]!!.remove(toUnlink) -> {
-            if (linkedChats[chat]!!.isEmpty())
-                linkedChats.remove(chat)
+        chat !in settings.linkedChats -> "There are no chats linked to this one!"
+        settings.linkedChats[chat]!!.remove(toUnlink) -> {
+            if (settings.linkedChats[chat]!!.isEmpty())
+                settings.linkedChats.remove(chat)
             updateSettings()
             "Removed ${toUnlink.name} from this chat's links."
         }
@@ -327,8 +324,8 @@ fun unlink(args: List<String>, chat: Chat): String {
 }
 
 fun links(chat: Chat): String {
-    return if (chat in linkedChats)
-        "Linked chats: ${linkedChats[chat]!!.joinToString(", ") { c: Chat -> "$c (${reverseChatMap[c]})" }}"
+    return if (chat in settings.linkedChats)
+        "Linked chats: ${settings.linkedChats[chat]!!.joinToString(", ") { c: Chat -> "$c (${bot.reverseChatMap[c]})" }}"
     else
         "No chats are linked to this one."
 }
@@ -339,7 +336,7 @@ fun links(chat: Chat): String {
 fun setCommandDelimiter(chat: Chat, commandDelimiter: String): Boolean {
     if (commandDelimiter.any { it.isWhitespace() || it == '"' })
         return false
-    commandDelimiters[chat] = commandDelimiter
+    settings.commandDelimiters[chat] = commandDelimiter
     updateSettings()
     return true
 }
@@ -355,9 +352,9 @@ fun createTimer(args: List<String>): String {
         return "A name has to be provided."
     }
     val name = args.joinToString(" ")
-    if (name in timers)
+    if (name in settings.timers)
         return "That timer already exists!"
-    timers[name] = OffsetDateTime.now()
+    settings.timers[name] = OffsetDateTime.now()
     updateSettings()
     return "New timer \"$name\" created."
 }
@@ -367,10 +364,10 @@ fun resetTimer(args: List<String>): String {
         return "A name has to be provided."
     }
     val name = args.joinToString(" ")
-    if (name !in timers)
+    if (name !in settings.timers)
         return "That timer doesn't exist!"
-    val oldVal = timers[name]
-    timers[name] = OffsetDateTime.now()
+    val oldVal = settings.timers[name]
+    settings.timers[name] = OffsetDateTime.now()
     updateSettings()
     return "Timer reset. The time it was created or last time the timer was reset was " +
             "${formatTime(oldVal!!)} ($oldVal)."
@@ -380,9 +377,9 @@ fun checkTimer(args: List<String>): String {
     if (args.isEmpty())
         return "A name has to be provided."
     val name = args.joinToString(" ")
-    if (name !in timers)
+    if (name !in settings.timers)
         return "That timer doesn't exist!"
-    val oldVal = timers[name]
+    val oldVal = settings.timers[name]
     updateSettings()
     return "The time it was created or last time the timer was reset was ${formatTime(oldVal!!)} ($oldVal)."
 }
@@ -624,7 +621,7 @@ fun registerDefaultCommands() {
             UniversalProtocol,
             "timers",
             listOf(),
-            { -> "The current active timers are: ${timers.keys.joinToString(", ") }" },
+            { -> "The current active timers are: ${settings.timers.keys.joinToString(", ") }" },
             "Lists out all currently active timers.",
             "timers (takes no arguments)"
         )

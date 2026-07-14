@@ -27,13 +27,13 @@ private fun <CommandType: CommandLike, ScopeType> commandAvailable(
 fun getCommand(command: String, chat: Chat): CommandLike {
     return when {
         // Chat Alias
-        commandAvailable(aliases, chat, command) -> aliases[chat]!![command]
+        commandAvailable(settings.aliases, chat, command) -> settings.aliases[chat]!![command]
         // Server Alias
-        chat is HasServer<*> && commandAvailable(aliases, chat.server, command) -> aliases[chat.server]!![command]
+        chat is HasServer<*> && commandAvailable(settings.aliases, chat.server, command) -> settings.aliases[chat.server]!![command]
         // Protocol Command
-        commandAvailable(commands, chat.protocol, command) -> commands[chat.protocol]!![command]
+        commandAvailable(bot.commands, chat.protocol, command) -> bot.commands[chat.protocol]!![command]
         // Universal Command
-        commandAvailable(commands, UniversalProtocol, command) -> commands[UniversalProtocol]!![command]
+        commandAvailable(bot.commands, UniversalProtocol, command) -> bot.commands[UniversalProtocol]!![command]
         else -> null
     } ?: throw CommandDoesNotExist(command)
 }
@@ -50,7 +50,7 @@ private val escapeMap = mapOf(
 )
 
 fun parseCommand(command: String, chat: Chat): CommandWithArgs? =
-    parseCommand(command, commandDelimiters.getOrDefault(chat, DEFAULT_COMMAND_DELIMITER), chat)
+    parseCommand(command, settings.commandDelimiters.getOrDefault(chat, DEFAULT_COMMAND_DELIMITER), chat)
 
 @SuppressWarnings("ThrowsCount")
 fun parseCommand(command: String, commandDelimiter: String, chat: Chat): CommandWithArgs? {

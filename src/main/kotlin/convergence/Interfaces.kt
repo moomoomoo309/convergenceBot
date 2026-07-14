@@ -15,9 +15,6 @@ sealed interface CommandScope {
 abstract class Server(val name: String, override val protocol: Protocol): Comparable<Server>, CommandScope
 
 typealias MessageCallback = (chat: Chat, message: IncomingMessage, sender: User) -> Unit
-val messageCallbacks = mutableListOf<MessageCallback>(
-    { chat, message, sender -> runCommand(chat, message, sender) },
-)
 abstract class Protocol(val name: String): Comparable<Protocol> {
     abstract fun init()
     abstract fun configLoaded()
@@ -35,7 +32,7 @@ abstract class Protocol(val name: String): Comparable<Protocol> {
     override fun toString(): String = this::class.java.simpleName
     override fun hashCode(): Int = name.hashCode()
 
-    fun receivedMessage(chat: Chat, message: IncomingMessage, sender: User) = messageCallbacks.forEach {
+    fun receivedMessage(chat: Chat, message: IncomingMessage, sender: User) = bot.messageCallbacks.forEach {
         it(chat, message, sender)
     }
     abstract fun sendMessage(chat: Chat, message: OutgoingMessage): Boolean

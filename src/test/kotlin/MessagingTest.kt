@@ -9,19 +9,15 @@ class MessagingTest {
 
     @Before
     fun setup() {
-        aliasVars.clear()
-        aliasVars["%sender"] = { c, s -> c.protocol.getUserName(c, s) }
-        aliasVars["%sendername"] = { _, _ -> "testuser" }
-        aliasVars["%botname"] = { c, _ -> c.protocol.getUserName(c, c.protocol.getBot(c)) }
-        aliasVars["%chatname"] = { c, _ -> c.protocol.getChatName(c) }
-        linkedChats.clear()
+        resetGlobalState()
+        bot.aliasVars["%sender"] = { c, s -> c.protocol.getUserName(c, s) }
+        bot.aliasVars["%sendername"] = { _, _ -> "testuser" }
+        bot.aliasVars["%botname"] = { c, _ -> c.protocol.getUserName(c, c.protocol.getBot(c)) }
+        bot.aliasVars["%chatname"] = { c, _ -> c.protocol.getChatName(c) }
     }
 
     @After
-    fun teardown() {
-        aliasVars.clear()
-        linkedChats.clear()
-    }
+    fun teardown() = resetGlobalState()
 
     // ─── replaceAliasVars ──────────────────────────────────────────────────
 
@@ -70,7 +66,7 @@ class MessagingTest {
 
     @Test
     fun replaceAliasVarsReturnsNullWhenVarReturnsNull() {
-        aliasVars["%custom"] = { _, _ -> null }
+        bot.aliasVars["%custom"] = { _, _ -> null }
         val msg = SimpleOutgoingMessage("Hello %custom!")
         val result = replaceAliasVars(testChat, msg, testUser)
         // When the var function returns null, the original %custom is kept

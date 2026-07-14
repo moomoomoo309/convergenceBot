@@ -68,26 +68,16 @@ class SerializationTest {
 
     @Before
     fun setup() {
-        if (SerProtocol !in protocols) protocols.add(SerProtocol)
+        resetGlobalState()
+        if (SerProtocol !in bot.protocols) bot.protocols.add(SerProtocol)
         testCommand = Command.of(SerProtocol, "testcmd", listOf(), { _: List<String> -> null }, "help", "syntax")
-        commands[SerProtocol] = mutableMapOf("testcmd" to testCommand)
+        bot.commands[SerProtocol] = mutableMapOf("testcmd" to testCommand)
     }
 
     @After
     fun teardown() {
-        protocols.remove(SerProtocol)
-        commands.remove(SerProtocol)
-        settings.aliases.clear()
-        settings.commandDelimiters.clear()
-        settings.linkedChats.clear()
-        settings.serializedCommands.clear()
-        settings.syncedCalendars.clear()
-        settings.notificationChannels.clear()
-        settings.timers.clear()
-        settings.imageUploadChannels.clear()
-        settings.reactServers.clear()
-        settings.mentionChats.clear()
-        settings.debugMode = false
+        bot.protocols.remove(SerProtocol)
+        resetGlobalState()
     }
 
     private fun sampleData(): Settings {

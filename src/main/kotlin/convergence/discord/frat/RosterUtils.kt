@@ -53,7 +53,7 @@ fun getNewRoster(): List<BrotherInfo> {
             i += 1
             row = worksheet.getRow(i)
         }
-        brotherPairLazy.reset()
+        resetBrotherPair()
         brotherInfoList.filter { it.rosterNumber !in illegalRosters }
     }
 }
@@ -120,27 +120,12 @@ private fun getBrotherTree(): Pair<Map<String, BrotherTreeNode>, BrotherTreeNode
     return brotherMap to rootNode
 }
 
-private val brotherPairLazy = MutableLazy { getBrotherTree() }
-val brotherPair: Pair<Map<String, BrotherTreeNode>, BrotherTreeNode> by brotherPairLazy
+private var _brotherPair: Pair<Map<String, BrotherTreeNode>, BrotherTreeNode>? = null
+val brotherPair: Pair<Map<String, BrotherTreeNode>, BrotherTreeNode>
+    get() = _brotherPair ?: getBrotherTree().also { _brotherPair = it }
 val brotherMap: Map<String, BrotherTreeNode> by lazy { brotherPair.first }
 val brotherRoot: BrotherTreeNode by lazy { brotherPair.second }
 
-class MutableLazy<T: Any>(private val initializer: () -> T) : Lazy<T> {
-    private var cached: T? = null
-    override val value: T
-        get() {
-            if (cached == null) {
-                cached = initializer()
-            }
-            return cached as T
-        }
-
-    fun reset() {
-        cached = null
-    }
-
-    /**
-     * Returns `true` if a value for this `Lazy` instance has been already initialized, and `false` otherwise.
-     */
-    override fun isInitialized(): Boolean = cached != null
+fun resetBrotherPair() {
+    _brotherPair = null
 }

@@ -24,7 +24,7 @@ fragment InvalidOctalEscape: FourToNine Number Number | THREE EightOrNine Number
 
 Alnum: [a-zA-Z0-9]+;
 Whitespace: [\p{White_Space}]+;
-NotWhitespaceOrQuote: ~[\p{White_Space}"]+?;
+NotWhitespaceOrQuote: ~[\p{White_Space}"]+;
 Quote: '"';
 
 fragment THREE: '3';

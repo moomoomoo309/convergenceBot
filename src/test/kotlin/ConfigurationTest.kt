@@ -25,39 +25,41 @@ class ConfigurationTest {
 
     @Before
     fun setup() {
-        protocols.clear()
+        resetGlobalState()
+        bot.protocols.clear()
     }
 
     @After
     fun teardown() {
-        protocols.clear()
+        resetGlobalState()
+        bot.protocols.clear()
     }
 
     // ─── scopeStrToProtocol ─────────────────────────────────────────────────
 
     @Test
     fun scopeStrToProtocolFindsProtocolByName() {
-        protocols.add(TestProtocol)
-        val result = scopeStrToProtocol("TestProtocol(someId)")
+        bot.protocols.add(TestProtocol)
+        val result = bot.scopeStrToProtocol("TestProtocol(someId)")
         assertEquals(TestProtocol, result)
     }
 
     @Test
     fun scopeStrToProtocolFindsUniversalProtocol() {
-        protocols.add(UniversalProtocol)
-        val result = scopeStrToProtocol("UniversalChat")
+        bot.protocols.add(UniversalProtocol)
+        val result = bot.scopeStrToProtocol("UniversalChat")
         assertEquals(UniversalProtocol, result)
     }
 
     @Test
     fun scopeStrToProtocolReturnsNullForUnknownProtocol() {
-        val result = scopeStrToProtocol("NonexistentProtocol(id)")
+        val result = bot.scopeStrToProtocol("NonexistentProtocol(id)")
         assertNull(result)
     }
 
     @Test
     fun scopeStrToProtocolReturnsNullForEmptyString() {
-        val result = scopeStrToProtocol("")
+        val result = bot.scopeStrToProtocol("")
         assertNull(result)
     }
 
@@ -65,17 +67,17 @@ class ConfigurationTest {
     fun scopeStrToProtocolMatchesLongestProtocolNameFirst() {
         val shortProtocol = makeProtocol("Ab")
         val longProtocol = makeProtocol("Abcde")
-        protocols.add(shortProtocol)
-        protocols.add(longProtocol)
+        bot.protocols.add(shortProtocol)
+        bot.protocols.add(longProtocol)
         // "Abcde(foo)" — both "Ab" and "Abcde" match the prefix, but "Abcde" is longer
-        val result = scopeStrToProtocol("Abcde(foo)")
+        val result = bot.scopeStrToProtocol("Abcde(foo)")
         assertEquals(longProtocol, result)
     }
 
     @Test
     fun scopeStrToProtocolWithNoParentheses() {
-        protocols.add(TestProtocol)
-        val result = scopeStrToProtocol("TestProtocol")
+        bot.protocols.add(TestProtocol)
+        val result = bot.scopeStrToProtocol("TestProtocol")
         // substringBefore("(") returns "TestProtocol" when there's no "("
         assertEquals(TestProtocol, result)
     }

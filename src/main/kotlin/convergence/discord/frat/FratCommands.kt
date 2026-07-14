@@ -351,7 +351,7 @@ fun registerFratCommands() {
                 val name = args.joinToString(" ")
                 val target = getUserFromName(chat, name)
                     ?: return@fct "No user found with name \"$name\"."
-                mentionChats
+                settings.mentionChats
                     .getOrPut(chat) { mutableMapOf() }
                     .putIfAbsent(target, mutableMapOf())
                 updateSettings()
@@ -368,7 +368,7 @@ fun registerFratCommands() {
             "removeMentionChats",
             listOf(),
             { _, chat, _ ->
-                mentionChats
+                settings.mentionChats
                     .getOrDefault(chat, mutableMapOf())
                     .clear()
                 updateSettings()
@@ -415,13 +415,13 @@ private fun registerMentionCallback() {
                 val newMentions = mutableMapOf<DiscordUser, Int>()
                 for (user in users) {
                     user as? DiscordUser ?: continue
-                    val mentions = (mentionChats[chat] ?: return@MentionedUser true)[user] ?: return@MentionedUser true
+                    val mentions = (settings.mentionChats[chat] ?: return@MentionedUser true)[user] ?: return@MentionedUser true
                     val mentionCount = mentions.getOrDefault(sender, 0) + 1
                     mentions[sender] = mentionCount
                     newMentions[user] = mentionCount
                 }
                 updateSettings()
-                if (debugMode) {
+                if (settings.debugMode) {
                     val parts = newMentions.toList().map { (user, count) ->
                         "${DiscordProtocol.getUserNickname(chat, user)} $count time${if (count > 1) "s" else ""}"
                     }
@@ -453,10 +453,10 @@ private fun nextMonth(): OffsetDateTime {
 }
 
 private fun mentionStatsFct() {
-    for ((chat, _) in mentionChats) {
+    for ((chat, _) in settings.mentionChats) {
         sendMessage(chat, "Monthly mention stats:\n${mentionStats(chat)}")
     }
-    for ((_, stats) in mentionChats)
+    for ((_, stats) in settings.mentionChats)
         for ((_, mentioners) in stats)
             mentioners.clear()
     updateSettings()
@@ -464,7 +464,7 @@ private fun mentionStatsFct() {
     Scheduler.taskList.add(ScheduledTask(nextMonth(), ::mentionStatsFct))
 }
 
-fun mentionStats(chat: Chat) = mentionChats
+fun mentionStats(chat: Chat) = settings.mentionChats
     .getOrDefault(chat, mutableMapOf())
     .map { (target, mentions) ->
         "${getUserName(chat, target)}:\n\t${

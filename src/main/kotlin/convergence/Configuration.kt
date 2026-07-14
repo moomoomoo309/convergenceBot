@@ -14,7 +14,6 @@ import java.util.*
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
-import kotlin.system.exitProcess
 
 const val DEFAULT_COMMAND_DELIMITER = "!"
 
@@ -47,9 +46,6 @@ data class CalendarNotificationChannel(
 // destination persists as its key string (DiscordChat is serialized by the Chat value serializer and rebuilt
 // by the DiscordChat value deserializer in convergenceModule); emojis is a plain map Jackson handles natively.
 data class ReactConfig(val destination: DiscordChat, val emojis: MutableMap<String, Int>)
-
-internal fun scopeStrToProtocol(s: String) = protocols.sortedBy { -it.name.length }
-    .firstOrNull { s.substringBefore("(").startsWith(it.name) }
 
 data class Settings(
     var aliases: MutableMap<CommandScope, MutableMap<String, Alias>> = mutableMapOf(),
@@ -98,36 +94,13 @@ fun readSettings() {
         writeSettingsToFile()
     } catch(_: java.io.FileNotFoundException) {
         writeSettingsToFile()
-    } catch(e: Throwable) {
+    } catch(e: Exception) {
         settingsLogger.error("Error occurred while reading settings from $settingsPath.\n\tError: ", e)
-        exitProcess(1)
+        throw IllegalStateException("Failed to read settings from $settingsPath", e)
     }
 }
 
-val commandDelimiters = settings.commandDelimiters
-val linkedChats = settings.linkedChats
-val aliases = settings.aliases
-val serializedCommands = settings.serializedCommands
-val syncedCalendars = settings.syncedCalendars
-val notificationChannels = settings.notificationChannels
-val timers = settings.timers
-val imageUploadChannels: MutableMap<Chat, URI> = settings.imageUploadChannels
-val reactServers: MutableMap<Server, MutableList<ReactConfig>> = settings.reactServers
-val mentionChats: MutableMap<Chat, MutableMap<User, MutableMap<User, Int>>> = settings.mentionChats
-val debugMode get() = settings.debugMode
-
 lateinit var convergencePath: Path
-val chatMap: MutableMap<Int, Chat> = mutableMapOf()
-val reverseChatMap: MutableMap<Chat, Int> = mutableMapOf()
-val commands: MutableMap<Protocol, MutableMap<String, Command>> = mutableMapOf()
-val protocols: MutableList<Protocol> = mutableListOf()
-var currentChatID: Int = 0
-val aliasVars: MutableMap<String, (chat: Chat, sender: User) -> String?> = mutableMapOf(
-    "%sender" to { c: Chat, s: User -> c.protocol.getUserName(c, s) },
-    "%nick" to { c, s -> (c.protocol as? HasNicknames)?.getUserNickname(c, s) },
-    "%botname" to { c: Chat, _: User -> c.protocol.getUserName(c, c.protocol.getBot(c)) },
-    "%chatname" to { c: Chat, _: User -> c.protocol.getChatName(c) }
-)
 val objectMapper: ObjectMapper = ObjectMapper()
     .configure(SerializationFeature.INDENT_OUTPUT, true)
     .configure(JsonParser.Feature.INCLUDE_SOURCE_IN_LOCATION, true)

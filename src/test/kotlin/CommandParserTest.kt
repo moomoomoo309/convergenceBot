@@ -68,7 +68,7 @@ class CommandParserTest {
         val testIndex = command.indexOf(" ")
         val testCommandStr = command.substring(1, if (testIndex == -1) command.length else testIndex)
         val testCommand = Command.of(testChat.protocol, testCommandStr, listOf(), ::doNothing, "test", "test")
-        commands[testChat.protocol] = mutableMapOf(testCommandStr to testCommand)
+        bot.commands[testChat.protocol] = mutableMapOf(testCommandStr to testCommand)
         return parseCommand(command, testChat)
     }
 
@@ -156,8 +156,8 @@ class CommandParserTest {
         val testCommand = Command.of(testChat.protocol, "test", listOf(), ::doNothing, "test", "test")
         val testAlias =
             Alias(testChat, testAliasStr, testCommand, listOf("testArg1", "testArg2"))
-        commands[testChat.protocol] = mutableMapOf("test" to testCommand)
-        aliases[testChat] = mutableMapOf(testAliasStr to testAlias)
+        bot.commands[testChat.protocol] = mutableMapOf("test" to testCommand)
+        settings.aliases[testChat] = mutableMapOf(testAliasStr to testAlias)
         return parseCommand(command, testChat)
     }
 
@@ -218,25 +218,25 @@ class CommandParserTest {
 
     @Before
     fun setup() {
-        commands.remove(UniversalProtocol)
-        aliases.clear()
-        commandDelimiters.clear()
+        bot.commands.remove(UniversalProtocol)
+        settings.aliases.clear()
+        settings.commandDelimiters.clear()
     }
 
     @After
     fun teardown() {
-        commands.remove(UniversalProtocol)
-        aliases.clear()
-        commandDelimiters.clear()
+        bot.commands.remove(UniversalProtocol)
+        settings.aliases.clear()
+        settings.commandDelimiters.clear()
     }
 
     // ─── helpers ──────────────────────────────────────────────────────────────
 
     private fun registerTestCommand(name: String): Command {
         val cmd = Command.of(UniversalProtocol, name, listOf(), ::doNothing, "test", "test")
-        if (UniversalProtocol !in commands)
-            commands[UniversalProtocol] = mutableMapOf()
-        commands[UniversalProtocol]!![name.lowercase()] = cmd
+        if (UniversalProtocol !in bot.commands)
+            bot.commands[UniversalProtocol] = mutableMapOf()
+        bot.commands[UniversalProtocol]!![name.lowercase()] = cmd
         return cmd
     }
 
@@ -276,10 +276,10 @@ class CommandParserTest {
     @Test
     fun multiCharDelimiterMatchesCorrectly() {
         val chat = TestChat()
-        commands[UniversalProtocol] = mutableMapOf(
+        bot.commands[UniversalProtocol] = mutableMapOf(
             "echo" to Command.of(UniversalProtocol, "echo", listOf(), ::doNothing, "test", "test")
         )
-        commandDelimiters[chat] = "!!"
+        settings.commandDelimiters[chat] = "!!"
         val result = parseCommand("!!echo hello", "!!", chat)
         assertEquals("echo", result?.command?.name)
         assertEquals("hello", result?.args?.get(0))
@@ -288,7 +288,7 @@ class CommandParserTest {
     @Test
     fun singleCharPrefixDoesNotMatchMultiCharDelimiter() {
         val chat = TestChat()
-        commands[UniversalProtocol] = mutableMapOf(
+        bot.commands[UniversalProtocol] = mutableMapOf(
             "echo" to Command.of(UniversalProtocol, "echo", listOf(), ::doNothing, "test", "test")
         )
         assertNull(parseCommand("!echo hello", "!!", chat))
@@ -302,7 +302,7 @@ class CommandParserTest {
         // leading "!", but its error-recovery includes "!" in commandName.text ("!echo"),
         // so getCommand("!echo", …) throws CommandDoesNotExist rather than finding "echo".
         val chat = TestChat()
-        commands[UniversalProtocol] = mutableMapOf(
+        bot.commands[UniversalProtocol] = mutableMapOf(
             "echo" to Command.of(UniversalProtocol, "echo", listOf(), ::doNothing, "test", "test")
         )
         assertFailsWith<CommandDoesNotExist> { parseCommand("!!!echo", "!!", chat) }
@@ -703,11 +703,11 @@ class CommandParserTest {
     fun chatAliasTakesPriorityOverProtocolCommand() {
         val chat = TestChat()
         val underlyingCmd = Command.of(UniversalProtocol, "ping", listOf(), ::doNothing, "test", "test")
-        commands[UniversalProtocol] = mutableMapOf("ping" to underlyingCmd)
+        bot.commands[UniversalProtocol] = mutableMapOf("ping" to underlyingCmd)
 
         // Alias "ping" has a preset arg — it should win over the bare protocol command.
         val alias = Alias(chat, "ping", underlyingCmd, listOf("aliasArg"))
-        aliases[chat] = mutableMapOf("ping" to alias)
+        settings.aliases[chat] = mutableMapOf("ping" to alias)
 
         val result = parseCommand("!ping", chat)
         assertEquals(listOf("aliasArg"), result?.args)

@@ -242,11 +242,21 @@ object CalendarProcessor {
         if (getAndCacheCalendar(args[0]) == null)
             return "No calendar found at URL \"${args[0]}\"."
         val syncedCalendar = SyncedCalendar(chat.channel.guild.idLong, args[0])
-        if (syncedCalendar in syncedCalendars)
+        if (syncedCalendar in settings.syncedCalendars)
             return "That calendar is already synced!"
-        syncedCalendars.add(syncedCalendar)
+        settings.syncedCalendars.add(syncedCalendar)
         updateSettings()
-        return syncToDiscord(syncedCalendars.filter { it.guildId == chat.channel.guild.idLong })
+        return syncToDiscord(settings.syncedCalendars.filter { it.guildId == chat.channel.guild.idLong })
+    }
+
+    private fun queryCalendarWithRetry(calCollection: CalDAVCollection): List<Calendar> {
+        var queriedCals = calCollection.queryCalendars(httpClient, buildCalendarQuery(Instant.now()))
+        // ical4j's timezone registry may not be fully populated on the first query, causing some
+        // calendar objects to fail parsing (returning null). If that happens, retry once — the first
+        // query will have warmed up the registry so the second succeeds.
+        if (queriedCals.any { it == null })
+            queriedCals = calCollection.queryCalendars(httpClient, buildCalendarQuery(Instant.now()))
+        return queriedCals.filterNotNull()
     }
 
     fun syncToDiscord(cals: List<SyncedCalendar>, dry: Boolean = false): String {
@@ -254,13 +264,7 @@ object CalendarProcessor {
         val guildId = cals.first().guildId
         for (cal in cals) {
             val calCollection = getAndCacheCalendar(cal.calURL) ?: return "No calendar found at URL \"${cal.calURL}\"."
-            // ical4j's timezone registry may not be fully populated on the first query, causing some
-            // calendar objects to fail parsing (returning null). If that happens, retry once — the first
-            // query will have warmed up the registry so the second succeeds.
-            var queriedCals = calCollection.queryCalendars(httpClient, buildCalendarQuery(Instant.now()))
-            if (queriedCals.any { it == null })
-                queriedCals = calCollection.queryCalendars(httpClient, buildCalendarQuery(Instant.now()))
-            calendarEvents.addAll(getCalDAVEventsNextDays(queriedCals.filterNotNull()).map { VEventWrapper(it) })
+            calendarEvents.addAll(getCalDAVEventsNextDays(queryCalendarWithRetry(calCollection)).map { VEventWrapper(it) })
             if (cal.guildId != guildId)
                 return "The guild IDs of each calendar don't match!"
         }
@@ -410,25 +414,18 @@ object CalendarProcessor {
      * This ensures notifications work even for calendars not synced to Discord events.
      */
     fun scheduleAllNotifications() {
-        val calURLs = notificationChannels.map { it.calURL }.toSet()
+        val calURLs = settings.notificationChannels.map { it.calURL }.toSet()
         for (calURL in calURLs) {
             val calCollection = getAndCacheCalendar(calURL) ?: continue
-            var queriedCals = calCollection.queryCalendars(httpClient, buildCalendarQuery(Instant.now()))
-            // ical4j's timezone registry may not be fully populated on the first query, causing some
-            // calendar objects to fail parsing (returning null). If that happens, retry once — the first
-            // query will have warmed up the registry so the second succeeds.
-            if (queriedCals.any { it == null })
-                queriedCals = calCollection.queryCalendars(httpClient, buildCalendarQuery(Instant.now()))
-            val eventInstances = getCalDAVEventsNextDays(queriedCals.filterNotNull())
-
-            val channelsForCalendar = notificationChannels.filter { it.calURL == calURL }
+            val eventInstances = getCalDAVEventsNextDays(queryCalendarWithRetry(calCollection))
+            val channelsForCalendar = settings.notificationChannels.filter { it.calURL == calURL }
             CalendarNotificationProcessor.scheduleNotificationsForEvents(eventInstances, channelsForCalendar)
         }
     }
 
     fun syncCalendars(chat: DiscordChat, dry: Boolean = false): String {
         Thread {
-            sendMessage(chat, syncToDiscord(syncedCalendars.filter { it.guildId == chat.server.guild.idLong }, dry))
+            sendMessage(chat, syncToDiscord(settings.syncedCalendars.filter { it.guildId == chat.server.guild.idLong }, dry))
         }.start()
         lastCalendarUpdateTime = Instant.now()
         return "Resyncing calendars..."
@@ -436,11 +433,11 @@ object CalendarProcessor {
 
     fun syncAllCalendars(chat: DiscordChat? = null, dry: Boolean = false): String {
         Thread {
-            val serverIDs = syncedCalendars.map { it.guildId }.toSet()
+            val serverIDs = settings.syncedCalendars.map { it.guildId }.toSet()
             for (serverId in serverIDs)
-                syncToDiscord(syncedCalendars.filter { it.guildId == serverId }, dry)
+                syncToDiscord(settings.syncedCalendars.filter { it.guildId == serverId }, dry)
             if (chat != null)
-                sendMessage(chat, syncToDiscord(syncedCalendars.filter { it.guildId == chat.server.guild.idLong }, dry))
+            sendMessage(chat, syncToDiscord(settings.syncedCalendars.filter { it.guildId == chat.server.guild.idLong }, dry))
         }.start()
         lastCalendarUpdateTime = Instant.now()
         return "Resyncing calendars..."
@@ -512,7 +509,7 @@ fun registerCalendarCommands() {
             "unsyncCalendar",
             listOf(ArgumentSpec("URL", ArgumentType.STRING)),
             { args, chat ->
-                val removed = syncedCalendars.remove(syncedCalendars.firstOrNull {
+                val removed = settings.syncedCalendars.remove(settings.syncedCalendars.firstOrNull {
                     it.guildId == (chat as DiscordChat).server.guild.idLong && it.calURL == args[0]
                 })
                 if (removed) "Calendar removed." else "No calendar with URL ${args[0]} found."
@@ -527,7 +524,7 @@ fun registerCalendarCommands() {
             "syncedCalendars",
             listOf(),
             { _, chat ->
-                syncedCalendars.filter {
+                settings.syncedCalendars.filter {
                     it.guildId == (chat as DiscordChat).server.guild.idLong
                 }.joinToString(", ").ifEmpty { "No calendars are synced in this chat." }
             },
@@ -568,7 +565,7 @@ fun registerCalendarCommands() {
             "listCalendarNotifications",
             listOf(),
             { _, chat ->
-                notificationChannels.filter {
+                settings.notificationChannels.filter {
                     it.guildId == (chat as DiscordChat).server.guild.idLong
                 }.joinToString("\n").ifEmpty { "No calendar notifications are registered in this server." }
             },
@@ -610,7 +607,7 @@ private fun addCalendarNotificationCommand(args: List<String>, chat: Chat): Stri
     val channelId = chat.channel.idLong
 
     // Check if already registered
-    val existing = notificationChannels.firstOrNull {
+    val existing = settings.notificationChannels.firstOrNull {
         it.guildId == guildId && it.calURL == calURL && it.channelId == channelId
     }
 
@@ -618,7 +615,7 @@ private fun addCalendarNotificationCommand(args: List<String>, chat: Chat): Stri
         // Error if it's already registered
         if (existing != null)
             return "This channel is already registered for notifications from that calendar."
-        notificationChannels.add(CalendarNotificationChannel(guildId, channelId, calURL, mutableMapOf()))
+        settings.notificationChannels.add(CalendarNotificationChannel(guildId, channelId, calURL, mutableMapOf()))
         return "Registered this channel to receive notifications from calendar \"$calName\"."
     }
 
@@ -626,7 +623,7 @@ private fun addCalendarNotificationCommand(args: List<String>, chat: Chat): Stri
     // Add a new channel, or add the mention to the existing one
     if (existing == null) {
         val mentions = mutableMapOf(mentionUserId to (pattern ?: ""))
-        notificationChannels.add(CalendarNotificationChannel(guildId, channelId, calURL, mentions))
+        settings.notificationChannels.add(CalendarNotificationChannel(guildId, channelId, calURL, mentions))
     } else
         existing.mentions[mentionUserId] = pattern ?: ""
     updateSettings()
@@ -654,13 +651,13 @@ private fun removeCalendarNotificationCommand(args: List<String>, chat: Chat): S
     // Parse mention if provided
     val mentionUserId = getIdFromMention(mentionStr)
 
-    val channel = notificationChannels.firstOrNull {
+    val channel = settings.notificationChannels.firstOrNull {
         it.guildId == guildId && it.calURL == calURL && it.channelId == channelId
     }
 
     return if (mentionUserId == null)
         // Remove the channel notification entirely
-        if (notificationChannels.remove(channel)) {
+        if (settings.notificationChannels.remove(channel)) {
             updateSettings()
             "Notification registration removed."
         } else

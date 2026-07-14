@@ -19,7 +19,7 @@ private fun registerReactChannel(args: List<String>, chat: Chat): String {
     val threshold = args[1].toIntOrNull()
     if (threshold == null || threshold <= 0)
         return "Threshold must be a positive integer."
-    val reactConfigs = reactServers.getOrPut(chat.server) {
+    val reactConfigs = settings.reactServers.getOrPut(chat.server) {
         mutableListOf(ReactConfig(chat, mutableMapOf()))
     }
     var reactConfig = reactConfigs.firstOrNull {
@@ -44,7 +44,7 @@ private fun uploadImagesTo(args: List<String>, chat: Chat): String {
         discordLogger.error("Could not parse URL! Exception: ", e)
         return "\"${args[0]}\" is not a valid URL."
     }
-    imageUploadChannels[chat] = url
+    settings.imageUploadChannels[chat] = url
     updateSettings()
     return "Images will now be uploaded to $url."
 }
@@ -64,7 +64,7 @@ fun registerDiscordCommands() {
         "stopUploadingImages",
         listOf(),
         { _, chat: Chat ->
-            imageUploadChannels.remove(chat)
+            settings.imageUploadChannels.remove(chat)
             updateSettings()
             "Images will no longer be uploaded."
         },
@@ -86,7 +86,7 @@ fun registerDiscordCommands() {
         cmd@{ _, chat ->
             if (chat !is DiscordChat)
                 return@cmd "This command can only be run on discord."
-            reactServers.remove(chat.server)
+            settings.reactServers.remove(chat.server)
             updateSettings()
             "Messages will no longer be forwarded to this channel based on reactions."
         },
@@ -101,7 +101,7 @@ fun registerDiscordCommands() {
             if (chat !is DiscordChat)
                 return@cmd "This command can only be run on discord."
             "Reactions that will be sent to this channel: ${
-                reactServers[chat.server]?.firstOrNull { it.destination == chat }
+                settings.reactServers[chat.server]?.firstOrNull { it.destination == chat }
                     ?.emojis?.toList()?.joinToString(", ") { (emoji, threshold) ->
                         "$emoji: $threshold"
                     } ?: "None"

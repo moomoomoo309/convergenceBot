@@ -9,18 +9,10 @@ import kotlin.test.assertTrue
 class CommandRegistryTest {
 
     @Before
-    fun setup() {
-        commands.remove(TestProtocol)
-        commands.remove(UniversalProtocol)
-        aliases.clear()
-    }
+    fun setup() = resetGlobalState()
 
     @After
-    fun teardown() {
-        commands.remove(TestProtocol)
-        commands.remove(UniversalProtocol)
-        aliases.clear()
-    }
+    fun teardown() = resetGlobalState()
 
     // ─── registerCommand ────────────────────────────────────────────────────
 
@@ -28,7 +20,7 @@ class CommandRegistryTest {
     fun registerCommandAddsToRegistry() {
         val cmd = Command.of(TestProtocol, "test", listOf(), { -> null }, "help", "syntax")
         assertTrue(registerCommand(cmd))
-        assertTrue("test" in commands[TestProtocol]!!)
+        assertTrue("test" in bot.commands[TestProtocol]!!)
     }
 
     @Test
@@ -42,7 +34,7 @@ class CommandRegistryTest {
     fun registerCommandNormalizesNameToLowercase() {
         val cmd = Command.of(TestProtocol, "MyCommand", listOf(), { -> null }, "help", "syntax")
         assertTrue(registerCommand(cmd))
-        assertTrue("mycommand" in commands[TestProtocol]!!)
+        assertTrue("mycommand" in bot.commands[TestProtocol]!!)
     }
 
     @Test
@@ -55,10 +47,10 @@ class CommandRegistryTest {
 
     @Test
     fun registerCommandCreatesProtocolEntryIfNeeded() {
-        assertFalse(TestProtocol in commands)
+        assertFalse(TestProtocol in bot.commands)
         val cmd = Command.of(TestProtocol, "test", listOf(), { -> null }, "help", "syntax")
         registerCommand(cmd)
-        assertTrue(TestProtocol in commands)
+        assertTrue(TestProtocol in bot.commands)
     }
 
     @Test
@@ -76,7 +68,7 @@ class CommandRegistryTest {
         val cmd = Command.of(TestProtocol, "echo", listOf(), ::echo, "help", "syntax")
         val alias = Alias(testChat, "greet", cmd, listOf("hello"))
         assertTrue(registerAlias(alias))
-        assertTrue("greet" in aliases[testChat]!!)
+        assertTrue("greet" in settings.aliases[testChat]!!)
     }
 
     @Test
@@ -92,7 +84,7 @@ class CommandRegistryTest {
         val cmd = Command.of(TestProtocol, "echo", listOf(), ::echo, "help", "syntax")
         val alias = Alias(testChat, "Greet", cmd, listOf("hello"))
         assertTrue(registerAlias(alias))
-        assertTrue("greet" in aliases[testChat]!!)
+        assertTrue("greet" in settings.aliases[testChat]!!)
     }
 
     @Test
