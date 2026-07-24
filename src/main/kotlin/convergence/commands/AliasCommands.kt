@@ -1,10 +1,14 @@
 package convergence.commands
 
-import convergence.*
-import convergence.command.*
+import convergence.DEFAULT_COMMAND_DELIMITER
+import convergence.command.Alias
+import convergence.command.parseCommand
+import convergence.command.registerAlias
 import convergence.model.Chat
 import convergence.model.CommandScope
 import convergence.protocol.HasServer
+import convergence.settings
+import convergence.updateSettings
 
 fun addAlias(args: List<String>, chat: Chat, scope: CommandScope): String {
     val commandDelimiter = settings.commandDelimiters.getOrDefault(chat, DEFAULT_COMMAND_DELIMITER)

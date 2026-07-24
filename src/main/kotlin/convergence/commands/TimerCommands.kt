@@ -1,7 +1,8 @@
 package convergence.commands
 
-import convergence.*
-import convergence.command.*
+import convergence.formatTime
+import convergence.settings
+import convergence.updateSettings
 import java.time.OffsetDateTime
 
 fun createTimer(args: List<String>): String {

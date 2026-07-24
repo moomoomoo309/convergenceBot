@@ -1,8 +1,12 @@
 
-import convergence.*
-import convergence.command.*
+import convergence.UniversalProtocol
+import convergence.bot
+import convergence.command.Alias
+import convergence.command.Command
+import convergence.command.registerCommand
 import convergence.commands.*
 import convergence.model.Chat
+import convergence.settings
 import org.junit.After
 import org.junit.Before
 import org.junit.Test

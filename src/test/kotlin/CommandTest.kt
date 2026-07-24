@@ -1,6 +1,10 @@
 
-import convergence.*
-import convergence.command.*
+import convergence.Protocol
+import convergence.UniversalProtocol
+import convergence.bot
+import convergence.command.Alias
+import convergence.command.Command
+import convergence.command.CommandFunction
 import convergence.commands.echo
 import convergence.commands.ping
 import convergence.model.Chat

@@ -1,4 +1,6 @@
-import convergence.*
+import convergence.UniversalProtocol
+import convergence.bot
+import convergence.settings
 
 fun resetGlobalState() {
     settings.aliases.clear()

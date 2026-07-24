@@ -1,8 +1,14 @@
 package convergence.discord
 
-import convergence.*
-import convergence.command.*
+import convergence.ReactConfig
+import convergence.command.ArgumentSpec
+import convergence.command.ArgumentType
+import convergence.command.Command
+import convergence.command.registerCommands
 import convergence.model.Chat
+import convergence.settings
+import convergence.toEmoji
+import convergence.updateSettings
 import java.net.URI
 import java.net.URISyntaxException
 
@@ -53,63 +59,66 @@ private fun uploadImagesTo(args: List<String>, chat: Chat): String {
 
 @Suppress("LongMethod")
 fun registerDiscordCommands() {
-    registerCommand(Command.of(
-        DiscordProtocol,
-        "uploadImagesTo",
-        listOf(ArgumentSpec("URL", ArgumentType.STRING)),
-        ::uploadImagesTo,
-        "Sets all images in this channel from here on out to be uploaded to the provided WebDAV URL.",
-        "uploadImagesTo (URL)"
-    ))
-    registerCommand(Command.of(
-        DiscordProtocol,
-        "stopUploadingImages",
-        listOf(),
-        { _, chat: Chat ->
-            settings.imageUploadChannels.remove(chat)
-            updateSettings()
-            "Images will no longer be uploaded."
-        },
-        "Stops images in this channel from being uploaded anywhere.",
-        "stopUploadingImages (takes no arguments)"
-    ))
-    registerCommand(Command.of(
-        DiscordProtocol,
-        "registerReactChannel",
-        listOf(ArgumentSpec("emoji", ArgumentType.STRING), ArgumentSpec("threshold", ArgumentType.INTEGER)),
-        ::registerReactChannel,
-        "Registers messages to be forwarded to this channel if they are reacted with emoji threshold times or more.",
-        "registerReactChannel (emoji) (threshold)"
-    ))
-    registerCommand(Command.of(
-        DiscordProtocol,
-        "removeReactChannel",
-        listOf(),
-        cmd@{ _, chat ->
-            if (chat !is DiscordChat)
-                return@cmd "This command can only be run on discord."
-            settings.reactServers.remove(chat.server)
-            updateSettings()
-            "Messages will no longer be forwarded to this channel based on reactions."
-        },
-        "Removes messages being forwarded to this channel based on reactions.",
-        "removeReactChannel (takes no arguments)"
-    ))
-    registerCommand(Command.of(
-        DiscordProtocol,
-        "reactChannels",
-        listOf(),
-        cmd@{ _, chat ->
-            if (chat !is DiscordChat)
-                return@cmd "This command can only be run on discord."
-            "Reactions that will be sent to this channel: ${
-                settings.reactServers[chat.server]?.firstOrNull { it.destination == chat }
-                    ?.emojis?.toList()?.joinToString(", ") { (emoji, threshold) ->
-                        "$emoji: $threshold"
-                    } ?: "None"
-            }"
-        },
-        "Lists all reactions that may cause messages to be forwarded to this channel.",
-        "reactChannels (takes no arguments)"
-    ))
+    registerCommands(
+        Command.of(
+            DiscordProtocol,
+            "uploadImagesTo",
+            listOf(ArgumentSpec("URL", ArgumentType.STRING)),
+            ::uploadImagesTo,
+            "Sets all images in this channel from here on out to be uploaded to the provided WebDAV URL.",
+            "uploadImagesTo (URL)"
+        ),
+        Command.of(
+            DiscordProtocol,
+            "stopUploadingImages",
+            listOf(),
+            { _, chat: Chat ->
+                settings.imageUploadChannels.remove(chat)
+                updateSettings()
+                "Images will no longer be uploaded."
+            },
+            "Stops images in this channel from being uploaded anywhere.",
+            "stopUploadingImages (takes no arguments)"
+        ),
+        Command.of(
+            DiscordProtocol,
+            "registerReactChannel",
+            listOf(ArgumentSpec("emoji", ArgumentType.STRING), ArgumentSpec("threshold", ArgumentType.INTEGER)),
+            ::registerReactChannel,
+            "Registers messages to be forwarded to this channel if they are reacted with emoji " +
+                    "threshold times or more.",
+            "registerReactChannel (emoji) (threshold)"
+        ),
+        Command.of(
+            DiscordProtocol,
+            "removeReactChannel",
+            listOf(),
+            cmd@{ _, chat ->
+                if (chat !is DiscordChat)
+                    return@cmd "This command can only be run on discord."
+                settings.reactServers.remove(chat.server)
+                updateSettings()
+                "Messages will no longer be forwarded to this channel based on reactions."
+            },
+            "Removes messages being forwarded to this channel based on reactions.",
+            "removeReactChannel (takes no arguments)"
+        ),
+        Command.of(
+            DiscordProtocol,
+            "reactChannels",
+            listOf(),
+            cmd@{ _, chat ->
+                if (chat !is DiscordChat)
+                    return@cmd "This command can only be run on discord."
+                "Reactions that will be sent to this channel: ${
+                    settings.reactServers[chat.server]?.firstOrNull { it.destination == chat }
+                        ?.emojis?.toList()?.joinToString(", ") { (emoji, threshold) ->
+                            "$emoji: $threshold"
+                        } ?: "None"
+                }"
+            },
+            "Lists all reactions that may cause messages to be forwarded to this channel.",
+            "reactChannels (takes no arguments)"
+        )
+    )
 }

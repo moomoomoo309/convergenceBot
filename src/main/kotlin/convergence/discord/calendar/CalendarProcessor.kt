@@ -9,7 +9,10 @@ import com.github.caldav4j.model.request.CompFilter
 import com.github.caldav4j.model.request.TimeRange
 import com.github.caldav4j.util.GenerateQuery
 import convergence.*
-import convergence.command.*
+import convergence.command.ArgumentSpec
+import convergence.command.ArgumentType
+import convergence.command.Command
+import convergence.command.registerCommands
 import convergence.discord.*
 import convergence.model.Chat
 import net.dv8tion.jda.api.JDA
@@ -82,15 +85,16 @@ data class VEventWrapper(val eventInstance: EventInstance): CalendarEvent {
         get() = eventInstance.vevent.location?.value?.takeUnless { it.isBlank() } ?: "No Location"
 
     override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        return when(other) {
+        return this === other || when(other) {
             is VEventWrapper -> name == other.name &&
                     start == other.start &&
                     end == other.end &&
                     description == other.description
+
             is CalendarEvent -> name == other.name &&
                     start == other.start &&
                     end == other.end
+
             else -> false
         }
     }
@@ -108,8 +112,7 @@ data class DiscordEventWrapper(val event: ScheduledEvent): CalendarEvent {
     override val location: String get() = event.location
 
     override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        return when(other) {
+        return this === other || when(other) {
             is DiscordEventWrapper -> name == other.name && description == other.description &&
                     start == other.start && end == other.end
 
@@ -263,17 +266,18 @@ object CalendarProcessor {
 
     fun syncToDiscord(cals: List<SyncedCalendar>, dry: Boolean = false): String {
         val calendarEvents = mutableListOf<VEventWrapper>()
-        val guildId = cals.first().guildId
-        for (cal in cals) {
-            val calCollection = getAndCacheCalendar(cal.calURL) ?: return "No calendar found at URL \"${cal.calURL}\"."
-            calendarEvents.addAll(getCalDAVEventsNextDays(queryCalendarWithRetry(calCollection)).map { VEventWrapper(it) })
-            if (cal.guildId != guildId)
+        val firstGuildId = cals.first().guildId
+        for ((currentGuildId, calURL) in cals) {
+            val calCollection = getAndCacheCalendar(calURL) ?: return "No calendar found at URL \"$calURL\"."
+            calendarEvents.addAll(getCalDAVEventsNextDays(queryCalendarWithRetry(calCollection))
+                .map { VEventWrapper(it) })
+            if (currentGuildId != firstGuildId)
                 return "The guild IDs of each calendar don't match!"
         }
         return syncToDiscord(
-            jda.getGuildById(guildId) ?: return "No guild found with ID $guildId.",
+            jda.getGuildById(firstGuildId) ?: return "No guild found with ID $firstGuildId.",
             calendarEvents,
-            getDiscordEventsNextDays(jda, guildId),
+            getDiscordEventsNextDays(jda, firstGuildId),
             dry
         )
     }
@@ -370,9 +374,9 @@ object CalendarProcessor {
                 }
             }
         }
-        for (wrapper in toRemove) {
+        for ((event) in toRemove) {
             if (!dry)
-                wrapper.event.delete().queue()
+                event.delete().queue()
         }
         return toRemove
     }
@@ -427,7 +431,8 @@ object CalendarProcessor {
 
     fun syncCalendars(chat: DiscordChat, dry: Boolean = false): String {
         Thread {
-            sendMessage(chat, syncToDiscord(settings.syncedCalendars.filter { it.guildId == chat.server.guild.idLong }, dry))
+            val validCalendars = settings.syncedCalendars.filter { it.guildId == chat.server.guild.idLong }
+            sendMessage(chat, syncToDiscord(validCalendars, dry))
         }.start()
         lastCalendarUpdateTime = Instant.now()
         return "Resyncing calendars..."
@@ -438,8 +443,10 @@ object CalendarProcessor {
             val serverIDs = settings.syncedCalendars.map { it.guildId }.toSet()
             for (serverId in serverIDs)
                 syncToDiscord(settings.syncedCalendars.filter { it.guildId == serverId }, dry)
-            if (chat != null)
-            sendMessage(chat, syncToDiscord(settings.syncedCalendars.filter { it.guildId == chat.server.guild.idLong }, dry))
+            if (chat != null) {
+                val validCalendars = settings.syncedCalendars.filter { it.guildId == chat.server.guild.idLong }
+                sendMessage(chat, syncToDiscord(validCalendars, dry))
+            }
         }.start()
         lastCalendarUpdateTime = Instant.now()
         return "Resyncing calendars..."
@@ -455,7 +462,7 @@ fun Instant.toIDate(): DateTime {
 
 @SuppressWarnings("LongMethod")
 fun registerCalendarCommands() {
-    registerCommand(
+    registerCommands(
         Command.of(
             DiscordProtocol,
             "syncCalendar",
@@ -463,9 +470,7 @@ fun registerCalendarCommands() {
             CalendarProcessor::syncCommand,
             "Sync a CalDAV calendar to discord events.",
             "syncCalendar (URL)"
-        )
-    )
-    registerCommand(
+        ),
         Command.of(
             DiscordProtocol,
             "resyncCalendar",
@@ -473,9 +478,7 @@ fun registerCalendarCommands() {
             { _, chat -> CalendarProcessor.syncCalendars(chat as DiscordChat) },
             "Resyncs all calendars in this server.",
             "resyncCalendar (Takes no parameters)"
-        )
-    )
-    registerCommand(
+        ),
         Command.of(
             DiscordProtocol,
             "dryResyncCalendar",
@@ -483,9 +486,7 @@ fun registerCalendarCommands() {
             { _, chat -> CalendarProcessor.syncCalendars(chat as DiscordChat, true) },
             "Tries to resyncs all calendars in this server, but does not actually add or remove anything.",
             "dryResyncCalendar (Takes no parameters)"
-        )
-    )
-    registerCommand(
+        ),
         Command.of(
             DiscordProtocol,
             "resyncAllCalendars",
@@ -493,9 +494,7 @@ fun registerCalendarCommands() {
             { _, chat -> CalendarProcessor.syncAllCalendars(chat as DiscordChat) },
             "Resyncs all calendars in all servers.",
             "resyncAllCalendars (Takes no parameters)"
-        )
-    )
-    registerCommand(
+        ),
         Command.of(
             DiscordProtocol,
             "dryResyncAllCalendars",
@@ -503,9 +502,7 @@ fun registerCalendarCommands() {
             { _, chat -> CalendarProcessor.syncAllCalendars(chat as DiscordChat, true) },
             "Tries to resync all calendars in all servers, but does not actually add or remove anything.",
             "dryResyncAllCalendars (Takes no parameters)"
-        )
-    )
-    registerCommand(
+        ),
         Command.of(
             DiscordProtocol,
             "unsyncCalendar",
@@ -518,9 +515,7 @@ fun registerCalendarCommands() {
             },
             "Removes a synced calendar.",
             "unsyncCalendar (URL)"
-        )
-    )
-    registerCommand(
+        ),
         Command.of(
             DiscordProtocol,
             "syncedCalendars",
@@ -532,9 +527,7 @@ fun registerCalendarCommands() {
             },
             "Prints out all the synced calendars in this chat.",
             "syncedCalendars (Takes no parameters)"
-        )
-    )
-    registerCommand(
+        ),
         Command.of(
             DiscordProtocol,
             "addCalendarNotification",
@@ -546,9 +539,7 @@ fun registerCalendarCommands() {
             ::addCalendarNotificationCommand,
             "Registers this channel to receive event notifications from a CalDAV calendar.",
             "addCalendarNotification (URL) [mention @user] [regex pattern to filter events to be mentioned for]"
-        )
-    )
-    registerCommand(
+        ),
         Command.of(
             DiscordProtocol,
             "removeCalendarNotification",
@@ -559,9 +550,7 @@ fun registerCalendarCommands() {
             ::removeCalendarNotificationCommand,
             "Removes notification registration for a CalDAV calendar.",
             "removeCalendarNotification (URL) [mention]"
-        )
-    )
-    registerCommand(
+        ),
         Command.of(
             DiscordProtocol,
             "listCalendarNotifications",
@@ -573,9 +562,7 @@ fun registerCalendarCommands() {
             },
             "Lists all registered calendar notification channels in this server.",
             "listCalendarNotifications (Takes no arguments)"
-        )
-    )
-    registerCommand(
+        ),
         Command.of(
             DiscordProtocol,
             "syncCalendarNotifications",

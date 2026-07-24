@@ -1,8 +1,10 @@
 
-import convergence.*
+import convergence.UniversalProtocol
+import convergence.bot
 import convergence.command.*
 import convergence.commands.echo
 import convergence.model.Chat
+import convergence.settings
 import org.junit.After
 import org.junit.Before
 import org.junit.Test

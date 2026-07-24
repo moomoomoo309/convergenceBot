@@ -1,6 +1,7 @@
 package convergence
 
-import convergence.command.*
+import convergence.command.Command
+import convergence.command.runCommand
 import convergence.model.Chat
 import convergence.model.User
 import convergence.protocol.HasNicknames

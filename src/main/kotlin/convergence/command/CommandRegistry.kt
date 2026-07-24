@@ -26,6 +26,10 @@ fun registerCommand(command: Command): Boolean {
     return true
 }
 
+fun registerCommands(vararg command: Command): List<Boolean> {
+    return command.map { registerCommand(it) }
+}
+
 /**
  * Adds an alias to the alias registry.
  * @return true if an alias with that name does not already exist in the registry, false otherwise.

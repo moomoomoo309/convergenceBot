@@ -1,8 +1,14 @@
 package convergence.commands
 
-import convergence.*
-import convergence.command.*
+import convergence.UniversalChat
+import convergence.UniversalProtocol
+import convergence.bot
+import convergence.command.Alias
+import convergence.command.Command
+import convergence.command.CommandDoesNotExist
+import convergence.command.getCommand
 import convergence.model.Chat
+import convergence.settings
 import kotlin.reflect.jvm.jvmName
 
 const val COMMANDS_PER_PAGE = 10

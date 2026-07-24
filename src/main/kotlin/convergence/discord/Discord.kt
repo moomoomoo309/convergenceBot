@@ -5,7 +5,9 @@ import convergence.*
 import convergence.callbacks.ReactionChanged
 import convergence.callbacks.ReceivedImages
 import convergence.callbacks.callbacks
-import convergence.command.*
+import convergence.command.Alias
+import convergence.command.ArgumentType
+import convergence.command.parseCommand
 import convergence.discord.MessageListener.forwardedMessages
 import convergence.discord.calendar.registerCalendarCommands
 import convergence.model.*

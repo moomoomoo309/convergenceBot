@@ -1,7 +1,7 @@
 package convergence.commands
 
 import convergence.*
-import convergence.command.*
+import convergence.command.parseCommand
 import convergence.model.Chat
 import convergence.model.User
 import org.natty.Parser

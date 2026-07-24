@@ -1,7 +1,7 @@
 package convergence.console
 
-import convergence.command.Alias
 import convergence.Protocol
+import convergence.command.Alias
 import convergence.model.Chat
 import convergence.model.OutgoingMessage
 import convergence.model.SimpleIncomingMessage

@@ -8,7 +8,10 @@ import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import convergence.command.Alias
 import convergence.discord.DiscordChat
 import convergence.discord.jda
-import convergence.model.*
+import convergence.model.Chat
+import convergence.model.CommandScope
+import convergence.model.Server
+import convergence.model.User
 import java.net.URI
 import java.nio.file.Path
 import java.time.OffsetDateTime

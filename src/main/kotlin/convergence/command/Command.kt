@@ -1,8 +1,9 @@
 package convergence.command
 
 import com.fasterxml.jackson.annotation.JsonIgnore
-import convergence.*
+import convergence.Protocol
 import convergence.model.*
+import convergence.replaceAliasVars
 
 enum class ArgumentType {
     NUMBER,

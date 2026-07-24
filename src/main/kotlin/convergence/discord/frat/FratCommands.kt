@@ -6,7 +6,7 @@ import convergence.callbacks.callbacks
 import convergence.command.ArgumentSpec
 import convergence.command.ArgumentType
 import convergence.command.Command
-import convergence.command.registerCommand
+import convergence.command.registerCommands
 import convergence.commands.getUserFromName
 import convergence.discord.*
 import convergence.model.*
@@ -256,8 +256,7 @@ fun registerFratCommands() {
         discordLogger.warn("Frat config not available — skipping frat command registration.")
         return
     }
-
-    registerCommand(
+    registerCommands(
         Command(
             DiscordProtocol,
             "brotherByRoster",
@@ -266,10 +265,7 @@ fun registerFratCommands() {
             "Gets information about a particular brother based on their roster number.",
             "brotherByRoster (roster number)",
             isNotPledge
-        )
-    )
-    registerCommand(
-        Command(
+        ), Command(
             DiscordProtocol,
             "brotherByName",
             listOf(ArgumentSpec("Name", ArgumentType.STRING)),
@@ -277,10 +273,7 @@ fun registerFratCommands() {
             "Gets information about a particular brother based on their first and last name.",
             "brotherByName (name)",
             isNotPledge
-        )
-    )
-    registerCommand(
-        Command(
+        ), Command(
             DiscordProtocol,
             "brotherByNickname",
             listOf(ArgumentSpec("Nickname", ArgumentType.STRING)),
@@ -288,10 +281,7 @@ fun registerFratCommands() {
             "Gets information about a particular brother based on their nickname.",
             "brotherbynickname (nickname)",
             isNotPledge
-        )
-    )
-    registerCommand(
-        Command(
+        ), Command(
             DiscordProtocol,
             "brotherLine",
             listOf(ArgumentSpec("Name", ArgumentType.STRING)),
@@ -299,10 +289,7 @@ fun registerFratCommands() {
             "Gets information about a particular brother's line going down.",
             "brotherLine (name)",
             isNotPledge
-        )
-    )
-    registerCommand(
-        Command(
+        ), Command(
             DiscordProtocol,
             "brotherBigs",
             listOf(ArgumentSpec("Name", ArgumentType.STRING)),
@@ -310,10 +297,7 @@ fun registerFratCommands() {
             "Gets information about a particular brother's line going up.",
             "brotherBigs (name)",
             isNotPledge
-        )
-    )
-    registerCommand(
-        Command(
+        ), Command(
             DiscordProtocol,
             "fullLine",
             listOf(ArgumentSpec("Name", ArgumentType.STRING)),
@@ -321,10 +305,7 @@ fun registerFratCommands() {
             "Gets information about a particular brother's line going up and down.",
             "fullLine (name)",
             isNotPledge
-        )
-    )
-    registerCommand(
-        Command(
+        ), Command(
             DiscordProtocol,
             "fullTree",
             listOf(ArgumentSpec("Name", ArgumentType.STRING)),
@@ -332,73 +313,42 @@ fun registerFratCommands() {
             "Shows the full tree, with a particular brother's line going up and down highlighted.",
             "fullTree (name)",
             isNotPledge
-        )
-    )
-    registerCommand(
-        Command.of(
-            DiscordProtocol,
-            "updateRoster",
-            listOf(),
-            { ->
+        ), Command.of(
+            DiscordProtocol, "updateRoster", listOf(), { ->
                 val newRoster = getNewRoster()
                 brotherInfo?.clear()
                 brotherInfo?.addAll(newRoster)
                 Files.write(brotherInfoPath, objectMapper.writeValueAsBytes(newRoster))
                 "Roster updated."
-            },
-            "Updates the brother roster list.",
-            "updateRoster (takes no arguments)"
-        )
-    )
-    registerCommand(
-        Command.of(
+            }, "Updates the brother roster list.", "updateRoster (takes no arguments)"
+        ), Command.of(
             DiscordProtocol,
             "registerMentionChat",
             listOf(ArgumentSpec("user", ArgumentType.STRING)),
             fct@{ args, chat, _ ->
                 val name = args.joinToString(" ")
-                val target = getUserFromName(chat, name)
-                    ?: return@fct "No user found with name \"$name\"."
-                settings.mentionChats
-                    .getOrPut(chat) { mutableMapOf() }
-                    .putIfAbsent(target, mutableMapOf())
+                val target = getUserFromName(chat, name) ?: return@fct "No user found with name \"$name\"."
+                settings.mentionChats.getOrPut(chat) { mutableMapOf() }.putIfAbsent(target, mutableMapOf())
                 updateSettings()
                 "Chat registered to mention ${getUserName(chat, target)}."
             },
             "Registers this chat with the given user as a mention chat.",
             "registerMentionChat (user)",
             isNotPledge
-        )
-    )
-    registerCommand(
-        Command.of(
-            DiscordProtocol,
-            "removeMentionChats",
-            listOf(),
-            { _, chat, _ ->
-                settings.mentionChats
-                    .getOrDefault(chat, mutableMapOf())
-                    .clear()
+        ), Command.of(
+            DiscordProtocol, "removeMentionChats", listOf(), { _, chat, _ ->
+                settings.mentionChats.getOrDefault(chat, mutableMapOf()).clear()
                 updateSettings()
                 "Mention users cleared from this chat."
-            },
-            "Removes all mention users from this chat.",
-            "removeMentionChat (takes no arguments)",
-            isNotPledge
-        )
-    )
-    registerCommand(
-        Command.of(
+            }, "Removes all mention users from this chat.", "removeMentionChat (takes no arguments)", isNotPledge
+        ), Command.of(
             DiscordProtocol,
             "mentionChatStats",
             listOf(ArgumentSpec("user", ArgumentType.STRING)),
             { _, chat, _ -> "Mention chat stats for this channel:\n${mentionStats(chat)}" },
             "Lists the stats for this mention chat.",
             "mentionChatStats (takes no arguments)"
-        )
-    )
-    registerCommand(
-        Command.of(
+        ), Command.of(
             DiscordProtocol,
             "setAlumnusNickname",
             listOf(
