@@ -1,9 +1,8 @@
-package convergence
+package convergence.command
 
 import com.fasterxml.jackson.annotation.JsonIgnore
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize
-import com.fasterxml.jackson.databind.annotation.JsonSerialize
-
+import convergence.*
+import convergence.model.*
 
 enum class ArgumentType {
     NUMBER,
@@ -160,8 +159,6 @@ data class Command(
     }
 }
 
-@JsonSerialize(using = AliasSerializer::class)
-@JsonDeserialize(using = AliasDeserializer::class)
 data class Alias(
     val scope: CommandScope,
     override val name: String,

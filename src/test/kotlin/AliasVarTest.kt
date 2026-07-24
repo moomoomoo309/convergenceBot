@@ -1,5 +1,5 @@
-import convergence.SimpleOutgoingMessage
 import convergence.bot
+import convergence.model.SimpleOutgoingMessage
 import convergence.replaceAliasVars
 import kotlin.test.Test
 import kotlin.test.assertEquals

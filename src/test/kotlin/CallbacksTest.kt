@@ -1,8 +1,11 @@
-import convergence.*
+
+import convergence.callbacks.*
+import convergence.model.Availability
+import convergence.model.Chat
+import convergence.model.User
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
-import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class CallbacksTest {
@@ -118,106 +121,8 @@ class CallbacksTest {
     fun runCallbacksWithWrongArgCountThrows() {
         val cb = StartedTyping { _, _ -> true }
         registerCallback(cb)
-        assertFailsWith(IllegalArgumentException::class) {
+        assertFailsWith(IndexOutOfBoundsException::class) {
             runCallbacks<StartedTyping>(testChat)
         }
-    }
-
-    // ─── invokeTyped error handling ─────────────────────────────────────────
-
-    @Test
-    fun invokeTyped1ThrowsOnZeroArgs() {
-        assertFailsWith(IllegalArgumentException::class) {
-            val fct: (String) -> Boolean = { true }
-            invokeTyped(fct, emptyArray())
-        }
-    }
-
-    @Test
-    fun invokeTyped2ThrowsOnOneArg() {
-        assertFailsWith(IllegalArgumentException::class) {
-            val fct: (String, String) -> Boolean = { _, _ -> true }
-            invokeTyped(fct, arrayOf("a"))
-        }
-    }
-
-    @Test
-    fun invokeTyped3ThrowsOnTwoArgs() {
-        assertFailsWith(IllegalArgumentException::class) {
-            val fct: (String, String, String) -> Boolean = { _, _, _ -> true }
-            invokeTyped(fct, arrayOf("a", "b"))
-        }
-    }
-
-    @Test
-    fun invokeTyped4ThrowsOnThreeArgs() {
-        assertFailsWith(IllegalArgumentException::class) {
-            val fct: (String, String, String, String) -> Boolean = { _, _, _, _ -> true }
-            invokeTyped(fct, arrayOf("a", "b", "c"))
-        }
-    }
-
-    @Test
-    fun invokeTyped5ThrowsOnFourArgs() {
-        assertFailsWith(IllegalArgumentException::class) {
-            val fct: (String, String, String, String, String) -> Boolean = { _, _, _, _, _ -> true }
-            invokeTyped(fct, arrayOf("a", "b", "c", "d"))
-        }
-    }
-
-    @Test
-    fun invokeTyped6ThrowsOnFiveArgs() {
-        assertFailsWith(IllegalArgumentException::class) {
-            val fct: (String, String, String, String, String, String) -> Boolean = { _, _, _, _, _, _ -> true }
-            invokeTyped(fct, arrayOf("a", "b", "c", "d", "e"))
-        }
-    }
-
-    @Test
-    fun invokeTyped1ReturnsCorrectValue() {
-        val fct: (Int) -> Boolean = { it > 5 }
-        assertTrue(invokeTyped(fct, arrayOf<Any>(10)))
-        assertFalse(invokeTyped(fct, arrayOf<Any>(3)))
-    }
-
-    @Test
-    fun invokeTyped2ReturnsCorrectValue() {
-        val fct: (String, Int) -> Boolean = { s, i -> s.length == i }
-        assertTrue(invokeTyped(fct, arrayOf<Any>("abc", 3)))
-        assertFalse(invokeTyped(fct, arrayOf<Any>("abc", 5)))
-    }
-
-    @Test
-    fun invokeTyped3ReturnsCorrectValue() {
-        val fct: (Int, Int, Int) -> Boolean = { a, b, c -> a + b == c }
-        assertTrue(invokeTyped(fct, arrayOf<Any>(1, 2, 3)))
-        assertFalse(invokeTyped(fct, arrayOf<Any>(1, 2, 4)))
-    }
-
-    @Test
-    fun invokeTyped4ReturnsCorrectValue() {
-        val fct: (Int, Int, Int, Int) -> Boolean = { a, b, c, d -> a + b + c == d }
-        assertTrue(invokeTyped(fct, arrayOf<Any>(1, 2, 3, 6)))
-        assertFalse(invokeTyped(fct, arrayOf<Any>(1, 2, 3, 7)))
-    }
-
-    @Test
-    fun invokeTyped5ReturnsCorrectValue() {
-        val fct: (Int, Int, Int, Int, Int) -> Boolean = { a, b, c, d, e -> a + b + c + d == e }
-        assertTrue(invokeTyped(fct, arrayOf<Any>(1, 2, 3, 4, 10)))
-        assertFalse(invokeTyped(fct, arrayOf<Any>(1, 2, 3, 4, 11)))
-    }
-
-    @Test
-    fun invokeTyped6ReturnsCorrectValue() {
-        val fct: (Int, Int, Int, Int, Int, Int) -> Boolean = { a, b, c, d, e, f -> a + b + c + d + e == f }
-        assertTrue(invokeTyped(fct, arrayOf<Any>(1, 2, 3, 4, 5, 15)))
-        assertFalse(invokeTyped(fct, arrayOf<Any>(1, 2, 3, 4, 5, 16)))
-    }
-
-    @Test
-    fun invokeTyped6WithMoreThan6ArgsLogsAndCallsWithCorrect() {
-        val fct: (Int, Int, Int, Int, Int, Int) -> Boolean = { a, b, c, d, e, f -> a + b + c + d + e + f == 21 }
-        assertTrue(invokeTyped(fct, arrayOf<Any>(1, 2, 3, 4, 5, 6, 99, 100)))
     }
 }

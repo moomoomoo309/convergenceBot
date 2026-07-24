@@ -1,5 +1,6 @@
 package convergence
 
+import convergence.commands.registerDefaultCommands
 import convergence.console.ConsoleProtocol
 import convergence.discord.DiscordProtocol
 import net.sourceforge.argparse4j.ArgumentParsers

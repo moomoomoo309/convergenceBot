@@ -2,8 +2,14 @@ package convergence.discord
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import convergence.*
+import convergence.callbacks.ReactionChanged
+import convergence.callbacks.ReceivedImages
+import convergence.callbacks.callbacks
+import convergence.command.*
 import convergence.discord.MessageListener.forwardedMessages
 import convergence.discord.calendar.registerCalendarCommands
+import convergence.model.*
+import convergence.protocol.*
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.OnlineStatus
@@ -495,9 +501,7 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
     override fun getDelimiters(format: Format): Pair<String, String>? = formatMap[format]
     override fun getEmojis(chat: Chat): List<DiscordEmoji> = jda.emojis.map { DiscordEmoji(it) }
     override fun sendMessage(chat: Chat, message: OutgoingMessage): Boolean {
-        if (chat !is DiscordChat)
-            return false
-        return try {
+        return chat is DiscordChat && try {
             when(message) {
                 is DiscordOutgoingMessage -> chat.channel.sendMessage(message.data).queue()
                 else -> {

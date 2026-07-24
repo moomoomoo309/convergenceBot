@@ -1,6 +1,8 @@
 package convergence.discord
 
 import convergence.*
+import convergence.command.*
+import convergence.model.Chat
 import java.net.URI
 import java.net.URISyntaxException
 

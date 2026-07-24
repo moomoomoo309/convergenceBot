@@ -1,4 +1,8 @@
 import convergence.*
+import convergence.command.*
+import convergence.model.Chat
+import convergence.model.OutgoingMessage
+import convergence.model.User
 import org.junit.After
 import org.junit.Before
 import kotlin.test.*

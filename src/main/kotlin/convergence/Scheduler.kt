@@ -1,7 +1,12 @@
 package convergence
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import convergence.command.Command
+import convergence.command.getCommand
+import convergence.command.runCommand
 import convergence.discord.calendar.CalendarProcessor
+import convergence.model.Chat
+import convergence.model.User
 import org.ocpsoft.prettytime.PrettyTime
 import org.ocpsoft.prettytime.units.JustNow
 import java.time.OffsetDateTime
@@ -42,6 +47,7 @@ object Scheduler: Thread() {
                             settings.serializedCommands.remove(cmd.id)
                         }
                     } else {
+                        @Suppress("DestructuringDeclaration")
                         for (cmd in cmdList) {
                             commandsList.remove(cmd.id)
                             settings.serializedCommands.remove(cmd.id)

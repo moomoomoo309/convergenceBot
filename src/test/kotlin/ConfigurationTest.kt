@@ -1,4 +1,10 @@
 import convergence.*
+import convergence.command.Alias
+import convergence.model.Chat
+import convergence.model.CommandScope
+import convergence.model.OutgoingMessage
+import convergence.model.User
+import convergence.protocol.HasNicknames
 import org.junit.After
 import org.junit.Before
 import org.junit.Test

@@ -1,4 +1,9 @@
-import convergence.*
+
+import convergence.bot
+import convergence.model.OutgoingMessage
+import convergence.model.SimpleOutgoingMessage
+import convergence.replaceAliasVars
+import convergence.sendMessage
 import org.junit.After
 import org.junit.Before
 import org.junit.Test

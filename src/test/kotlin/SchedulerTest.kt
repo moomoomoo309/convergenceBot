@@ -1,6 +1,6 @@
 import convergence.ScheduledCommand
 import convergence.Scheduler
-import convergence.User
+import convergence.model.User
 import convergence.settings
 import org.junit.After
 import org.junit.Before

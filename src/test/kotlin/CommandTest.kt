@@ -1,4 +1,11 @@
+
 import convergence.*
+import convergence.command.*
+import convergence.commands.echo
+import convergence.commands.ping
+import convergence.model.Chat
+import convergence.model.SimpleOutgoingMessage
+import convergence.model.User
 import org.junit.After
 import org.junit.Before
 import org.junit.Test

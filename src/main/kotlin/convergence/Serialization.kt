@@ -4,7 +4,14 @@ import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.*
 import com.fasterxml.jackson.databind.module.SimpleModule
+import convergence.command.Alias
+import convergence.command.Command
+import convergence.command.getCommand
 import convergence.discord.DiscordChat
+import convergence.model.Chat
+import convergence.model.CommandScope
+import convergence.model.Server
+import convergence.model.User
 
 // Domain objects (Chat/Server/User/CommandScope) can't be serialized directly: they wrap live protocol
 // state (JDA channels, etc.). Each one exposes a stable string key via toKey(), and every protocol can
@@ -93,8 +100,7 @@ object AliasDeserializer: JsonDeserializer<Alias>() {
         val node = p.readValueAsTree<JsonNode>()
         val scopeKey = node["scope"].asText()
         val scope = resolveScope(scopeKey)
-        if (scope !is Chat)
-            throw IllegalArgumentException("Alias scope is not a Chat: $scopeKey")
+        require (scope is Chat) { "Alias scope is not a Chat: $scopeKey" }
         val name = node["name"].asText()
         val command = getCommand(node["commandName"].asText().lowercase(), scope) as Command
         val args = node["args"].map { it.asText() }
@@ -117,6 +123,9 @@ val convergenceModule: SimpleModule = SimpleModule("ConvergenceDomain").apply {
     addSerializer(Chat::class.java, ScopeValueSerializer)
     addDeserializer(Chat::class.java, ChatValueDeserializer)
     addDeserializer(DiscordChat::class.java, DiscordChatValueDeserializer)
+
+    addSerializer(Alias::class.java, AliasSerializer)
+    addDeserializer(Alias::class.java, AliasDeserializer)
 
     addKeySerializer(User::class.java, UserKeySerializer)
     addKeyDeserializer(User::class.java, UserKeyDeserializer)

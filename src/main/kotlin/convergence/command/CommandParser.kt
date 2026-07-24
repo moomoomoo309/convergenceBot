@@ -1,5 +1,11 @@
-package convergence
+package convergence.command
 
+import convergence.DEFAULT_COMMAND_DELIMITER
+import convergence.UniversalProtocol
+import convergence.bot
+import convergence.model.Chat
+import convergence.protocol.HasServer
+import convergence.settings
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonToken
 import org.antlr.v4.runtime.CommonTokenStream
@@ -62,14 +68,14 @@ fun parseCommand(command: String, commandDelimiter: String, chat: Chat): Command
     // Set up ANTLR and fill the token stream so all tokens are available for inspection.
     val input = command.substring(commandDelimiter.length)
     val chars = CharStreams.fromString(input, chat.name)
-    val lexer = CommandLexer(chars)
+    val lexer = convergence.CommandLexer(chars)
     val tokens = CommonTokenStream(lexer)
     tokens.fill()
 
     // Check for invalid escape sequences before parsing. This must be outside the
     // try-catch below so that InvalidEscapeSequenceException propagates to the caller
     // rather than being wrapped in InvalidCommandParseException.
-    val invalidEscapes = tokens.tokens.filter { it.type == CommandParser.InvalidEscape }
+    val invalidEscapes = tokens.tokens.filter { it.type == convergence.CommandParser.InvalidEscape }
     if (invalidEscapes.isNotEmpty())
         throw InvalidEscapeSequenceException(
             "Command \"$command\" contains the following invalid escape sequences: \"${
@@ -78,7 +84,7 @@ fun parseCommand(command: String, commandDelimiter: String, chat: Chat): Command
         )
 
     val tree = try {
-        val parser = CommandParser(tokens)
+        val parser = convergence.CommandParser(tokens)
         parser.buildParseTree = true
         // Read a command
         parser.command()
@@ -110,19 +116,19 @@ fun parseCommand(command: String, commandDelimiter: String, chat: Chat): Command
 // This function replaces the escape sequences with their replaced variants, and ignores quotes, so the quotes don't
 // show up in the argument text.
 fun CommonToken.text() = when(this.type) {
-    CommandLexer.OctalEscape -> Integer.parseInt(this.text.substring(1), 8).toChar()
-    CommandLexer.UnicodeEscape -> Integer.parseInt(this.text.substring(2), 16).toChar()
-    CommandLexer.RegularEscape -> escapeMap[this.text[1]] ?: throw InvalidEscapeSequenceException(this.text)
-    CommandLexer.Quote -> "" // This prevents quoted arguments from having the quotes around the text.
+    convergence.CommandLexer.OctalEscape -> Integer.parseInt(this.text.substring(1), 8).toChar()
+    convergence.CommandLexer.UnicodeEscape -> Integer.parseInt(this.text.substring(2), 16).toChar()
+    convergence.CommandLexer.RegularEscape -> escapeMap[this.text[1]] ?: throw InvalidEscapeSequenceException(this.text)
+    convergence.CommandLexer.Quote -> "" // This prevents quoted arguments from having the quotes around the text.
     else -> this.text
 }.toString()
 
-private fun tokenArgsToStringArgs(tree: CommandParser.CommandContext): List<String> = tree.argument().map {
+private fun tokenArgsToStringArgs(tree: convergence.CommandParser.CommandContext): List<String> = tree.argument().map {
     (it.children.first() as ParserRuleContext).children.joinToString("") { tokOrRule ->
         if (tokOrRule.childCount == 0) // If we're looking at a token, use the text extension function above
             (tokOrRule.payload as CommonToken).text()
-        else if (tokOrRule.payload is CommandParser.NotQuoteContext) {
-            val notQuote = tokOrRule.payload as CommandParser.NotQuoteContext
+        else if (tokOrRule.payload is convergence.CommandParser.NotQuoteContext) {
+            val notQuote = tokOrRule.payload as convergence.CommandParser.NotQuoteContext
             val node = notQuote.children.first() as TerminalNode
             val token = node.symbol as CommonToken
             token.text()

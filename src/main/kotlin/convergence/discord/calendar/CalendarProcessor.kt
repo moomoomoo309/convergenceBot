@@ -9,7 +9,9 @@ import com.github.caldav4j.model.request.CompFilter
 import com.github.caldav4j.model.request.TimeRange
 import com.github.caldav4j.util.GenerateQuery
 import convergence.*
+import convergence.command.*
 import convergence.discord.*
+import convergence.model.Chat
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.ScheduledEvent

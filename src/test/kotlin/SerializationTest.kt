@@ -1,3 +1,4 @@
+
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.DeserializationContext
 import com.fasterxml.jackson.databind.JsonDeserializer
@@ -6,6 +7,8 @@ import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import convergence.*
+import convergence.command.*
+import convergence.model.*
 import org.junit.After
 import org.junit.Before
 import java.net.URI

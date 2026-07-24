@@ -5,8 +5,10 @@ import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import convergence.command.Alias
 import convergence.discord.DiscordChat
 import convergence.discord.jda
+import convergence.model.*
 import java.net.URI
 import java.nio.file.Path
 import java.time.OffsetDateTime

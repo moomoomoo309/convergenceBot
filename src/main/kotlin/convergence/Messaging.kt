@@ -1,5 +1,9 @@
 package convergence
 
+import convergence.model.*
+import convergence.protocol.CanFormatMessages
+import convergence.protocol.HasImages
+import convergence.protocol.HasNicknames
 
 /**
  * Sends [message] in the chat [sender] is in, forwarding the message to any linked chats.

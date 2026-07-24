@@ -1,5 +1,9 @@
 package convergence
 
+import convergence.command.*
+import convergence.model.Chat
+import convergence.model.User
+import convergence.protocol.HasNicknames
 import java.util.concurrent.atomic.AtomicInteger
 
 class BotState {

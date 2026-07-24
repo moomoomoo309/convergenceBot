@@ -1,5 +1,11 @@
-package convergence
+package convergence.command
 
+import convergence.*
+import convergence.model.Chat
+import convergence.model.Image
+import convergence.model.IncomingMessage
+import convergence.model.User
+import convergence.protocol.HasServer
 import java.io.ByteArrayOutputStream
 import java.io.PrintStream
 

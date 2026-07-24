@@ -1,6 +1,12 @@
 package convergence.console
 
-import convergence.*
+import convergence.command.Alias
+import convergence.Protocol
+import convergence.model.Chat
+import convergence.model.OutgoingMessage
+import convergence.model.SimpleIncomingMessage
+import convergence.model.User
+import convergence.substringBetween
 import java.util.*
 import kotlin.system.exitProcess
 
