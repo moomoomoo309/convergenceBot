@@ -3,11 +3,10 @@ package convergence
 
 import kotlin.reflect.KClass
 
-private val commandRegistryService: CommandRegistryService by lazy { getKoinService<CommandRegistryService>() }
 val callbacks = mutableMapOf<KClass<out ChatEvent>, MutableList<ChatEvent>>(
     ReceivedImages::class to mutableListOf(
         ReceivedImages { chat: Chat, message: IncomingMessage?, sender: User, images: Array<Image> ->
-            commandRegistryService.runCommand(chat, message ?: return@ReceivedImages false, sender, images)
+            runCommand(chat, message ?: return@ReceivedImages false, sender, images)
             true
         }
     )

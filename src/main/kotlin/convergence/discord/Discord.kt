@@ -3,7 +3,7 @@ package convergence.discord
 import com.fasterxml.jackson.annotation.JsonIgnore
 import convergence.*
 import convergence.discord.MessageListener.forwardedMessages
-import convergence.discord.calendar.CalendarProcessorService
+import convergence.discord.calendar.registerCalendarCommands
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.OnlineStatus
@@ -38,8 +38,6 @@ import org.apache.http.impl.client.BasicCredentialsProvider
 import org.apache.http.impl.client.CloseableHttpClient
 import org.apache.http.impl.client.HttpClients
 import org.apache.http.util.EntityUtils
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.FileNotFoundException
@@ -231,8 +229,7 @@ fun ArgumentType.toDiscord() = when(this) {
 
 object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, HasImages, CanMentionUsers,
     HasMessageHistory, CanEditOtherMessages, HasUserAvailability, HasCustomEmoji, HasServers<DiscordServer>,
-    HasReactions, HasRoles<DiscordRole>, KoinComponent {
-    private val messaging: MessagingService by inject()
+    HasReactions, HasRoles<DiscordRole> {
     override fun init() {
         discordLogger.info("Discord Plugin initialized.")
         jda = try {
@@ -264,7 +261,7 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
             return
         }
         registerDiscordCommands()
-        getKoinService<CalendarProcessorService>().registerCalendarCommands()
+        registerCalendarCommands()
         tryRegisterFratCommands()
         discordLogger.info("JDA Initialized.")
         jda.addEventListener(MessageListener)
@@ -498,7 +495,9 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
     override fun getDelimiters(format: Format): Pair<String, String>? = formatMap[format]
     override fun getEmojis(chat: Chat): List<DiscordEmoji> = jda.emojis.map { DiscordEmoji(it) }
     override fun sendMessage(chat: Chat, message: OutgoingMessage): Boolean {
-        return chat is DiscordChat && try {
+        if (chat !is DiscordChat)
+            return false
+        return try {
             when(message) {
                 is DiscordOutgoingMessage -> chat.channel.sendMessage(message.data).queue()
                 else -> {
@@ -573,7 +572,7 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
 
     override fun getChatName(chat: Chat): String = if (chat is DiscordChat) chat.name else ""
     override fun mention(chat: Chat, user: User, message: OutgoingMessage?) {
-        messaging.sendMessage(chat, ((user as DiscordUser).author.asMention + message?.let { " $it" }))
+        sendMessage(chat, ((user as DiscordUser).author.asMention + message?.let { " $it" }))
     }
 
     val discordMentionRegex = Regex("^<@([0-9]{1,20})>$")
@@ -692,8 +691,6 @@ private val reactionChannelCallback =
 
 val mentionRegex = Regex("<@!?(\\d+)>")
 object MessageListener: ListenerAdapter() {
-    val commandParserService: CommandParserService by lazy { getKoinService() }
-    val commandRegistryService: CommandRegistryService by lazy { getKoinService() }
     override fun onMessageReceived(event: MessageReceivedEvent) {
         val chat = DiscordChat(event)
         val sender = DiscordUser(event)
@@ -727,9 +724,10 @@ object MessageListener: ListenerAdapter() {
         val sender = DiscordProtocol.getUsers().firstOrNull { it.id == event.member!!.user.idLong } ?: return
         val commandDelimiter = settings.commandDelimiters[chat] ?:
             settings.commandDelimiters[chat.server] ?: DEFAULT_COMMAND_DELIMITER
-        val cmd = commandDelimiter + event.name + event.options.joinToString(" ", " ") { it.asString }
-        val commandWithArgs = commandParserService.parse(cmd, chat, commandRegistryService::getCommand) ?: return
-        val msg = commandWithArgs.command.function(commandWithArgs.args, chat, sender)
+        val commandWithArgs =
+            parseCommand(commandDelimiter + event.name + event.options.joinToString(" ", " ") { it.asString }, chat)
+                ?: return
+        val msg = commandWithArgs.command(commandWithArgs.args, chat, sender)
         event.reply((msg as? DiscordOutgoingMessage ?: DiscordOutgoingMessage(msg!!.toSimple().text)).data).queue()
     }
     val forwardedMessages = mutableMapOf<Long, MutableSet<Long>>()

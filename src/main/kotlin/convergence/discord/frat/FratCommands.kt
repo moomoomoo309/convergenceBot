@@ -13,16 +13,10 @@ import guru.nidi.graphviz.model.MutableNode
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.utils.FileUpload
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 import java.io.ByteArrayOutputStream
 import java.nio.file.Files
 import java.time.LocalTime
 import java.time.OffsetDateTime
-
-internal object FratState : KoinComponent {
-    val scheduler: SchedulerThread by inject()
-}
 
 val englishToGreek = mapOf(
     'A' to 'Α',
@@ -254,10 +248,8 @@ fun registerFratCommands() {
         discordLogger.warn("Frat config not available — skipping frat command registration.")
         return
     }
-    val commandRegistry = getKoinService<CommandRegistryService>()
-    val messaging = getKoinService<MessagingService>()
 
-    commandRegistry.registerCommand(
+    registerCommand(
         Command(
             DiscordProtocol,
             "brotherByRoster",
@@ -268,7 +260,7 @@ fun registerFratCommands() {
             isNotPledge
         )
     )
-    commandRegistry.registerCommand(
+    registerCommand(
         Command(
             DiscordProtocol,
             "brotherByName",
@@ -279,7 +271,7 @@ fun registerFratCommands() {
             isNotPledge
         )
     )
-    commandRegistry.registerCommand(
+    registerCommand(
         Command(
             DiscordProtocol,
             "brotherByNickname",
@@ -290,7 +282,7 @@ fun registerFratCommands() {
             isNotPledge
         )
     )
-    commandRegistry.registerCommand(
+    registerCommand(
         Command(
             DiscordProtocol,
             "brotherLine",
@@ -301,7 +293,7 @@ fun registerFratCommands() {
             isNotPledge
         )
     )
-    commandRegistry.registerCommand(
+    registerCommand(
         Command(
             DiscordProtocol,
             "brotherBigs",
@@ -312,7 +304,7 @@ fun registerFratCommands() {
             isNotPledge
         )
     )
-    commandRegistry.registerCommand(
+    registerCommand(
         Command(
             DiscordProtocol,
             "fullLine",
@@ -323,7 +315,7 @@ fun registerFratCommands() {
             isNotPledge
         )
     )
-    commandRegistry.registerCommand(
+    registerCommand(
         Command(
             DiscordProtocol,
             "fullTree",
@@ -334,7 +326,7 @@ fun registerFratCommands() {
             isNotPledge
         )
     )
-    commandRegistry.registerCommand(
+    registerCommand(
         Command.of(
             DiscordProtocol,
             "updateRoster",
@@ -350,7 +342,7 @@ fun registerFratCommands() {
             "updateRoster (takes no arguments)"
         )
     )
-    commandRegistry.registerCommand(
+    registerCommand(
         Command.of(
             DiscordProtocol,
             "registerMentionChat",
@@ -363,14 +355,14 @@ fun registerFratCommands() {
                     .getOrPut(chat) { mutableMapOf() }
                     .putIfAbsent(target, mutableMapOf())
                 updateSettings()
-                "Chat registered to mention ${messaging.getUserName(chat, target)}."
+                "Chat registered to mention ${getUserName(chat, target)}."
             },
             "Registers this chat with the given user as a mention chat.",
             "registerMentionChat (user)",
             isNotPledge
         )
     )
-    commandRegistry.registerCommand(
+    registerCommand(
         Command.of(
             DiscordProtocol,
             "removeMentionChats",
@@ -387,7 +379,7 @@ fun registerFratCommands() {
             isNotPledge
         )
     )
-    commandRegistry.registerCommand(
+    registerCommand(
         Command.of(
             DiscordProtocol,
             "mentionChatStats",
@@ -397,7 +389,7 @@ fun registerFratCommands() {
             "mentionChatStats (takes no arguments)"
         )
     )
-    commandRegistry.registerCommand(
+    registerCommand(
         Command.of(
             DiscordProtocol,
             "setAlumnusNickname",
@@ -411,11 +403,10 @@ fun registerFratCommands() {
         )
     )
     registerMentionCallback()
-    FratState.scheduler.taskList.add(ScheduledTask(nextMonth(), ::mentionStatsFct))
+    Scheduler.taskList.add(ScheduledTask(nextMonth(), ::mentionStatsFct))
 }
 
 private fun registerMentionCallback() {
-    val messaging = getKoinService<MessagingService>()
     callbacks.getOrPut(MentionedUser::class) { mutableListOf() }.add(
         MentionedUser { chat: Chat, msg: IncomingMessage, sender: User, users: List<User> ->
             if (msg is DiscordIncomingMessage) {
@@ -424,8 +415,7 @@ private fun registerMentionCallback() {
                 val newMentions = mutableMapOf<DiscordUser, Int>()
                 for (user in users) {
                     user as? DiscordUser ?: continue
-                    val mentions = (settings.mentionChats[chat] ?: return@MentionedUser true)[user]
-                        ?: return@MentionedUser true
+                    val mentions = (settings.mentionChats[chat] ?: return@MentionedUser true)[user] ?: return@MentionedUser true
                     val mentionCount = mentions.getOrDefault(sender, 0) + 1
                     mentions[sender] = mentionCount
                     newMentions[user] = mentionCount
@@ -440,7 +430,7 @@ private fun registerMentionCallback() {
                         2 -> "${parts[0]} and ${parts[1]}"
                         else -> "${parts.dropLast(1).joinToString(", ")}, and ${parts.last()}"
                     }
-                    messaging.sendMessage(chat, "You mentioned $mentionStr.")
+                    sendMessage(chat, "You mentioned $mentionStr.")
                 }
             }
             true
@@ -463,29 +453,25 @@ private fun nextMonth(): OffsetDateTime {
 }
 
 private fun mentionStatsFct() {
-    val messaging = getKoinService<MessagingService>()
     for ((chat, _) in settings.mentionChats) {
-        messaging.sendMessage(chat, "Monthly mention stats:\n${mentionStats(chat)}")
+        sendMessage(chat, "Monthly mention stats:\n${mentionStats(chat)}")
     }
     for ((_, stats) in settings.mentionChats)
         for ((_, mentioners) in stats)
             mentioners.clear()
     updateSettings()
     // Schedule it again for next month
-    FratState.scheduler.taskList.add(ScheduledTask(nextMonth(), ::mentionStatsFct))
+    Scheduler.taskList.add(ScheduledTask(nextMonth(), ::mentionStatsFct))
 }
 
-fun mentionStats(chat: Chat): String {
-    val messaging = getKoinService<MessagingService>()
-    return settings.mentionChats
+fun mentionStats(chat: Chat) = settings.mentionChats
     .getOrDefault(chat, mutableMapOf())
     .map { (target, mentions) ->
-        "${messaging.getUserName(chat, target)}:\n\t${
+        "${getUserName(chat, target)}:\n\t${
             mentions.toList().joinToString(
                 "\n\t",
                 transform = { (user, count) ->
-                    "${messaging.getUserName(chat, user)}: $count"
+                    "${getUserName(chat, user)}: $count"
                 })
         }"
     }.joinToString()
-}

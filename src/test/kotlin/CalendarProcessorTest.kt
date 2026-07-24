@@ -1,5 +1,4 @@
 
-import convergence.*
 import convergence.discord.calendar.*
 import io.mockk.every
 import io.mockk.mockk
@@ -20,12 +19,6 @@ import java.time.temporal.ChronoUnit
 import kotlin.test.*
 
 class CalendarProcessorTest {
-
-    private val messaging = mockk<MessagingService>(relaxed = true)
-    private val commandRegistry = mockk<CommandRegistryService>(relaxed = true)
-    private val notificationProcessor = mockk<CalendarNotificationProcessorService>(relaxed = true)
-    private val calendarProcessor = CalendarProcessorService(messaging, commandRegistry, notificationProcessor)
-    private val notificationProcessorService = CalendarNotificationProcessorService(mockk(relaxed = true))
 
     @Before
     fun setup() {
@@ -271,41 +264,41 @@ class CalendarProcessorTest {
     @Test
     fun addUIDToDescriptionWithEmptyDescriptionReturnsUid() {
         val uid = testUid
-        assertEquals(uid, calendarProcessor.addUIDToDescription("", uid))
+        assertEquals(uid, CalendarProcessor.addUIDToDescription("", uid))
     }
 
     @Test
     fun addUIDToDescriptionAlreadyEndsWithUidReturnsUnchanged() {
         val uid = testUid
         val desc = "Some details\n$uid"
-        assertEquals(desc, calendarProcessor.addUIDToDescription(desc, uid))
+        assertEquals(desc, CalendarProcessor.addUIDToDescription(desc, uid))
     }
 
     @Test
     fun addUIDToDescriptionAppendsUidOnNewLine() {
         val uid = testUid
         val desc = "Some details"
-        assertEquals("Some details\n$uid", calendarProcessor.addUIDToDescription(desc, uid))
+        assertEquals("Some details\n$uid", CalendarProcessor.addUIDToDescription(desc, uid))
     }
 
     // ─── getCalDAVEventsNextDays: window behavior ─────────────────────────────
 
     @Test
     fun emptyCalendarListReturnsEmpty() {
-        assertEquals(emptyList(), calendarProcessor.getCalDAVEventsNextDays(emptyList()))
+        assertEquals(emptyList(), CalendarProcessor.getCalDAVEventsNextDays(emptyList()))
     }
 
     @Test
     fun calendarWithNoEventsReturnsEmpty() {
         val cal = makeCalendar()
-        assertEquals(emptyList(), calendarProcessor.getCalDAVEventsNextDays(listOf(cal)))
+        assertEquals(emptyList(), CalendarProcessor.getCalDAVEventsNextDays(listOf(cal)))
     }
 
     @Test
     fun singleEventInWindowIsReturned() {
         val vevent = makeVEvent(testUid, "In-Window Event", soon, hourLater)
         val cal = makeCalendar(vevent)
-        val result = calendarProcessor.getCalDAVEventsNextDays(listOf(cal))
+        val result = CalendarProcessor.getCalDAVEventsNextDays(listOf(cal))
         assertEquals(1, result.size)
         assertEquals(testUid, result[0].uid)
         assertEquals("In-Window Event", result[0].summary)
@@ -316,7 +309,7 @@ class CalendarProcessorTest {
         val afterWindow = now.plus(DAYS + 1, ChronoUnit.DAYS)
         val vevent = makeVEvent(testUid, "Too Far Future", afterWindow, afterWindow.plus(1, ChronoUnit.HOURS))
         val cal = makeCalendar(vevent)
-        val result = calendarProcessor.getCalDAVEventsNextDays(listOf(cal))
+        val result = CalendarProcessor.getCalDAVEventsNextDays(listOf(cal))
         assertEquals(0, result.size)
     }
 
@@ -325,7 +318,7 @@ class CalendarProcessorTest {
         val past = now.minus(2, ChronoUnit.DAYS)
         val vevent = makeVEvent(testUid, "Past Event", past, past.plus(1, ChronoUnit.HOURS))
         val cal = makeCalendar(vevent)
-        val result = calendarProcessor.getCalDAVEventsNextDays(listOf(cal))
+        val result = CalendarProcessor.getCalDAVEventsNextDays(listOf(cal))
         assertEquals(0, result.size)
     }
 
@@ -341,7 +334,7 @@ class CalendarProcessorTest {
         val e2 = makeVEvent(uid2, "Event 2d", start2, start2.plus(1, ChronoUnit.HOURS))
         val e3 = makeVEvent(uid3, "Event 10d", start3, start3.plus(1, ChronoUnit.HOURS))
         val cal = makeCalendar(e1, e2, e3)
-        val result = calendarProcessor.getCalDAVEventsNextDays(listOf(cal))
+        val result = CalendarProcessor.getCalDAVEventsNextDays(listOf(cal))
         assertEquals(3, result.size)
         assertEquals(uid2, result[0].uid, "First result should be the earliest event")
         assertEquals(uid1, result[1].uid, "Second result should be the middle event")
@@ -356,7 +349,7 @@ class CalendarProcessorTest {
         val e2 = makeVEvent(uid2, "Event B", soon.plus(2, ChronoUnit.HOURS), hourLater.plus(2, ChronoUnit.HOURS))
         val cal1 = makeCalendar(e1)
         val cal2 = makeCalendar(e2)
-        val result = calendarProcessor.getCalDAVEventsNextDays(listOf(cal1, cal2))
+        val result = CalendarProcessor.getCalDAVEventsNextDays(listOf(cal1, cal2))
         assertEquals(2, result.size)
         val resultUids = result.map { it.uid }.toSet()
         assertTrue(uid1 in resultUids, "uid1 should be in results")
@@ -371,7 +364,7 @@ class CalendarProcessorTest {
         val vevent = makeVEvent(testUid, "Weekly Meeting", recurrenceStart, recurrenceStart.plus(1, ChronoUnit.HOURS))
         vevent.properties.add(RRule(Recur("FREQ=WEEKLY;COUNT=3")))
         val cal = makeCalendar(vevent)
-        val result = calendarProcessor.getCalDAVEventsNextDays(listOf(cal))
+        val result = CalendarProcessor.getCalDAVEventsNextDays(listOf(cal))
         assertEquals(3, result.size)
         for (instance in result)
             assertEquals(testUid, instance.uid)
@@ -386,7 +379,7 @@ class CalendarProcessorTest {
         val vevent = makeVEvent(testUid, "Long Gap Recurrence", start, start.plus(1, ChronoUnit.HOURS))
         vevent.properties.add(RRule(Recur("FREQ=DAILY;INTERVAL=20;COUNT=3")))
         val cal = makeCalendar(vevent)
-        val result = calendarProcessor.getCalDAVEventsNextDays(listOf(cal))
+        val result = CalendarProcessor.getCalDAVEventsNextDays(listOf(cal))
         assertEquals(2, result.size)
     }
 
@@ -404,7 +397,7 @@ class CalendarProcessorTest {
         cancellation.properties.add(Status.VEVENT_CANCELLED)
 
         val cal = makeCalendar(master, cancellation)
-        val result = calendarProcessor.getCalDAVEventsNextDays(listOf(cal))
+        val result = CalendarProcessor.getCalDAVEventsNextDays(listOf(cal))
         // Should have 1st and 3rd occurrence; 2nd is canceled
         assertEquals(2, result.size)
         assertEquals(makeDateTime(recurrenceStart), result[0].start)
@@ -425,7 +418,7 @@ class CalendarProcessorTest {
         exception.properties.add(RecurrenceId(makeDateTime(secondOccurrence)))
 
         val cal = makeCalendar(master, exception)
-        val result = calendarProcessor.getCalDAVEventsNextDays(listOf(cal))
+        val result = CalendarProcessor.getCalDAVEventsNextDays(listOf(cal))
         assertEquals(2, result.size)
         assertEquals(makeDateTime(recurrenceStart), result[0].start, "First occurrence should be unchanged")
         assertEquals(makeDateTime(modifiedStart), result[1].start, "Second occurrence should be at modified start time")
@@ -593,7 +586,7 @@ class CalendarProcessorTest {
         val atEdge = Instant.now().plus(DAYS, ChronoUnit.DAYS)
         val vevent = makeVEvent(testUid, "Edge Event", atEdge, atEdge.plus(1, ChronoUnit.HOURS))
         val cal = makeCalendar(vevent)
-        val result = calendarProcessor.getCalDAVEventsNextDays(listOf(cal))
+        val result = CalendarProcessor.getCalDAVEventsNextDays(listOf(cal))
         assertEquals(0, result.size)
     }
 
@@ -602,7 +595,7 @@ class CalendarProcessorTest {
         val justBefore = Instant.now().plus(DAYS - 1, ChronoUnit.DAYS)
         val vevent = makeVEvent(testUid, "Near-Edge Event", justBefore, justBefore.plus(1, ChronoUnit.HOURS))
         val cal = makeCalendar(vevent)
-        val result = calendarProcessor.getCalDAVEventsNextDays(listOf(cal))
+        val result = CalendarProcessor.getCalDAVEventsNextDays(listOf(cal))
         assertEquals(1, result.size)
     }
 
@@ -611,7 +604,7 @@ class CalendarProcessorTest {
     @Test
     fun extractAlarmsReturnsEmptyListWhenNoAlarms() {
         val vevent = makeVEvent(testUid, "Event", soon, hourLater)
-        val alarms = notificationProcessorService.extractAlarms(vevent)
+        val alarms = CalendarNotificationProcessor.extractAlarms(vevent)
         assertTrue(alarms.isEmpty())
     }
 
@@ -623,7 +616,7 @@ class CalendarProcessorTest {
         alarm.properties.add(Description("Test reminder"))
         vevent.alarms.add(alarm)
 
-        val alarms = notificationProcessorService.extractAlarms(vevent)
+        val alarms = CalendarNotificationProcessor.extractAlarms(vevent)
         assertEquals(1, alarms.size)
         assertEquals(Duration.ofMinutes(-30), alarms[0].first)
         assertEquals("Test reminder", alarms[0].second)
@@ -636,7 +629,7 @@ class CalendarProcessorTest {
         alarm.properties.add(Action("DISPLAY"))
         vevent.alarms.add(alarm)
 
-        val alarms = notificationProcessorService.extractAlarms(vevent)
+        val alarms = CalendarNotificationProcessor.extractAlarms(vevent)
         assertEquals(1, alarms.size)
         assertEquals(Duration.ofHours(-1), alarms[0].first)
         assertEquals("Reminder", alarms[0].second)
@@ -655,7 +648,7 @@ class CalendarProcessorTest {
         alarm2.properties.add(Description("15 minutes before"))
         vevent.alarms.add(alarm2)
 
-        val alarms = notificationProcessorService.extractAlarms(vevent)
+        val alarms = CalendarNotificationProcessor.extractAlarms(vevent)
         assertEquals(2, alarms.size)
         assertEquals(Duration.ofDays(-1), alarms[0].first)
         assertEquals("1 day before", alarms[0].second)
@@ -670,7 +663,7 @@ class CalendarProcessorTest {
         alarm.properties.add(Action("DISPLAY"))
         vevent.alarms.add(alarm)
 
-        val alarms = notificationProcessorService.extractAlarms(vevent)
+        val alarms = CalendarNotificationProcessor.extractAlarms(vevent)
         assertEquals(1, alarms.size)
         assertEquals(Duration.ofMinutes(-90), alarms[0].first)
     }
@@ -681,7 +674,7 @@ class CalendarProcessorTest {
     fun calculateNotificationTimeSubtractsDuration() {
         val eventStart = Instant.parse("2024-01-15T10:00:00Z")
         val triggerDuration = Duration.ofMinutes(-30)
-        val notifyAt = notificationProcessorService.calculateNotificationTime(eventStart, triggerDuration)
+        val notifyAt = CalendarNotificationProcessor.calculateNotificationTime(eventStart, triggerDuration)
         assertEquals(Instant.parse("2024-01-15T09:30:00Z"), notifyAt)
     }
 
@@ -689,7 +682,7 @@ class CalendarProcessorTest {
     fun calculateNotificationTimeHandlesOneDayBefore() {
         val eventStart = Instant.parse("2024-01-15T10:00:00Z")
         val triggerDuration = Duration.ofDays(-1)
-        val notifyAt = notificationProcessorService.calculateNotificationTime(eventStart, triggerDuration)
+        val notifyAt = CalendarNotificationProcessor.calculateNotificationTime(eventStart, triggerDuration)
         assertEquals(Instant.parse("2024-01-14T10:00:00Z"), notifyAt)
     }
 
@@ -697,7 +690,7 @@ class CalendarProcessorTest {
     fun calculateNotificationTimeHandlesMultipleHoursAndMinutes() {
         val eventStart = Instant.parse("2024-01-15T10:00:00Z")
         val triggerDuration = Duration.ofHours(-2).plusMinutes(-45)
-        val notifyAt = notificationProcessorService.calculateNotificationTime(eventStart, triggerDuration)
+        val notifyAt = CalendarNotificationProcessor.calculateNotificationTime(eventStart, triggerDuration)
         assertEquals(Instant.parse("2024-01-15T07:15:00Z"), notifyAt)
     }
 }

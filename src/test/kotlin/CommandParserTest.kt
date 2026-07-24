@@ -63,18 +63,13 @@ fun doNothing(unused: List<String>, unused2: Chat, unused3: User): String? {
 }
 
 class CommandParserTest {
-    private val commandParser: CommandParserService
-        get() = getKoinService<CommandParserService>()
-    private val commandRegistry: CommandRegistryService
-        get() = getKoinService<CommandRegistryService>()
-
     private fun loadCommandWithArgs(command: String): CommandWithArgs? {
         val testChat = TestChat()
         val testIndex = command.indexOf(" ")
         val testCommandStr = command.substring(1, if (testIndex == -1) command.length else testIndex)
         val testCommand = Command.of(testChat.protocol, testCommandStr, listOf(), ::doNothing, "test", "test")
         bot.commands[testChat.protocol] = mutableMapOf(testCommandStr to testCommand)
-        return commandParser.parse(command, testChat, commandRegistry::getCommand)
+        return parseCommand(command, testChat)
     }
 
     @Test
@@ -163,7 +158,7 @@ class CommandParserTest {
             Alias(testChat, testAliasStr, testCommand, listOf("testArg1", "testArg2"))
         bot.commands[testChat.protocol] = mutableMapOf("test" to testCommand)
         settings.aliases[testChat] = mutableMapOf(testAliasStr to testAlias)
-        return commandParser.parse(command, testChat, commandRegistry::getCommand)
+        return parseCommand(command, testChat)
     }
 
     @Test
@@ -223,7 +218,6 @@ class CommandParserTest {
 
     @Before
     fun setup() {
-        ensureKoinStarted()
         bot.commands.remove(UniversalProtocol)
         settings.aliases.clear()
         settings.commandDelimiters.clear()
@@ -248,7 +242,7 @@ class CommandParserTest {
 
     private fun parse(input: String): CommandWithArgs? {
         val chat = TestChat()
-        return commandParser.parse(input, chat, commandRegistry::getCommand)
+        return parseCommand(input, chat)
     }
 
     private fun parseArgs(input: String): List<String> = parse(input)!!.args
@@ -286,7 +280,7 @@ class CommandParserTest {
             "echo" to Command.of(UniversalProtocol, "echo", listOf(), ::doNothing, "test", "test")
         )
         settings.commandDelimiters[chat] = "!!"
-        val result = commandParser.parse("!!echo hello", "!!", chat, commandRegistry::getCommand)
+        val result = parseCommand("!!echo hello", "!!", chat)
         assertEquals("echo", result?.command?.name)
         assertEquals("hello", result?.args?.get(0))
     }
@@ -297,7 +291,7 @@ class CommandParserTest {
         bot.commands[UniversalProtocol] = mutableMapOf(
             "echo" to Command.of(UniversalProtocol, "echo", listOf(), ::doNothing, "test", "test")
         )
-        assertNull(commandParser.parse("!echo hello", "!!", chat, commandRegistry::getCommand))
+        assertNull(parseCommand("!echo hello", "!!", chat))
     }
 
     @Test
@@ -311,7 +305,7 @@ class CommandParserTest {
         bot.commands[UniversalProtocol] = mutableMapOf(
             "echo" to Command.of(UniversalProtocol, "echo", listOf(), ::doNothing, "test", "test")
         )
-        assertFailsWith<CommandDoesNotExist> { commandParser.parse("!!!echo", "!!", chat, commandRegistry::getCommand) }
+        assertFailsWith<CommandDoesNotExist> { parseCommand("!!!echo", "!!", chat) }
     }
 
     // ─── command name rules ───────────────────────────────────────────────────
@@ -715,13 +709,13 @@ class CommandParserTest {
         val alias = Alias(chat, "ping", underlyingCmd, listOf("aliasArg"))
         settings.aliases[chat] = mutableMapOf("ping" to alias)
 
-        val result = commandParser.parse("!ping", chat, commandRegistry::getCommand)
+        val result = parseCommand("!ping", chat)
         assertEquals(listOf("aliasArg"), result?.args)
     }
 
     @Test
     fun unknownCommandThrowsCommandDoesNotExist() {
         val chat = TestChat()
-        assertFailsWith<CommandDoesNotExist> { commandParser.parse("!nonexistent", chat, commandRegistry::getCommand) }
+        assertFailsWith<CommandDoesNotExist> { parseCommand("!nonexistent", chat) }
     }
 }

@@ -14,15 +14,13 @@ import convergence.discord.DiscordChat
 //
 // Keys are self-describing: every key starts with its protocol's name (e.g. "DiscordChat(…)" starts with
 // "Discord"), so scopeStrToProtocol() recovers the owning protocol from the key string alone.
-fun scopeStrToProtocol(s: String) = bot.protocols.sortedBy { -it.name.length }
-    .firstOrNull { s.substringBefore("(").startsWith(it.name) }
 
 private fun resolveScope(key: String): CommandScope =
-    scopeStrToProtocol(key)?.commandScopeFromKey(key)
+    bot.scopeStrToProtocol(key)?.commandScopeFromKey(key)
         ?: throw IllegalArgumentException("No protocol could resolve a command scope from key: $key")
 
 private fun resolveUser(key: String): User =
-    scopeStrToProtocol(key)?.userFromKey(key)
+    bot.scopeStrToProtocol(key)?.userFromKey(key)
         ?: throw IllegalArgumentException("No protocol could resolve a user from key: $key")
 
 object ScopeKeySerializer: JsonSerializer<CommandScope>() {
@@ -91,14 +89,14 @@ object AliasSerializer: JsonSerializer<Alias>() {
 }
 
 object AliasDeserializer: JsonDeserializer<Alias>() {
-    val commandRegistryService: CommandRegistryService by lazy { getKoinService<CommandRegistryService>() }
     override fun deserialize(p: JsonParser, ctxt: DeserializationContext): Alias {
         val node = p.readValueAsTree<JsonNode>()
         val scopeKey = node["scope"].asText()
         val scope = resolveScope(scopeKey)
-        require(scope is Chat) { "Alias scope is not a Chat: $scopeKey" }
+        if (scope !is Chat)
+            throw IllegalArgumentException("Alias scope is not a Chat: $scopeKey")
         val name = node["name"].asText()
-        val command = commandRegistryService.getCommand(node["commandName"].asText().lowercase(), scope) as Command
+        val command = getCommand(node["commandName"].asText().lowercase(), scope) as Command
         val args = node["args"].map { it.asText() }
         return Alias(scope, name, command, args)
     }

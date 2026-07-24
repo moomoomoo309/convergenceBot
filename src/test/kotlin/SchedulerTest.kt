@@ -1,29 +1,22 @@
-
 import convergence.ScheduledCommand
-import convergence.SchedulerThread
+import convergence.Scheduler
 import convergence.User
 import convergence.settings
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-class SchedulerTest : KoinComponent {
-    private val scheduler: SchedulerThread by inject()
+class SchedulerTest {
 
     private val now: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC)
 
     @Before
-    fun setup() {
-        ensureKoinStarted()
-        resetGlobalState()
-    }
+    fun setup() = resetGlobalState()
 
     @After
     fun teardown() = resetGlobalState()
@@ -33,7 +26,7 @@ class SchedulerTest : KoinComponent {
     @Test
     fun scheduleReturnsFormattedString() {
         val time = now.plusMinutes(5)
-        val result = scheduler.schedule(testChat, testUser, "echo", listOf("hello"), time)
+        val result = Scheduler.schedule(testChat, testUser, "echo", listOf("hello"), time)
         assertTrue(result.contains("echo"), "Response should mention the command name")
         assertTrue(result.contains("Scheduled"), "Response should start with 'Scheduled'")
     }
@@ -41,15 +34,15 @@ class SchedulerTest : KoinComponent {
     @Test
     fun scheduleAddsToSerializedCommands() {
         val time = now.plusMinutes(10)
-        scheduler.schedule(testChat, testUser, "ping", listOf(), time)
+        Scheduler.schedule(testChat, testUser, "ping", listOf(), time)
         assertTrue(settings.serializedCommands.isNotEmpty(), "serializedCommands should not be empty after scheduling")
     }
 
     @Test
     fun scheduleAssignsIncrementingIds() {
         val time = now.plusMinutes(5)
-        scheduler.schedule(testChat, testUser, "echo", listOf("a"), time)
-        scheduler.schedule(testChat, testUser, "echo", listOf("b"), time)
+        Scheduler.schedule(testChat, testUser, "echo", listOf("a"), time)
+        Scheduler.schedule(testChat, testUser, "echo", listOf("b"), time)
         val ids = settings.serializedCommands.keys.toList()
         assertEquals(2, ids.size, "Should have 2 scheduled commands")
         assertTrue(ids[0] != ids[1], "IDs should be different")
@@ -60,15 +53,15 @@ class SchedulerTest : KoinComponent {
     @Test
     fun unscheduleRemovesExistingCommand() {
         val time = now.plusMinutes(5)
-        scheduler.schedule(testChat, testUser, "ping", listOf(), time)
+        Scheduler.schedule(testChat, testUser, "ping", listOf(), time)
         val id = settings.serializedCommands.keys.first()
-        assertTrue(scheduler.unschedule(id))
+        assertTrue(Scheduler.unschedule(id))
         assertFalse(settings.serializedCommands.containsKey(id))
     }
 
     @Test
     fun unscheduleReturnsFalseForNonexistentId() {
-        assertFalse(scheduler.unschedule(99999))
+        assertFalse(Scheduler.unschedule(99999))
     }
 
     // ─── getCommands ────────────────────────────────────────────────────────
@@ -76,9 +69,9 @@ class SchedulerTest : KoinComponent {
     @Test
     fun getCommandsReturnsAllScheduledCommands() {
         val time = now.plusMinutes(5)
-        scheduler.schedule(testChat, testUser, "echo", listOf("a"), time)
-        scheduler.schedule(testChat, testUser, "echo", listOf("b"), time)
-        val all = scheduler.getCommands()
+        Scheduler.schedule(testChat, testUser, "echo", listOf("a"), time)
+        Scheduler.schedule(testChat, testUser, "echo", listOf("b"), time)
+        val all = Scheduler.getCommands()
         assertTrue(all.size >= 2, "Should return at least 2 commands")
     }
 
@@ -88,26 +81,26 @@ class SchedulerTest : KoinComponent {
         val otherUser = object : User(TestProtocol) {
             override fun toKey() = "TestUser(Other)"
         }
-        scheduler.schedule(testChat, testUser, "echo", listOf("a"), time)
-        scheduler.schedule(testChat, otherUser, "echo", listOf("b"), time)
-        val mine = scheduler.getCommands(testUser)
+        Scheduler.schedule(testChat, testUser, "echo", listOf("a"), time)
+        Scheduler.schedule(testChat, otherUser, "echo", listOf("b"), time)
+        val mine = Scheduler.getCommands(testUser)
         assertTrue(mine.all { it.sender == testUser }, "Should only return commands from testUser")
     }
 
     @Test
     fun getCommandsByNullSenderReturnsAll() {
         val time = now.plusMinutes(5)
-        scheduler.schedule(testChat, testUser, "echo", listOf("a"), time)
-        val all = scheduler.getCommands(null)
+        Scheduler.schedule(testChat, testUser, "echo", listOf("a"), time)
+        val all = Scheduler.getCommands(null)
         assertTrue(all.isNotEmpty(), "Should return all commands when sender is null")
     }
 
     @Test
     fun getCommandsWorksCorrectly() {
-        val before = scheduler.getCommands()
+        val before = Scheduler.getCommands()
         val time = now.plusMinutes(5)
-        scheduler.schedule(testChat, testUser, "ping", listOf(), time)
-        val after = scheduler.getCommands()
+        Scheduler.schedule(testChat, testUser, "ping", listOf(), time)
+        val after = Scheduler.getCommands()
         assertTrue(after.size > before.size, "getCommands should reflect newly scheduled command")
     }
 
@@ -118,8 +111,8 @@ class SchedulerTest : KoinComponent {
         val time = now.plusMinutes(5)
         val cmd = ScheduledCommand(time, testChat, testUser, "Test", "echo", listOf("hi"), 42)
         settings.serializedCommands[42] = cmd
-        scheduler.loadFromFile()
-        val all = scheduler.getCommands()
+        Scheduler.loadFromFile()
+        val all = Scheduler.getCommands()
         assertTrue(all.any { it.id == 42 }, "Should have loaded command with id 42")
     }
 }

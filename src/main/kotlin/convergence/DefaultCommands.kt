@@ -1,5 +1,6 @@
 package convergence
 
+import convergence.Scheduler.getCommands
 import org.natty.Parser
 import java.time.OffsetDateTime
 import kotlin.math.ceil
@@ -54,9 +55,8 @@ fun help(args: List<String>, chat: Chat): String {
         }
 
         is String -> {
-            val commandRegistry = getKoinService<CommandRegistryService>()
             val currentCommand = try {
-                commandRegistry.getCommand(pageOrCommand.lowercase(), chat)
+                getCommand(pageOrCommand.lowercase(), chat)
             } catch(_: CommandDoesNotExist) {
                 return "There is no command with the name \"$pageOrCommand\"."
             }
@@ -87,11 +87,9 @@ fun addAlias(args: List<String>, chat: Chat, scope: CommandScope): String {
         val commandDelimiter = settings.commandDelimiters.getOrDefault(chat, DEFAULT_COMMAND_DELIMITER)
     val commandName = if (args[1].startsWith(commandDelimiter)) args[1].substringAfter(commandDelimiter) else args[1]
     val commandStr = "$commandDelimiter$commandName ${args.subList(2, args.size).joinToString(" ")}"
-    val commandRegistry = getKoinService<CommandRegistryService>()
-    val commandParserService = getKoinService<CommandParserService>()
-    val command = commandParserService.parse(commandStr, commandDelimiter, chat, commandRegistry::getCommand)
+    val command = parseCommand(commandStr, commandDelimiter, chat)
         ?: return "Alias does not refer to a valid command!"
-    if (!commandRegistry.registerAlias(Alias(scope, args[0], command.command, command.args)))
+    if (!registerAlias(Alias(scope, args[0], command.command, command.args)))
         return "An alias with that name is already registered!"
     updateSettings()
     return "Alias \"${args[0]}\" registered to \"$commandStr\"."
@@ -134,8 +132,7 @@ fun removeAlias(args: List<String>, chat: Chat): String {
 fun me(args: List<String>, chat: Chat, sender: User): String {
     val protocol = chat.protocol as? CanFormatMessages
     val (boldOpen, boldClose) = protocol?.getDelimiters(Format.bold) ?: Pair("", "")
-    val messaging = getKoinService<MessagingService>()
-    return "$boldOpen*${messaging.getUserName(chat, sender)} ${args.joinToString(" ")}$boldClose."
+    return "$boldOpen*${getUserName(chat, sender)} ${args.joinToString(" ")}$boldClose."
 }
 
 fun chats(): String {
@@ -202,9 +199,99 @@ fun aliases(chat: Chat): String {
     return if (aliasList.isNotEmpty()) "Aliases: ${aliasList.joinToString(", ")}" else "No aliases found."
 }
 
+fun schedule(args: List<String>, chat: Chat, sender: User): String {
+    if (args.size != 2)
+        return "Expected 2 arguments, got ${args.size} argument${if (args.size != 1) "s" else ""}."
+    val timeList = dateTimeParser.parse(args[0])
+    val delimiter = settings.commandDelimiters[chat] ?: DEFAULT_COMMAND_DELIMITER
+    val command = (if (args[1].startsWith(delimiter)) "" else delimiter) + args[1]
+    val commandWithArgs = parseCommand(chat, command, sender)
+        ?: return "\"$command\" does not refer to a valid command."
+    for (group in timeList)
+        for (time in group.dates)
+            Scheduler.schedule(
+                chat,
+                sender,
+                commandWithArgs.command.name,
+                commandWithArgs.args,
+                time.toOffsetDatetime()
+            )
+    updateSettings()
+    return "Scheduled \"$command\" to run in ${args[0]}."
+}
+
+/**
+ * Gets all the currently scheduled events sorted by ID.
+ */
+fun events(chat: Chat): String {
+    val commands = getCommands()
+    if (commands.isEmpty())
+        return "No events are currently scheduled."
+    return buildString { addEventToBuilder(commands.sortedBy { it.time }, chat, this) }
+}
+
+/**
+ * Gets all the currently scheduled events that were scheduled by [sender].
+ */
+private fun getUserEvents(sender: User): Map<User, MutableList<ScheduledCommand>> {
+    val eventsList = getCommands(sender)
+    val eventMap = HashMap<User, MutableList<ScheduledCommand>>()
+    for (event in eventsList) {
+        eventMap.getOrPut(event.sender) { mutableListOf() }.add(event)
+    }
+    return eventMap
+}
+
+fun eventsFromUser(chat: Chat, sender: User): String {
+    val eventMap = getUserEvents(sender)
+    if (eventMap.isEmpty())
+        return "No events are currently scheduled."
+    val builder = StringBuilder("Your currently scheduled events:\n")
+    builder.append("${getUserName(chat, sender)}:\n")
+    if (sender in eventMap) {
+        val events = eventMap[sender] ?: mutableListOf()
+        events.sortBy { it.time }
+        addEventToBuilder(events, chat, builder)
+    }
+    return builder.toString()
+}
+
+fun eventsByUser(chat: Chat, sender: User): String {
+    val eventMap = getUserEvents(sender)
+    if (eventMap.isEmpty())
+        return "No events are currently scheduled."
+    val builder = StringBuilder("Scheduled events by user:\n")
+    for ((user, events) in eventMap) {
+        events.sortBy { it.time }
+        builder.append("${getUserName(chat, user)}:\n")
+        addEventToBuilder(events, chat, builder)
+    }
+    return builder.toString()
+}
+
+private fun addEventToBuilder(
+    events: List<ScheduledCommand>,
+    chat: Chat,
+    builder: StringBuilder
+) {
+    for (event in events) {
+        val id = event.id
+        val time = formatTime(event.time)
+    val commandDelimiter = settings.commandDelimiters.getOrDefault(chat, DEFAULT_COMMAND_DELIMITER)
+        val name = event.commandName
+        val argsStr = event.args.joinToString(" ")
+        builder.append("\t[$id] $time (${event.time}): \"$commandDelimiter$name $argsStr\"\n")
+    }
+}
+
 fun unschedule(args: List<String>): String {
-    val scheduleCommands = getKoinService<ScheduleCommands>()
-    return scheduleCommands.unschedule(args)
+    val index = args[0].toIntOrNull() ?: return "${args[0]} is not an event ID!"
+
+    updateSettings()
+    return if (Scheduler.unschedule(index))
+        "Unscheduled event with index $index."
+    else
+        "No event with index $index found."
 }
 
 fun link(args: List<String>, chat: Chat): String {
@@ -238,7 +325,7 @@ fun unlink(args: List<String>, chat: Chat): String {
 
 fun links(chat: Chat): String {
     return if (chat in settings.linkedChats)
-        "Linked chats: ${settings.linkedChats[chat]!!.joinToString(", ") { "$it (${bot.reverseChatMap[it]})" }}"
+        "Linked chats: ${settings.linkedChats[chat]!!.joinToString(", ") { c: Chat -> "$c (${bot.reverseChatMap[c]})" }}"
     else
         "No chats are linked to this one."
 }
@@ -299,10 +386,7 @@ fun checkTimer(args: List<String>): String {
 
 @Suppress("LongMethod")
 fun registerDefaultCommands() {
-    val commandRegistry = getKoinService<CommandRegistryService>()
-    val scheduleCommands = getKoinService<ScheduleCommands>()
-
-    commandRegistry.registerCommand(
+    registerCommand(
         Command(
             UniversalProtocol, "exit", listOf(),
             { -> exitProcess(0) },
@@ -310,14 +394,14 @@ fun registerDefaultCommands() {
             "exit (Takes no arguments)"
         )
     )
-    commandRegistry.registerCommand(
+    registerCommand(
         Command.of(
             UniversalProtocol, "help", listOf(ArgumentSpec("Command-or-page", ArgumentType.STRING)), ::help,
             "Provides a paginated list of commands and their syntax, or specific help on a single command.",
             "help [command] or help [page number]"
         )
     )
-    commandRegistry.registerCommand(
+    registerCommand(
         Command.of(
             UniversalProtocol, "echo",
             listOf(ArgumentSpec("Message", ArgumentType.STRING)),
@@ -326,14 +410,14 @@ fun registerDefaultCommands() {
             "echo [message...] (All arguments are appended to each other with spaces)"
         )
     )
-    commandRegistry.registerCommand(
+    registerCommand(
         Command.of(
             UniversalProtocol, "ping", listOf(), ::ping,
             "Replies with \"Pong!\".",
             "ping (Takes no arguments)"
         )
     )
-    commandRegistry.registerCommand(
+    registerCommand(
         Command.of(
             UniversalProtocol, "alias",
             listOf(
@@ -344,7 +428,7 @@ fun registerDefaultCommands() {
             "alias (commandName) \"!commandName [arguments...]\""
         )
     )
-    commandRegistry.registerCommand(
+    registerCommand(
         Command.of(
             UniversalProtocol, "removeAlias",
             listOf(ArgumentSpec("Name", ArgumentType.STRING)),
@@ -353,7 +437,7 @@ fun registerDefaultCommands() {
             "removeAlias (aliasName)"
         )
     )
-    commandRegistry.registerCommand(
+    registerCommand(
         Command.of(
             UniversalProtocol, "serverAlias",
             listOf(
@@ -365,7 +449,7 @@ fun registerDefaultCommands() {
                     "(Command inside parentheses takes however many parameters that command takes)"
         )
     )
-    commandRegistry.registerCommand(
+    registerCommand(
         Command.of(
             UniversalProtocol, "removeServerAlias",
             listOf(ArgumentSpec("name", ArgumentType.STRING)),
@@ -374,7 +458,7 @@ fun registerDefaultCommands() {
             "removeServerAlias (aliasName)"
         )
     )
-    commandRegistry.registerCommand(
+    registerCommand(
         Command.of(
             UniversalProtocol, "me",
             listOf(ArgumentSpec("Message", ArgumentType.STRING)),
@@ -383,14 +467,14 @@ fun registerDefaultCommands() {
             "me [message...] (All arguments are appended to each other with spaces)"
         )
     )
-    commandRegistry.registerCommand(
+    registerCommand(
         Command.of(
             UniversalProtocol, "chats", listOf(), ::chats,
             "Lists all chats the bot knows of by name.",
             "chats (Takes no arguments)"
         )
     )
-    commandRegistry.registerCommand(
+    registerCommand(
         Command.of(
             UniversalProtocol, "commands",
             listOf(),
@@ -399,7 +483,7 @@ fun registerDefaultCommands() {
             "commands (Takes no arguments)"
         )
     )
-    commandRegistry.registerCommand(
+    registerCommand(
         Command.of(
             UniversalProtocol, "aliases",
             listOf(),
@@ -408,55 +492,55 @@ fun registerDefaultCommands() {
             "aliases (Takes no arguments)"
         )
     )
-    commandRegistry.registerCommand(
+    registerCommand(
         Command.of(
             UniversalProtocol, "schedule",
             listOf(
                 ArgumentSpec("Time", ArgumentType.STRING),
                 ArgumentSpec("Command", ArgumentType.STRING)
             ),
-            { args, chat, sender -> scheduleCommands.schedule(args, chat, sender) },
+            ::schedule,
             "Schedules a command to run later.",
             "schedule \"time\" \"command (with delimiter and arguments)\""
         )
     )
-    commandRegistry.registerCommand(
+    registerCommand(
         Command.of(
             UniversalProtocol, "unschedule",
             listOf(ArgumentSpec("ID", ArgumentType.INTEGER)),
-            { args -> scheduleCommands.unschedule(args) },
+            ::unschedule,
             "Unschedules a command, so it will not be run later. The ID can be obtained from the events command.",
             "unschedule (ID)"
         )
     )
-    commandRegistry.registerCommand(
+    registerCommand(
         Command.of(
             UniversalProtocol, "events",
             listOf(),
-            { _, chat, sender -> scheduleCommands.eventsFromUser(chat, sender)},
+            { _, chat, sender -> eventsFromUser(chat, sender)},
             "Lists all of the events you've made.",
             "events (Takes no arguments)"
         )
     )
-    commandRegistry.registerCommand(
+    registerCommand(
         Command.of(
             UniversalProtocol, "allevents",
             listOf(),
-            { _, chat -> scheduleCommands.events(chat) },
+            { _, chat -> events(chat) },
             "Lists all of the events in chronological order.",
             "allevents (Takes no arguments)"
         )
     )
-    commandRegistry.registerCommand(
+    registerCommand(
         Command.of(
             UniversalProtocol, "eventsbyuser",
             listOf(),
-            { _, chat, sender -> scheduleCommands.eventsByUser(chat, sender) },
+            { _, chat, sender -> eventsByUser(chat, sender) },
             "Lists all events by user, then in chronological order.",
             "eventsbyuser (Takes no arguments)"
         )
     )
-    commandRegistry.registerCommand(
+    registerCommand(
         Command.of(
             UniversalProtocol, "link",
             listOf(ArgumentSpec("ID", ArgumentType.INTEGER)),
@@ -465,7 +549,7 @@ fun registerDefaultCommands() {
             "link (ID)"
         )
     )
-    commandRegistry.registerCommand(
+    registerCommand(
         Command.of(
             UniversalProtocol, "unlink",
             listOf(ArgumentSpec("ID", ArgumentType.INTEGER)),
@@ -474,7 +558,7 @@ fun registerDefaultCommands() {
             "unlink (ID)"
         )
     )
-    commandRegistry.registerCommand(
+    registerCommand(
         Command.of(
             UniversalProtocol, "links",
             listOf(),
@@ -483,7 +567,7 @@ fun registerDefaultCommands() {
             "links (Takes no arguments)"
         )
     )
-    commandRegistry.registerCommand(
+    registerCommand(
         Command.of(
             UniversalProtocol, "setdelimiter",
             listOf(ArgumentSpec("Delimiter", ArgumentType.STRING)),
@@ -492,7 +576,7 @@ fun registerDefaultCommands() {
             "setdelimiter (New delimiter)"
         )
     )
-    commandRegistry.registerCommand(
+    registerCommand(
         Command.of(
             UniversalProtocol,
             "dumpSettings",
@@ -502,7 +586,7 @@ fun registerDefaultCommands() {
             "dumpSettings (takes no arguments)"
         )
     )
-    commandRegistry.registerCommand(
+    registerCommand(
         Command.of(
             UniversalProtocol,
             "createTimer",
@@ -512,7 +596,7 @@ fun registerDefaultCommands() {
             "createTimer (name)"
         )
     )
-    commandRegistry.registerCommand(
+    registerCommand(
         Command.of(
             UniversalProtocol,
             "resetTimer",
@@ -522,7 +606,7 @@ fun registerDefaultCommands() {
             "resetTimer (name)"
         )
     )
-    commandRegistry.registerCommand(
+    registerCommand(
         Command.of(
             UniversalProtocol,
             "checkTimer",
@@ -532,7 +616,7 @@ fun registerDefaultCommands() {
             "resetTimer (name)"
         )
     )
-    commandRegistry.registerCommand(
+    registerCommand(
         Command.of(
             UniversalProtocol,
             "timers",
@@ -542,7 +626,7 @@ fun registerDefaultCommands() {
             "timers (takes no arguments)"
         )
     )
-    commandRegistry.registerCommand(
+    registerCommand(
         Command.of(
             UniversalProtocol,
             "target",
@@ -555,7 +639,7 @@ fun registerDefaultCommands() {
             "!target (message...) (user)"
         )
     )
-    commandRegistry.registerCommand(
+    registerCommand(
         Command.of(
             UniversalProtocol,
             "targetnick",

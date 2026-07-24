@@ -9,7 +9,6 @@ graaljs = "25.0.2"
 graphviz = "0.18.1"
 jackson = "2.21.2"
 jda = "6.3.2"
-koin = "4.0.2"
 kotlin = "2.3.20"
 logback = "1.5.32"
 natty = "1.1.2"
@@ -33,9 +32,6 @@ jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", ver
 jackson-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson" }
 jackson-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
 jda = { module = "net.dv8tion:JDA", version.ref = "jda" }
-koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
-koin-test = { module = "io.insert-koin:koin-test", version.ref = "koin" }
-koin-test-junit4 = { module = "io.insert-koin:koin-test-junit4", version.ref = "koin" }
 kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
 logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 natty = { module = "io.github.natty-parser:natty", version.ref = "natty" }

@@ -1,6 +1,4 @@
 import convergence.*
-import convergence.MessagingService
-import convergence.getKoinService
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -33,11 +31,7 @@ class CommandTest {
     fun invokeReturnsErrorMessageWhenPermissionDenied() {
         val permFunc: CommandFunction = { _, _, _ -> SimpleOutgoingMessage("Not allowed!") }
         val cmd = makeCmd("restricted", function = { _, _, _ -> SimpleOutgoingMessage("ok") }, permissions = permFunc)
-        val args = listOf<String>()
-        val errorMessage = cmd.permissions(args, testChat, testUser)
-        val messaging = getKoinService<MessagingService>()
-        val result =
-            errorMessage ?: messaging.replaceAliasVars(testChat, cmd.function(args, testChat, testUser), testUser)
+        val result = cmd.invoke(listOf(), testChat, testUser)
         assertEquals("Not allowed!", result?.toSimple()?.text)
     }
 
@@ -45,11 +39,7 @@ class CommandTest {
     fun invokeProceedsWhenPermissionReturnsNull() {
         val permFunc: CommandFunction = { _, _, _ -> null }
         val cmd = makeCmd("allowed", function = { _, _, _ -> SimpleOutgoingMessage("success") }, permissions = permFunc)
-        val args = listOf<String>()
-        val errorMessage = cmd.permissions(args, testChat, testUser)
-        val messaging = getKoinService<MessagingService>()
-        val result =
-            errorMessage ?: messaging.replaceAliasVars(testChat, cmd.function(args, testChat, testUser), testUser)
+        val result = cmd.invoke(listOf(), testChat, testUser)
         assertEquals("success", result?.toSimple()?.text)
     }
 
@@ -60,10 +50,7 @@ class CommandTest {
             receivedArgs = args
             SimpleOutgoingMessage("ok")
         }
-        val args = listOf("hello", "world")
-        val errorMessage = cmd.permissions(args, testChat, testUser)
-        val messaging = getKoinService<MessagingService>()
-        errorMessage ?: messaging.replaceAliasVars(testChat, cmd.function(args, testChat, testUser), testUser)
+        cmd.invoke(listOf("hello", "world"), testChat, testUser)
         assertEquals(listOf("hello", "world"), receivedArgs)
     }
 
@@ -74,10 +61,7 @@ class CommandTest {
             receivedChat = chat
             SimpleOutgoingMessage("ok")
         }
-        val args = listOf<String>()
-        val errorMessage = cmd.permissions(args, testChat, testUser)
-        val messaging = getKoinService<MessagingService>()
-        errorMessage ?: messaging.replaceAliasVars(testChat, cmd.function(args, testChat, testUser), testUser)
+        cmd.invoke(listOf(), testChat, testUser)
         assertEquals(testChat, receivedChat)
     }
 
@@ -88,10 +72,7 @@ class CommandTest {
             receivedSender = sender
             SimpleOutgoingMessage("ok")
         }
-        val args = listOf<String>()
-        val errorMessage = cmd.permissions(args, testChat, testUser)
-        val messaging = getKoinService<MessagingService>()
-        errorMessage ?: messaging.replaceAliasVars(testChat, cmd.function(args, testChat, testUser), testUser)
+        cmd.invoke(listOf(), testChat, testUser)
         assertEquals(testUser, receivedSender)
     }
 
@@ -101,11 +82,7 @@ class CommandTest {
     fun invokeReplacesAliasVarsInOutput() {
         val func: () -> String? = { "Hello %sendername!" }
         val cmd = Command.of(TestProtocol, "greet", listOf(), func, "help", "syntax")
-        val args = listOf<String>()
-        val errorMessage = cmd.permissions(args, testChat, testUser)
-        val messaging = getKoinService<MessagingService>()
-        val result =
-            errorMessage ?: messaging.replaceAliasVars(testChat, cmd.function(args, testChat, testUser), testUser)
+        val result = cmd.invoke(listOf(), testChat, testUser)
         assertEquals("Hello testuser!", result?.toSimple()?.text)
     }
 
@@ -115,62 +92,28 @@ class CommandTest {
     fun ofNoArgFunctionCreatesWorkingCommand() {
         val func: () -> String? = { "done" }
         val cmd = Command.of(TestProtocol, "noop", listOf(), func, "help", "syntax")
-        val args = listOf<String>()
-        val errorMessage = cmd.permissions(args, testChat, testUser)
-        val messaging = getKoinService<MessagingService>()
-        assertEquals(
-            "done",
-            (errorMessage ?: messaging.replaceAliasVars(
-                testChat,
-                cmd.function(args, testChat, testUser),
-                testUser
-            ))?.toSimple()?.text
-        )
+        assertEquals("done", cmd.invoke(listOf(), testChat, testUser)?.toSimple()?.text)
     }
 
     @Test
     fun ofListArgFunctionCreatesWorkingCommand() {
         val func: (List<String>) -> String? = { args -> args.joinToString(" ") }
         val cmd = Command.of(TestProtocol, "echo", listOf(), func, "help", "syntax")
-        val args = listOf("a", "b")
-        val errorMessage = cmd.permissions(args, testChat, testUser)
-        val messaging = getKoinService<MessagingService>()
-        assertEquals(
-            "a b",
-            (errorMessage ?: messaging.replaceAliasVars(
-                testChat,
-                cmd.function(args, testChat, testUser),
-                testUser
-            ))?.toSimple()?.text
-        )
+        assertEquals("a b", cmd.invoke(listOf("a", "b"), testChat, testUser)?.toSimple()?.text)
     }
 
     @Test
     fun ofListChatFunctionCreatesWorkingCommand() {
         val func: (List<String>, Chat) -> String? = { _, chat -> chat.name }
         val cmd = Command.of(TestProtocol, "name", listOf(), func, "help", "syntax")
-        val args = listOf<String>()
-        val errorMessage = cmd.permissions(args, testChat, testUser)
-        val messaging = getKoinService<MessagingService>()
-        assertEquals(
-            "Test",
-            (errorMessage ?: messaging.replaceAliasVars(
-                testChat,
-                cmd.function(args, testChat, testUser),
-                testUser
-            ))?.toSimple()?.text
-        )
+        assertEquals("Test", cmd.invoke(listOf(), testChat, testUser)?.toSimple()?.text)
     }
 
     @Test
     fun ofListChatSenderFunctionCreatesWorkingCommand() {
         val func: (List<String>, Chat, User) -> String? = { _, _, _ -> "sender-invoked" }
         val cmd = Command.of(TestProtocol, "who", listOf(), func, "help", "syntax")
-        val args = listOf<String>()
-        val errorMessage = cmd.permissions(args, testChat, testUser)
-        val messaging = getKoinService<MessagingService>()
-        val result =
-            errorMessage ?: messaging.replaceAliasVars(testChat, cmd.function(args, testChat, testUser), testUser)
+        val result = cmd.invoke(listOf(), testChat, testUser)
         assertEquals("sender-invoked", result?.toSimple()?.text)
     }
 
@@ -178,16 +121,7 @@ class CommandTest {
     fun ofReturnsNullWhenFunctionReturnsNull() {
         val func: () -> String? = { null }
         val cmd = Command.of(TestProtocol, "nothing", listOf(), func, "help", "syntax")
-        val args = listOf<String>()
-        val errorMessage = cmd.permissions(args, testChat, testUser)
-        val messaging = getKoinService<MessagingService>()
-        assertNull(
-            errorMessage ?: messaging.replaceAliasVars(
-                testChat,
-                cmd.function(args, testChat, testUser),
-                testUser
-            )
-        )
+        assertNull(cmd.invoke(listOf(), testChat, testUser))
     }
 
     // ─── Alias.commandText ──────────────────────────────────────────────────

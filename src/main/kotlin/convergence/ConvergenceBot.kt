@@ -4,7 +4,6 @@ import convergence.console.ConsoleProtocol
 import convergence.discord.DiscordProtocol
 import net.sourceforge.argparse4j.ArgumentParsers
 import net.sourceforge.argparse4j.inf.ArgumentParserException
-import org.koin.core.context.startKoin
 import java.nio.file.Paths
 
 object ConvergenceBot {
@@ -29,17 +28,11 @@ object ConvergenceBot {
             return
         }
 
-        convergencePath = Paths.get(commandLineArgs.get<List<String>>("convergencePath").first())
-
-        // Initialize Koin DI container
-        startKoin {
-            modules(appModules)
-        }
-        defaultLogger.info("Koin DI container initialized.")
-
         bot.protocols.add(UniversalProtocol)
         bot.protocols.add(ConsoleProtocol)
         bot.protocols.add(DiscordProtocol)
+
+        convergencePath = Paths.get(commandLineArgs.get<List<String>>("convergencePath").first())
 
         defaultLogger.info("Registering default commands...")
         registerDefaultCommands()
@@ -52,9 +45,8 @@ object ConvergenceBot {
         loadProtocolConfig()
 
         defaultLogger.info("Starting command scheduler...")
-        val scheduler = getKoinService<SchedulerThread>()
-        scheduler.loadFromFile()
-        scheduler.start()
+        Scheduler.loadFromFile()
+        Scheduler.start()
     }
 }
 
