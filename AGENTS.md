@@ -19,48 +19,91 @@ they came from.
 
 ```
 src/main/kotlin/convergence/
-  ConvergenceBot.kt     Main entry point; registers protocols, loads settings, starts scheduler.
-  Interfaces.kt         Core domain model: Protocol, Chat, Server, User, CommandScope,
-                        and the capability interfaces (HasNicknames, HasReactions, CanMentionUsers, ...).
-  Command.kt            Command / ArgumentSpec / CommandLike model.
-  CommandRegistry.kt    registerCommand / registerAlias / runCommand.
-  CommandParser.kt      Parses an incoming string into a CommandWithArgs (uses the ANTLR grammar).
-  Command.g4            ANTLR4 grammar for the command syntax. Generated sources land in src/main/java/convergence.
-  DefaultCommands.kt    Built-in commands (help, echo, scheduling, aliases, etc.).
-  CommandScheduler.kt   Persisted scheduled/timed commands.
-  Configuration.kt      Settings model (SettingsData) + load/save; convergencePath, settingsPath.
-  Serialization.kt      Jackson (de)serializers for domain objects via stable string keys (toKey()).
-  Callbacks.kt          Message/chat event callback machinery.
-  Messaging.kt          Message sending helpers.
-  Extensions.kt         Kotlin extension helpers (e.g. substringBetween).
-  Logging.kt            defaultLogger / messageLogger.
-  discord/              Discord protocol (JDA-based): Discord.kt, DiscordCommands.kt,
-                        frat/ (a specific Discord guild's roster/role features), calendar/ (CalDAV sync).
-  console/Console.kt    Console protocol — stdin/stdout, useful for local testing without Discord.
+  ConvergenceBot.kt       Main entry point; registers protocols, loads settings, starts scheduler.
+  BotState.kt             Mutable global bot state (live chats, protocol list, etc.).
+  Protocol.kt             Abstract Protocol base class and related protocol-level types.
+  UniversalProtocol.kt    Cross-protocol relay logic (links chats, forwards messages).
+  Configuration.kt        Settings model (SettingsData) + load/save; convergencePath, settingsPath.
+  Serialization.kt        Jackson (de)serializers for domain objects via stable string keys (toKey()).
+  Scheduler.kt            Persisted scheduled/timed commands (was CommandScheduler.kt).
+  Messaging.kt            Message sending helpers.
+  Extensions.kt           Kotlin extension helpers (e.g. substringBetween).
+  Logging.kt              defaultLogger / messageLogger.
+  Command.g4              ANTLR4 grammar for the command syntax. Generated sources land in src/main/java/convergence.
+
+  model/                  Core domain model types (extracted from the former Interfaces.kt).
+    Chat.kt                 Chat data class.
+    Server.kt               Server data class.
+    User.kt                 User data class.
+    CommandScope.kt         CommandScope = Chat | Server.
+    Message.kt              Message model.
+    Emoji.kt                Emoji model.
+    Format.kt               Message formatting helpers.
+    Misc.kt                 Miscellaneous shared types.
+
+  protocol/
+    Capabilities.kt       Capability interfaces (HasNicknames, HasReactions, CanMentionUsers, ...).
+
+  command/                Command infrastructure.
+    Command.kt              Command / ArgumentSpec / CommandLike model.
+    CommandRegistry.kt      registerCommand / registerAlias / runCommand.
+    CommandParser.kt        Parses an incoming string into a CommandWithArgs (uses the ANTLR grammar).
+
+  commands/               Built-in command implementations.
+    DefaultCommands.kt      Core commands (help, echo, scheduling, aliases, etc.).
+    HelpCommands.kt         Help command logic.
+    AliasCommands.kt        Alias management commands.
+    ChatCommands.kt         Chat-related commands.
+    ScheduleCommands.kt     Scheduling commands.
+    TimerCommands.kt        Timer/recurring commands.
+    UtilityCommands.kt      Miscellaneous utility commands.
+
+  callbacks/
+    Callbacks.kt          Message/chat event callback machinery.
+
+  console/
+    Console.kt            Console protocol — stdin/stdout, useful for local testing without Discord.
+
+  discord/                Discord protocol (JDA-based).
+    Discord.kt              Main Discord protocol implementation.
+    DiscordCommands.kt      Discord-specific commands.
+    DiscordConfig.kt        Discord configuration / token handling.
+    FratHooks.kt            Frat guild-specific event hooks.
+    frat/                   A specific Discord guild's roster/role features.
+      FratCommands.kt
+      FratConfig.kt
+      RosterUtils.kt
+    calendar/               CalDAV calendar sync.
+      CalendarProcessor.kt
+      CalendarNotificationProcessor.kt
+
 src/main/java/convergence/   ANTLR-generated lexer/parser/visitor (do not hand-edit).
 src/test/kotlin/             Tests (kotlin.test + MockK).
 ```
 
 ## Core concepts
 
-- **Protocol** (`Interfaces.kt`): abstract base each chat backend extends
+- **Protocol** (`Protocol.kt`): abstract base each chat backend extends
   (`UniversalProtocol`, `ConsoleProtocol`, `DiscordProtocol`). Implements
   sending/receiving messages, listing chats/users, and resolving objects from
   string keys.
-- **Capability interfaces**: optional features a protocol may implement —
-  `HasNicknames`, `HasReactions`, `HasImages`, `CanMentionUsers`,
-  `HasMessageHistory`, `HasRoles`, `HasServer`, etc. Code feature-detects with
-  `if (protocol is HasNicknames)` rather than assuming capabilities.
-- **CommandScope**: a `Chat` or `Server` — the scope a command/alias is bound to.
-  Commands resolve in order: chat alias → server alias → protocol command →
-  universal command (`getCommand` in `CommandParser.kt`).
-- **Serialization contract**: domain objects can't be serialized directly (they
-  wrap live protocol state). Each exposes a stable `toKey()` string, and each
-  protocol rebuilds objects from a key via `commandScopeFromKey()` / `userFromKey()`.
-  Keys are self-describing — they start with the protocol name (e.g.
-  `DiscordChat(...)`), which is how `scopeStrToProtocol()` finds the owner. When
-  adding new persisted domain types, follow this pattern in `Serialization.kt`
-  and register in `convergenceModule`; avoid handwritten DTO mirrors.
+- **Capability interfaces** (`protocol/Capabilities.kt`): optional features a
+  protocol may implement — `HasNicknames`, `HasReactions`, `HasImages`,
+  `CanMentionUsers`, `HasMessageHistory`, `HasRoles`, `HasServer`, etc. Code
+  feature-detects with `if (protocol is HasNicknames)` rather than assuming
+  capabilities.
+- **CommandScope** (`model/CommandScope.kt`): a `Chat` or `Server` — the scope a
+  command/alias is bound to. Commands resolve in order: chat alias → server alias
+  → protocol command → universal command (`getCommand` in
+  `command/CommandParser.kt`).
+- **Serialization contract** (`Serialization.kt`): domain objects can't be
+  serialized directly (they wrap live protocol state). Each exposes a stable
+  `toKey()` string, and each protocol rebuilds objects from a key via
+  `commandScopeFromKey()` / `userFromKey()`. Keys are self-describing — they
+  start with the protocol name (e.g. `DiscordChat(...)`), which is how
+  `scopeStrToProtocol()` finds the owner. When adding new persisted domain types,
+  follow this pattern in `Serialization.kt` and register in `convergenceModule`;
+  avoid handwritten DTO mirrors.
 
 ## Build / test / run
 
