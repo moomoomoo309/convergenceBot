@@ -1,4 +1,9 @@
-import convergence.*
+
+import convergence.UniversalProtocol
+import convergence.appModules
+import convergence.bot
+import convergence.settings
+import org.koin.core.context.startKoin
 
 fun resetGlobalState() {
     settings.aliases.clear()
@@ -16,4 +21,17 @@ fun resetGlobalState() {
     bot.commands.remove(UniversalProtocol)
     bot.chatMap.clear()
     bot.reverseChatMap.clear()
+}
+
+/**
+ * Ensures Koin is started for tests. Idempotent — safe to call multiple times.
+ */
+fun ensureKoinStarted() {
+    try {
+        startKoin {
+            modules(appModules)
+        }
+    } catch (_: Exception) {
+        // Koin already started
+    }
 }

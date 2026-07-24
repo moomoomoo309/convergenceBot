@@ -32,13 +32,6 @@ data class Command(
     @JsonIgnore val syntaxText: String,
     @JsonIgnore val permissions: CommandFunction
 ): CommandLike(protocol, name) {
-    operator fun invoke(args: List<String>, chat: Chat, sender: User): OutgoingMessage? {
-        val errorMessage = permissions(args, chat, sender)
-        if (errorMessage != null) {
-            return errorMessage
-        }
-        return replaceAliasVars(chat, function(args, chat, sender), sender)
-    }
 
     constructor(
         protocol: Protocol,

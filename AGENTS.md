@@ -22,20 +22,27 @@ src/main/kotlin/convergence/
   ConvergenceBot.kt     Main entry point; registers protocols, loads settings, starts scheduler.
   Interfaces.kt         Core domain model: Protocol, Chat, Server, User, CommandScope,
                         and the capability interfaces (HasNicknames, HasReactions, CanMentionUsers, ...).
+  BotState.kt           Holds mutable runtime state (linked chats, registered commands, etc.).
   Command.kt            Command / ArgumentSpec / CommandLike model.
-  CommandRegistry.kt    registerCommand / registerAlias / runCommand.
+  CommandRegistryService.kt  registerCommand / registerAlias / runCommand, getCommand.
   CommandParser.kt      Parses an incoming string into a CommandWithArgs (uses the ANTLR grammar).
+                        Also contains CommandParserService (DI-injected wrapper around ANTLR).
   Command.g4            ANTLR4 grammar for the command syntax. Generated sources land in src/main/java/convergence.
   DefaultCommands.kt    Built-in commands (help, echo, scheduling, aliases, etc.).
-  CommandScheduler.kt   Persisted scheduled/timed commands.
+  Scheduler.kt          SchedulerThread + ScheduledCommand/ScheduledTask — runs scheduled commands
+                        and timed tasks (e.g. calendar sync, notifications).
+  ScheduleCommands.kt   Commands related to scheduling and event management.
   Configuration.kt      Settings model (SettingsData) + load/save; convergencePath, settingsPath.
   Serialization.kt      Jackson (de)serializers for domain objects via stable string keys (toKey()).
   Callbacks.kt          Message/chat event callback machinery.
-  Messaging.kt          Message sending helpers.
+  MessagingService.kt   Message sending helpers.
+  DI.kt                 Koin dependency injection module and getKoinService helper.
   Extensions.kt         Kotlin extension helpers (e.g. substringBetween).
   Logging.kt            defaultLogger / messageLogger.
   discord/              Discord protocol (JDA-based): Discord.kt, DiscordCommands.kt,
-                        frat/ (a specific Discord guild's roster/role features), calendar/ (CalDAV sync).
+                        DiscordConfig.kt, FratHooks.kt,
+                        frat/ (a specific Discord guild's roster/role features),
+                        calendar/ (CalDAV sync): CalendarProcessorService, CalendarNotificationProcessorService.
   console/Console.kt    Console protocol — stdin/stdout, useful for local testing without Discord.
 src/main/java/convergence/   ANTLR-generated lexer/parser/visitor (do not hand-edit).
 src/test/kotlin/             Tests (kotlin.test + MockK).
@@ -53,7 +60,7 @@ src/test/kotlin/             Tests (kotlin.test + MockK).
   `if (protocol is HasNicknames)` rather than assuming capabilities.
 - **CommandScope**: a `Chat` or `Server` — the scope a command/alias is bound to.
   Commands resolve in order: chat alias → server alias → protocol command →
-  universal command (`getCommand` in `CommandParser.kt`).
+  universal command (`getCommand` in `CommandRegistryService.kt`).
 - **Serialization contract**: domain objects can't be serialized directly (they
   wrap live protocol state). Each exposes a stable `toKey()` string, and each
   protocol rebuilds objects from a key via `commandScopeFromKey()` / `userFromKey()`.
@@ -139,5 +146,5 @@ JDA (Discord), Jackson (+ kotlin & jsr310 modules) for settings (de)serializatio
 ANTLR4 (command grammar), Natty (natural-language date parsing), caldav4j/sardine
 (CalDAV calendar sync), Apache POI (spreadsheets), GraalVM polyglot + graaljs
 (JS scripting), graphviz-kotlin, argparse4j (CLI args), logback (logging),
-MockK + kotlin.test (testing). Versions are centralized in
-`gradle/libs.versions.toml`.
+Koin (dependency injection), MockK + kotlin.test (testing). Versions are
+centralized in `gradle/libs.versions.toml`.

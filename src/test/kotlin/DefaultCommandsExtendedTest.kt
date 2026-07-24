@@ -26,7 +26,10 @@ class DefaultCommandsExtendedTest {
     }
 
     @Before
-    fun setup() = resetGlobalState()
+    fun setup() {
+        ensureKoinStarted()
+        resetGlobalState()
+    }
 
     @After
     fun teardown() = resetGlobalState()
@@ -416,7 +419,9 @@ class DefaultCommandsExtendedTest {
 
     @Test
     fun helpPageContainsRegisteredCommand() {
-        registerCommand(Command.of(UniversalProtocol, "ping", listOf(), ::ping, "Replies with Pong!", "ping"))
+        val commandRegistry = getKoinService<CommandRegistryService>()
+        val cmd = Command.of(UniversalProtocol, "ping", listOf(), ::ping, "Replies with Pong!", "ping")
+        commandRegistry.registerCommand(cmd)
         val result = help(listOf(), testChat)
         assertTrue(result.startsWith("Help page 1/1:"), "Expected page header, got: $result")
         assertTrue(result.contains("ping"), "Expected 'ping' in help output")
@@ -424,7 +429,9 @@ class DefaultCommandsExtendedTest {
 
     @Test
     fun helpLookupByNameReturnsCommandDetails() {
-        registerCommand(Command.of(UniversalProtocol, "echo", listOf(), ::echo, "Echoes input.", "echo [msg...]"))
+        val commandRegistry = getKoinService<CommandRegistryService>()
+        val cmd = Command.of(UniversalProtocol, "echo", listOf(), ::echo, "Echoes input.", "echo [msg...]")
+        commandRegistry.registerCommand(cmd)
         val result = help(listOf("echo"), testChat)
         assertTrue(result.contains("Echoes input."), "Expected helpText in output")
         assertTrue(result.contains("echo [msg...]"), "Expected syntaxText in output")
@@ -432,7 +439,9 @@ class DefaultCommandsExtendedTest {
 
     @Test
     fun helpLookupIsCaseInsensitive() {
-        registerCommand(Command.of(UniversalProtocol, "ping", listOf(), ::ping, "Replies with Pong!", "ping"))
+        val commandRegistry = getKoinService<CommandRegistryService>()
+        val cmd = Command.of(UniversalProtocol, "ping", listOf(), ::ping, "Replies with Pong!", "ping")
+        commandRegistry.registerCommand(cmd)
         val result = help(listOf("PING"), testChat)
         assertFalse(result.startsWith("There is no command"), "Mixed-case lookup should find the command")
     }

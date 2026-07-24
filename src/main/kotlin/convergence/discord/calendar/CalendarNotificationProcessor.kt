@@ -10,7 +10,9 @@ import java.time.OffsetDateTime
 
 private val notificationLogger = LoggerFactory.getLogger("convergence.calendar.notification")
 
-object CalendarNotificationProcessor {
+class CalendarNotificationProcessorService(
+    private val messaging: MessagingService
+) {
 
     /**
      * Extracts VALARM components from a VEvent, returning pairs of (triggerDuration, description).
@@ -117,8 +119,9 @@ object CalendarNotificationProcessor {
     ) {
         val notifyAtOffset = notifyAt.atOffset(defaultZoneOffset)
         val eventStartOffset = eventStart.atOffset(defaultZoneOffset)
-        notificationLogger.info("Scheduled mention of $eventSummary in ${formatTime(eventStartOffset)} mentioning $mentionUserIds")
-        Scheduler.taskList.add(
+        notificationLogger.info("Scheduled mention of $eventSummary in ${formatTime(eventStartOffset)}" +
+                " mentioning $mentionUserIds")
+        getKoinService<SchedulerThread>().taskList.add(
             ScheduledTask(notifyAtOffset) {
                 sendNotification(
                     channelId = channelId,
@@ -150,6 +153,6 @@ object CalendarNotificationProcessor {
                 "\n$description"
             } else ""
 
-        sendMessage(chat, message)
+        messaging.sendMessage(chat, message)
     }
 }

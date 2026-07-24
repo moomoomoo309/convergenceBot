@@ -1,7 +1,7 @@
 package convergence
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import convergence.discord.calendar.CalendarProcessor
+import convergence.discord.calendar.CalendarProcessorService
 import org.ocpsoft.prettytime.PrettyTime
 import org.ocpsoft.prettytime.units.JustNow
 import java.time.OffsetDateTime
@@ -12,10 +12,14 @@ import java.util.concurrent.atomic.AtomicInteger
  * Checks if commands or tasks scheduled for later are ready to be run yet.
  * Can give information on what's in its queue.
  */
-@Suppress("ConstPropertyName")
-object Scheduler: Thread() {
-    private const val allowedTimeDifferenceSeconds = 30
-    private const val updatesPerSecond = 1
+class SchedulerThread(
+    private val settings: Settings,
+    private val messaging: MessagingService,
+    private val calendarProcessor: CalendarProcessorService,
+    private val commandRegistry: CommandRegistryService
+) : Thread("scheduler") {
+    private val allowedTimeDifferenceSeconds = 30
+    private val updatesPerSecond = 1
 
     private val scheduledCommands = sortedMapOf<OffsetDateTime, MutableList<ScheduledCommand>>()
     private val commandsList = sortedMapOf<Int, ScheduledCommand>()
@@ -37,7 +41,7 @@ object Scheduler: Thread() {
                 if (cmdTime.isBefore(now)) {
                     if (cmdTime.until(now, ChronoUnit.SECONDS) in 0..allowedTimeDifferenceSeconds) {
                         for (cmd in cmdList) {
-                            cmd()
+                            cmd(commandRegistry, messaging)
                             commandsList.remove(cmd.id)
                             settings.serializedCommands.remove(cmd.id)
                         }
@@ -62,7 +66,7 @@ object Scheduler: Thread() {
                     iter.remove()
                 }
             }
-            CalendarProcessor.onUpdate()
+            calendarProcessor.onUpdate()
             sleep((1000.0 / updatesPerSecond).toLong())
         }
     }
@@ -82,7 +86,7 @@ object Scheduler: Thread() {
         commandsList[cmd.id] = cmd
         settings.serializedCommands[cmd.id] = cmd
         updateSettings()
-        return "Scheduled ${getUserName(chat, sender)} to run " +
+        return "Scheduled ${messaging.getUserName(chat, sender)} to run " +
                 "\"$commandName ${args.joinToString(" ")}\" ${formatTime(time)} ($time)."
     }
 
@@ -144,5 +148,11 @@ data class ScheduledCommand(
     val args: List<String>,
     val id: Int,
 ): Schedulable {
-    operator fun invoke() = runCommand(chat, sender, getCommand(commandName.lowercase(), chat) as Command, args)
+    operator fun invoke(commandRegistry: CommandRegistryService, messaging: MessagingService) {
+        messaging.sendMessage(chat, sender, commandRegistry.getCommand(commandName.lowercase(), chat).let {
+            val command = (it as Command)
+            val errorMessage = command.permissions(args, chat, sender)
+            errorMessage ?: messaging.replaceAliasVars(chat, command.function(args, chat, sender), sender)
+        })
+    }
 }

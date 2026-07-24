@@ -53,7 +53,7 @@ fun getNewRoster(): List<BrotherInfo> {
             i += 1
             row = worksheet.getRow(i)
         }
-        resetBrotherPair()
+        brotherPairField = null
         brotherInfoList.filter { it.rosterNumber !in illegalRosters }
     }
 }
@@ -120,12 +120,8 @@ private fun getBrotherTree(): Pair<Map<String, BrotherTreeNode>, BrotherTreeNode
     return brotherMap to rootNode
 }
 
-private var _brotherPair: Pair<Map<String, BrotherTreeNode>, BrotherTreeNode>? = null
+private var brotherPairField: Pair<Map<String, BrotherTreeNode>, BrotherTreeNode>? = null
 val brotherPair: Pair<Map<String, BrotherTreeNode>, BrotherTreeNode>
-    get() = _brotherPair ?: getBrotherTree().also { _brotherPair = it }
+    get() = brotherPairField ?: getBrotherTree().also { brotherPairField = it }
 val brotherMap: Map<String, BrotherTreeNode> by lazy { brotherPair.first }
 val brotherRoot: BrotherTreeNode by lazy { brotherPair.second }
-
-fun resetBrotherPair() {
-    _brotherPair = null
-}

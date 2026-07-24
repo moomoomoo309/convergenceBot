@@ -86,7 +86,8 @@ class ConfigurationTest {
 
     @Test
     fun getUserNameDelegatesToProtocol() {
-        val result = getUserName(testChat, testUser)
+        val messaging = getKoinService<MessagingService>()
+        val result = messaging.getUserName(testChat, testUser)
         assertEquals("", result)
     }
 
@@ -117,7 +118,8 @@ class ConfigurationTest {
         val user = object : User(nickProtocol) {
             override fun toKey() = "NickTestUser(1)"
         }
-        assertEquals("nickname", getUserName(chat, user))
+        val messaging = getKoinService<MessagingService>()
+        assertEquals("nickname", messaging.getUserName(chat, user))
     }
 
     @Test
@@ -147,7 +149,8 @@ class ConfigurationTest {
         val user = object : User(nickProtocol) {
             override fun toKey() = "NickTestUser2(1)"
         }
-        assertEquals("fallback", getUserName(chat, user))
+        val messaging = getKoinService<MessagingService>()
+        assertEquals("fallback", messaging.getUserName(chat, user))
     }
 
     // ─── Protocol equality ──────────────────────────────────────────────────

@@ -15,8 +15,12 @@ class BotState {
         "%chatname" to { c: Chat, _: User -> c.protocol.getChatName(c) }
     )
     val messageCallbacks: MutableList<MessageCallback> = mutableListOf(
-        { chat, message, sender -> runCommand(chat, message, sender) }
+        { chat, message, sender ->
+            commandRegistryService.runCommand(chat, message, sender)
+        }
     )
+
+    private val commandRegistryService: CommandRegistryService by lazy { getKoinService<CommandRegistryService>() }
 
     fun scopeStrToProtocol(s: String) = protocols.sortedBy { -it.name.length }
         .firstOrNull { s.substringBefore("(").startsWith(it.name) }

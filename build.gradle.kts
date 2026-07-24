@@ -56,8 +56,11 @@ dependencies {
     implementation(libs.graphviz)
     implementation(libs.graalpolyglot)
     implementation(libs.graaljs)
+    implementation(libs.koin.core)
     testImplementation(kotlin("test"))
     testImplementation(libs.mockk)
+    testImplementation(libs.koin.test)
+    testImplementation(libs.koin.test.junit4)
 }
 
 sourceSets {

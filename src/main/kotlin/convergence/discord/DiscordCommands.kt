@@ -51,7 +51,8 @@ private fun uploadImagesTo(args: List<String>, chat: Chat): String {
 
 @Suppress("LongMethod")
 fun registerDiscordCommands() {
-    registerCommand(Command.of(
+    val commandRegistry = getKoinService<CommandRegistryService>()
+    commandRegistry.registerCommand(Command.of(
         DiscordProtocol,
         "uploadImagesTo",
         listOf(ArgumentSpec("URL", ArgumentType.STRING)),
@@ -59,7 +60,7 @@ fun registerDiscordCommands() {
         "Sets all images in this channel from here on out to be uploaded to the provided WebDAV URL.",
         "uploadImagesTo (URL)"
     ))
-    registerCommand(Command.of(
+    commandRegistry.registerCommand(Command.of(
         DiscordProtocol,
         "stopUploadingImages",
         listOf(),
@@ -71,7 +72,7 @@ fun registerDiscordCommands() {
         "Stops images in this channel from being uploaded anywhere.",
         "stopUploadingImages (takes no arguments)"
     ))
-    registerCommand(Command.of(
+    commandRegistry.registerCommand(Command.of(
         DiscordProtocol,
         "registerReactChannel",
         listOf(ArgumentSpec("emoji", ArgumentType.STRING), ArgumentSpec("threshold", ArgumentType.INTEGER)),
@@ -79,7 +80,7 @@ fun registerDiscordCommands() {
         "Registers messages to be forwarded to this channel if they are reacted with emoji threshold times or more.",
         "registerReactChannel (emoji) (threshold)"
     ))
-    registerCommand(Command.of(
+    commandRegistry.registerCommand(Command.of(
         DiscordProtocol,
         "removeReactChannel",
         listOf(),
@@ -93,7 +94,7 @@ fun registerDiscordCommands() {
         "Removes messages being forwarded to this channel based on reactions.",
         "removeReactChannel (takes no arguments)"
     ))
-    registerCommand(Command.of(
+    commandRegistry.registerCommand(Command.of(
         DiscordProtocol,
         "reactChannels",
         listOf(),
