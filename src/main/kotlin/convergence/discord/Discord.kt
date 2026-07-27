@@ -597,7 +597,7 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
         return emptyList()
     }
 
-    override fun react(message: IncomingMessage, emoji: IEmoji) {
+    override fun react(message: IncomingMessage, emoji: convergence.model.Emoji) {
         if (message !is DiscordIncomingMessage)
             return
         when(emoji) {
@@ -611,7 +611,7 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
         }.queue()
     }
 
-    override fun unreact(message: IncomingMessage, emoji: IEmoji) {
+    override fun unreact(message: IncomingMessage, emoji: convergence.model.Emoji) {
         if (message !is DiscordIncomingMessage)
             return
 
@@ -626,7 +626,7 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
         }.queue()
     }
 
-    override fun getReactions(message: IncomingMessage): Map<IEmoji, Int> {
+    override fun getReactions(message: IncomingMessage): Map<convergence.model.Emoji, Int> {
         if (message !is DiscordIncomingMessage)
             return emptyMap()
         return message.data.reactions.associate {
@@ -642,7 +642,7 @@ private fun forwardMessageToReactChannel(
     message: DiscordIncomingMessage,
     config: ReactConfig,
     server: DiscordServer,
-    emoji: IEmoji
+    emoji: convergence.model.Emoji
 ) {
     if (message.data.idLong !in forwardedMessages.getOrDefault(
             server.guild.idLong,
@@ -675,7 +675,7 @@ private val imageUploadChannelCallback =
     }
 
 private val reactionChannelCallback =
-    ReactionChanged { _: User, chat: Chat, message: IncomingMessage, emoji: IEmoji,
+    ReactionChanged { _: User, chat: Chat, message: IncomingMessage, emoji: convergence.model.Emoji,
                       _: Int, newAmount: Int ->
         if (chat !is DiscordChat) return@ReactionChanged false
         if (message !is DiscordIncomingMessage) return@ReactionChanged false

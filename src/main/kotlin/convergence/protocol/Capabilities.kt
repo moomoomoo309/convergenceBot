@@ -104,14 +104,14 @@ interface HasCustomEmoji {
 }
 
 interface HasReactions {
-    fun react(message: IncomingMessage, emoji: IEmoji)
-    fun unreact(message: IncomingMessage, emoji: IEmoji)
-    fun getReactions(message: IncomingMessage): Map<IEmoji, Int>
+    fun react(message: IncomingMessage, emoji: Emoji)
+    fun unreact(message: IncomingMessage, emoji: Emoji)
+    fun getReactions(message: IncomingMessage): Map<Emoji, Int>
     fun reactionChanged(
         sender: User,
         chat: Chat,
         message: IncomingMessage,
-        emoji: IEmoji,
+        emoji: Emoji,
         oldAmount: Int,
         newAmount: Int
     ) = runCallbacks<ReactionChanged>(sender, chat, message, emoji, oldAmount, newAmount)
@@ -131,4 +131,3 @@ interface HasRoles<RoleType: Role> {
     fun userHasRole(server: Server, user: User, role: RoleType): Boolean =
         getUserRoles(server, user).any { it == role }
 }
-

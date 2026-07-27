@@ -117,7 +117,8 @@ object CalendarNotificationProcessor {
     ) {
         val notifyAtOffset = notifyAt.atOffset(defaultZoneOffset)
         val eventStartOffset = eventStart.atOffset(defaultZoneOffset)
-        notificationLogger.info("Scheduled mention of $eventSummary in ${formatTime(eventStartOffset)} mentioning $mentionUserIds")
+        notificationLogger.info("Scheduled mention of {} in {} mentioning {}",
+            eventSummary, formatTime(eventStartOffset), mentionUserIds)
         Scheduler.taskList.add(
             ScheduledTask(notifyAtOffset) {
                 sendNotification(

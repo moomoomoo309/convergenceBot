@@ -102,12 +102,12 @@ class ReadByUser(val fct: (chat: Chat, message: MessageHistory, user: User) -> B
     fun invoke(chat: Chat, message: MessageHistory, user: User): Boolean = fct(chat, message, user)
 }
 
-class ReactionChanged(val fct: (User, Chat, IncomingMessage, IEmoji, oldAmt: Int, newAmt: Int) -> Boolean): ChatEvent {
+class ReactionChanged(val fct: (User, Chat, IncomingMessage, Emoji, oldAmt: Int, newAmt: Int) -> Boolean): ChatEvent {
     override fun invoke(vararg args: Any) = fct(
         args[0] as User,
         args[1] as Chat,
         args[2] as IncomingMessage,
-        args[3] as IEmoji,
+        args[3] as Emoji,
         args[4] as Int,
         args[5] as Int
     )
@@ -115,7 +115,7 @@ class ReactionChanged(val fct: (User, Chat, IncomingMessage, IEmoji, oldAmt: Int
         sender: User,
         chat: Chat,
         message: IncomingMessage,
-        emoji: IEmoji,
+        emoji: Emoji,
         oldAmount: Int,
         newAmount: Int
     ): Boolean = fct(sender, chat, message, emoji, oldAmount, newAmount)

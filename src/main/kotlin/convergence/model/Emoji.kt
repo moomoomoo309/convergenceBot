@@ -1,14 +1,13 @@
 package convergence.model
 
-import com.sigpwned.emoji4j.core.grapheme.Emoji
 import convergence.toEmoji
 
-interface IEmoji {
+interface Emoji {
     fun asString(): String
 }
 
-abstract class CustomEmoji(open val name: String, open val url: String?): IEmoji
-class UnicodeEmoji(val emoji: Emoji): IEmoji {
+abstract class CustomEmoji(open val name: String, open val url: String?): Emoji
+class UnicodeEmoji(val emoji: com.sigpwned.emoji4j.core.grapheme.Emoji): Emoji {
     constructor(s: String): this(s.toEmoji()!!)
 
     override fun asString(): String = emoji.toString()
