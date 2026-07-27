@@ -28,7 +28,7 @@ src/main/kotlin/convergence/
   Scheduler.kt            Persisted scheduled/timed commands (was CommandScheduler.kt).
   Messaging.kt            Message sending helpers.
   Extensions.kt           Kotlin extension helpers (e.g. substringBetween).
-  Logging.kt              defaultLogger / messageLogger.
+  Logging.kt              defaultLogger / settingsLogger / messageLogger.
   Command.g4              ANTLR4 grammar for the command syntax. Generated sources land in src/main/java/convergence.
 
   model/                  Core domain model types (extracted from the former Interfaces.kt).
@@ -118,6 +118,16 @@ All commands use the Gradle wrapper (`./gradlew`). Java 17+ required.
 ./gradlew run                # run locally (stdin wired in, so the Console protocol works)
 ```
 
+### Lite build (without frat components)
+
+A "lite" build variant excludes the `discord/frat/` subtree, useful for
+deployments that don't need the frat-specific roster/role features:
+
+```bash
+./gradlew buildLite          # compile + produce convergence.bot-lite-1.0-SNAPSHOT-all.jar
+./gradlew runLite            # run without frat (stdin wired in, Console protocol works)
+```
+
 Note: `compileKotlin` depends on `generateGrammarSource`, so the ANTLR sources
 are regenerated automatically — you don't need to run ANTLR by hand. After
 editing `Command.g4`, just recompile.
@@ -156,7 +166,7 @@ maintainer's server — don't run it unless you are that maintainer.
 - **Generated code**: anything in `src/main/java/convergence/` (CommandParser,
   CommandLexer, visitors, `.tokens`, `.interp`) is ANTLR output. Edit
   `Command.g4` instead and recompile.
-- **Logging**: use `defaultLogger` / `messageLogger` (logback, see
+- **Logging**: use `defaultLogger` / `settingsLogger` / `messageLogger` (logback, see
   `src/main/resources/logback.xml`); don't add `println` outside the Console
   protocol.
 - **Commits**: history uses short imperative subjects; commits authored by an
@@ -182,5 +192,5 @@ JDA (Discord), Jackson (+ kotlin & jsr310 modules) for settings (de)serializatio
 ANTLR4 (command grammar), Natty (natural-language date parsing), caldav4j/sardine
 (CalDAV calendar sync), Apache POI (spreadsheets), GraalVM polyglot + graaljs
 (JS scripting), graphviz-kotlin, argparse4j (CLI args), logback (logging),
-MockK + kotlin.test (testing). Versions are centralized in
+emoji4j (emoji handling), MockK + kotlin.test (testing). Versions are centralized in
 `gradle/libs.versions.toml`.
