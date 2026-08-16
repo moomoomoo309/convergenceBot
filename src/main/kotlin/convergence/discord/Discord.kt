@@ -731,7 +731,7 @@ object MessageListener: ListenerAdapter() {
         val commandDelimiter = settings.commandDelimiters[chat] ?:
             settings.commandDelimiters[chat.server] ?: DEFAULT_COMMAND_DELIMITER
         val commandWithArgs =
-            parseCommand(commandDelimiter + event.name + event.options.joinToString(" ", " ") { it.asString }, chat)
+            parseCommand(chat, commandDelimiter + event.name + event.options.joinToString(" ", " ") { it.asString })
                 ?: return
         val msg = commandWithArgs.command(commandWithArgs.args, chat, sender)
         event.reply((msg as? DiscordOutgoingMessage ?: DiscordOutgoingMessage(msg!!.toSimple().text)).data).queue()

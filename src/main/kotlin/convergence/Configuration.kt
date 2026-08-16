@@ -38,8 +38,8 @@ data class CalendarNotificationChannel(
     @delegate:JsonIgnore
     val regexes : MutableMap<String, Regex> by lazy { mutableMapOf() }
     override fun toString(): String {
-        val guildName = jda.getGuildById(guildId)?.name ?: guildId
-        val channelName = jda.getGuildChannelById(channelId)?.name ?: channelId
+        val guildName = jda.getGuildById(guildId)?.name ?: guildId.toString()
+        val channelName = jda.getGuildChannelById(channelId)?.name ?: channelId.toString()
         val mention = if (mentions.isEmpty()) ""
             else " (mention IDs: ${mentions.toList().joinToString(", ") { 
                 "${it.first}${if (it.second.isEmpty()) "" else ": ${it.second}" }"

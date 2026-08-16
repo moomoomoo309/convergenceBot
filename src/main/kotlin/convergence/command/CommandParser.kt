@@ -55,7 +55,7 @@ private val escapeMap = mapOf(
     '\\' to '\\'
 )
 
-fun parseCommand(command: String, chat: Chat): CommandWithArgs? =
+fun parseCommand(chat: Chat, command: String): CommandWithArgs? =
     parseCommand(command, settings.commandDelimiters.getOrDefault(chat, DEFAULT_COMMAND_DELIMITER), chat)
 
 @SuppressWarnings("ThrowsCount")

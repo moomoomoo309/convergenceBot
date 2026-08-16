@@ -38,5 +38,3 @@ abstract class Protocol(val name: String): Comparable<Protocol> {
     abstract fun commandScopeFromKey(key: String): CommandScope?
     abstract fun userFromKey(key: String): User?
 }
-
-typealias MessageCallback = (chat: Chat, message: IncomingMessage, sender: User) -> Unit

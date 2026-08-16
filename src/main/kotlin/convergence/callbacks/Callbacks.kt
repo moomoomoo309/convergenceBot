@@ -1,14 +1,14 @@
 @file:Suppress("UNCHECKED_CAST")
 package convergence.callbacks
 
-import convergence.command.runCommand
+import convergence.command.processMessage
 import convergence.model.*
 import kotlin.reflect.KClass
 
 val callbacks = mutableMapOf<KClass<out ChatEvent>, MutableList<ChatEvent>>(
     ReceivedImages::class to mutableListOf(
         ReceivedImages { chat: Chat, message: IncomingMessage?, sender: User, images: Array<Image> ->
-            runCommand(chat, message ?: return@ReceivedImages false, sender, images)
+            processMessage(chat, message ?: return@ReceivedImages false, sender, images)
             true
         }
     )

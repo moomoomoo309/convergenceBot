@@ -73,7 +73,7 @@ class CommandParserTest {
         val testCommandStr = command.substring(1, if (testIndex == -1) command.length else testIndex)
         val testCommand = Command.of(testChat.protocol, testCommandStr, listOf(), ::doNothing, "test", "test")
         bot.commands[testChat.protocol] = mutableMapOf(testCommandStr to testCommand)
-        return parseCommand(command, testChat)
+        return parseCommand(testChat, command)
     }
 
     @Test
@@ -162,7 +162,7 @@ class CommandParserTest {
             Alias(testChat, testAliasStr, testCommand, listOf("testArg1", "testArg2"))
         bot.commands[testChat.protocol] = mutableMapOf("test" to testCommand)
         settings.aliases[testChat] = mutableMapOf(testAliasStr to testAlias)
-        return parseCommand(command, testChat)
+        return parseCommand(testChat, command)
     }
 
     @Test
@@ -246,7 +246,7 @@ class CommandParserTest {
 
     private fun parse(input: String): CommandWithArgs? {
         val chat = TestChat()
-        return parseCommand(input, chat)
+        return parseCommand(chat, input)
     }
 
     private fun parseArgs(input: String): List<String> = parse(input)!!.args
@@ -713,13 +713,13 @@ class CommandParserTest {
         val alias = Alias(chat, "ping", underlyingCmd, listOf("aliasArg"))
         settings.aliases[chat] = mutableMapOf("ping" to alias)
 
-        val result = parseCommand("!ping", chat)
+        val result = parseCommand(chat, "!ping")
         assertEquals(listOf("aliasArg"), result?.args)
     }
 
     @Test
     fun unknownCommandThrowsCommandDoesNotExist() {
         val chat = TestChat()
-        assertFailsWith<CommandDoesNotExist> { parseCommand("!nonexistent", chat) }
+        assertFailsWith<CommandDoesNotExist> { parseCommand(chat, "!nonexistent") }
     }
 }

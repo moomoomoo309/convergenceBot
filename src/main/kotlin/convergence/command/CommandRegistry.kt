@@ -48,7 +48,7 @@ fun registerAlias(alias: Alias): Boolean {
 }
 
 fun parseCommand(chat: Chat, message: String, sender: User): CommandWithArgs? = try {
-    parseCommand(message, chat)
+    parseCommand(chat, message)
 } catch(e: CommandDoesNotExist) {
     sendMessage(chat, sender, "No command exists with name \"${e.message}\".")
     null
@@ -63,9 +63,10 @@ fun getStackTraceText(e: Exception): String = ByteArrayOutputStream().let {
 }
 
 /**
- * Run the Command in the given message, or do nothing if none exists.
+ * Log the message, forwarding it to linked chats if applicable, and running the command if present
+ * in the message.
  */
-fun runCommand(chat: Chat, message: IncomingMessage, sender: User, images: Array<Image> = emptyArray()) {
+fun processMessage(chat: Chat, message: IncomingMessage, sender: User, images: Array<Image> = emptyArray()) {
     val text = message.toSimple().text
     messageLogger.info(
         "[${if (chat is HasServer<*>) chat.server.name + "#" else ""}${chat.name}] ${getUserName(chat, sender)}: " +
@@ -77,12 +78,9 @@ fun runCommand(chat: Chat, message: IncomingMessage, sender: User, images: Array
             runCommand(chat, sender, command, args)
         }
     } catch(e: Exception) {
-        sendMessage(
-            chat, sender,
-            "Error while running command! Stack trace:\n${if (settings.debugMode) getStackTraceText(e) else e.message}"
-        )
-        if (!settings.debugMode)
-            defaultLogger.error("Error while running command!", e)
+        val errMsg = if (settings.debugMode) getStackTraceText(e) else e.message
+        sendMessage(chat, sender, "Error while running command! Stack trace:\n$errMsg")
+        defaultLogger.error("Error while running command!", e)
     }
 }
 

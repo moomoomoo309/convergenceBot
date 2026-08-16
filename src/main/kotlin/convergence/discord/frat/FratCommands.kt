@@ -373,7 +373,8 @@ private fun registerMentionCallback() {
                 val newMentions = mutableMapOf<DiscordUser, Int>()
                 for (user in users) {
                     user as? DiscordUser ?: continue
-                    val mentions = (settings.mentionChats[chat] ?: return@MentionedUser true)[user] ?: return@MentionedUser true
+                    val mentions = (settings.mentionChats[chat] ?: return@MentionedUser true)[user]
+                        ?: return@MentionedUser true
                     val mentionCount = mentions.getOrDefault(sender, 0) + 1
                     mentions[sender] = mentionCount
                     newMentions[user] = mentionCount
