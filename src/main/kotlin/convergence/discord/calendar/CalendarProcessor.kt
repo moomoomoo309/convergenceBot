@@ -15,6 +15,7 @@ import convergence.command.Command
 import convergence.command.registerCommands
 import convergence.discord.*
 import convergence.model.Chat
+import convergence.model.User
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.ScheduledEvent
@@ -557,7 +558,7 @@ fun registerCalendarCommands() {
             listOf(),
             { _, chat ->
                 settings.notificationChannels.filter {
-                    it.guildId == (chat as DiscordChat).server.guild.idLong
+                    it.chat == chat
                 }.joinToString("\n").ifEmpty { "No calendar notifications are registered in this server." }
             },
             "Lists all registered calendar notification channels in this server.",
@@ -592,33 +593,30 @@ private fun addCalendarNotificationCommand(args: List<String>, chat: Chat): Stri
     val cal = CalendarProcessor.getAndCacheCalendar(calURL) ?: return "No calendar found at URL \"$calURL\"."
     val calName = CalendarProcessor.calendarNames[cal]!!
 
-    val guildId = chat.server.guild.idLong
-    val channelId = chat.channel.idLong
-
     // Check if already registered
     val existing = settings.notificationChannels.firstOrNull {
-        it.guildId == guildId && it.calURL == calURL && it.channelId == channelId
+        it.chat == chat && it.calURL == calURL
     }
 
     if (mentionStr == null) {
         // Error if it's already registered
         if (existing != null)
             return "This channel is already registered for notifications from that calendar."
-        settings.notificationChannels.add(CalendarNotificationChannel(guildId, channelId, calURL, mutableMapOf()))
+        settings.notificationChannels.add(CalendarNotificationChannel(chat, calURL, mutableMapOf()))
         return "Registered this channel to receive notifications from calendar \"$calName\"."
     }
 
-    val mentionUserId = getIdFromMention(mentionStr) ?: return "Invalid @ for mentions."
+    val mentionUser = getIdFromMention(mentionStr)?.let { DiscordProtocol.getUser(it) }
+        ?: return "Invalid @ for mentions."
     // Add a new channel, or add the mention to the existing one
     if (existing == null) {
-        val mentions = mutableMapOf(mentionUserId to (pattern ?: ""))
-        settings.notificationChannels.add(CalendarNotificationChannel(guildId, channelId, calURL, mentions))
+        val mentions = mutableMapOf<User, String>(mentionUser to (pattern ?: ""))
+        settings.notificationChannels.add(CalendarNotificationChannel(chat, calURL, mentions))
     } else
-        existing.mentions[mentionUserId] = pattern ?: ""
+        existing.mentions[mentionUser] = pattern ?: ""
     updateSettings()
     // Format the response text
-    val user = DiscordProtocol.getUser(mentionUserId)
-    val mentionText = " (mentioning ${user?.getNickname(chat)}"
+    val mentionText = " (mentioning ${mentionUser.getNickname(chat)}"
     val filterText = if (pattern != null)
         " on messages that match the regular expression `$pattern`"
     else
@@ -634,17 +632,15 @@ private fun removeCalendarNotificationCommand(args: List<String>, chat: Chat): S
 
     val calURL = args[0]
     val mentionStr = args.getOrNull(1)
-    val guildId = chat.server.guild.idLong
-    val channelId = chat.channel.idLong
 
     // Parse mention if provided
-    val mentionUserId = getIdFromMention(mentionStr)
+    val mentionUser = getIdFromMention(mentionStr)?.let { DiscordProtocol.getUser(it) }
 
     val channel = settings.notificationChannels.firstOrNull {
-        it.guildId == guildId && it.calURL == calURL && it.channelId == channelId
+        it.chat == chat && it.calURL == calURL
     }
 
-    return if (mentionUserId == null)
+    return if (mentionUser == null)
         // Remove the channel notification entirely
         if (settings.notificationChannels.remove(channel)) {
             updateSettings()
@@ -653,7 +649,7 @@ private fun removeCalendarNotificationCommand(args: List<String>, chat: Chat): S
             "No notification registration found for URL: $calURL"
     else
         // Remove the user being mentioned from the notification
-        if (channel?.mentions?.remove(mentionUserId) != null) {
+        if (channel?.mentions?.remove(mentionUser) != null) {
             updateSettings()
             "Notification mention removed."
         } else

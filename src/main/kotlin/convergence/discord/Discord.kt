@@ -577,8 +577,11 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
 }
 
     override fun getChatName(chat: Chat): String = if (chat is DiscordChat) chat.name else ""
-    override fun mention(chat: Chat, user: User, message: OutgoingMessage?) {
-        sendMessage(chat, ((user as DiscordUser).author.asMention + message?.let { " $it" }))
+    override fun mention(chat: Chat, users: List<User>, message: OutgoingMessage?) {
+        val mentions = users.joinToString(" ") { user ->
+            (user as DiscordUser).author.asMention
+        }
+        sendMessage(chat, mentions + (message?.let { " $it" } ?: ""))
     }
 
     val discordMentionRegex = Regex("^<@([0-9]{1,20})>$")

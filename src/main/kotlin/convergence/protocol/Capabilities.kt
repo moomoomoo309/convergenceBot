@@ -42,8 +42,8 @@ interface HasMessageHistory {
 }
 
 interface CanMentionUsers {
-    fun mention(chat: Chat, user: User, message: OutgoingMessage?)
-    fun mention(chat: Chat, user: User) = mention(chat, user, null)
+    fun mention(chat: Chat, users: List<User>, message: OutgoingMessage?)
+    fun mention(chat: Chat, users: List<User>) = mention(chat, users, null)
     fun mentionedUsers(chat: Chat, message: IncomingMessage, sender: User, users: List<User>) =
         runCallbacks<MentionedUser>(chat, message, sender, users)
     fun getUserFromMentionText(chat: Chat, mention: String): User?

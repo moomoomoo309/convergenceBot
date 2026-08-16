@@ -1,7 +1,10 @@
 package convergence.discord.calendar
 
 import convergence.*
-import convergence.discord.DiscordChat
+import convergence.model.Chat
+import convergence.model.SimpleOutgoingMessage
+import convergence.model.User
+import convergence.protocol.CanMentionUsers
 import net.fortuna.ical4j.model.component.VEvent
 import org.slf4j.LoggerFactory
 import java.time.Duration
@@ -84,20 +87,20 @@ object CalendarNotificationProcessor {
                 // Notify each channel that is configured to receive it
                 for (channel in notificationChannels) {
                     // Filter out which users to mention based on the pattern they provided (it defaults to "")
-                    val mentionIds = channel.mentions.mapNotNull { (userId, pattern) ->
+                    val mentionUsers = channel.mentions.mapNotNull { (user, pattern) ->
                         val regex = channel.regexes.computeIfAbsent(pattern) { Regex(pattern, RegexOption.IGNORE_CASE) }
                         if (regex.containsMatchIn(eventSummary)) {
-                            userId
+                            user
                         } else null
                     }
 
                     scheduleNotification(
                         eventSummary = eventSummary,
                         eventStart = eventStart,
-                        channelId = channel.channelId,
+                        chat = channel.chat,
                         notifyAt = notifyAt,
                         description = description,
-                        mentionUserIds = mentionIds
+                        mentionUsers = mentionUsers
                     )
                 }
             }
@@ -110,47 +113,48 @@ object CalendarNotificationProcessor {
     private fun scheduleNotification(
         eventSummary: String,
         eventStart: Instant,
-        channelId: Long,
+        chat: Chat,
         notifyAt: Instant,
         description: String,
-        mentionUserIds: List<Long>
+        mentionUsers: List<User>
     ) {
         val notifyAtOffset = notifyAt.atOffset(defaultZoneOffset)
         val eventStartOffset = eventStart.atOffset(defaultZoneOffset)
         notificationLogger.info("Scheduled mention of {} in {} mentioning {}",
-            eventSummary, formatTime(eventStartOffset), mentionUserIds)
+            eventSummary, formatTime(eventStartOffset), mentionUsers)
         Scheduler.taskList.add(
             ScheduledTask(notifyAtOffset) {
                 sendNotification(
-                    channelId = channelId,
+                    chat = chat,
                     eventSummary = eventSummary,
                     eventStart = eventStartOffset,
                     description = description,
-                    mentionUserIds = mentionUserIds
+                    mentionUsers = mentionUsers
                 )
             }
         )
     }
 
     /**
-     * Sends a notification message to the specified Discord channel.
+     * Sends a notification message to the specified chat.
      */
     private fun sendNotification(
-        channelId: Long,
+        chat: Chat,
         eventSummary: String,
         eventStart: OffsetDateTime,
         description: String,
-        mentionUserIds: List<Long>
+        mentionUsers: List<User>
     ) {
-        val chat = DiscordChat(channelId)
         val timeUntil = formatTime(eventStart)
-        val mentionStr = mentionUserIds.joinToString(" ") { "<@$it> " }
-
-        val message = "$mentionStr Reminder: $eventSummary starts in $timeUntil\nEvent time: $eventStart" +
+        val message = "Reminder: $eventSummary starts in $timeUntil\nEvent time: $eventStart" +
             if (description.isNotBlank() && description != "Reminder") {
                 "\n$description"
             } else ""
 
-        sendMessage(chat, message)
+        if (chat.protocol is CanMentionUsers) {
+            val protocol = (chat.protocol as CanMentionUsers)
+            protocol.mention(chat, mentionUsers, SimpleOutgoingMessage(message))
+        } else
+            sendMessage(chat, message)
     }
 }

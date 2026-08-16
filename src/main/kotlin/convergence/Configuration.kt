@@ -29,22 +29,19 @@ data class SyncedCalendar(val guildId: Long, val calURL: String) {
 }
 
 data class CalendarNotificationChannel(
-    val guildId: Long,
-    val channelId: Long,
+    val chat: Chat,
     val calURL: String,
-    val mentions: MutableMap<Long, String>
+    val mentions: MutableMap<User, String>
 ) {
     @get:JsonIgnore
     @delegate:JsonIgnore
     val regexes : MutableMap<String, Regex> by lazy { mutableMapOf() }
     override fun toString(): String {
-        val guildName = jda.getGuildById(guildId)?.name ?: guildId.toString()
-        val channelName = jda.getGuildChannelById(channelId)?.name ?: channelId.toString()
         val mention = if (mentions.isEmpty()) ""
-            else " (mention IDs: ${mentions.toList().joinToString(", ") { 
+            else " (mentions: ${mentions.toList().joinToString(", ") {
                 "${it.first}${if (it.second.isEmpty()) "" else ": ${it.second}" }"
             }}"
-        return "CalendarNotificationChannel(guild=$guildName, channel=$channelName, calURL=$calURL$mention)"
+        return "CalendarNotificationChannel(chat=$chat, calURL=$calURL$mention)"
     }
 }
 
