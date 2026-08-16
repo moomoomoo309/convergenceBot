@@ -300,7 +300,7 @@ object CalendarProcessor {
         // Remove duplicate discord events
         val duplicateEvents = removeDuplicateDiscordEvents(discordEvents, dry)
 
-        // Add all the events simultaneously, adding them to the uidMap after, then wait for all of them to complete.
+        // Add all the events simultaneously, then wait for all of them to complete.
         if (!dry) {
             CompletableFuture.allOf(*futures.map {
                 it.second.submit()

@@ -361,7 +361,21 @@ fun registerFratCommands() {
         )
     )
     registerMentionCallback()
-    Scheduler.taskList.add(ScheduledTask(nextMonth(), ::mentionStatsFct))
+    Scheduler.taskList.add(MentionStatsTask(nextMonth()))
+}
+
+data class MentionStatsTask(override val scheduledTime: OffsetDateTime): ScheduledTask(scheduledTime) {
+    override fun invoke() {
+        for ((chat, _) in settings.mentionChats) {
+            sendMessage(chat, "Monthly mention stats:\n${mentionStats(chat)}")
+        }
+        for ((_, stats) in settings.mentionChats)
+            for ((_, mentioners) in stats)
+                mentioners.clear()
+        updateSettings()
+        // Schedule it again for next month
+        Scheduler.taskList.add(MentionStatsTask(nextMonth()))
+    }
 }
 
 private fun registerMentionCallback() {
@@ -409,18 +423,6 @@ private fun nextMonth(): OffsetDateTime {
         return thisMonth.plusMonths(1)
 
     return thisMonth
-}
-
-private fun mentionStatsFct() {
-    for ((chat, _) in settings.mentionChats) {
-        sendMessage(chat, "Monthly mention stats:\n${mentionStats(chat)}")
-    }
-    for ((_, stats) in settings.mentionChats)
-        for ((_, mentioners) in stats)
-            mentioners.clear()
-    updateSettings()
-    // Schedule it again for next month
-    Scheduler.taskList.add(ScheduledTask(nextMonth(), ::mentionStatsFct))
 }
 
 fun mentionStats(chat: Chat) = settings.mentionChats

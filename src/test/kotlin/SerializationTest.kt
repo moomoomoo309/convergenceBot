@@ -173,3 +173,6 @@ class SerializationTest {
         assertMatches(objectMapper.readValue<Settings>(json))
     }
 }
+
+fun <K, V> MutableMap<K, V>.clearThen() = this.apply { this.clear() }
+fun <T> MutableList<T>.clearThen() = this.apply { this.clear() }

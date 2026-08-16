@@ -1,8 +1,8 @@
 package convergence.discord.frat
 
 import com.fasterxml.jackson.annotation.JsonIgnore
-import convergence.discord.calendar.defaultZoneOffset
 import convergence.titleCase
+import convergence.toOffsetDatetime
 import org.apache.poi.ss.usermodel.*
 import org.apache.poi.xssf.usermodel.XSSFFormulaEvaluator
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
@@ -74,7 +74,7 @@ private val dataFormatter = DataFormatter()
 lateinit var formulaEvaluator: FormulaEvaluator
 fun Cell.readString(): String {
     if (this.cellType == CellType.NUMERIC && DateUtil.isCellDateFormatted(this)) {
-        val date = this.dateCellValue.toInstant().atOffset(defaultZoneOffset)
+        val date = this.dateCellValue.toOffsetDatetime()
         return "${date.month.name.titleCase()} ${date.dayOfMonth}${getOrdinal(date.dayOfMonth)}, ${date.year}"
     }
     return dataFormatter.formatCellValue(this, formulaEvaluator).trim()

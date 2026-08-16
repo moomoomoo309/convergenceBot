@@ -78,13 +78,13 @@ fun forwardToLinkedChats(
 
     // Send the messages out to the linked chats if there are any. Don't error if there aren't any.
     val bot = chat.protocol.getBot(chat)
-    if (isCommand || sender != bot)
-        if (chat in settings.linkedChats)
-            for (linkedChat in settings.linkedChats[chat]!!) {
-                val msg = "$boldOpen${getUserName(chat, if (isCommand) bot else sender)}:$boldClose $message"
-                if (linkedChat.protocol is HasImages && images.isNotEmpty())
-                    (linkedChat.protocol as HasImages).sendImages(linkedChat, msg, sender, *images)
-                else
-                    sendMessage(linkedChat, msg)
-            }
+    if ((isCommand || sender != bot) && chat in settings.linkedChats)
+        for (linkedChat in settings.linkedChats[chat]!!) {
+            val msg = "$boldOpen${getUserName(chat, if (isCommand) bot else sender)}:$boldClose $message"
+            if (linkedChat.protocol is HasImages && images.isNotEmpty()) {
+                val protocol = (linkedChat.protocol as HasImages)
+                protocol.sendImages(linkedChat, msg, sender, *images)
+            } else
+                sendMessage(linkedChat, msg)
+        }
 }

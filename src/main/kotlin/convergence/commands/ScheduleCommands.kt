@@ -36,7 +36,7 @@ fun events(chat: Chat): String {
     val commands = Scheduler.getCommands()
     if (commands.isEmpty())
         return "No events are currently scheduled."
-    return buildString { addEventToBuilder(commands.sortedBy { it.time }, chat, this) }
+    return buildString { addEventToBuilder(commands.sortedBy { it.scheduledTime }, chat, this) }
 }
 
 /**
@@ -59,7 +59,7 @@ fun eventsFromUser(chat: Chat, sender: User): String {
     builder.append("${getUserName(chat, sender)}:\n")
     if (sender in eventMap) {
         val events = eventMap[sender] ?: mutableListOf()
-        events.sortBy { it.time }
+        events.sortBy { it.scheduledTime }
         addEventToBuilder(events, chat, builder)
     }
     return builder.toString()
@@ -71,7 +71,7 @@ fun eventsByUser(chat: Chat, sender: User): String {
         return "No events are currently scheduled."
     val builder = StringBuilder("Scheduled events by user:\n")
     for ((user, events) in eventMap) {
-        events.sortBy { it.time }
+        events.sortBy { it.scheduledTime }
         builder.append("${getUserName(chat, user)}:\n")
         addEventToBuilder(events, chat, builder)
     }
@@ -85,11 +85,11 @@ private fun addEventToBuilder(
 ) {
     for (event in events) {
         val id = event.id
-        val time = formatTime(event.time)
+        val time = formatTime(event.scheduledTime)
         val commandDelimiter = settings.commandDelimiters.getOrDefault(chat, DEFAULT_COMMAND_DELIMITER)
         val name = event.commandName
         val argsStr = event.args.joinToString(" ")
-        builder.append("\t[$id] $time (${event.time}): \"$commandDelimiter$name $argsStr\"\n")
+        builder.append("\t[$id] $time (${event.scheduledTime}): \"$commandDelimiter$name $argsStr\"\n")
     }
 }
 

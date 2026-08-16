@@ -30,7 +30,7 @@ object Scheduler: Thread() {
     fun loadFromFile() {
         settings.serializedCommands.values.forEach { cmd ->
             commandsList[cmd.id] = cmd
-            scheduledCommands.getOrPut(cmd.time) { mutableListOf(cmd) }
+            scheduledCommands.getOrPut(cmd.scheduledTime) { mutableListOf(cmd) }
         }
     }
 
@@ -63,8 +63,8 @@ object Scheduler: Thread() {
             val iter = taskList.iterator()
             while (iter.hasNext()) {
                 val task = iter.next()
-                if (now.isAfter(task.time)) {
-                    task.fct.run()
+                if (now.isAfter(task.scheduledTime)) {
+                    task()
                     iter.remove()
                 }
             }
@@ -111,7 +111,7 @@ object Scheduler: Thread() {
      */
     fun unschedule(index: Int) = commandsList.remove(index)?.let {
         settings.serializedCommands.remove(it.id)
-        scheduledCommands[it.time]?.remove(it)
+        scheduledCommands[it.scheduledTime]?.remove(it)
     } != null
 }
 
@@ -119,22 +119,23 @@ private val prettyTime = PrettyTime().also { it.removeUnit(JustNow::class.java) 
 fun formatTime(time: OffsetDateTime): String = prettyTime.format(time)
 
 interface Schedulable {
-    val time: OffsetDateTime
+    val scheduledTime: OffsetDateTime
 }
 
 /**
  * A function that will run at a future time.
  */
-data class ScheduledTask(
-    override val time: OffsetDateTime,
-    val fct: Runnable
-): Schedulable
+abstract class ScheduledTask(
+    override val scheduledTime: OffsetDateTime
+): Schedulable {
+    abstract operator fun invoke()
+}
 
 /**
  * A command sent by a user to run at a future time.
  */
 data class ScheduledCommand(
-    override val time: OffsetDateTime,
+    override val scheduledTime: OffsetDateTime,
     // chat/sender persist as their key strings (via the Chat/User value (de)serializers in convergenceModule);
     // the property names are pinned for backwards compatibility with settings files written before this type
     // serialized directly.
@@ -144,7 +145,7 @@ data class ScheduledCommand(
     @param:JsonProperty("senderKey")
     @get:JsonProperty("senderKey")
     val sender: User,
-    
+
     val protocolName: String,
     val commandName: String,
     val args: List<String>,

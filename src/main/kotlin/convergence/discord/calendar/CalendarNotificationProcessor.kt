@@ -10,6 +10,8 @@ import org.slf4j.LoggerFactory
 import java.time.Duration
 import java.time.Instant
 import java.time.OffsetDateTime
+import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 
 private val notificationLogger = LoggerFactory.getLogger("convergence.calendar.notification")
 
@@ -118,38 +120,39 @@ object CalendarNotificationProcessor {
         description: String,
         mentionUsers: List<User>
     ) {
-        val notifyAtOffset = notifyAt.atOffset(defaultZoneOffset)
-        val eventStartOffset = eventStart.atOffset(defaultZoneOffset)
+        val notifyAtOffset = notifyAt.toOffsetDateTime()
+        val eventStartOffset = eventStart.toOffsetDateTime()
         notificationLogger.info("Scheduled mention of {} in {} mentioning {}",
             eventSummary, formatTime(eventStartOffset), mentionUsers)
         Scheduler.taskList.add(
-            ScheduledTask(notifyAtOffset) {
-                sendNotification(
-                    chat = chat,
-                    eventSummary = eventSummary,
-                    eventStart = eventStartOffset,
-                    description = description,
-                    mentionUsers = mentionUsers
-                )
-            }
+            UpcomingNotification(
+                chat,
+                eventSummary,
+                notifyAtOffset,
+                eventStartOffset,
+                description,
+                mentionUsers
+            )
         )
     }
 
-    /**
-     * Sends a notification message to the specified chat.
-     */
-    private fun sendNotification(
-        chat: Chat,
-        eventSummary: String,
-        eventStart: OffsetDateTime,
-        description: String,
-        mentionUsers: List<User>
-    ) {
-        val timeUntil = formatTime(eventStart)
-        val message = "Reminder: $eventSummary starts in $timeUntil\nEvent time: $eventStart" +
-            if (description.isNotBlank() && description != "Reminder") {
-                "\n$description"
-            } else ""
+}
+
+data class UpcomingNotification(
+    val chat: Chat,
+    val eventSummary: String,
+    override val scheduledTime: OffsetDateTime,
+    val eventTime: OffsetDateTime,
+    val description: String,
+    val mentionUsers: List<User>
+): ScheduledTask(scheduledTime) {
+    override operator fun invoke() {
+        val timeUntil = formatTime(eventTime)
+        val fullTimestamp = eventTime.truncatedTo(ChronoUnit.SECONDS).format(DateTimeFormatter.ISO_INSTANT)
+        val message = "Reminder: $eventSummary starts in $timeUntil\nEvent time: $fullTimestamp" +
+                if (description.isNotBlank() && description != "Reminder") {
+                    "\n$description"
+                } else ""
 
         if (chat.protocol is CanMentionUsers) {
             val protocol = (chat.protocol as CanMentionUsers)
