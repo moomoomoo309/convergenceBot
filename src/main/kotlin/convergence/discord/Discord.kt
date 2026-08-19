@@ -390,7 +390,7 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
     }
 
 
-    override fun sendImages(chat: Chat, message: OutgoingMessage, sender: User, vararg images: Image) {
+    override fun sendImages(chat: Chat, sender: User, message: OutgoingMessage, vararg images: Image) {
         if (chat is DiscordChat && images.isArrayOf<DiscordImage>()) {
             @Suppress("UNCHECKED_CAST", "KotlinConstantConditions")
             val discordImages = images as Array<DiscordImage>
@@ -665,7 +665,7 @@ private fun forwardMessageToReactChannel(
 }
 
 private val imageUploadChannelCallback =
-    ReceivedImages { chat: Chat, _: IncomingMessage?, _: User, images: Array<Image> ->
+    ReceivedImages { chat: Chat, _: User, _: IncomingMessage?, images: Array<Image> ->
         for (image in images) {
             if (image is DiscordImage && chat in settings.imageUploadChannels) {
                 val uploadURL = settings.imageUploadChannels[chat]
@@ -714,8 +714,8 @@ object MessageListener: ListenerAdapter() {
         if (mentionedMembers.isNotEmpty())
             DiscordProtocol.mentionedUsers(
                 chat,
-                DiscordIncomingMessage(event.message),
                 sender,
+                DiscordIncomingMessage(event.message),
                 mentionedMembers.map { DiscordUser(it) }
             )
         val images = event.message.attachments
@@ -723,9 +723,9 @@ object MessageListener: ListenerAdapter() {
             .map { DiscordImage(it) }
             .toTypedArray()
         if (images.isNotEmpty())
-            DiscordProtocol.receivedImages(chat, message, sender, *images)
+            DiscordProtocol.receivedImages(chat, sender, message, *images)
         else
-            DiscordProtocol.receivedMessage(chat, message, sender)
+            DiscordProtocol.receivedMessage(chat, sender, message)
     }
 
     override fun onSlashCommandInteraction(event: SlashCommandInteractionEvent) {

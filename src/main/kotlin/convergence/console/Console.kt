@@ -71,12 +71,12 @@ object ConsoleProtocol: Protocol("Console") {
                 try {
                     val stdin = Scanner(System.`in`)
                     val currentLine = stdin.nextLine()
-                    receivedMessage(ConsoleChat, SimpleIncomingMessage(currentLine), user)
+                    receivedMessage(ConsoleChat, user, SimpleIncomingMessage(currentLine))
                     while (true) {
                         print("> ")
                         System.out.flush()
                         while (!stdin.hasNextLine()) stdin.next()
-                        receivedMessage(ConsoleChat, SimpleIncomingMessage(stdin.nextLine()), user)
+                        receivedMessage(ConsoleChat, user, SimpleIncomingMessage(stdin.nextLine()))
                     }
                 } catch(_: NoSuchElementException) {
                     // Catch Ctrl-D (EOF). Normally, I wouldn't do this in a plugin, but it's the local console of the

@@ -29,34 +29,34 @@ class MessagingTest {
     @Test
     fun replaceAliasVarsReplacesSender() {
         val msg = SimpleOutgoingMessage("Hello %sender!")
-        val result = replaceAliasVars(testChat, msg, testUser)
+        val result = replaceAliasVars(testChat, testUser, msg)
         assertEquals("Hello !", result?.toSimple()?.text)
     }
 
     @Test
     fun replaceAliasVarsReplacesCustomVar() {
         val msg = SimpleOutgoingMessage("Hello %sendername!")
-        val result = replaceAliasVars(testChat, msg, testUser)
+        val result = replaceAliasVars(testChat, testUser, msg)
         assertEquals("Hello testuser!", result?.toSimple()?.text)
     }
 
     @Test
     fun replaceAliasVarsReplacesMultipleVars() {
         val msg = SimpleOutgoingMessage("%sendername says hi to %sendername")
-        val result = replaceAliasVars(testChat, msg, testUser)
+        val result = replaceAliasVars(testChat, testUser, msg)
         assertEquals("testuser says hi to testuser", result?.toSimple()?.text)
     }
 
     @Test
     fun replaceAliasVarsLeavesUnknownVarsUntouched() {
         val msg = SimpleOutgoingMessage("Hello %unknown!")
-        val result = replaceAliasVars(testChat, msg, testUser)
+        val result = replaceAliasVars(testChat, testUser, msg)
         assertEquals("Hello %unknown!", result?.toSimple()?.text)
     }
 
     @Test
     fun replaceAliasVarsReturnsNullForNullMessage() {
-        assertNull(replaceAliasVars(testChat, null, testUser))
+        assertNull(replaceAliasVars(testChat, testUser, null))
     }
 
     @Test
@@ -65,7 +65,7 @@ class MessagingTest {
         val msg = object : OutgoingMessage() {
             override fun toSimple() = SimpleOutgoingMessage("text")
         }
-        val result = replaceAliasVars(testChat, msg, testUser)
+        val result = replaceAliasVars(testChat, testUser, msg)
         assertEquals(msg, result)
     }
 
@@ -73,7 +73,7 @@ class MessagingTest {
     fun replaceAliasVarsReturnsNullWhenVarReturnsNull() {
         bot.aliasVars["%custom"] = { _, _ -> null }
         val msg = SimpleOutgoingMessage("Hello %custom!")
-        val result = replaceAliasVars(testChat, msg, testUser)
+        val result = replaceAliasVars(testChat, testUser, msg)
         // When the var function returns null, the original %custom is kept
         assertEquals("Hello %custom!", result?.toSimple()?.text)
     }

@@ -47,7 +47,7 @@ fun registerAlias(alias: Alias): Boolean {
     return true
 }
 
-fun parseCommand(chat: Chat, message: String, sender: User): CommandWithArgs? = try {
+fun parseCommand(chat: Chat, sender: User, message: String): CommandWithArgs? = try {
     parseCommand(chat, message)
 } catch(e: CommandDoesNotExist) {
     sendMessage(chat, sender, "No command exists with name \"${e.message}\".")
@@ -66,15 +66,15 @@ fun getStackTraceText(e: Exception): String = ByteArrayOutputStream().let {
  * Log the message, forwarding it to linked chats if applicable, and running the command if present
  * in the message.
  */
-fun processMessage(chat: Chat, message: IncomingMessage, sender: User, images: Array<Image> = emptyArray()) {
+fun processMessage(chat: Chat, sender: User, message: IncomingMessage, images: Array<Image> = emptyArray()) {
     val text = message.toSimple().text
     messageLogger.info(
         "[${if (chat is HasServer<*>) chat.server.name + "#" else ""}${chat.name}] ${getUserName(chat, sender)}: " +
                 "$text${if (images.isNotEmpty()) " +${images.size} images" else ""}"
     )
-    forwardToLinkedChats(chat, message.toOutgoing(), sender, images)
+    forwardToLinkedChats(chat, sender, message.toOutgoing(), images)
     try {
-        parseCommand(chat, text, sender)?.let { (command, args) ->
+        parseCommand(chat, sender, text)?.let { (command, args) ->
             runCommand(chat, sender, command, args)
         }
     } catch(e: Exception) {

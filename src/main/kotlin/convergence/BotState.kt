@@ -8,7 +8,7 @@ import convergence.model.User
 import convergence.protocol.HasNicknames
 import java.util.concurrent.atomic.AtomicInteger
 
-typealias MessageCallback = (chat: Chat, message: IncomingMessage, sender: User) -> Unit
+typealias MessageCallback = (chat: Chat, sender: User, message: IncomingMessage) -> Unit
 class BotState {
     val chatMap: MutableMap<Int, Chat> = mutableMapOf()
     val reverseChatMap: MutableMap<Chat, Int> = mutableMapOf()
@@ -22,7 +22,7 @@ class BotState {
         "%chatname" to { c: Chat, _: User -> c.protocol.getChatName(c) }
     )
     val messageCallbacks: MutableList<MessageCallback> = mutableListOf(
-        { chat, message, sender -> processMessage(chat, message, sender) }
+        { chat, sender, message -> processMessage(chat, sender, message) }
     )
 
     fun scopeStrToProtocol(s: String) = protocols.sortedBy { -it.name.length }

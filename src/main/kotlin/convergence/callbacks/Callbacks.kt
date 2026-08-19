@@ -7,8 +7,8 @@ import kotlin.reflect.KClass
 
 val callbacks = mutableMapOf<KClass<out ChatEvent>, MutableList<ChatEvent>>(
     ReceivedImages::class to mutableListOf(
-        ReceivedImages { chat: Chat, message: IncomingMessage?, sender: User, images: Array<Image> ->
-            processMessage(chat, message ?: return@ReceivedImages false, sender, images)
+        ReceivedImages { chat: Chat, sender: User, message: IncomingMessage?, images: Array<Image> ->
+            processMessage(chat, sender, message ?: return@ReceivedImages false, images)
             true
         }
     )
@@ -43,13 +43,13 @@ class ChangedNickname(val fct: (chat: Chat, user: User, oldName: String) -> Bool
     fun invoke(chat: Chat, user: User, oldName: String) = fct(chat, user, oldName)
 }
 
-class ReceivedImages(val fct: (chat: Chat, message: IncomingMessage?, sender: User, image: Array<Image>) -> Boolean):
+class ReceivedImages(val fct: (Chat, User, IncomingMessage?, Array<Image>) -> Boolean):
     ChatEvent {
-    override fun invoke(vararg args: Any) = args.let { (chat, message, sender, images) ->
-        fct(chat as Chat, message as? IncomingMessage?, sender as User, images as Array<Image>)
+    override fun invoke(vararg args: Any) = args.let { (chat, sender, message, images) ->
+        fct(chat as Chat, sender as User, message as? IncomingMessage?, images as Array<Image>)
     }
-    fun invoke(chat: Chat, message: IncomingMessage?, sender: User, images: Array<Image>): Boolean =
-        fct(chat, message ?: SimpleIncomingMessage(""), sender, images)
+    fun invoke(chat: Chat, sender: User, message: IncomingMessage?, images: Array<Image>): Boolean =
+        fct(chat, sender, message ?: SimpleIncomingMessage(""), images)
 }
 
 class EditMessage(val fct: (oldMessage: String, sender: User, newMessage: String) -> Boolean): ChatEvent {
@@ -59,12 +59,12 @@ class EditMessage(val fct: (oldMessage: String, sender: User, newMessage: String
     fun invoke(oldMessage: String, sender: User, newMessage: String): Boolean = fct(oldMessage, sender, newMessage)
 }
 
-class MentionedUser(val fct: (Chat, message: IncomingMessage, sender: User, users: List<User>) -> Boolean): ChatEvent {
-    override fun invoke(vararg args: Any) = args.let { (chat, message, sender, users) ->
-        fct(chat as Chat, message as IncomingMessage, sender as User, users as List<User>)
+class MentionedUser(val fct: (Chat, sender: User, message: IncomingMessage, users: List<User>) -> Boolean): ChatEvent {
+    override fun invoke(vararg args: Any) = args.let { (chat, sender, message, users) ->
+        fct(chat as Chat, sender as User, message as IncomingMessage, users as List<User>)
     }
-    fun invoke(chat: Chat, message: IncomingMessage, sender: User, users: List<User>) =
-        fct(chat, message, sender, users)
+    fun invoke(chat: Chat, sender: User, message: IncomingMessage, users: List<User>) =
+        fct(chat, sender, message, users)
 }
 
 class StartedTyping(val fct: (Chat, User) -> Boolean): ChatEvent {
@@ -95,11 +95,11 @@ class ChangedAvailability(val fct: (Chat, User, Availability) -> Boolean): ChatE
     fun invoke(chat: Chat, user: User, availability: Availability): Boolean = fct(chat, user, availability)
 }
 
-class ReadByUser(val fct: (chat: Chat, message: MessageHistory, user: User) -> Boolean): ChatEvent {
+class ReadByUser(val fct: (chat: Chat, user: User, message: MessageHistory) -> Boolean): ChatEvent {
     override fun invoke(vararg args: Any) = args.let { (chat, message, user) ->
-        fct(chat as Chat, message as MessageHistory, user as User)
+        fct(chat as Chat, user as User, message as MessageHistory)
     }
-    fun invoke(chat: Chat, message: MessageHistory, user: User): Boolean = fct(chat, message, user)
+    fun invoke(chat: Chat, user: User, message: MessageHistory): Boolean = fct(chat, user, message)
 }
 
 class ReactionChanged(val fct: (User, Chat, IncomingMessage, Emoji, oldAmt: Int, newAmt: Int) -> Boolean): ChatEvent {

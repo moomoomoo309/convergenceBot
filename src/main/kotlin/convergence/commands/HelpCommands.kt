@@ -31,7 +31,7 @@ fun help(args: List<String>, chat: Chat): String {
 
         is String -> {
             val currentCommand = try {
-                getCommand(pageOrCommand.lowercase(), chat)
+                getCommand(chat, pageOrCommand.lowercase())
             } catch(_: CommandDoesNotExist) {
                 return "There is no command with the name \"$pageOrCommand\"."
             }

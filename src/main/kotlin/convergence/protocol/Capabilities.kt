@@ -14,15 +14,15 @@ interface HasNicknames {
 }
 
 interface HasImages {
-    fun sendImages(chat: Chat, message: OutgoingMessage, sender: User, vararg images: Image)
-    fun sendImages(chat: Chat, message: String, sender: User, vararg images: Image) =
-        sendImages(chat, SimpleOutgoingMessage(message), sender, *images)
+    fun sendImages(chat: Chat, sender: User, message: OutgoingMessage, vararg images: Image)
+    fun sendImages(chat: Chat, sender: User, message: String, vararg images: Image) =
+        sendImages(chat, sender, SimpleOutgoingMessage(message), *images)
 
-    fun receivedImages(chat: Chat, message: String, sender: User, vararg images: Image) =
-        receivedImages(chat, SimpleIncomingMessage(message), sender, *images)
+    fun receivedImages(chat: Chat, sender: User, message: String, vararg images: Image) =
+        receivedImages(chat, sender, SimpleIncomingMessage(message), *images)
 
-    fun receivedImages(chat: Chat, message: IncomingMessage, sender: User, vararg images: Image) =
-        runCallbacks<ReceivedImages>(chat, message, sender, images)
+    fun receivedImages(chat: Chat, sender: User, message: IncomingMessage, vararg images: Image) =
+        runCallbacks<ReceivedImages>(chat, sender, message, images)
 }
 
 interface CanEditOtherMessages {
@@ -44,8 +44,8 @@ interface HasMessageHistory {
 interface CanMentionUsers {
     fun mention(chat: Chat, users: List<User>, message: OutgoingMessage?)
     fun mention(chat: Chat, users: List<User>) = mention(chat, users, null)
-    fun mentionedUsers(chat: Chat, message: IncomingMessage, sender: User, users: List<User>) =
-        runCallbacks<MentionedUser>(chat, message, sender, users)
+    fun mentionedUsers(chat: Chat, sender: User, message: IncomingMessage, users: List<User>) =
+        runCallbacks<MentionedUser>(chat, sender, message, users)
     fun getUserFromMentionText(chat: Chat, mention: String): User?
     fun getMentions(message: IncomingMessage): List<User>
 }
@@ -58,8 +58,8 @@ interface HasTypingStatus {
 
 interface HasStickers {
     fun sendSticker(chat: Chat, sticker: Sticker)
-    fun receivedSticker(chat: Chat, sticker: Sticker, sender: User) =
-        runCallbacks<ReceivedSticker>(chat, sticker, sender)
+    fun receivedSticker(chat: Chat, sender: User, sticker: Sticker) =
+        runCallbacks<ReceivedSticker>(chat, sender, sticker)
 }
 
 interface HasUserStatus {

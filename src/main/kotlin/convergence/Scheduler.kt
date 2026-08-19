@@ -151,5 +151,5 @@ data class ScheduledCommand(
     val args: List<String>,
     val id: Int,
 ): Schedulable {
-    operator fun invoke() = runCommand(chat, sender, getCommand(commandName.lowercase(), chat) as Command, args)
+    operator fun invoke() = runCommand(chat, sender, getCommand(chat, commandName.lowercase()) as Command, args)
 }

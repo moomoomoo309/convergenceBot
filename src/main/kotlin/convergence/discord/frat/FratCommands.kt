@@ -380,7 +380,7 @@ data class MentionStatsTask(override val scheduledTime: OffsetDateTime): Schedul
 
 private fun registerMentionCallback() {
     callbacks.getOrPut(MentionedUser::class) { mutableListOf() }.add(
-        MentionedUser { chat: Chat, msg: IncomingMessage, sender: User, users: List<User> ->
+        MentionedUser { chat: Chat, sender: User, msg: IncomingMessage, users: List<User> ->
             if (msg is DiscordIncomingMessage) {
                 if (sender !is DiscordUser)
                     return@MentionedUser true

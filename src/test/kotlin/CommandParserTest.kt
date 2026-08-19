@@ -284,7 +284,7 @@ class CommandParserTest {
             "echo" to Command.of(UniversalProtocol, "echo", listOf(), ::doNothing, "test", "test")
         )
         settings.commandDelimiters[chat] = "!!"
-        val result = parseCommand("!!echo hello", "!!", chat)
+        val result = parseCommand(chat, "!!", "!!echo hello")
         assertEquals("echo", result?.command?.name)
         assertEquals("hello", result?.args?.get(0))
     }
@@ -295,7 +295,7 @@ class CommandParserTest {
         bot.commands[UniversalProtocol] = mutableMapOf(
             "echo" to Command.of(UniversalProtocol, "echo", listOf(), ::doNothing, "test", "test")
         )
-        assertNull(parseCommand("!echo hello", "!!", chat))
+        assertNull(parseCommand(chat, "!!", "!echo hello"))
     }
 
     @Test
@@ -309,7 +309,7 @@ class CommandParserTest {
         bot.commands[UniversalProtocol] = mutableMapOf(
             "echo" to Command.of(UniversalProtocol, "echo", listOf(), ::doNothing, "test", "test")
         )
-        assertFailsWith<CommandDoesNotExist> { parseCommand("!!!echo", "!!", chat) }
+        assertFailsWith<CommandDoesNotExist> { parseCommand(chat, "!!", "!!!echo") }
     }
 
     // ─── command name rules ───────────────────────────────────────────────────

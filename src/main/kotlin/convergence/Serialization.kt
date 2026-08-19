@@ -102,7 +102,7 @@ object AliasDeserializer: JsonDeserializer<Alias>() {
         val scope = resolveScope(scopeKey)
         require (scope is Chat) { "Alias scope is not a Chat: $scopeKey" }
         val name = node["name"].asText()
-        val command = getCommand(node["commandName"].asText().lowercase(), scope) as Command
+        val command = getCommand(scope, node["commandName"].asText().lowercase()) as Command
         val args = node["args"].map { it.asText() }
         return Alias(scope, name, command, args)
     }

@@ -37,7 +37,7 @@ data class Command(
         if (errorMessage != null) {
             return errorMessage
         }
-        return replaceAliasVars(chat, function(args, chat, sender), sender)
+        return replaceAliasVars(chat, sender, function(args, chat, sender))
     }
 
     constructor(

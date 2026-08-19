@@ -14,7 +14,7 @@ fun addAlias(args: List<String>, chat: Chat, scope: CommandScope): String {
     val commandDelimiter = settings.commandDelimiters.getOrDefault(chat, DEFAULT_COMMAND_DELIMITER)
     val commandName = if (args[1].startsWith(commandDelimiter)) args[1].substringAfter(commandDelimiter) else args[1]
     val commandStr = "$commandDelimiter$commandName ${args.subList(2, args.size).joinToString(" ")}"
-    val command = parseCommand(commandStr, commandDelimiter, chat)
+    val command = parseCommand(chat, commandDelimiter, commandStr)
         ?: return "Alias does not refer to a valid command!"
     if (!registerAlias(Alias(scope, args[0], command.command, command.args)))
         return "An alias with that name is already registered!"

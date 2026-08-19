@@ -30,7 +30,7 @@ private fun <CommandType: CommandLike, ScopeType> commandAvailable(
     command: String
 ) = scope in list && command in list[scope]!!
 
-fun getCommand(command: String, chat: Chat): CommandLike {
+fun getCommand(chat: Chat, command: String): CommandLike {
     return when {
         // Chat Alias
         commandAvailable(settings.aliases, chat, command) -> settings.aliases[chat]!![command]
@@ -56,10 +56,10 @@ private val escapeMap = mapOf(
 )
 
 fun parseCommand(chat: Chat, command: String): CommandWithArgs? =
-    parseCommand(command, settings.commandDelimiters.getOrDefault(chat, DEFAULT_COMMAND_DELIMITER), chat)
+    parseCommand(chat, settings.commandDelimiters.getOrDefault(chat, DEFAULT_COMMAND_DELIMITER), command)
 
 @SuppressWarnings("ThrowsCount")
-fun parseCommand(command: String, commandDelimiter: String, chat: Chat): CommandWithArgs? {
+fun parseCommand(chat: Chat, commandDelimiter: String, command: String): CommandWithArgs? {
     // Check for the command delimiter, so the grammar doesn't have to worry about it
     if (!command.startsWith(commandDelimiter) || command.isEmpty() || command == commandDelimiter)
         return null
@@ -106,7 +106,7 @@ fun parseCommand(command: String, commandDelimiter: String, chat: Chat): Command
     val commandName = tree.commandName().text
     val args = tokenArgsToStringArgs(tree)
 
-    val cmd = commandName?.let { getCommand(it.lowercase(), chat) } ?: return null
+    val cmd = commandName?.let { getCommand(chat, it.lowercase()) } ?: return null
     return when(cmd) {
         is Command -> CommandWithArgs(cmd, args)
         is Alias -> CommandWithArgs(cmd, args)

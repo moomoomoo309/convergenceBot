@@ -11,7 +11,7 @@ class AliasVarTest {
         bot.aliasVars.clear()
         bot.aliasVars["%sender"] = { _, _ -> "ligma" }
         bot.aliasVars["%sendername"] = { _, _ -> "chokoma" }
-        val result = replaceAliasVars(testChat, testCommand, testUser)?.toSimple()?.text
+        val result = replaceAliasVars(testChat, testUser, testCommand)?.toSimple()?.text
         assertEquals("!echo chokoma", result)
     }
 }

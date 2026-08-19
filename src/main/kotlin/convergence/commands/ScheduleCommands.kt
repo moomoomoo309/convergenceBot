@@ -14,7 +14,7 @@ fun schedule(args: List<String>, chat: Chat, sender: User): String {
     val timeList = dateTimeParser.parse(args[0])
     val delimiter = settings.commandDelimiters[chat] ?: DEFAULT_COMMAND_DELIMITER
     val command = (if (args[1].startsWith(delimiter)) "" else delimiter) + args[1]
-    val commandWithArgs = parseCommand(chat, command, sender)
+    val commandWithArgs = parseCommand(chat, sender, command)
         ?: return "\"$command\" does not refer to a valid command."
     for (group in timeList)
         for (time in group.dates)

@@ -11,7 +11,7 @@ import convergence.protocol.HasNicknames
 fun sendMessage(chat: Chat, sender: User, message: OutgoingMessage?) {
     if (sender != chat.protocol.getBot(chat))
         sendMessage(chat, message)
-    forwardToLinkedChats(chat, message, sender, isCommand=true)
+    forwardToLinkedChats(chat, sender, message, isCommand=true)
 }
 
 fun sendMessage(chat: Chat, sender: User, message: String?) =
@@ -48,7 +48,7 @@ val pattern: Regex by lazy { Regex(bot.aliasVars.keys.sortedBy { -it.length }.jo
  * Replaces instances of the keys in [aliasVars] preceded by a percent sign with the result of the functions therein,
  * such as %sender with the name of the user who sent the message.
  */
-fun replaceAliasVars(chat: Chat, msg: OutgoingMessage?, sender: User): OutgoingMessage? {
+fun replaceAliasVars(chat: Chat, sender: User, msg: OutgoingMessage?): OutgoingMessage? {
     return if (msg is SimpleOutgoingMessage)
         SimpleOutgoingMessage(pattern.replace(msg.text) { res ->
             bot.aliasVars[res.value]!!(chat, sender) ?: res.value
@@ -59,8 +59,8 @@ fun replaceAliasVars(chat: Chat, msg: OutgoingMessage?, sender: User): OutgoingM
 
 fun forwardToLinkedChats(
     chat: Chat,
-    message: OutgoingMessage?,
     sender: User,
+    message: OutgoingMessage?,
     images: Array<Image> = emptyArray(),
     isCommand: Boolean = false
 ) {
@@ -83,7 +83,7 @@ fun forwardToLinkedChats(
             val msg = "$boldOpen${getUserName(chat, if (isCommand) bot else sender)}:$boldClose $message"
             if (linkedChat.protocol is HasImages && images.isNotEmpty()) {
                 val protocol = (linkedChat.protocol as HasImages)
-                protocol.sendImages(linkedChat, msg, sender, *images)
+                protocol.sendImages(linkedChat, sender, msg, *images)
             } else
                 sendMessage(linkedChat, msg)
         }

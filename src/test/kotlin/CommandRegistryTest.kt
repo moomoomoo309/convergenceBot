@@ -117,13 +117,13 @@ class CommandRegistryTest {
 
     @Test
     fun parseCommandWrapperReturnsNullForInvalidCommand() {
-        val result = parseCommand(testChat, "!nonexistent", testUser)
+        val result = parseCommand(testChat, testUser, "!nonexistent")
         assertNull(result)
     }
 
     @Test
     fun parseCommandWrapperReturnsNullForInvalidEscape() {
-        val result = parseCommand(testChat, "!echo \\", testUser)
+        val result = parseCommand(testChat, testUser, "!echo \\")
         assertNull(result)
     }
 }
