@@ -96,7 +96,7 @@ class ChangedAvailability(val fct: (Chat, User, Availability) -> Boolean): ChatE
 }
 
 class ReadByUser(val fct: (chat: Chat, user: User, message: MessageHistory) -> Boolean): ChatEvent {
-    override fun invoke(vararg args: Any) = args.let { (chat, message, user) ->
+    override fun invoke(vararg args: Any) = args.let { (chat, user, message) ->
         fct(chat as Chat, user as User, message as MessageHistory)
     }
     fun invoke(chat: Chat, user: User, message: MessageHistory): Boolean = fct(chat, user, message)

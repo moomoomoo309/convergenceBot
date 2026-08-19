@@ -76,8 +76,8 @@ interface HasUserAvailability {
 
 interface HasReadStatus {
     fun getReadStatus(chat: Chat, message: MessageHistory): Set<User>
-    fun setRead(chat: Chat, message: MessageHistory, user: User)
-    fun readByUser(chat: Chat, message: MessageHistory, user: User) = runCallbacks<ReadByUser>(chat, message, user)
+    fun setRead(chat: Chat, user: User, message: MessageHistory)
+    fun readByUser(chat: Chat, user: User, message: MessageHistory) = runCallbacks<ReadByUser>(chat, user, message)
 }
 
 interface CanFormatMessages {
