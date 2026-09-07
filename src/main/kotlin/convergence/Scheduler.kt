@@ -2,6 +2,7 @@ package convergence
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import convergence.command.Command
+import convergence.command.CommandWithArgs
 import convergence.command.getCommand
 import convergence.command.runCommand
 import convergence.discord.calendar.CalendarProcessor
@@ -72,6 +73,13 @@ object Scheduler: Thread() {
             sleep((1000.0 / updatesPerSecond).toLong())
         }
     }
+
+    /**
+     * Schedules [commandWithArgs] sent by [sender] to run at [time].
+     * @return The response the user will get from the command.
+     */
+    fun schedule(chat: Chat, sender: User, commandWithArgs: CommandWithArgs, time: OffsetDateTime) =
+        schedule(chat, sender, commandWithArgs.command.name, commandWithArgs.args, time)
 
     /**
      * Schedules [commandName] sent by [sender] to run at [time] with [args] as its arguments.

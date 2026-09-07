@@ -178,6 +178,7 @@ fun brotherBigs(args: List<String>): OutgoingMessage {
     val embeds = EmbedBuilder()
         .setTitle("Line for Brother #${startInfo.rosterNumber} ${startInfo.getName()}")
 
+    @Suppress("DestructuringDeclaration")
     for (brother in line) {
         embeds.addField(
             "#" + brother.rosterNumber,
@@ -234,15 +235,16 @@ private fun setAlumnusNickname(args: List<String>, chat: Chat, sender: User): St
     return "Nickname updated."
 }
 
-val isNotPledge: (List<String>, Chat, User) -> OutgoingMessage? =
-    { _: List<String>, chat: Chat, sender: User ->
+var pledgeRole: DiscordRole? = null
+val isNotPledge: (Command, List<String>, Chat, User) -> OutgoingMessage? =
+    { _: Command, _: List<String>, chat: Chat, sender: User ->
         val config = fratConfig
         if (config == null) null
         else {
             val server = (chat as? DiscordChat)?.server
             if (config.pledgeRoleID != 0L && chat is DiscordChat) {
-                val role = chat.server.guild.getRoleById(config.pledgeRoleID)?.let { DiscordRole(it) }
-                if (server != null && role != null && DiscordProtocol.userHasRole(server, sender, role))
+                pledgeRole = pledgeRole ?: chat.server.guild.getRoleById(config.pledgeRoleID)?.let { DiscordRole(it) }
+                if (server != null && pledgeRole?.let { DiscordProtocol.userHasRole(server, sender, it) } == false)
                     SimpleOutgoingMessage("Nice try, pledge.")
                 else null
             } else null

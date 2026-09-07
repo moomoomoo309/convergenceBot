@@ -21,8 +21,7 @@ fun schedule(args: List<String>, chat: Chat, sender: User): String {
             Scheduler.schedule(
                 chat,
                 sender,
-                commandWithArgs.command.name,
-                commandWithArgs.args,
+                commandWithArgs,
                 time.toOffsetDatetime()
             )
     updateSettings()
@@ -83,6 +82,7 @@ private fun addEventToBuilder(
     chat: Chat,
     builder: StringBuilder
 ) {
+    @Suppress("DestructuringDeclaration")
     for (event in events) {
         val id = event.id
         val time = formatTime(event.scheduledTime)

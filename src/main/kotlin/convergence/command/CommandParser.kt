@@ -4,6 +4,7 @@ import convergence.DEFAULT_COMMAND_DELIMITER
 import convergence.UniversalProtocol
 import convergence.bot
 import convergence.model.Chat
+import convergence.model.User
 import convergence.protocol.HasServer
 import convergence.settings
 import org.antlr.v4.runtime.CharStreams
@@ -20,6 +21,8 @@ class InvalidCommandParseException: Exception {
 
 data class CommandWithArgs(var command: Command, var args: List<String>) {
     constructor(alias: Alias, args: List<String>): this(alias.command, alias.args + args)
+
+    operator fun invoke(chat: Chat, sender: User) = command(args, chat, sender)
 }
 
 class InvalidEscapeSequenceException(message: String): Exception(message)

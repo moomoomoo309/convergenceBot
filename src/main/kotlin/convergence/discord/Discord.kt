@@ -736,7 +736,7 @@ object MessageListener: ListenerAdapter() {
         val commandWithArgs =
             parseCommand(chat, commandDelimiter + event.name + event.options.joinToString(" ", " ") { it.asString })
                 ?: return
-        val msg = commandWithArgs.command(commandWithArgs.args, chat, sender)
+        val msg = commandWithArgs(chat, sender)
         event.reply((msg as? DiscordOutgoingMessage ?: DiscordOutgoingMessage(msg!!.toSimple().text)).data).queue()
     }
     val forwardedMessages = mutableMapOf<Long, MutableSet<Long>>()

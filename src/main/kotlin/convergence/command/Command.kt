@@ -22,6 +22,7 @@ sealed class CommandLike(
 }
 
 typealias CommandFunction = (List<String>, Chat, User) -> OutgoingMessage?
+typealias PermissionFunction = (Command, List<String>, Chat, User) -> OutgoingMessage?
 
 data class Command(
     override val protocol: Protocol,
@@ -30,10 +31,10 @@ data class Command(
     @JsonIgnore val function: CommandFunction,
     @JsonIgnore val helpText: String,
     @JsonIgnore val syntaxText: String,
-    @JsonIgnore val permissions: CommandFunction
+    @JsonIgnore val permissions: PermissionFunction
 ): CommandLike(protocol, name) {
     operator fun invoke(args: List<String>, chat: Chat, sender: User): OutgoingMessage? {
-        val errorMessage = permissions(args, chat, sender)
+        val errorMessage = permissions(this, args, chat, sender)
         if (errorMessage != null) {
             return errorMessage
         }
@@ -47,7 +48,7 @@ data class Command(
         function: () -> OutgoingMessage?,
         helpText: String,
         syntaxText: String,
-        permissions: CommandFunction = { _,_,_ -> null }
+        permissions: PermissionFunction = { _,_,_,_ -> null }
     ): this(protocol, name, argSpecs, { _, _, _ -> function() }, helpText, syntaxText, permissions)
 
     constructor(
@@ -57,7 +58,7 @@ data class Command(
         function: (args: List<String>) -> OutgoingMessage?,
         helpText: String,
         syntaxText: String,
-        permissions: CommandFunction = { _,_,_ -> null }
+        permissions: PermissionFunction = { _,_,_,_ -> null }
     ): this(protocol, name, argSpecs, { args: List<String>, _, _ -> function(args) }, helpText, syntaxText, permissions)
 
     constructor(
@@ -67,7 +68,7 @@ data class Command(
         function: (args: List<String>, chat: Chat) -> OutgoingMessage?,
         helpText: String,
         syntaxText: String,
-        permissions: CommandFunction = { _,_,_ -> null }
+        permissions: PermissionFunction = { _,_,_,_ -> null }
     ): this(
         protocol,
         name,
@@ -87,7 +88,7 @@ data class Command(
             function: (args: List<String>, chat: Chat, sender: User) -> String?,
             helpText: String,
             syntaxText: String,
-            permissions: CommandFunction = { _,_,_ -> null }
+            permissions: PermissionFunction = { _,_,_,_ -> null }
         ) = Command(
             protocol,
             name,
@@ -111,7 +112,7 @@ data class Command(
             function: (args: List<String>, chat: Chat) -> String?,
             helpText: String,
             syntaxText: String,
-            permissions: CommandFunction = { _,_,_ -> null }
+            permissions: PermissionFunction = { _,_,_,_ -> null }
         ) = Command(
             protocol,
             name,
@@ -129,7 +130,7 @@ data class Command(
             function: (args: List<String>) -> String?,
             helpText: String,
             syntaxText: String,
-            permissions: CommandFunction = { _,_,_ -> null }
+            permissions: PermissionFunction = { _,_,_,_ -> null }
         ) = Command(
             protocol,
             name,
@@ -147,7 +148,7 @@ data class Command(
             function: () -> String?,
             helpText: String,
             syntaxText: String,
-            permissions: CommandFunction = { _,_,_ -> null }
+            permissions: PermissionFunction = { _,_,_,_ -> null }
         ) = Command(
             protocol,
             name,
