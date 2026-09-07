@@ -5,8 +5,6 @@ import convergence.command.parseCommand
 import convergence.model.Chat
 import convergence.model.User
 import org.natty.Parser
-import java.time.format.DateTimeFormatter
-import java.time.temporal.ChronoUnit
 
 val dateTimeParser = Parser()
 
@@ -91,7 +89,7 @@ private fun addEventToBuilder(
         val commandDelimiter = settings.commandDelimiters.getOrDefault(chat, DEFAULT_COMMAND_DELIMITER)
         val name = event.commandName
         val argsStr = event.args.joinToString(" ")
-        val truncatedTime = event.scheduledTime.truncatedTo(ChronoUnit.SECONDS).format(DateTimeFormatter.ISO_INSTANT)
+        val truncatedTime = event.scheduledTime.toTruncatedTimestamp()
         builder.append("\t[$id] $time ($truncatedTime): \"$commandDelimiter$name $argsStr\"\n")
     }
 }

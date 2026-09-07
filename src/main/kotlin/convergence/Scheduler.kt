@@ -11,7 +11,6 @@ import convergence.model.User
 import org.ocpsoft.prettytime.PrettyTime
 import org.ocpsoft.prettytime.units.JustNow
 import java.time.OffsetDateTime
-import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -97,7 +96,7 @@ object Scheduler: Thread() {
         commandsList[cmd.id] = cmd
         settings.serializedCommands[cmd.id] = cmd
         updateSettings()
-        val truncatedTimestamp = time.truncatedTo(ChronoUnit.SECONDS).format(DateTimeFormatter.ISO_INSTANT)
+        val truncatedTimestamp = time.toTruncatedTimestamp()
         return "Scheduled ${getUserName(chat, sender)} to run " +
                 "\"$commandName ${args.joinToString(" ")}\" ${formatTime(time)} ($truncatedTimestamp)."
     }

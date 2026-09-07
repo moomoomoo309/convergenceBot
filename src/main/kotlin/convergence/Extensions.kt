@@ -5,6 +5,8 @@ import com.sigpwned.emoji4j.core.GraphemeMatcher
 import com.sigpwned.emoji4j.core.grapheme.Emoji
 import convergence.discord.calendar.defaultZoneOffset
 import java.time.OffsetDateTime
+import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 import java.util.*
 import kotlin.jvm.optionals.getOrNull
 
@@ -31,3 +33,8 @@ fun String.toEmoji(): Emoji? {
     val grapheme = result.grapheme()
     return if (grapheme?.type == Grapheme.Type.EMOJI) grapheme as Emoji else null
 }
+
+fun OffsetDateTime.toTruncatedTimestamp(): String = this
+    .withOffsetSameInstant(defaultZoneOffset)
+    .truncatedTo(ChronoUnit.SECONDS)
+    .format(DateTimeFormatter.ISO_INSTANT)

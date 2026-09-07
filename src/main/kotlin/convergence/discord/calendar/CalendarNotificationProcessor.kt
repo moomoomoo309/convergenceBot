@@ -10,8 +10,6 @@ import org.slf4j.LoggerFactory
 import java.time.Duration
 import java.time.Instant
 import java.time.OffsetDateTime
-import java.time.format.DateTimeFormatter
-import java.time.temporal.ChronoUnit
 
 private val notificationLogger = LoggerFactory.getLogger("convergence.calendar.notification")
 
@@ -148,7 +146,8 @@ data class UpcomingNotification(
 ): ScheduledTask(scheduledTime) {
     override operator fun invoke() {
         val timeUntil = formatTime(eventTime)
-        val fullTimestamp = eventTime.truncatedTo(ChronoUnit.SECONDS).format(DateTimeFormatter.ISO_INSTANT)
+        val fullTimestamp = eventTime.toTruncatedTimestamp()
+
         val message = "Reminder: $eventSummary starts in $timeUntil\nEvent time: $fullTimestamp" +
                 if (description.isNotBlank() && description != "Reminder") {
                     "\n$description"
