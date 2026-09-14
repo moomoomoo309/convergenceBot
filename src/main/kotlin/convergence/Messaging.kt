@@ -1,5 +1,9 @@
 package convergence
 
+import convergence.model.*
+import convergence.protocol.CanFormatMessages
+import convergence.protocol.HasImages
+import convergence.protocol.HasNicknames
 
 /**
  * Sends [message] in the chat [sender] is in, forwarding the message to any linked chats.
@@ -7,7 +11,7 @@ package convergence
 fun sendMessage(chat: Chat, sender: User, message: OutgoingMessage?) {
     if (sender != chat.protocol.getBot(chat))
         sendMessage(chat, message)
-    forwardToLinkedChats(chat, message, sender, isCommand=true)
+    forwardToLinkedChats(chat, sender, message, isCommand=true)
 }
 
 fun sendMessage(chat: Chat, sender: User, message: String?) =
@@ -19,7 +23,10 @@ fun sendMessage(chat: Chat, sender: User, message: String?) =
 fun sendMessage(chat: Chat, message: OutgoingMessage?) {
     if (message == null)
         return
-    chat.protocol.sendMessage(chat, message)
+    if (settings.debugMode && message is SimpleOutgoingMessage)
+        chat.protocol.sendMessage(chat, "[Test Mode]: ${message.text}")
+    else
+        chat.protocol.sendMessage(chat, message)
 }
 
 fun sendMessage(chat: Chat, message: String?) = message?.let { sendMessage(chat, SimpleOutgoingMessage(message)) }
@@ -30,28 +37,30 @@ fun sendMessage(chat: Chat, message: String?) = message?.let { sendMessage(chat,
 fun getUserName(chat: Chat, sender: User): String {
     val protocol = chat.protocol
     return if (protocol is HasNicknames)
-        protocol.getUserNickname(chat, sender) ?: protocol.getName(chat, sender)
+        protocol.getUserNickname(chat, sender) ?: protocol.getUserName(chat, sender)
     else
-        protocol.getName(chat, sender)
+        protocol.getUserName(chat, sender)
 }
 
 
-val pattern: Regex by lazy { Regex(aliasVars.keys.sortedBy { -it.length }.joinToString("|")) }
+val pattern: Regex by lazy { Regex(bot.aliasVars.keys.sortedBy { -it.length }.joinToString("|")) }
 /**
  * Replaces instances of the keys in [aliasVars] preceded by a percent sign with the result of the functions therein,
  * such as %sender with the name of the user who sent the message.
  */
-fun replaceAliasVars(chat: Chat, msg: OutgoingMessage?, sender: User): OutgoingMessage? {
+fun replaceAliasVars(chat: Chat, sender: User, msg: OutgoingMessage?): OutgoingMessage? {
     return if (msg is SimpleOutgoingMessage)
-        SimpleOutgoingMessage(pattern.replace(msg.text) { res -> aliasVars[res.value]!!(chat, sender) ?: res.value })
+        SimpleOutgoingMessage(pattern.replace(msg.text) { res ->
+            bot.aliasVars[res.value]!!(chat, sender) ?: res.value
+        })
     else
         msg
 }
 
 fun forwardToLinkedChats(
     chat: Chat,
-    message: OutgoingMessage?,
     sender: User,
+    message: OutgoingMessage?,
     images: Array<Image> = emptyArray(),
     isCommand: Boolean = false
 ) {
@@ -69,13 +78,13 @@ fun forwardToLinkedChats(
 
     // Send the messages out to the linked chats if there are any. Don't error if there aren't any.
     val bot = chat.protocol.getBot(chat)
-    if (isCommand || sender != bot)
-        if (chat in linkedChats)
-            for (linkedChat in linkedChats[chat]!!) {
-                val msg = "$boldOpen${getUserName(chat, if (isCommand) bot else sender)}:$boldClose $message"
-                if (linkedChat.protocol is HasImages && images.isNotEmpty())
-                    (linkedChat.protocol as HasImages).sendImages(linkedChat, msg, sender, *images)
-                else
-                    sendMessage(linkedChat, msg)
-            }
+    if ((isCommand || sender != bot) && chat in settings.linkedChats)
+        for (linkedChat in settings.linkedChats[chat]!!) {
+            val msg = "$boldOpen${getUserName(chat, if (isCommand) bot else sender)}:$boldClose $message"
+            if (linkedChat.protocol is HasImages && images.isNotEmpty()) {
+                val protocol = (linkedChat.protocol as HasImages)
+                protocol.sendImages(linkedChat, sender, msg, *images)
+            } else
+                sendMessage(linkedChat, msg)
+        }
 }

@@ -1,11 +1,30 @@
 package convergence.discord.frat
 
 import convergence.*
-import convergence.discord.DiscordOutgoingMessage
-import convergence.discord.DiscordProtocol
+import convergence.callbacks.MentionedUser
+import convergence.callbacks.callbacks
+import convergence.command.ArgumentSpec
+import convergence.command.ArgumentType
+import convergence.command.Command
+import convergence.command.registerCommands
+import convergence.commands.getUserFromName
+import convergence.discord.*
+import convergence.model.*
+import guru.nidi.graphviz.attribute.Color
+import guru.nidi.graphviz.attribute.Style
+import guru.nidi.graphviz.engine.Format
+import guru.nidi.graphviz.engine.Graphviz
+import guru.nidi.graphviz.model.Factory.mutGraph
+import guru.nidi.graphviz.model.Factory.mutNode
+import guru.nidi.graphviz.model.MutableGraph
+import guru.nidi.graphviz.model.MutableNode
 import net.dv8tion.jda.api.EmbedBuilder
+import net.dv8tion.jda.api.utils.FileUpload
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder
+import java.io.ByteArrayOutputStream
 import java.nio.file.Files
+import java.time.LocalTime
+import java.time.OffsetDateTime
 
 val englishToGreek = mapOf(
     'A' to 'Α',
@@ -31,111 +50,391 @@ val englishToGreek = mapOf(
     'F' to 'Φ',
     'C' to 'Χ',
     'Y' to 'Ψ',
+    '0' to 'Ω'
 )
 
-fun getBrotherInfo(args: String, searchCriteria: (BrotherInfo) -> String?): BrotherInfo {
-    return brotherInfo.firstOrNull { searchCriteria(it)?.lowercase() == name }
-        ?: brotherInfo.firstOrNull { searchCriteria(it)?.lowercase()?.startsWith(name) == true }
-        ?: brotherInfo.firstOrNull { searchCriteria(it)?.lowercase()?.contains(name) == true }
+fun getBrotherInfo(name: String, searchCriteria: (BrotherInfo) -> String?): BrotherInfo? {
+    val info = brotherInfo ?: return null
+    val lowerName = name.lowercase()
+    return info.firstOrNull { searchCriteria(it)?.lowercase() == lowerName }
+        ?: info.firstOrNull { searchCriteria(it)?.lowercase()?.startsWith(lowerName) == true }
+        ?: info.firstOrNull { searchCriteria(it)?.lowercase()?.contains(lowerName) == true }
 }
 
-fun brotherLineRec(name: String, searchCriteria: (BrotherInfo) -> String?, depth: Int = 10): List<String>  {
-    val info = getBrotherInfo(name, searchCriteria)
-        ?: return List<String>()
+fun generateGraphGoingDown(graph: MutableGraph, node: BrotherTreeNode, mutNode: MutableNode?) =
+    generateGraphGoingDown(graph, node, mutNode) { _, _, _ -> }
 
-    if (depth == 0) {
-        return List<String>()
+fun generateGraphGoingDown(
+    graph: MutableGraph,
+    node: BrotherTreeNode,
+    mutNode: MutableNode?,
+    callback: (BrotherTreeNode, MutableNode?, MutableNode) -> Unit
+) {
+    for (little in node.littles) {
+        val name = little.brother.getNodeName()
+        val newNode = mutNode(name)
+        callback(node, mutNode, newNode)
+        mutNode?.addLink(newNode)
+        graph.add(newNode)
+        generateGraphGoingDown(graph, little, newNode, callback)
     }
-    
-    return brotherLineRec(info.bigBrother.ifBlank { "N/A" }, searchCriteria, depth-1).add(info.bigBrother)
 }
 
-fun brotherLine(args: List<String>, searchCriteria: (BrotherInfo) -> String?): DiscordOutgoingMessage  {
+private fun resolveNode(args: List<String>): Pair<String, BrotherTreeNode>? {
     val name = args.joinToString(" ").lowercase()
-    val startInfo = getBrotherInfo(name, searchCriteria)
-        ?: return DiscordOutgoingMessage("No brothers found searching for \"$name\".")
-    
-    val lineList = brotherLineRec(startInfo.firstName + " " + startInfo.lastName)
+    val startInfo = getBrotherInfo(name) { it.getName() } ?: return null
+    val node = brotherMap[startInfo.getName().lowercase()] ?: return null
+    return name to node
+}
 
-    return DiscordOutgoingMessage(MessageCreateBuilder()
-            .addEmbeds(EmbedBuilder()
-                    .setTitle("Line for Brother #${startInfo.rosterNumber} ${startInfo.firstName} ${startInfo.lastName}")
-                    .addField("Line", lineList.joinToString("/r/n") true).build()
-            ).build())
+private fun buildDownGraph(name: String, node: BrotherTreeNode): MutableGraph {
+    val graph = mutGraph("$name's line").setDirected(true)
+    val rootNode = mutNode(node.brother.getNodeName())
+    graph.add(rootNode)
+    generateGraphGoingDown(graph, node, rootNode)
+    return graph
+}
+
+private fun graphToMessage(graph: MutableGraph, name: String): DiscordOutgoingMessage {
+    val stream = ByteArrayOutputStream()
+    Graphviz.fromGraph(graph).render(Format.PNG).toOutputStream(stream)
+    return DiscordOutgoingMessage(
+        MessageCreateBuilder()
+            .addFiles(FileUpload.fromData(stream.toByteArray(), "$name line.png"))
+            .build()
+    )
+}
+
+fun brotherLine(args: List<String>): OutgoingMessage {
+    val (name, node) = resolveNode(args)
+        ?: return SimpleOutgoingMessage("No brothers found searching for \"${args.joinToString(" ")}\".")
+    return graphToMessage(buildDownGraph(name, node), name)
+}
+
+fun fullTree(args: List<String>): OutgoingMessage {
+    val (name, node) = resolveNode(args)
+        ?: return SimpleOutgoingMessage("No brothers found searching for \"${args.joinToString(" ")}\".")
+    val brotherLine = mutableSetOf(node.brother.getName())
+
+    fun recurse(node: BrotherTreeNode) {
+        brotherLine.add(node.brother.getName())
+        for (little in node.littles) recurse(little)
+    }
+    recurse(node)
+    var big = node.big
+    while (big != null) {
+        brotherLine.add(big.brother.getNodeName())
+        big = big.big
+    }
+
+    val graph = mutGraph("$name's line in full tree").setDirected(true)
+    generateGraphGoingDown(graph, brotherRoot, null) { _, _, newNode ->
+        if (newNode.name().value() in brotherLine)
+            newNode.add(Style.FILLED, Color.GRAY).add(Color.RED.font())
+    }
+    return graphToMessage(graph, name)
+}
+
+fun fullLine(args: List<String>): OutgoingMessage {
+    val (name, node) = resolveNode(args)
+        ?: return SimpleOutgoingMessage("No brothers found searching for \"${args.joinToString(" ")}\".")
+    val graph = buildDownGraph(name, node)
+    val rootNode = mutNode(node.brother.getNodeName())
+    var big = node.big
+    var previousNode = rootNode
+    while (big != null) {
+        val newNode = mutNode(big.brother.getNodeName())
+        newNode.addLink(previousNode)
+        graph.add(newNode)
+        previousNode = newNode
+        big = big.big
+    }
+    return graphToMessage(graph, name)
+}
+
+
+fun brotherBigs(args: List<String>): OutgoingMessage {
+    val name = args.joinToString(" ").lowercase()
+    val startInfo = getBrotherInfo(name) { it.getName() }
+        ?: return SimpleOutgoingMessage("No brothers found searching for \"$name\".")
+
+    var node: BrotherTreeNode? = brotherMap[startInfo.getName().lowercase()]
+        ?: return SimpleOutgoingMessage(
+            "No brothers found searching for " +
+                    "\"${startInfo.getName()}\"."
+        )
+    // Add the line going up
+    val line = mutableListOf(node!!.brother)
+    node = node.big
+    @Suppress("unused")
+    for (unused in 0..<25) { // Discord has a 25 field limit
+        if (node == null)
+            break
+        line.add(node.brother)
+        node = node.big
+    }
+
+    val msg = MessageCreateBuilder()
+    val embeds = EmbedBuilder()
+        .setTitle("Line for Brother #${startInfo.rosterNumber} ${startInfo.getName()}")
+
+    @Suppress("DestructuringDeclaration")
+    for (brother in line) {
+        embeds.addField(
+            "#" + brother.rosterNumber,
+            "${brother.firstName} \"${brother.nickName}\" ${brother.lastName}",
+            true
+        )
+    }
+    return DiscordOutgoingMessage(msg.addEmbeds(embeds.build()).build())
 }
 
 fun brotherInfo(args: List<String>, searchCriteria: (BrotherInfo) -> String?): DiscordOutgoingMessage {
     val name = args.joinToString(" ").lowercase()
     val info = getBrotherInfo(name, searchCriteria)
         ?: return DiscordOutgoingMessage("No brothers found searching for \"$name\".")
-    return DiscordOutgoingMessage(MessageCreateBuilder()
-        .addEmbeds(EmbedBuilder()
-            .setTitle("Info for Brother #${info.rosterNumber} ${info.firstName} ${info.lastName}")
-            .addField("Pledge Class",
-                info.pledgeClass.map { englishToGreek[it] }.joinToString("").ifBlank { "not listed" }, true)
-            .addField("Crossing date", info.crossingDate.ifBlank { "not listed" }, true)
-            .addField("Big brother", info.bigBrother.ifBlank { "not listed" }, true)
-            .addField("Nickname", if (info.nickName.isNotBlank()) "\"${info.nickName}\"" else "not listed", true)
-            .addField("Major", info.major.ifBlank { "not listed" }, true)
-            .build()
-        ).build())
+
+    return DiscordOutgoingMessage(
+        MessageCreateBuilder()
+            .addEmbeds(
+                EmbedBuilder()
+                    .setTitle("Info for Brother #${info.rosterNumber} ${info.firstName} ${info.lastName}")
+                    .addField(
+                        "Pledge Class",
+                        info.pledgeClass.map { englishToGreek[it] }.joinToString("").ifBlank { "not listed" }, true
+                    )
+                    .addField("Crossing date", info.crossingDate.ifBlank { "not listed" }, true)
+                    .addField("Big brother", info.bigBrother.ifBlank { "not listed" }, true)
+                    .addField(
+                        "Nickname",
+                        if (info.nickName.isNotBlank()) "\"${info.nickName}\"" else "not listed",
+                        true
+                    )
+                    .addField("Major", info.major.ifBlank { "not listed" }, true)
+                    .build()
+            ).build()
+    )
 }
 
+private fun setAlumnusNickname(args: List<String>, chat: Chat, sender: User): String {
+    val config = fratConfig ?: return "Frat config not available."
+    if (args.size !in 1..2)
+        return "Syntax: setAlumnusNickname (roster number) [@user]"
+    if (sender !is DiscordUser || chat !is DiscordChat)
+        return "This command only works on Discord."
+    if (chat.server.guild.idLong != config.aaServerID)
+        return "You can only run this command on the alumni association server."
+    val brotherInfo = getBrotherInfo(args[0]) { it.rosterNumber }
+        ?: return "No brother with roster number ${args[0]} found."
+    val user = if (args.size == 2)
+        DiscordProtocol.getUserFromMentionText(chat, args[1]) ?: return "Could not extract user from mention text."
+    else
+        sender
+    val nickname = "${brotherInfo.rosterNumber} - ${brotherInfo.getName()} (${brotherInfo.realPledgeClass})"
+    DiscordProtocol.setUserNickname(chat, user, nickname)
+    return "Nickname updated."
+}
+
+var pledgeRole: DiscordRole? = null
+val isNotPledge: (Command, List<String>, Chat, User) -> OutgoingMessage? =
+    { _: Command, _: List<String>, chat: Chat, sender: User ->
+        val config = fratConfig
+        if (config == null) null
+        else {
+            val server = (chat as? DiscordChat)?.server
+            if (config.pledgeRoleID != 0L && chat is DiscordChat) {
+                pledgeRole = pledgeRole ?: chat.server.guild.getRoleById(config.pledgeRoleID)?.let { DiscordRole(it) }
+                if (server != null && pledgeRole?.let { DiscordProtocol.userHasRole(server, sender, it) } == false)
+                    SimpleOutgoingMessage("Nice try, pledge.")
+                else null
+            } else null
+        }
+    }
+
+@Suppress("LongMethod", "unused")
 fun registerFratCommands() {
-    registerCommand(
+    val config = fratConfig
+    if (config == null) {
+        discordLogger.warn("Frat config not available — skipping frat command registration.")
+        return
+    }
+    registerCommands(
         Command(
             DiscordProtocol,
-            "brotherbyroster",
+            "brotherByRoster",
             listOf(ArgumentSpec("Roster", ArgumentType.STRING)),
             { args: List<String> -> brotherInfo(args) { it.rosterNumber } },
             "Gets information about a particular brother based on their roster number.",
-            "brotherbyroster (roster number)"
-        )
-    )
-    registerCommand(
-        Command(
+            "brotherByRoster (roster number)",
+            isNotPledge
+        ), Command(
             DiscordProtocol,
-            "brotherbyname",
+            "brotherByName",
             listOf(ArgumentSpec("Name", ArgumentType.STRING)),
-            { args -> brotherInfo(args) { it.firstName + " " + it.lastName } },
+            { args -> brotherInfo(args) { it.getName() } },
             "Gets information about a particular brother based on their first and last name.",
-            "brotherbyname (name)"
-        )
-    )
-    registerCommand(
-        Command(
+            "brotherByName (name)",
+            isNotPledge
+        ), Command(
             DiscordProtocol,
-            "brotherbynickname",
+            "brotherByNickname",
             listOf(ArgumentSpec("Nickname", ArgumentType.STRING)),
             { args -> brotherInfo(args) { it.nickName } },
             "Gets information about a particular brother based on their nickname.",
-            "brotherbynickname (nickname)"
-        )
-    )
-    registerCommand(
-        Command(
+            "brotherbynickname (nickname)",
+            isNotPledge
+        ), Command(
             DiscordProtocol,
-            "brothergetline",
+            "brotherLine",
             listOf(ArgumentSpec("Name", ArgumentType.STRING)),
-            { args -> brotherLine(args) { it.firstName + " " + it.lastName } },
-            "Gets information about a particular brother's line going up.",
-            "brothergetline (name)"
-        )
-    )
-    registerCommand(
-        Command.of(
+            { args -> brotherLine(args) },
+            "Gets information about a particular brother's line going down.",
+            "brotherLine (name)",
+            isNotPledge
+        ), Command(
             DiscordProtocol,
-            "updateRoster",
-            listOf(),
-            { ->
+            "brotherBigs",
+            listOf(ArgumentSpec("Name", ArgumentType.STRING)),
+            { args -> brotherBigs(args) },
+            "Gets information about a particular brother's line going up.",
+            "brotherBigs (name)",
+            isNotPledge
+        ), Command(
+            DiscordProtocol,
+            "fullLine",
+            listOf(ArgumentSpec("Name", ArgumentType.STRING)),
+            { args -> fullLine(args) },
+            "Gets information about a particular brother's line going up and down.",
+            "fullLine (name)",
+            isNotPledge
+        ), Command(
+            DiscordProtocol,
+            "fullTree",
+            listOf(ArgumentSpec("Name", ArgumentType.STRING)),
+            { args -> fullTree(args) },
+            "Shows the full tree, with a particular brother's line going up and down highlighted.",
+            "fullTree (name)",
+            isNotPledge
+        ), Command.of(
+            DiscordProtocol, "updateRoster", listOf(), { ->
                 val newRoster = getNewRoster()
-                brotherInfo.clear()
-                brotherInfo.addAll(newRoster)
+                brotherInfo?.clear()
+                brotherInfo?.addAll(newRoster)
                 Files.write(brotherInfoPath, objectMapper.writeValueAsBytes(newRoster))
                 "Roster updated."
+            }, "Updates the brother roster list.", "updateRoster (takes no arguments)"
+        ), Command.of(
+            DiscordProtocol,
+            "registerMentionChat",
+            listOf(ArgumentSpec("user", ArgumentType.STRING)),
+            fct@{ args, chat, _ ->
+                val name = args.joinToString(" ")
+                val target = getUserFromName(chat, name) ?: return@fct "No user found with name \"$name\"."
+                settings.mentionChats.getOrPut(chat) { mutableMapOf() }.putIfAbsent(target, mutableMapOf())
+                updateSettings()
+                "Chat registered to mention ${getUserName(chat, target)}."
             },
-            "Updates the brother roster list.",
-            "updateRoster (takes no arguments)"
+            "Registers this chat with the given user as a mention chat.",
+            "registerMentionChat (user)",
+            isNotPledge
+        ), Command.of(
+            DiscordProtocol, "removeMentionChats", listOf(), { _, chat, _ ->
+                settings.mentionChats.getOrDefault(chat, mutableMapOf()).clear()
+                updateSettings()
+                "Mention users cleared from this chat."
+            }, "Removes all mention users from this chat.", "removeMentionChat (takes no arguments)", isNotPledge
+        ), Command.of(
+            DiscordProtocol,
+            "mentionChatStats",
+            listOf(ArgumentSpec("user", ArgumentType.STRING)),
+            { _, chat, _ -> "Mention chat stats for this channel:\n${mentionStats(chat)}" },
+            "Lists the stats for this mention chat.",
+            "mentionChatStats (takes no arguments)"
+        ), Command.of(
+            DiscordProtocol,
+            "setAlumnusNickname",
+            listOf(
+                ArgumentSpec("rosternumber", ArgumentType.NUMBER),
+                ArgumentSpec("user", ArgumentType.STRING),
+            ),
+            ::setAlumnusNickname,
+            "Sets an alumnus's nickname for the alumni association server.",
+            "setAlumnusNickname (roster number) [@user]"
         )
     )
+    registerMentionCallback()
+    Scheduler.taskList.add(MentionStatsTask(nextMonth()))
 }
+
+data class MentionStatsTask(override val scheduledTime: OffsetDateTime): ScheduledTask(scheduledTime) {
+    override fun invoke() {
+        for ((chat, _) in settings.mentionChats) {
+            sendMessage(chat, "Monthly mention stats:\n${mentionStats(chat)}")
+        }
+        for ((_, stats) in settings.mentionChats)
+            for ((_, mentioners) in stats)
+                mentioners.clear()
+        updateSettings()
+        // Schedule it again for next month
+        Scheduler.taskList.add(MentionStatsTask(nextMonth()))
+    }
+}
+
+private fun registerMentionCallback() {
+    callbacks.getOrPut(MentionedUser::class) { mutableListOf() }.add(
+        MentionedUser { chat: Chat, sender: User, msg: IncomingMessage, users: List<User> ->
+            if (msg is DiscordIncomingMessage) {
+                if (sender !is DiscordUser)
+                    return@MentionedUser true
+                val newMentions = mutableMapOf<DiscordUser, Int>()
+                for (user in users) {
+                    user as? DiscordUser ?: continue
+                    val mentions = (settings.mentionChats[chat] ?: return@MentionedUser true)[user]
+                        ?: return@MentionedUser true
+                    val mentionCount = mentions.getOrDefault(sender, 0) + 1
+                    mentions[sender] = mentionCount
+                    newMentions[user] = mentionCount
+                }
+                updateSettings()
+                if (settings.debugMode) {
+                    val parts = newMentions.toList().map { (user, count) ->
+                        "${DiscordProtocol.getUserNickname(chat, user)} $count time${if (count > 1) "s" else ""}"
+                    }
+                    val mentionStr = when(parts.size) {
+                        1 -> parts[0]
+                        2 -> "${parts[0]} and ${parts[1]}"
+                        else -> "${parts.dropLast(1).joinToString(", ")}, and ${parts.last()}"
+                    }
+                    sendMessage(chat, "You mentioned $mentionStr.")
+                }
+            }
+            true
+        }
+    )
+}
+
+private fun nextMonth(): OffsetDateTime {
+    // If it's the first of the month, we should schedule it for Noon today
+    val now = OffsetDateTime.now()
+    val thisMonth = now
+        .withDayOfMonth(1)
+        .with(LocalTime.MIN)
+        .plusHours(12)
+    // But if it isn't, it should be scheduled for next month
+    if (thisMonth < now)
+        return thisMonth.plusMonths(1)
+
+    return thisMonth
+}
+
+fun mentionStats(chat: Chat) = settings.mentionChats
+    .getOrDefault(chat, mutableMapOf())
+    .map { (target, mentions) ->
+        "${getUserName(chat, target)}:\n\t${
+            mentions.toList().joinToString(
+                "\n\t",
+                transform = { (user, count) ->
+                    "${getUserName(chat, user)}: $count"
+                })
+        }"
+    }.joinToString()

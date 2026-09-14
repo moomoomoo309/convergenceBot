@@ -1,13 +1,11 @@
-@file:Suppress("unused")
-
 package convergence
 
+import convergence.commands.registerDefaultCommands
 import convergence.console.ConsoleProtocol
 import convergence.discord.DiscordProtocol
 import net.sourceforge.argparse4j.ArgumentParsers
 import net.sourceforge.argparse4j.inf.ArgumentParserException
 import java.nio.file.Paths
-import kotlin.collections.set
 
 object ConvergenceBot {
     @JvmStatic
@@ -27,52 +25,58 @@ object ConvergenceBot {
         val commandLineArgs = try {
             argParser.parseArgs(args)
         } catch(e: ArgumentParserException) {
-            defaultLogger.error("Failed to parse command line arguments. Printing stack trace:")
-            defaultLogger.error(getStackTraceText(e))
+            defaultLogger.error("Failed to parse command line arguments. Exception: ", e)
             return
         }
 
-        protocols.add(UniversalProtocol)
-        protocols.add(ConsoleProtocol)
-        protocols.add(DiscordProtocol)
+        bot.protocols.add(UniversalProtocol)
+        bot.protocols.add(ConsoleProtocol)
+        bot.protocols.add(DiscordProtocol)
 
         convergencePath = Paths.get(commandLineArgs.get<List<String>>("convergencePath").first())
 
         defaultLogger.info("Registering default commands...")
         registerDefaultCommands()
 
-        // Update the chat map
-        for (protocol in protocols) {
-            defaultLogger.info("Initializing ${protocol.name}...")
-            try {
-                protocol.init()
-                val chats = protocol.getChats()
-                for (chat in chats) {
-                    if (chat !in reverseChatMap) {
-                        while (currentChatID in chatMap)
-                            currentChatID++
-                        chatMap[currentChatID] = chat
-                        reverseChatMap[chat] = currentChatID
-                    }
-                }
-            } catch(e: Exception) {
-                e.printStackTrace()
-            }
-        }
+        updateChatMap()
 
+        defaultLogger.info("Loading settings...")
         readSettings()
 
-        for (protocol in protocols) {
-            defaultLogger.info("Running ${protocol.name}.configLoaded...")
-            try {
-                protocol.configLoaded()
-            } catch(e: Exception) {
-                e.printStackTrace()
-            }
-        }
+        loadProtocolConfig()
 
         defaultLogger.info("Starting command scheduler...")
-        CommandScheduler.loadFromFile()
-        CommandScheduler.start()
+        Scheduler.loadFromFile()
+        Scheduler.start()
+    }
+}
+
+private fun loadProtocolConfig() {
+    for (protocol in bot.protocols) {
+        defaultLogger.info("Running ${protocol.name}.configLoaded...")
+        try {
+            protocol.configLoaded()
+        } catch(e: Exception) {
+            defaultLogger.error("Failed to run config callback! Exception: ", e)
+        }
+    }
+}
+
+private fun updateChatMap() {
+    for (protocol in bot.protocols) {
+        defaultLogger.info("Initializing ${protocol.name}...")
+        try {
+            protocol.init()
+            val chats = protocol.getChats()
+            for (chat in chats) {
+                if (chat !in bot.reverseChatMap) {
+                    val id = bot.currentChatID.getAndIncrement()
+                    bot.chatMap[id] = chat
+                    bot.reverseChatMap[chat] = id
+                }
+            }
+        } catch(e: Exception) {
+            defaultLogger.error("Failed to initialize protocol! Exception: ", e)
+        }
     }
 }

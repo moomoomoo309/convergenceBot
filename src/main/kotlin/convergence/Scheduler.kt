@@ -1,0 +1,164 @@
+package convergence
+
+import com.fasterxml.jackson.annotation.JsonProperty
+import convergence.command.Command
+import convergence.command.CommandWithArgs
+import convergence.command.getCommand
+import convergence.command.runCommand
+import convergence.discord.calendar.CalendarProcessor
+import convergence.model.Chat
+import convergence.model.User
+import org.ocpsoft.prettytime.PrettyTime
+import org.ocpsoft.prettytime.units.JustNow
+import java.time.OffsetDateTime
+import java.time.temporal.ChronoUnit
+import java.util.concurrent.atomic.AtomicInteger
+
+/**
+ * Checks if commands or tasks scheduled for later are ready to be run yet.
+ * Can give information on what's in its queue.
+ */
+@Suppress("ConstPropertyName")
+object Scheduler: Thread() {
+    private const val allowedTimeDifferenceSeconds = 30
+    private const val updatesPerSecond = 1
+
+    private val scheduledCommands = sortedMapOf<OffsetDateTime, MutableList<ScheduledCommand>>()
+    private val commandsList = sortedMapOf<Int, ScheduledCommand>()
+    private val currentId = AtomicInteger(0)
+    val taskList = mutableListOf<ScheduledTask>()
+
+    fun loadFromFile() {
+        settings.serializedCommands.values.forEach { cmd ->
+            commandsList[cmd.id] = cmd
+            scheduledCommands.getOrPut(cmd.scheduledTime) { mutableListOf(cmd) }
+        }
+    }
+
+    override fun run() {
+        while (isAlive) {
+            val now = OffsetDateTime.now()
+            val timesToRemove = mutableListOf<OffsetDateTime>()
+            for ((cmdTime, cmdList) in scheduledCommands) {
+                if (cmdTime.isBefore(now)) {
+                    if (cmdTime.until(now, ChronoUnit.SECONDS) in 0..allowedTimeDifferenceSeconds) {
+                        for (cmd in cmdList) {
+                            cmd()
+                            commandsList.remove(cmd.id)
+                            settings.serializedCommands.remove(cmd.id)
+                        }
+                    } else {
+                        @Suppress("DestructuringDeclaration")
+                        for (cmd in cmdList) {
+                            commandsList.remove(cmd.id)
+                            settings.serializedCommands.remove(cmd.id)
+                        }
+                    }
+                    if (cmdList.isNotEmpty())
+                        updateSettings()
+                    timesToRemove.add(cmdTime)
+                } else // It's already sorted chronologically, so all following events are early.
+                    break
+            }
+            timesToRemove.forEach { scheduledCommands.remove(it) }
+            val iter = taskList.iterator()
+            while (iter.hasNext()) {
+                val task = iter.next()
+                if (now.isAfter(task.scheduledTime)) {
+                    task()
+                    iter.remove()
+                }
+            }
+            CalendarProcessor.onUpdate()
+            sleep((1000.0 / updatesPerSecond).toLong())
+        }
+    }
+
+    /**
+     * Schedules [commandWithArgs] sent by [sender] to run at [time].
+     * @return The response the user will get from the command.
+     */
+    fun schedule(chat: Chat, sender: User, commandWithArgs: CommandWithArgs, time: OffsetDateTime) =
+        schedule(chat, sender, commandWithArgs.command.name, commandWithArgs.args, time)
+
+    /**
+     * Schedules [commandName] sent by [sender] to run at [time] with [args] as its arguments.
+     * @return The response the user will get from the command.
+     */
+    fun schedule(chat: Chat, sender: User, commandName: String, args: List<String>, time: OffsetDateTime): String {
+        var id = currentId.getAndIncrement()
+        while (id in commandsList)
+            id = currentId.getAndIncrement()
+        val cmd = ScheduledCommand(time, chat, sender, chat.protocol.name, commandName, args, id)
+        scheduledCommands.getOrPut(time) { mutableListOf() }.add(cmd)
+        if (cmd.id in commandsList)
+            defaultLogger.error("Duplicate IDs in schedulerThread!")
+        commandsList[cmd.id] = cmd
+        settings.serializedCommands[cmd.id] = cmd
+        updateSettings()
+        val truncatedTimestamp = time.toTruncatedTimestamp()
+        return "Scheduled ${getUserName(chat, sender)} to run " +
+                "\"$commandName ${args.joinToString(" ")}\" ${formatTime(time)} ($truncatedTimestamp)."
+    }
+
+    /**
+     * Gets all the commands scheduled by [sender].
+     */
+    fun getCommands(sender: User?): List<ScheduledCommand> =
+        if (sender == null)
+            getCommands()
+        else
+            commandsList.values.filter { it.sender == sender }
+
+    /**
+     * Gets all the commands scheduled.
+     */
+    fun getCommands(): List<ScheduledCommand> = commandsList.values.toList()
+
+    /**
+     * Removes a command from the queue.
+     */
+    fun unschedule(index: Int) = commandsList.remove(index)?.let {
+        settings.serializedCommands.remove(it.id)
+        scheduledCommands[it.scheduledTime]?.remove(it)
+    } != null
+}
+
+private val prettyTime = PrettyTime().also { it.removeUnit(JustNow::class.java) }
+fun formatTime(time: OffsetDateTime): String = prettyTime.format(time)
+
+interface Schedulable {
+    val scheduledTime: OffsetDateTime
+}
+
+/**
+ * A function that will run at a future time.
+ */
+abstract class ScheduledTask(
+    override val scheduledTime: OffsetDateTime
+): Schedulable {
+    abstract operator fun invoke()
+}
+
+/**
+ * A command sent by a user to run at a future time.
+ */
+data class ScheduledCommand(
+    override val scheduledTime: OffsetDateTime,
+    // chat/sender persist as their key strings (via the Chat/User value (de)serializers in convergenceModule);
+    // the property names are pinned for backwards compatibility with settings files written before this type
+    // serialized directly.
+    @param:JsonProperty("chatKey")
+    @get:JsonProperty("chatKey")
+    val chat: Chat,
+    @param:JsonProperty("senderKey")
+    @get:JsonProperty("senderKey")
+    val sender: User,
+
+    val protocolName: String,
+    val commandName: String,
+    val args: List<String>,
+    val id: Int,
+): Schedulable {
+    operator fun invoke() = runCommand(chat, sender, getCommand(chat, commandName.lowercase()) as Command, args)
+}

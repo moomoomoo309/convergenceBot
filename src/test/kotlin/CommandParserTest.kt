@@ -1,9 +1,11 @@
 import convergence.*
-import org.antlr.v4.runtime.InputMismatchException
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
-import kotlin.test.assertNull
+import convergence.command.*
+import convergence.model.Chat
+import convergence.model.OutgoingMessage
+import convergence.model.User
+import org.junit.After
+import org.junit.Before
+import kotlin.test.*
 
 class TestChat: Chat(UniversalProtocol, "Test") {
     override fun toKey() = "TestChat(Test)"
@@ -11,50 +13,51 @@ class TestChat: Chat(UniversalProtocol, "Test") {
 
 object TestProtocol: Protocol("Test") {
     override fun init() {
+        // Do nothing
     }
 
     override fun configLoaded() {
-        TODO("Not yet implemented")
+        TODO("Not needed for tests")
     }
 
     override fun aliasCreated(alias: Alias) {
-        TODO("Not yet implemented")
+        TODO("Not needed for tests")
     }
 
     override fun sendMessage(chat: Chat, message: OutgoingMessage): Boolean {
-        TODO("Not yet implemented")
+        TODO("Not needed for tests")
     }
 
     override fun getBot(chat: Chat): User {
-        TODO("Not yet implemented")
+        TODO("Not needed for tests")
     }
 
-    override fun getName(chat: Chat, user: User): String {
-        TODO("Not yet implemented")
+    override fun getUserName(chat: Chat, user: User): String {
+        TODO("Not needed for tests")
     }
 
     override fun getChats(): List<Chat> {
-        TODO("Not yet implemented")
+        TODO("Not needed for tests")
     }
 
     override fun getUsers(): List<User> {
-        TODO("Not yet implemented")
+        TODO("Not needed for tests")
     }
 
     override fun getUsers(chat: Chat): List<User> {
-        TODO("Not yet implemented")
+        TODO("Not needed for tests")
     }
 
     override fun getChatName(chat: Chat): String {
-        TODO("Not yet implemented")
+        TODO("Not needed for tests")
     }
 
     override fun commandScopeFromKey(key: String): Chat? {
-        TODO("Not yet implemented")
+        TODO("Not needed for tests")
     }
 
     override fun userFromKey(key: String): User? {
-        TODO("Not yet implemented")
+        TODO("Not needed for tests")
     }
 }
 
@@ -64,143 +67,659 @@ fun doNothing(unused: List<String>, unused2: Chat, unused3: User): String? {
 }
 
 class CommandParserTest {
-    private fun loadCommandData(command: String): CommandData? {
+    private fun loadCommandWithArgs(command: String): CommandWithArgs? {
         val testChat = TestChat()
         val testIndex = command.indexOf(" ")
         val testCommandStr = command.substring(1, if (testIndex == -1) command.length else testIndex)
         val testCommand = Command.of(testChat.protocol, testCommandStr, listOf(), ::doNothing, "test", "test")
-        commands[testChat.protocol] = mutableMapOf(testCommandStr to testCommand)
-        return parseCommand(command, testChat)
+        bot.commands[testChat.protocol] = mutableMapOf(testCommandStr to testCommand)
+        return parseCommand(testChat, command)
     }
 
     @Test
     fun validEscapes() {
-        val testCommandData = loadCommandData("!test \\f \\\\ \\u0014 \\tb \\b")
-        assertEquals("test", testCommandData?.command?.name, "Did not load test command correctly.")
-        assertEquals("\u000c", testCommandData?.args?.get(0), "Did not escape \\f properly.")
-        assertEquals("\\", testCommandData?.args?.get(1), "Did not escape \\\\ properly.")
-        assertEquals("\u0014", testCommandData?.args?.get(2), "Did not escape \\u0014 properly.")
+        val testCommandWithArgs = loadCommandWithArgs("!test \\f \\\\ \\u0014 \\tb \\b")
+        assertEquals("test", testCommandWithArgs?.command?.name, "Did not load test command correctly.")
+        assertEquals("\u000c", testCommandWithArgs?.args?.get(0), "Did not escape \\f properly.")
+        assertEquals("\\", testCommandWithArgs?.args?.get(1), "Did not escape \\\\ properly.")
+        assertEquals("\u0014", testCommandWithArgs?.args?.get(2), "Did not escape \\u0014 properly.")
         assertEquals(
             "\tb",
-            testCommandData?.args?.get(3),
+            testCommandWithArgs?.args?.get(3),
             "Did not escape \\tb properly. (a \\t with a letter after it)"
         )
-        assertEquals("\b", testCommandData?.args?.get(4), "Did not escape \\b properly.")
+        assertEquals("\b", testCommandWithArgs?.args?.get(4), "Did not escape \\b properly.")
     }
 
     @Test
     fun validEscapesInQuotes() {
-        val testCommandData = loadCommandData("!test \"\\f\" \"\\\\\" \"\\u0014\" \"\\tb\" \"\\b\"")
-        assertEquals("test", testCommandData?.command?.name, "Did not load test command correctly.")
-        assertEquals("\u000c", testCommandData?.args?.get(0), "Did not escape \\f properly.")
-        assertEquals("\\", testCommandData?.args?.get(1), "Did not escape \\\\ properly.")
-        assertEquals("\u0014", testCommandData?.args?.get(2), "Did not escape \\u0014 properly.")
+        val testCommandWithArgs = loadCommandWithArgs("!test \"\\f\" \"\\\\\" \"\\u0014\" \"\\tb\" \"\\b\"")
+        assertEquals("test", testCommandWithArgs?.command?.name, "Did not load test command correctly.")
+        assertEquals("\u000c", testCommandWithArgs?.args?.get(0), "Did not escape \\f properly.")
+        assertEquals("\\", testCommandWithArgs?.args?.get(1), "Did not escape \\\\ properly.")
+        assertEquals("\u0014", testCommandWithArgs?.args?.get(2), "Did not escape \\u0014 properly.")
         assertEquals(
             "\tb",
-            testCommandData?.args?.get(3),
+            testCommandWithArgs?.args?.get(3),
             "Did not escape \\tb properly. (a \\t with a letter after it)"
         )
-        assertEquals("\b", testCommandData?.args?.get(4), "Did not escape \\b properly.")
+        assertEquals("\b", testCommandWithArgs?.args?.get(4), "Did not escape \\b properly.")
     }
 
     @Test
     fun invalidEscape() {
         assertFailsWith<InvalidEscapeSequenceException>("Did not fail on empty escape.") {
-            loadCommandData("!test2 \\")
+            loadCommandWithArgs("!test2 \\")
         }
     }
 
     @Test
     fun invalidCommand() {
-        assertFailsWith<InputMismatchException>("Did not fail on invalid command.") {
-            loadCommandData("!test2.5 abc\"def")
+        assertFailsWith<InvalidCommandParseException>("Did not fail on invalid command.") {
+            loadCommandWithArgs("!test2.5 abc\"def")
         }
     }
 
     @Test
     fun invalidUnicodeEscapes() {
         assertFailsWith<InvalidEscapeSequenceException>("Did not fail on empty unicode escape.") {
-            loadCommandData("!test3 \\u")
+            loadCommandWithArgs("!test3 \\u")
         }
         assertFailsWith<InvalidEscapeSequenceException>("Did not fail on partial unicode escape.") {
-            loadCommandData("!test4 \\u0")
+            loadCommandWithArgs("!test4 \\u0")
         }
     }
 
     @Test
     fun validOctalEscapes() {
-        val testCommandData = loadCommandData("!test5 h\\0 \\10 \\100")
-        assertEquals("test5", testCommandData?.command?.name, "Did not load test5 command correctly.")
-        assertEquals("h\u0000", testCommandData?.args?.get(0), "Did not escape \\0 properly.")
-        assertEquals("\u0008", testCommandData?.args?.get(1), "Did not escape \\10 properly.")
-        assertEquals("\u0040", testCommandData?.args?.get(2), "Did not escape \\100 properly.")
+        val testCommandWithArgs = loadCommandWithArgs("!test5 h\\0 \\10 \\100")
+        assertEquals("test5", testCommandWithArgs?.command?.name, "Did not load test5 command correctly.")
+        assertEquals("h\u0000", testCommandWithArgs?.args?.get(0), "Did not escape \\0 properly.")
+        assertEquals("\u0008", testCommandWithArgs?.args?.get(1), "Did not escape \\10 properly.")
+        assertEquals("\u0040", testCommandWithArgs?.args?.get(2), "Did not escape \\100 properly.")
     }
 
     @Test
     fun invalidOctalEscape() {
         assertFailsWith<InvalidEscapeSequenceException>("Did not fail on out of range octal escape.") {
-            loadCommandData("!test6 \\400")
+            loadCommandWithArgs("!test6 \\400")
         }
     }
 
     @Test
     fun notACommand() {
-        val testCommandData = loadCommandData("Not a command")
-        assertNull(testCommandData, "Tried to load a non-command as a command.")
+        val testCommandWithArgs = loadCommandWithArgs("Not a command")
+        assertNull(testCommandWithArgs, "Tried to load a non-command as a command.")
     }
 
 
-    private fun loadAliasData(command: String): CommandData? {
+    @Suppress("SameParameterValue")
+    private fun loadAliasData(command: String): CommandWithArgs? {
         val testChat = TestChat()
-        val testAliasStr = command.substringBefore(" ").substringAfter(defaultCommandDelimiter).lowercase()
+        val testAliasStr = command.substringBefore(" ").substringAfter(DEFAULT_COMMAND_DELIMITER).lowercase()
         val testCommand = Command.of(testChat.protocol, "test", listOf(), ::doNothing, "test", "test")
         val testAlias =
             Alias(testChat, testAliasStr, testCommand, listOf("testArg1", "testArg2"))
-        commands[testChat.protocol] = mutableMapOf("test" to testCommand)
-        aliases[testChat] = mutableMapOf(testAliasStr to testAlias)
-        return parseCommand(command, testChat)
+        bot.commands[testChat.protocol] = mutableMapOf("test" to testCommand)
+        settings.aliases[testChat] = mutableMapOf(testAliasStr to testAlias)
+        return parseCommand(testChat, command)
     }
 
     @Test
     fun aliasExpansion() {
-        val testCommandData = loadAliasData("!testAlias nonAliasArg1 nonAliasArg2")
-        assertEquals("test", testCommandData?.command?.name, "Did not expand alias correctly.")
-        assertEquals("testArg1", testCommandData?.args?.get(0), "Did not expand first alias argument correctly.")
-        assertEquals("testArg2", testCommandData?.args?.get(1), "Did not expand second alias argument correctly.")
+        val testCommandWithArgs = loadAliasData("!testAlias nonAliasArg1 nonAliasArg2")
+        assertEquals("test", testCommandWithArgs?.command?.name, "Did not expand alias correctly.")
+        assertEquals("testArg1", testCommandWithArgs?.args?.get(0), "Did not expand first alias argument correctly.")
+        assertEquals("testArg2", testCommandWithArgs?.args?.get(1), "Did not expand second alias argument correctly.")
         assertEquals(
             "nonAliasArg1",
-            testCommandData?.args?.get(2),
+            testCommandWithArgs?.args?.get(2),
             "Did not expand first non-alias argument correctly."
         )
         assertEquals(
             "nonAliasArg2",
-            testCommandData?.args?.get(3),
+            testCommandWithArgs?.args?.get(3),
             "Did not expand second non-alias argument correctly."
         )
     }
 
     @Test
     fun validCommand() {
-        val testCommandData = loadCommandData("!commands")
-        assertEquals("commands", testCommandData?.command?.name, "Did not parse valid command correctly.")
+        val testCommandWithArgs = loadCommandWithArgs("!commands")
+        assertEquals("commands", testCommandWithArgs?.command?.name, "Did not parse valid command correctly.")
     }
 
     @Test
     fun validCommandWithQuotes() {
-        val testCommandData = loadCommandData("!schedule \"5 seconds\" \"!echo hi\"")
-        assertEquals("schedule", testCommandData?.command?.name, "Did not parse valid command correctly.")
-        assertEquals("5 seconds", testCommandData?.args?.get(0), "Did not parse first valid quoted argument correctly.")
-        assertEquals("!echo hi", testCommandData?.args?.get(1), "Did not parse second valid quoted argument correctly.")
+        val testCommandWithArgs = loadCommandWithArgs("!schedule \"5 seconds\" \"!echo hi\"")
+        assertEquals("schedule", testCommandWithArgs?.command?.name, "Did not parse valid command correctly.")
+        assertEquals(
+            "5 seconds",
+            testCommandWithArgs?.args?.get(0),
+            "Did not parse first valid quoted argument correctly."
+        )
+        assertEquals(
+            "!echo hi",
+            testCommandWithArgs?.args?.get(1),
+            "Did not parse second valid quoted argument correctly."
+        )
     }
 
     @Test
     fun doubleQuotedArguments() {
-        val testCommandData = loadCommandData("!echo \"Hi mailman!\"")
+        val testCommandWithArgs = loadCommandWithArgs("!echo \"Hi mailman!\"")
         assertEquals(
             "echo",
-            testCommandData?.command?.name,
+            testCommandWithArgs?.command?.name,
             "Did not parse valid command with double-quoted arguments correctly."
         )
-        assertEquals("Hi mailman!", testCommandData?.args?.get(0), "Did not parse double-quoted arguments correctly.")
+        assertEquals(
+            "Hi mailman!",
+            testCommandWithArgs?.args?.get(0),
+            "Did not parse double-quoted arguments correctly."
+        )
+    }
+
+    @Before
+    fun setup() {
+        bot.commands.remove(UniversalProtocol)
+        settings.aliases.clear()
+        settings.commandDelimiters.clear()
+    }
+
+    @After
+    fun teardown() {
+        bot.commands.remove(UniversalProtocol)
+        settings.aliases.clear()
+        settings.commandDelimiters.clear()
+    }
+
+    // ─── helpers ──────────────────────────────────────────────────────────────
+
+    private fun registerTestCommand(name: String): Command {
+        val cmd = Command.of(UniversalProtocol, name, listOf(), ::doNothing, "test", "test")
+        if (UniversalProtocol !in bot.commands)
+            bot.commands[UniversalProtocol] = mutableMapOf()
+        bot.commands[UniversalProtocol]!![name.lowercase()] = cmd
+        return cmd
+    }
+
+    private fun parse(input: String): CommandWithArgs? {
+        val chat = TestChat()
+        return parseCommand(chat, input)
+    }
+
+    private fun parseArgs(input: String): List<String> = parse(input)!!.args
+
+    // ─── null / no-op returns ────────────────────────────────────────────────
+
+    @Test
+    fun emptyStringReturnsNull() {
+        assertNull(parse(""))
+    }
+
+    @Test
+    fun justDelimiterReturnsNull() {
+        assertNull(parse("!"))
+    }
+
+    @Test
+    fun doubleDelimiterReturnsNull() {
+        registerTestCommand("echo")
+        assertNull(parse("!!echo"))
+    }
+
+    @Test
+    fun noDelimiterReturnsNull() {
+        registerTestCommand("echo")
+        assertNull(parse("echo hello"))
+    }
+
+    // ─── multi-character delimiters ──────────────────────────────────────────
+
+    @Test
+    fun multiCharDelimiterMatchesCorrectly() {
+        val chat = TestChat()
+        bot.commands[UniversalProtocol] = mutableMapOf(
+            "echo" to Command.of(UniversalProtocol, "echo", listOf(), ::doNothing, "test", "test")
+        )
+        settings.commandDelimiters[chat] = "!!"
+        val result = parseCommand(chat, "!!", "!!echo hello")
+        assertEquals("echo", result?.command?.name)
+        assertEquals("hello", result?.args?.get(0))
+    }
+
+    @Test
+    fun singleCharPrefixDoesNotMatchMultiCharDelimiter() {
+        val chat = TestChat()
+        bot.commands[UniversalProtocol] = mutableMapOf(
+            "echo" to Command.of(UniversalProtocol, "echo", listOf(), ::doNothing, "test", "test")
+        )
+        assertNull(parseCommand(chat, "!!", "!echo hello"))
+    }
+
+    @Test
+    fun multiCharDoubleDelimiterGuardChecksFullDoublePrefix() {
+        // The guard fires on delimiter+delimiter ("!!" + "!!" = "!!!!").
+        // "!!!echo" starts with "!!" but NOT "!!!!", so the guard does NOT fire.
+        // After stripping "!!", the input is "!echo". ANTLR error-recovers over the
+        // leading "!", but its error-recovery includes "!" in commandName.text ("!echo"),
+        // so getCommand("!echo", …) throws CommandDoesNotExist rather than finding "echo".
+        val chat = TestChat()
+        bot.commands[UniversalProtocol] = mutableMapOf(
+            "echo" to Command.of(UniversalProtocol, "echo", listOf(), ::doNothing, "test", "test")
+        )
+        assertFailsWith<CommandDoesNotExist> { parseCommand(chat, "!!", "!!!echo") }
+    }
+
+    // ─── command name rules ───────────────────────────────────────────────────
+
+    @Test
+    fun numericCommandNameIsValid() {
+        // commandName: Alnum+ allows digit-only names
+        registerTestCommand("123")
+        val result = parse("!123")
+        assertEquals("123", result?.command?.name)
+    }
+
+    @Test
+    fun alphanumericCommandNameIsValid() {
+        registerTestCommand("cmd2go")
+        assertEquals("cmd2go", parse("!cmd2go")?.command?.name)
+    }
+
+    @Test
+    fun commandNameLookupIsCaseInsensitive() {
+        // Keys are stored lowercase; !ECHO and !echo both find the same command.
+        registerTestCommand("echo")
+        assertNotNull(parse("!ECHO"), "Expected !ECHO to resolve to registered 'echo' command")
+        assertNotNull(parse("!Echo"), "Expected !Echo to resolve to registered 'echo' command")
+    }
+
+    @Test
+    fun commandNameWithDotThrows() {
+        // A dot is not Alnum, so it is not a valid commandName character.
+        assertFailsWith<Exception> { parse("!echo.cmd") }
+    }
+
+    // ─── argument whitespace handling ────────────────────────────────────────
+
+    @Test
+    fun noArgsProducesEmptyList() {
+        registerTestCommand("ping")
+        assertEquals(emptyList(), parse("!ping")?.args)
+    }
+
+    @Test
+    fun trailingWhitespaceIsIgnored() {
+        registerTestCommand("echo")
+        assertEquals(listOf("hello"), parseArgs("!echo hello   "))
+    }
+
+    @Test
+    fun multipleSpacesBetweenArgsCollapsed() {
+        registerTestCommand("echo")
+        assertEquals(listOf("hello", "world"), parseArgs("!echo hello   world"))
+    }
+
+    @Test
+    fun tabSeparatesArguments() {
+        registerTestCommand("echo")
+        assertEquals(listOf("hello", "world"), parseArgs("!echo hello\tworld"))
+    }
+
+    @Test
+    fun leadingWhitespaceAfterDelimiterThrows() {
+        // "! echo" → strips "!" → " echo"; commandName: Alnum+ can't start with whitespace.
+        // ANTLR error-recovers and produces a commandName of "", causing CommandDoesNotExist.
+        assertFailsWith<Exception> { parse("! echo hello") }
+    }
+
+    // ─── quoted argument edge cases ───────────────────────────────────────────
+
+    @Test
+    fun emptyQuotedArgument() {
+        registerTestCommand("echo")
+        assertEquals(listOf(""), parseArgs("!echo \"\""))
+    }
+
+    @Test
+    fun quotedArgWithOnlyWhitespace() {
+        registerTestCommand("echo")
+        assertEquals(listOf("   "), parseArgs("!echo \"   \""))
+    }
+
+    @Test
+    fun quotedArgPreservesInternalSpaces() {
+        registerTestCommand("echo")
+        assertEquals(listOf("hello world foo"), parseArgs("!echo \"hello world foo\""))
+    }
+
+    @Test
+    fun singleQuoteInsideDoubleQuotes() {
+        registerTestCommand("echo")
+        assertEquals(listOf("it's fine"), parseArgs("!echo \"it's fine\""))
+    }
+
+    @Test
+    fun escapedDoubleQuoteInsideQuotedArg() {
+        registerTestCommand("echo")
+        assertEquals(listOf("say \"hello\""), parseArgs("!echo \"say \\\"hello\\\"\""))
+    }
+
+    @Test
+    fun unclosedQuoteIsRecoveredByAntlr() {
+        // ANTLR error-recovers by inserting the missing closing quote, so no exception
+        // is thrown — the arg content is returned as if the quote were closed.
+        registerTestCommand("echo")
+        val result = parse("!echo \"unclosed")
+        assertNotNull(result)
+        assertEquals("unclosed", result.args[0])
+    }
+
+    @Test
+    fun adjacentQuotedArgsWithoutSpaceThrows() {
+        // After the first closing quote there is no Whitespace+, so the parser cannot
+        // start the next argument — this IS caught and throws.
+        registerTestCommand("echo")
+        assertFailsWith<Exception> { parse("!echo \"a\"\"b\"") }
+    }
+
+    @Test
+    fun escapedNewlineInsideQuotedArg() {
+        registerTestCommand("echo")
+        assertEquals(listOf("line1\nline2"), parseArgs("!echo \"line1\\nline2\""))
+    }
+
+    // ─── special characters in non-quoted arguments ───────────────────────────
+
+    @Test
+    fun exclamationMarkInsideArg() {
+        registerTestCommand("echo")
+        assertEquals(listOf("hello!"), parseArgs("!echo hello!"))
+    }
+
+    @Test
+    fun hyphenInsideArg() {
+        registerTestCommand("echo")
+        assertEquals(listOf("hello-world"), parseArgs("!echo hello-world"))
+    }
+
+    @Test
+    fun atSignInsideArg() {
+        registerTestCommand("echo")
+        assertEquals(listOf("@user"), parseArgs("!echo @user"))
+    }
+
+    @Test
+    fun percentSignInsideArg() {
+        registerTestCommand("echo")
+        assertEquals(listOf("%sender"), parseArgs("!echo %sender"))
+    }
+
+    @Test
+    fun dotInsideArg() {
+        registerTestCommand("echo")
+        assertEquals(listOf("hello.world"), parseArgs("!echo hello.world"))
+    }
+
+    @Test
+    fun nonAsciiCharInsideArg() {
+        registerTestCommand("echo")
+        assertEquals(listOf("héllo"), parseArgs("!echo héllo"))
+    }
+
+    // ─── valid octal boundary cases ──────────────────────────────────────────
+
+    @Test
+    fun octalSingleDigitMin() {
+        registerTestCommand("test")
+        assertEquals("\u0000", parseArgs("!test \\0")[0])
+    }
+
+    @Test
+    fun octalSingleDigitMax() {
+        registerTestCommand("test")
+        assertEquals("\u0007", parseArgs("!test \\7")[0])
+    }
+
+    @Test
+    fun octalTwoDigitMax() {
+        // \77 = 63 decimal
+        registerTestCommand("test")
+        assertEquals(63.toChar().toString(), parseArgs("!test \\77")[0])
+    }
+
+    @Test
+    fun octalThreeDigitBoundaryLow() {
+        // \100 = 64 decimal
+        registerTestCommand("test")
+        assertEquals(64.toChar().toString(), parseArgs("!test \\100")[0])
+    }
+
+    @Test
+    fun octalThreeDigitBoundaryHigh() {
+        // \377 = 255 decimal — maximum valid octal in the grammar
+        registerTestCommand("test")
+        assertEquals(255.toChar().toString(), parseArgs("!test \\377")[0])
+    }
+
+    @Test
+    fun octalThreeDigitMid() {
+        // \200 = 128 decimal
+        registerTestCommand("test")
+        assertEquals(128.toChar().toString(), parseArgs("!test \\200")[0])
+    }
+
+    @Test
+    fun octalThreeHundredRange() {
+        // \300 = 192 decimal
+        registerTestCommand("test")
+        assertEquals(192.toChar().toString(), parseArgs("!test \\300")[0])
+    }
+
+    @Test
+    fun octalMixedWithOtherChars() {
+        // \30 (= 24) followed by literal "8" — grammar stops octal at non-octal digit
+        registerTestCommand("test")
+        val args = parseArgs("!test \\308")
+        assertEquals(24.toChar() + "8", args[0])
+    }
+
+    @Test
+    fun octalTwoDigitFollowedByNonOctalDigit() {
+        // \1 (= 1) followed by literal "8" — grammar stops at 8 since it's not [0-7]
+        registerTestCommand("test")
+        val args = parseArgs("!test \\18")
+        assertEquals(1.toChar() + "8", args[0])
+    }
+
+    // ─── invalid octal: caught correctly by grammar ───────────────────────────
+
+    @Test
+    fun octalFourHundredIsInvalid() {
+        registerTestCommand("test")
+        assertFailsWith<InvalidEscapeSequenceException> { parse("!test \\400") }
+    }
+
+    @Test
+    fun octalThreeSevenEightIsInvalid() {
+        // \378 caught by InvalidOctalEscape: THREE SEVEN EightOrNine
+        registerTestCommand("test")
+        assertFailsWith<InvalidEscapeSequenceException> { parse("!test \\378") }
+    }
+
+    @Test
+    fun octalThreeEightZeroIsInvalid() {
+        // \380 caught by InvalidOctalEscape: THREE EightOrNine Number
+        registerTestCommand("test")
+        assertFailsWith<InvalidEscapeSequenceException> { parse("!test \\380") }
+    }
+
+    @Test
+    fun singleDigit8IsInvalid() {
+        // \8 caught by new InvalidOctalEscape: EightOrNine
+        registerTestCommand("test")
+        assertFailsWith<InvalidEscapeSequenceException> { parse("!test \\8") }
+    }
+
+    @Test
+    fun singleDigit9IsInvalid() {
+        // \9 caught by new InvalidOctalEscape: EightOrNine
+        registerTestCommand("test")
+        assertFailsWith<InvalidEscapeSequenceException> { parse("!test \\9") }
+    }
+
+    @Test
+    fun octalFiveHundredRangeIsInvalid() {
+        registerTestCommand("test")
+        assertFailsWith<InvalidEscapeSequenceException> { parse("!test \\500") }
+    }
+
+    // ─── valid regular escapes ────────────────────────────────────────────────
+
+    @Test
+    fun singleQuoteEscape() {
+        registerTestCommand("test")
+        assertEquals("'", parseArgs("!test \\'")[0])
+    }
+
+    @Test
+    fun carriageReturnEscape() {
+        registerTestCommand("test")
+        assertEquals("\r", parseArgs("!test \\r")[0])
+    }
+
+    @Test
+    fun newlineEscape() {
+        registerTestCommand("test")
+        assertEquals("\n", parseArgs("!test \\n")[0])
+    }
+
+    @Test
+    fun escapeFollowedByNonEscapeChar() {
+        // \t is a tab; \tb = tab + 'b' (not an invalid sequence)
+        registerTestCommand("test")
+        assertEquals("\tb", parseArgs("!test \\tb")[0])
+    }
+
+    // ─── invalid regular escapes ──────────────────────────────────────────────
+
+    @Test
+    fun invalidEscapeLetter_e() {
+        registerTestCommand("test")
+        assertFailsWith<InvalidEscapeSequenceException> { parse("!test \\e") }
+    }
+
+    @Test
+    fun invalidEscapeLetter_a() {
+        registerTestCommand("test")
+        assertFailsWith<InvalidEscapeSequenceException> { parse("!test \\a") }
+    }
+
+    @Test
+    fun invalidEscapeSpace() {
+        registerTestCommand("test")
+        assertFailsWith<InvalidEscapeSequenceException> { parse("!test \\ ") }
+    }
+
+    @Test
+    fun loneBackslashAtEndOfInput() {
+        registerTestCommand("test")
+        assertFailsWith<InvalidEscapeSequenceException> { parse("!test \\") }
+    }
+
+    // ─── invalid unicode escapes ──────────────────────────────────────────────
+
+    @Test
+    fun unicodeEscapeThreeDigitsIsInvalid() {
+        registerTestCommand("test")
+        assertFailsWith<InvalidEscapeSequenceException> { parse("!test \\u001") }
+    }
+
+    @Test
+    fun unicodeEscapeWithNonHexCharIsInvalid() {
+        registerTestCommand("test")
+        assertFailsWith<InvalidEscapeSequenceException> { parse("!test \\u00GG") }
+    }
+
+    @Test
+    fun unicodeEscapeEmptyIsInvalid() {
+        registerTestCommand("test")
+        assertFailsWith<InvalidEscapeSequenceException> { parse("!test \\u") }
+    }
+
+    // ─── valid unicode escapes ────────────────────────────────────────────────
+
+    @Test
+    fun unicodeEscapeUppercaseHex() {
+        registerTestCommand("test")
+        assertEquals('\uABCD'.toString(), parseArgs("!test \\uABCD")[0])
+    }
+
+    @Test
+    fun unicodeEscapeZero() {
+        registerTestCommand("test")
+        assertEquals("\u0000", parseArgs("!test \\u0000")[0])
+    }
+
+    @Test
+    fun unicodeEscapeMax() {
+        registerTestCommand("test")
+        assertEquals("\uFFFF", parseArgs("!test \\uFFFF")[0])
+    }
+
+    @Test
+    fun unicodeEscapeMixedCase() {
+        registerTestCommand("test")
+        assertEquals('\u0aB3'.toString(), parseArgs("!test \\u0aB3")[0])
+    }
+
+    // ─── argument count and mixing ────────────────────────────────────────────
+
+    @Test
+    fun manyArgumentsParsedCorrectly() {
+        registerTestCommand("test")
+        assertEquals(
+            listOf("a", "b", "c", "d", "e", "f", "g", "h", "i", "j"),
+            parseArgs("!test a b c d e f g h i j")
+        )
+    }
+
+    @Test
+    fun mixedQuotedAndUnquotedArgs() {
+        registerTestCommand("test")
+        assertEquals(
+            listOf("plain", "quoted arg", "another"),
+            parseArgs("!test plain \"quoted arg\" another")
+        )
+    }
+
+    @Test
+    fun allWhitespaceBetweenArgsIsCollapsed() {
+        registerTestCommand("test")
+        assertEquals(listOf("a", "b", "c"), parseArgs("!test a  b\t\tc"))
+    }
+
+    // ─── command lookup priority ──────────────────────────────────────────────
+
+    @Test
+    fun chatAliasTakesPriorityOverProtocolCommand() {
+        val chat = TestChat()
+        val underlyingCmd = Command.of(UniversalProtocol, "ping", listOf(), ::doNothing, "test", "test")
+        bot.commands[UniversalProtocol] = mutableMapOf("ping" to underlyingCmd)
+
+        // Alias "ping" has a preset arg — it should win over the bare protocol command.
+        val alias = Alias(chat, "ping", underlyingCmd, listOf("aliasArg"))
+        settings.aliases[chat] = mutableMapOf("ping" to alias)
+
+        val result = parseCommand(chat, "!ping")
+        assertEquals(listOf("aliasArg"), result?.args)
+    }
+
+    @Test
+    fun unknownCommandThrowsCommandDoesNotExist() {
+        val chat = TestChat()
+        assertFailsWith<CommandDoesNotExist> { parseCommand(chat, "!nonexistent") }
     }
 }

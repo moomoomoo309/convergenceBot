@@ -1,141 +1,124 @@
 package convergence.discord
 
-import convergence.*
+import convergence.ReactConfig
+import convergence.command.ArgumentSpec
+import convergence.command.ArgumentType
+import convergence.command.Command
+import convergence.command.registerCommands
+import convergence.model.Chat
+import convergence.settings
+import convergence.toEmoji
+import convergence.updateSettings
 import java.net.URI
 import java.net.URISyntaxException
 
 val discordEmojiRegex = Regex("^<a?:[a-zA-Z0-9_-]{1,100}:[0-9]{1,20}>$")
+
+private fun registerReactChannel(args: List<String>, chat: Chat): String {
+    if (chat !is DiscordChat)
+        return "This command can only be run on discord."
+    if (args.size != 2)
+        return "2 args required: emoji and threshold."
+    val emoji = args[0]
+    val isUnicodeEmoji = emoji.toEmoji() != null
+    val isDiscordEmoji = discordEmojiRegex.matches(emoji)
+    if (!isUnicodeEmoji && !isDiscordEmoji)
+        return "Emoji must be a valid unicode or discord emoji."
+    val threshold = args[1].toIntOrNull()
+    if (threshold == null || threshold <= 0)
+        return "Threshold must be a positive integer."
+    val reactConfigs = settings.reactServers.getOrPut(chat.server) {
+        mutableListOf(ReactConfig(chat, mutableMapOf()))
+    }
+    var reactConfig = reactConfigs.firstOrNull {
+        it.destination == chat
+    }
+    if (reactConfig == null) {
+        reactConfig = ReactConfig(chat, mutableMapOf())
+        reactConfigs.add(reactConfig)
+    }
+    reactConfig.emojis[emoji] = threshold
+    updateSettings()
+    return "Registered messages to be forwarded to this channel " +
+            "if they are reacted with $emoji $threshold times or more."
+}
+
+private fun uploadImagesTo(args: List<String>, chat: Chat): String {
+    if (args.isEmpty())
+        return "A URL has to be provided."
+    val url = try {
+        URI(args[0])
+    } catch(e: URISyntaxException) {
+        discordLogger.error("Could not parse URL! Exception: ", e)
+        return "\"${args[0]}\" is not a valid URL."
+    }
+    settings.imageUploadChannels[chat] = url
+    updateSettings()
+    return "Images will now be uploaded to $url."
+}
+
+@Suppress("LongMethod")
 fun registerDiscordCommands() {
-    registerCommand(Command.of(
-        DiscordProtocol,
-        "syncCalendar",
-        listOf(ArgumentSpec("URL", ArgumentType.STRING)),
-        CalendarProcessor::syncCommand,
-        "Sync a CalDAV calendar to discord events.",
-        "syncCalendar (URL)"
-    ))
-    registerCommand(Command.of(
-        DiscordProtocol,
-        "resyncCalendar",
-        listOf(),
-        { -> CommandScheduler.syncCalendars(); "Resyncing calendars..." },
-        "Resyncs all calendars in all servers.",
-        "resyncCalendar (Takes no parameters)"
-    ))
-    registerCommand(
+    registerCommands(
         Command.of(
             DiscordProtocol,
-            "unsyncCalendar",
+            "uploadImagesTo",
             listOf(ArgumentSpec("URL", ArgumentType.STRING)),
-            { args, chat ->
-                val removed = syncedCalendars.remove(syncedCalendars.firstOrNull {
-                        it.guildId == (chat as DiscordChat).server.guild.idLong && it.calURL == args[0]
-                    }
-                )
-                if (removed) "Calendar removed." else "No calendar with URL ${args[0]} found."
+            ::uploadImagesTo,
+            "Sets all images in this channel from here on out to be uploaded to the provided WebDAV URL.",
+            "uploadImagesTo (URL)"
+        ),
+        Command.of(
+            DiscordProtocol,
+            "stopUploadingImages",
+            listOf(),
+            { _, chat: Chat ->
+                settings.imageUploadChannels.remove(chat)
+                updateSettings()
+                "Images will no longer be uploaded."
             },
-            "Removes a synced calendar.",
-            "unsyncCalendar (URL)"
+            "Stops images in this channel from being uploaded anywhere.",
+            "stopUploadingImages (takes no arguments)"
+        ),
+        Command.of(
+            DiscordProtocol,
+            "registerReactChannel",
+            listOf(ArgumentSpec("emoji", ArgumentType.STRING), ArgumentSpec("threshold", ArgumentType.INTEGER)),
+            ::registerReactChannel,
+            "Registers messages to be forwarded to this channel if they are reacted with emoji " +
+                    "threshold times or more.",
+            "registerReactChannel (emoji) (threshold)"
+        ),
+        Command.of(
+            DiscordProtocol,
+            "removeReactChannel",
+            listOf(),
+            cmd@{ _, chat ->
+                if (chat !is DiscordChat)
+                    return@cmd "This command can only be run on discord."
+                settings.reactServers.remove(chat.server)
+                updateSettings()
+                "Messages will no longer be forwarded to this channel based on reactions."
+            },
+            "Removes messages being forwarded to this channel based on reactions.",
+            "removeReactChannel (takes no arguments)"
+        ),
+        Command.of(
+            DiscordProtocol,
+            "reactChannels",
+            listOf(),
+            cmd@{ _, chat ->
+                if (chat !is DiscordChat)
+                    return@cmd "This command can only be run on discord."
+                "Reactions that will be sent to this channel: ${
+                    settings.reactServers[chat.server]?.firstOrNull { it.destination == chat }
+                        ?.emojis?.toList()?.joinToString(", ") { (emoji, threshold) ->
+                            "$emoji: $threshold"
+                        } ?: "None"
+                }"
+            },
+            "Lists all reactions that may cause messages to be forwarded to this channel.",
+            "reactChannels (takes no arguments)"
         )
     )
-    registerCommand(
-        Command.of(
-            DiscordProtocol,
-        "syncedCalendars",
-        listOf(),
-        {_, chat -> syncedCalendars.filter {
-                it.guildId == (chat as DiscordChat).server.guild.idLong
-            }.joinToString(", ").ifEmpty { "No calendars are synced in this chat." }
-        },
-        "Prints out all the synced calendars in this chat.",
-        "syncedCalendars (Takes no parameters)"
-    ))
-    registerCommand(Command.of(
-        DiscordProtocol,
-        "uploadImagesTo",
-        listOf(ArgumentSpec("URL", ArgumentType.STRING)),
-        { args: List<String>, chat: Chat ->
-            if (args.isEmpty())
-                return@of "A URL has to be provided."
-            val url = try {
-                URI(args[0])
-            } catch(e: URISyntaxException) {
-                e.printStackTrace()
-                return@of "\"${args[0]}\" is not a valid URL."
-            }
-            imageUploadChannels[chat] = url
-            Settings.update()
-            "Images will now be uploaded to $url."
-        },
-        "Sets all images in this channel from here on out to be uploaded to the provided WebDAV URL.",
-        "uploadImagesTo (URL)"
-    ))
-    registerCommand(Command.of(
-        DiscordProtocol,
-        "stopUploadingImages",
-        listOf(),
-        { _, chat: Chat ->
-            imageUploadChannels.remove(chat)
-            Settings.update()
-            "Images will no longer be uploaded."
-        },
-        "Stops images in this channel from being uploaded anywhere.",
-        "stopUploadingImages (takes no arguments)"
-    ))
-    registerCommand(Command.of(
-        DiscordProtocol,
-        "registerReactChannel",
-        listOf(ArgumentSpec("emoji", ArgumentType.STRING), ArgumentSpec("threshold", ArgumentType.INTEGER)),
-        cmd@{ args, chat ->
-            if (chat !is DiscordChat)
-                return@cmd "This command can only be run on discord."
-            if (args.size != 2)
-                return@cmd "2 args required: emoji and threshold."
-            val emoji = args[0]
-            val isUnicodeEmoji = emoji.toEmoji() != null
-            val isDiscordEmoji = discordEmojiRegex.matches(emoji)
-            if (!isUnicodeEmoji && !isDiscordEmoji)
-                return@cmd "Emoji must be a valid unicode or discord emoji."
-            val threshold = args[1].toIntOrNull()
-            if (threshold == null || threshold <= 0)
-                return@cmd "Threshold must be a positive integer."
-            reactServers.getOrPut(chat.server) { mutableListOf(ReactConfig(chat, mutableMapOf())) }
-                .first { it.destination == chat }.emojis[emoji] = threshold
-            Settings.update()
-            "Registered messages to be forwarded to this channel if they are reacted with $emoji $threshold times or more."
-        },
-        "Registers messages to be forwarded to this channel if they are reacted with emoji threshold times or more.",
-        "registerReactChannel (emoji) (threshold)"
-    ))
-    registerCommand(Command.of(
-        DiscordProtocol,
-        "removeReactChannel",
-        listOf(),
-        cmd@{ _, chat ->
-            if (chat !is DiscordChat)
-                return@cmd "This command can only be run on discord."
-            reactServers.remove(chat.server)
-            Settings.update()
-            "Messages will no longer be forwarded to this channel based on reactions."
-        },
-        "Removes messages being forwarded to this channel based on reactions.",
-        "removeReactChannel (takes no arguments)"
-    ))
-    registerCommand(Command.of(
-        DiscordProtocol,
-        "reactChannels",
-        listOf(),
-        cmd@{ _, chat ->
-            if (chat !is DiscordChat)
-                return@cmd "This command can only be run on discord."
-            "Reactions that will be sent to this channel: ${
-                reactServers[chat.server]?.firstOrNull { it.destination == chat }
-                    ?.emojis?.toList()?.joinToString(", ") { (emoji, threshold) ->
-                        "$emoji: $threshold"
-                    } ?: "None"
-            }"
-        },
-        "Lists all reactions that may cause messages to be forwarded to this channel.",
-        "reactChannels (takes no arguments)"
-    ))
 }

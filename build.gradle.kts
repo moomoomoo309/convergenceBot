@@ -1,10 +1,11 @@
-@file:Suppress("LocalVariableName")
 
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import java.nio.file.Paths
 
 plugins {
     alias(libs.plugins.kotlin)
     alias(libs.plugins.shadow)
+    alias(libs.plugins.versions)
     application
     antlr
 }
@@ -50,10 +51,37 @@ dependencies {
     implementation(libs.logback)
     implementation(libs.natty)
     implementation(libs.prettytime)
-    implementation(libs.sardine)
-    implementation(libs.poi)
+    implementation(libs.poi.core)
     implementation(libs.poi.ooxml)
-    testImplementation("org.jetbrains.kotlin:kotlin-test")
+    implementation(libs.graphviz)
+    implementation(libs.graalpolyglot)
+    implementation(libs.graaljs)
+    testImplementation(kotlin("test"))
+    testImplementation(libs.mockk)
+}
+
+sourceSets {
+    create("lite") {
+        kotlin {
+            srcDir("src/main/kotlin")
+            exclude("**/discord/frat/**")
+        }
+        java {
+            srcDir("src/main/java")
+        }
+        resources {
+            srcDir("src/main/resources")
+        }
+    }
+}
+
+configurations {
+    "liteImplementation" {
+        extendsFrom(configurations.implementation.get())
+    }
+    "liteRuntimeOnly" {
+        extendsFrom(configurations.runtimeOnly.get())
+    }
 }
 
 application {
@@ -61,6 +89,7 @@ application {
 }
 
 tasks.register<Copy>("copyBot") {
+    description = "Build the bot, then copy it into the dot folder it lives in by default."
     from(tasks.named("shadowJar"))
     into(Paths.get(System.getProperty("user.home"), ".convergence"))
 }
@@ -69,24 +98,74 @@ tasks.named<JavaExec>("run") {
     standardInput = System.`in`
 }
 
+tasks.register<JavaExec>("runLite") {
+    description = "Run the bot without the frat components."
+    classpath = sourceSets["lite"].runtimeClasspath
+    mainClass.set("convergence.ConvergenceBot")
+    standardInput = System.`in`
+}
+
 tasks.wrapper {
     gradleVersion = libs.versions.gradle.get()
 }
 
 tasks {
-    build {
-        dependsOn(named("generateGrammarSource"))
-    }
     compileKotlin {
         dependsOn(named("generateGrammarSource"))
     }
     compileTestKotlin {
         dependsOn(named("generateTestGrammarSource"))
     }
+    named("compileLiteKotlin") {
+        dependsOn(named("generateGrammarSource"))
+    }
 }
 
 tasks.shadowJar {
-    minimize {
-        exclude(dependency(libs.kotlin.reflect.get()))
+    // Shadow 9.x tries to open every resolved classpath artifact as a ZIP. GraalVM's transitive dependency
+    // org.graalvm.js:js-community is POM-packaged (no JAR), so Shadow fails trying to unzip a .pom file.
+    // Fix: use an artifactView filtered to JAR_TYPE so Shadow only sees actual JARs, then disable Shadow's
+    // default classpath resolution (configurations = emptyList()) to prevent it from processing the full
+    // unfiltered classpath on its own.
+    val runtimeJars = project.configurations.runtimeClasspath.get().incoming.artifactView {
+        attributes {
+            attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, ArtifactTypeDefinition.JAR_TYPE)
+        }
+        isLenient = true
+    }.files
+    configurations = emptyList()
+    from(runtimeJars.elements.map { it.map { f -> zipTree(f.asFile) } })
+    manifest {
+        attributes(mapOf("Multi-Release" to "true"))
     }
+    isZip64 = true
+}
+
+tasks.register<ShadowJar>("liteJar") {
+    description = "Build a fat jar of the bot without the frat components."
+    archiveBaseName.set("convergence.bot-lite")
+    from(sourceSets["lite"].output)
+
+    val runtimeJars = project.configurations.getByName("liteRuntimeClasspath").incoming.artifactView {
+        attributes {
+            attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, ArtifactTypeDefinition.JAR_TYPE)
+        }
+        isLenient = true
+    }.files
+    configurations = emptyList()
+    from(runtimeJars.elements.map { locs: Set<FileSystemLocation> ->
+        locs.map { loc: FileSystemLocation ->
+            zipTree(loc.asFile) as Any }
+        }
+    )
+    manifest {
+        attributes(mapOf("Multi-Release" to "true"))
+    }
+    isZip64 = true
+}
+
+tasks.register("buildLite") {
+    description = "Build the bot without the frat components."
+    dependsOn("compileLiteKotlin")
+    dependsOn("liteJar")
 }

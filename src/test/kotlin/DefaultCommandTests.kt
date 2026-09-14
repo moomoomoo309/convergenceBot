@@ -1,6 +1,7 @@
-import convergence.User
-import convergence.echo
-import convergence.ping
+
+import convergence.commands.echo
+import convergence.commands.ping
+import convergence.model.User
 import org.junit.Test
 import kotlin.test.assertEquals
 
@@ -9,7 +10,7 @@ val testChat = TestChat()
 
 class TestUser: User(TestProtocol) {
     override fun toKey(): String {
-        TODO("Not yet implemented")
+        TODO("Not needed for tests")
     }
 }
 

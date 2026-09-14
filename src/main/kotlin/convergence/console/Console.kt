@@ -1,6 +1,12 @@
 package convergence.console
 
-import convergence.*
+import convergence.Protocol
+import convergence.command.Alias
+import convergence.model.Chat
+import convergence.model.OutgoingMessage
+import convergence.model.SimpleIncomingMessage
+import convergence.model.User
+import convergence.substringBetween
 import java.util.*
 import kotlin.system.exitProcess
 
@@ -34,9 +40,9 @@ object ConsoleProtocol: Protocol("Console") {
         return bot
     }
 
-    override fun getName(chat: Chat, user: User): String {
+    override fun getUserName(chat: Chat, user: User): String {
         if (user is ConsoleUser && chat is ConsoleChat)
-            return "ConsoleUser"
+            return user.name
         throw InputMismatchException("Invalid chat or user passed. Can only be ConsoleChat and ConsoleUser.")
     }
 
@@ -58,27 +64,29 @@ object ConsoleProtocol: Protocol("Console") {
 
     override fun init() {
         if (System.console() != null) {
-            Thread {
+            val thread = Thread({
                 print("consolePlugin initialized.\n\n> ")
 
-                System.out.flush() // Flush guarantees that the > shows up before stdin. IntelliJ still doesn't listen to it.
+                System.out.flush() // Flush guarantees that the > shows up before stdin. IntelliJ doesn't listen to it.
                 try {
                     val stdin = Scanner(System.`in`)
                     val currentLine = stdin.nextLine()
-                    receivedMessage(ConsoleChat, SimpleIncomingMessage(currentLine), user)
+                    receivedMessage(ConsoleChat, user, SimpleIncomingMessage(currentLine))
                     while (true) {
                         print("> ")
                         System.out.flush()
                         while (!stdin.hasNextLine()) stdin.next()
-                        receivedMessage(ConsoleChat, SimpleIncomingMessage(stdin.nextLine()), user)
+                        receivedMessage(ConsoleChat, user, SimpleIncomingMessage(stdin.nextLine()))
                     }
-                } catch(e: NoSuchElementException) {
-                    // Catch Ctrl-D (EOF). Normally, I wouldn't do this in a plugin, but it's the local console of the bot,
-                    // and if the user puts in a Ctrl-D, they probably want to close the bot, just like a SIGTERM.
+                } catch(_: NoSuchElementException) {
+                    // Catch Ctrl-D (EOF). Normally, I wouldn't do this in a plugin, but it's the local console of the
+                    // bot, and if the user puts in a Ctrl-D, they probably want to close the bot, just like a SIGTERM.
                     println() // The newline is just to make the output cleaner.
                     exitProcess(0)
                 }
-            }.start()
+            }, "console-input")
+            thread.isDaemon = true
+            thread.start()
         }
     }
 
