@@ -20,8 +20,10 @@ abstract class Protocol(val name: String): Comparable<Protocol> {
     override fun toString(): String = this::class.java.simpleName
     override fun hashCode(): Int = name.hashCode()
 
-    fun receivedMessage(chat: Chat, sender: User, message: IncomingMessage) = bot.messageCallbacks.forEach {
-        it(chat, sender, message)
+    fun receivedMessage(chat: Chat, sender: User, message: IncomingMessage, images: Array<Image> = emptyArray()) {
+        bot.messageCallbacks.forEach {
+            it(chat, sender, message, images)
+        }
     }
     abstract fun sendMessage(chat: Chat, message: OutgoingMessage): Boolean
     fun sendMessage(chat: Chat, message: String) = sendMessage(chat, SimpleOutgoingMessage(message))

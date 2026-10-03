@@ -61,7 +61,7 @@ fun forwardToLinkedChats(
     chat: Chat,
     sender: User,
     message: OutgoingMessage?,
-    images: Array<Image> = emptyArray(),
+    images: Array<out Image> = emptyArray(),
     isCommand: Boolean = false
 ) {
     if (message == null)

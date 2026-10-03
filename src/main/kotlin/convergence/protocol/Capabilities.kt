@@ -2,6 +2,7 @@
 
 package convergence.protocol
 
+import convergence.bot
 import convergence.callbacks.*
 import convergence.model.*
 import java.time.OffsetDateTime
@@ -20,11 +21,10 @@ interface HasImages {
     fun sendImages(chat: Chat, sender: User, message: String, vararg images: Image) =
         sendImages(chat, sender, SimpleOutgoingMessage(message), *images)
 
-    fun receivedImages(chat: Chat, sender: User, message: String, vararg images: Image) =
-        receivedImages(chat, sender, SimpleIncomingMessage(message), *images)
-
-    fun receivedImages(chat: Chat, sender: User, message: IncomingMessage, vararg images: Image) =
+    fun receivedImages(chat: Chat, sender: User, message: IncomingMessage, vararg images: Image) {
         runCallbacks<ReceivedImages>(chat, sender, message, images)
+        bot.messageCallbacks.forEach { it(chat, sender, message, images) }
+    }
 }
 
 interface CanEditOtherMessages {

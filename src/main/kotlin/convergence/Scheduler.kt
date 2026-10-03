@@ -10,6 +10,7 @@ import convergence.model.Chat
 import convergence.model.User
 import org.ocpsoft.prettytime.PrettyTime
 import org.ocpsoft.prettytime.units.JustNow
+import java.time.Duration
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
 import java.util.concurrent.atomic.AtomicInteger
@@ -21,7 +22,7 @@ import java.util.concurrent.atomic.AtomicInteger
 @Suppress("ConstPropertyName")
 object Scheduler: Thread() {
     private const val allowedTimeDifferenceSeconds = 30
-    private const val updatesPerSecond = 1
+    private val updateInterval = Duration.ofSeconds(1)
 
     private val scheduledCommands = sortedMapOf<OffsetDateTime, MutableList<ScheduledCommand>>()
     private val commandsList = sortedMapOf<Int, ScheduledCommand>()
@@ -70,7 +71,7 @@ object Scheduler: Thread() {
                 }
             }
             CalendarProcessor.onUpdate()
-            sleep((1000.0 / updatesPerSecond).toLong())
+            sleep(updateInterval.toMillis())
         }
     }
 

@@ -66,7 +66,7 @@ fun getStackTraceText(e: Exception): String = ByteArrayOutputStream().let {
  * Log the message, forwarding it to linked chats if applicable, and running the command if present
  * in the message.
  */
-fun processMessage(chat: Chat, sender: User, message: IncomingMessage, images: Array<Image> = emptyArray()) {
+fun processMessage(chat: Chat, sender: User, message: IncomingMessage, images: Array<out Image> = emptyArray()) {
     val text = message.toSimple().text
     messageLogger.info(
         "[${if (chat is HasServer<*>) chat.server.name + "#" else ""}${chat.name}] ${getUserName(chat, sender)}: " +
