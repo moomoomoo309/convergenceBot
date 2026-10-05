@@ -7,7 +7,7 @@ import kotlin.reflect.KClass
 
 val callbacks = mutableMapOf<KClass<out ChatEvent>, MutableList<ChatEvent>>(
     ReceivedImages::class to mutableListOf(
-        ReceivedImages { chat: Chat, sender: User, message: IncomingMessage?, images: Array<Image> ->
+        ReceivedImages { chat: Chat, sender: User, message: IncomingMessage?, images: Array<out Image> ->
             processMessage(chat, sender, message ?: return@ReceivedImages false, images)
             true
         }
@@ -43,12 +43,12 @@ class ChangedNickname(val fct: (chat: Chat, user: User, oldName: String) -> Bool
     fun invoke(chat: Chat, user: User, oldName: String) = fct(chat, user, oldName)
 }
 
-class ReceivedImages(val fct: (Chat, User, IncomingMessage?, Array<Image>) -> Boolean):
+class ReceivedImages(val fct: (Chat, User, IncomingMessage?, Array<out Image>) -> Boolean):
     ChatEvent {
     override fun invoke(vararg args: Any) = args.let { (chat, sender, message, images) ->
-        fct(chat as Chat, sender as User, message as? IncomingMessage?, images as Array<Image>)
+        fct(chat as Chat, sender as User, message as? IncomingMessage?, images as Array<out Image>)
     }
-    fun invoke(chat: Chat, sender: User, message: IncomingMessage?, images: Array<Image>): Boolean =
+    fun invoke(chat: Chat, sender: User, message: IncomingMessage?, images: Array<out Image>): Boolean =
         fct(chat, sender, message ?: SimpleIncomingMessage(""), images)
 }
 

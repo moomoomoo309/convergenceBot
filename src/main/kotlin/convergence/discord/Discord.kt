@@ -665,7 +665,7 @@ private fun forwardMessageToReactChannel(
 }
 
 private val imageUploadChannelCallback =
-    ReceivedImages { chat: Chat, _: User, _: IncomingMessage?, images: Array<Image> ->
+    ReceivedImages { chat: Chat, _: User, _: IncomingMessage?, images: Array<out Image> ->
         for (image in images) {
             if (image is DiscordImage && chat in settings.imageUploadChannels) {
                 val uploadURL = settings.imageUploadChannels[chat]
@@ -724,8 +724,7 @@ object MessageListener: ListenerAdapter() {
             .toTypedArray()
         if (images.isNotEmpty())
             DiscordProtocol.receivedImages(chat, sender, message, *images)
-        else
-            DiscordProtocol.receivedMessage(chat, sender, message)
+        DiscordProtocol.receivedMessage(chat, sender, message, images)
     }
 
     override fun onSlashCommandInteraction(event: SlashCommandInteractionEvent) {
