@@ -153,6 +153,8 @@ fun fullLine(args: List<String>): OutgoingMessage {
 }
 
 
+private const val DISCORD_FIELD_LIMIT = 25
+
 fun brotherBigs(args: List<String>): OutgoingMessage {
     val name = args.joinToString(" ").lowercase()
     val startInfo = getBrotherInfo(name) { it.getName() }
@@ -167,7 +169,7 @@ fun brotherBigs(args: List<String>): OutgoingMessage {
     val line = mutableListOf(node!!.brother)
     node = node.big
     @Suppress("unused")
-    for (unused in 0..<25) { // Discord has a 25 field limit
+    for (unused in 0..<DISCORD_FIELD_LIMIT) {
         if (node == null)
             break
         line.add(node.brother)
@@ -239,8 +241,7 @@ var pledgeRole: DiscordRole? = null
 val isNotPledge: (Command, List<String>, Chat, User) -> OutgoingMessage? =
     { _: Command, _: List<String>, chat: Chat, sender: User ->
         val config = fratConfig
-        if (config == null) null
-        else {
+        if (config != null) {
             val server = (chat as? DiscordChat)?.server
             if (config.pledgeRoleID != 0L && chat is DiscordChat) {
                 pledgeRole = pledgeRole ?: chat.server.guild.getRoleById(config.pledgeRoleID)?.let { DiscordRole(it) }
@@ -248,7 +249,7 @@ val isNotPledge: (Command, List<String>, Chat, User) -> OutgoingMessage? =
                     SimpleOutgoingMessage("Nice try, pledge.")
                 else null
             } else null
-        }
+        } else null
     }
 
 @Suppress("LongMethod", "unused")

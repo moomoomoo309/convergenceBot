@@ -684,8 +684,9 @@ private val reactionChannelCallback =
         if (message !is DiscordIncomingMessage) return@ReactionChanged false
         if (emoji !is DiscordEmoji && emoji !is UnicodeEmoji) return@ReactionChanged false
         val server = chat.server
-        val configs = settings.reactServers[server]?.filter { it.destination.channel.guild == chat.channel.guild }
-            ?: return@ReactionChanged false
+        val configs = settings.reactServers[server]?.filter {
+            it.destination.channel.guild.idLong == chat.channel.guild.idLong
+        } ?: return@ReactionChanged false
         if (configs.isEmpty())
             return@ReactionChanged false
 

@@ -38,7 +38,7 @@ object ConvergenceBot {
         defaultLogger.info("Registering default commands...")
         registerDefaultCommands()
 
-        updateChatMap()
+        initializeProtocols()
 
         defaultLogger.info("Loading settings...")
         readSettings()
@@ -62,21 +62,26 @@ private fun loadProtocolConfig() {
     }
 }
 
-private fun updateChatMap() {
+private fun initializeProtocols() {
     for (protocol in bot.protocols) {
         defaultLogger.info("Initializing ${protocol.name}...")
         try {
             protocol.init()
-            val chats = protocol.getChats()
-            for (chat in chats) {
-                if (chat !in bot.reverseChatMap) {
-                    val id = bot.currentChatID.getAndIncrement()
-                    bot.chatMap[id] = chat
-                    bot.reverseChatMap[chat] = id
-                }
-            }
+            updateChatMap(protocol)
         } catch(e: Exception) {
             defaultLogger.error("Failed to initialize protocol! Exception: ", e)
+            throw e
+        }
+    }
+}
+
+private fun updateChatMap(protocol: Protocol) {
+    val chats = protocol.getChats()
+    for (chat in chats) {
+        if (chat !in bot.reverseChatMap) {
+            val id = bot.currentChatID.getAndIncrement()
+            bot.chatMap[id] = chat
+            bot.reverseChatMap[chat] = id
         }
     }
 }
