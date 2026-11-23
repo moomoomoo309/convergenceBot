@@ -272,10 +272,10 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
         registerCalendarCommands()
         tryRegisterFratCommands()
         discordLogger.info("JDA Initialized.")
+        jda.awaitReady()
         jda.addEventListener(MessageListener)
         callbacks.getOrPut(ReceivedImages::class) { mutableListOf() }.add(imageUploadChannelCallback)
         callbacks.getOrPut(ReactionChanged::class) { mutableListOf() }.add(reactionChannelCallback)
-        jda.awaitReady()
     }
 
     override fun configLoaded() {

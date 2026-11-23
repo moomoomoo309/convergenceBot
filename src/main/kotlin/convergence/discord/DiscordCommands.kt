@@ -111,7 +111,7 @@ fun registerDiscordCommands() {
                 if (chat !is DiscordChat)
                     return@cmd "This command can only be run on discord."
                 "Reactions that will be sent to this channel: ${
-                    settings.reactServers[chat.server]?.firstOrNull { it.destination == chat }
+                    settings.reactServers[chat.server]?.firstOrNull { it.destination.id == chat.id }
                         ?.emojis?.toList()?.joinToString(", ") { (emoji, threshold) ->
                             "$emoji: $threshold"
                         } ?: "None"

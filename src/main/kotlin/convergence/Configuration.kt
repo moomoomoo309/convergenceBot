@@ -52,14 +52,14 @@ data class ReactConfig(val destination: DiscordChat, val emojis: MutableMap<Stri
 data class Settings(
     var aliases: MutableMap<CommandScope, MutableMap<String, Alias>> = mutableMapOf(),
     var commandDelimiters: MutableMap<CommandScope, String> = mutableMapOf(),
-    var linkedChats: MutableMap<Chat, MutableSet<Chat>> = mutableMapOf(),
+    var linkedChats: SortedMap<Chat, MutableSet<Chat>> = sortedMapOf(),
     var serializedCommands: MutableMap<Int, ScheduledCommand> = mutableMapOf(),
     var syncedCalendars: MutableList<SyncedCalendar> = mutableListOf(),
     var notificationChannels: MutableList<CalendarNotificationChannel> = mutableListOf(),
     var timers: MutableMap<String, OffsetDateTime> = mutableMapOf(),
-    var imageUploadChannels: MutableMap<Chat, URI> = mutableMapOf(),
-    var reactServers: MutableMap<Server, MutableList<ReactConfig>> = TreeMap(),
-    var mentionChats: MutableMap<Chat, MutableMap<User, MutableMap<User, Int>>> = mutableMapOf(),
+    var imageUploadChannels: SortedMap<Chat, URI> = sortedMapOf(),
+    var reactServers: SortedMap<Server, MutableList<ReactConfig>> = sortedMapOf(),
+    var mentionChats: SortedMap<Chat, MutableMap<User, MutableMap<User, Int>>> = sortedMapOf(),
     var debugMode: Boolean = false
 )
 
