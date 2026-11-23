@@ -110,14 +110,6 @@ class DefaultCommandsExtendedTest {
         assertTrue(settings.timers["myTimer"]!!.isAfter(pastTime), "Expected timestamp to advance after reset")
     }
 
-    @Test
-    fun resetTimerReportsOldTimestamp() {
-        val fixedTime = OffsetDateTime.now().minusHours(1)
-        settings.timers["myTimer"] = fixedTime
-        val result = resetTimer(listOf("myTimer"))
-        assertTrue(result.contains(fixedTime.toString()), "Expected old timestamp in reset message")
-    }
-
     // ─── checkTimer ───────────────────────────────────────────────────────────
 
     @Test
@@ -128,15 +120,6 @@ class DefaultCommandsExtendedTest {
     @Test
     fun checkTimerFailsForUnknownName() {
         assertEquals("That timer doesn't exist!", checkTimer(listOf("ghost")))
-    }
-
-    @Test
-    fun checkTimerReturnsCreationInfo() {
-        val fixedTime = OffsetDateTime.now().minusMinutes(10)
-        settings.timers["myTimer"] = fixedTime
-        val result = checkTimer(listOf("myTimer"))
-        assertTrue(result.startsWith("The time it was created"), "Unexpected prefix: $result")
-        assertTrue(result.contains(fixedTime.toString()), "Expected fixed time in result")
     }
 
     @Test

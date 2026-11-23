@@ -5,6 +5,7 @@ import convergence.bot
 import convergence.command.Alias
 import convergence.command.Command
 import convergence.command.CommandFunction
+import convergence.command.PermissionFunction
 import convergence.commands.echo
 import convergence.commands.ping
 import convergence.model.Chat
@@ -19,7 +20,7 @@ import kotlin.test.assertTrue
 
 private fun makeCmd(
     name: String,
-    permissions: CommandFunction = { _, _, _ -> null },
+    permissions: PermissionFunction = { _, _, _, _ -> null },
     protocol: Protocol = TestProtocol,
     function: CommandFunction
 ) = Command(protocol, name, listOf(), function, "help", "syntax", permissions)
@@ -40,7 +41,7 @@ class CommandTest {
 
     @Test
     fun invokeReturnsErrorMessageWhenPermissionDenied() {
-        val permFunc: CommandFunction = { _, _, _ -> SimpleOutgoingMessage("Not allowed!") }
+        val permFunc: PermissionFunction = { _, _, _, _ -> SimpleOutgoingMessage("Not allowed!") }
         val cmd = makeCmd("restricted", function = { _, _, _ -> SimpleOutgoingMessage("ok") }, permissions = permFunc)
         val result = cmd.invoke(listOf(), testChat, testUser)
         assertEquals("Not allowed!", result?.toSimple()?.text)
@@ -48,7 +49,7 @@ class CommandTest {
 
     @Test
     fun invokeProceedsWhenPermissionReturnsNull() {
-        val permFunc: CommandFunction = { _, _, _ -> null }
+        val permFunc: PermissionFunction = { _, _, _, _ -> null }
         val cmd = makeCmd("allowed", function = { _, _, _ -> SimpleOutgoingMessage("success") }, permissions = permFunc)
         val result = cmd.invoke(listOf(), testChat, testUser)
         assertEquals("success", result?.toSimple()?.text)

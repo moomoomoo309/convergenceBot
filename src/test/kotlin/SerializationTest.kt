@@ -92,14 +92,14 @@ class SerializationTest {
             )
         )
         s.commandDelimiters = mutableMapOf(SerChat(1) to "?")
-        s.linkedChats = mutableMapOf(SerChat(1) to mutableSetOf(SerChat(2), SerChat(3)))
+        s.linkedChats = sortedMapOf(SerChat(1) to mutableSetOf(SerChat(2), SerChat(3)))
         s.serializedCommands = mutableMapOf(
             7 to ScheduledCommand(time, SerChat(1), SerUser(5), "SerTest", "testcmd", listOf("x"), 7)
         )
         s.syncedCalendars = mutableListOf(SyncedCalendar(123L, "https://example.com/cal"))
         s.timers = mutableMapOf("t1" to time)
-        s.imageUploadChannels = mutableMapOf(SerChat(1) to URI("https://example.com/img"))
-        s.mentionChats = mutableMapOf(SerChat(1) to mutableMapOf(SerUser(2) to mutableMapOf(SerUser(3) to 4)))
+        s.imageUploadChannels = sortedMapOf(SerChat(1) to URI("https://example.com/img"))
+        s.mentionChats = sortedMapOf(SerChat(1) to mutableMapOf(SerUser(2) to mutableMapOf(SerUser(3) to 4)))
         s.debugMode = true
         return s
     }
