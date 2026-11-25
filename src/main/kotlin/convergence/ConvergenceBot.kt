@@ -75,7 +75,7 @@ private fun initializeProtocols() {
     }
 }
 
-private fun updateChatMap(protocol: Protocol) {
+private fun updateChatMap(protocol: Protocol<*, *, *, *>) {
     val chats = protocol.getChats()
     for (chat in chats) {
         if (chat !in bot.reverseChatMap) {

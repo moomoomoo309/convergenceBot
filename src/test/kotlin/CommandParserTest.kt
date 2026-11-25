@@ -1,17 +1,20 @@
 import convergence.*
 import convergence.command.*
 import convergence.model.Chat
+import convergence.model.CommandScope
 import convergence.model.OutgoingMessage
+import convergence.model.SimpleIncomingMessage
+import convergence.model.SimpleOutgoingMessage
 import convergence.model.User
 import org.junit.After
 import org.junit.Before
 import kotlin.test.*
 
-class TestChat: Chat(UniversalProtocol, "Test") {
+class TestChat: Chat<TestProtocol>(TestProtocol, "Test") {
     override fun toKey() = "TestChat(Test)"
 }
 
-object TestProtocol: Protocol("Test") {
+object TestProtocol: Protocol<Chat<*>, User<*>, SimpleIncomingMessage, SimpleOutgoingMessage>("Test") {
     override fun init() {
         // Do nothing
     }
@@ -21,47 +24,46 @@ object TestProtocol: Protocol("Test") {
     }
 
     override fun aliasCreated(alias: Alias) {
+        // Do nothing — registerAlias() calls this on the alias's protocol.
+    }
+
+    override fun sendMessage(chat: Chat<*>, message: SimpleOutgoingMessage): Boolean {
+        // Test double: nothing is ever actually sent.
+        return false
+    }
+
+    override fun outgoingFromSimple(text: String): SimpleOutgoingMessage = SimpleOutgoingMessage(text)
+
+    override fun getBot(chat: Chat<*>): User<*> = testUser
+
+    override fun getUserName(chat: Chat<*>, user: User<*>): String = ""
+
+    override fun getChats(): List<Chat<*>> {
         TODO("Not needed for tests")
     }
 
-    override fun sendMessage(chat: Chat, message: OutgoingMessage): Boolean {
+    override fun getUsers(): List<User<*>> {
         TODO("Not needed for tests")
     }
 
-    override fun getBot(chat: Chat): User {
+    override fun getUsers(chat: Chat<*>): List<User<*>> {
         TODO("Not needed for tests")
     }
 
-    override fun getUserName(chat: Chat, user: User): String {
+    override fun getChatName(chat: Chat<*>): String {
         TODO("Not needed for tests")
     }
 
-    override fun getChats(): List<Chat> {
+    override fun commandScopeFromKey(key: String): CommandScope? {
         TODO("Not needed for tests")
     }
 
-    override fun getUsers(): List<User> {
-        TODO("Not needed for tests")
-    }
-
-    override fun getUsers(chat: Chat): List<User> {
-        TODO("Not needed for tests")
-    }
-
-    override fun getChatName(chat: Chat): String {
-        TODO("Not needed for tests")
-    }
-
-    override fun commandScopeFromKey(key: String): Chat? {
-        TODO("Not needed for tests")
-    }
-
-    override fun userFromKey(key: String): User? {
+    override fun userFromKey(key: String): User<*>? {
         TODO("Not needed for tests")
     }
 }
 
-fun doNothing(unused: List<String>, unused2: Chat, unused3: User): String? {
+fun doNothing(unused: List<String>, unused2: Chat<*>, unused3: User<*>): String? {
     unused.run { unused2.run { unused3.run {} } }
     return null
 }
@@ -223,6 +225,7 @@ class CommandParserTest {
     @Before
     fun setup() {
         bot.commands.remove(UniversalProtocol)
+        bot.commands.remove(TestProtocol)
         settings.aliases.clear()
         settings.commandDelimiters.clear()
     }
@@ -230,6 +233,7 @@ class CommandParserTest {
     @After
     fun teardown() {
         bot.commands.remove(UniversalProtocol)
+        bot.commands.remove(TestProtocol)
         settings.aliases.clear()
         settings.commandDelimiters.clear()
     }

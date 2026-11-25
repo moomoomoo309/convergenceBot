@@ -22,7 +22,7 @@ class InvalidCommandParseException: Exception {
 data class CommandWithArgs(var command: Command, var args: List<String>) {
     constructor(alias: Alias, args: List<String>): this(alias.command, alias.args + args)
 
-    operator fun invoke(chat: Chat, sender: User) = command(args, chat, sender)
+    operator fun invoke(chat: Chat<*>, sender: User<*>) = command(args, chat, sender)
 }
 
 class InvalidEscapeSequenceException(message: String): Exception(message)
@@ -33,7 +33,7 @@ private fun <CommandType: CommandLike, ScopeType> commandAvailable(
     command: String
 ) = scope in list && command in list[scope]!!
 
-fun getCommand(chat: Chat, command: String): CommandLike {
+fun getCommand(chat: Chat<*>, command: String): CommandLike {
     return when {
         // Chat Alias
         commandAvailable(settings.aliases, chat, command) -> settings.aliases[chat]!![command]
@@ -58,11 +58,11 @@ private val escapeMap = mapOf(
     '\\' to '\\'
 )
 
-fun parseCommand(chat: Chat, command: String): CommandWithArgs? =
+fun parseCommand(chat: Chat<*>, command: String): CommandWithArgs? =
     parseCommand(chat, settings.commandDelimiters.getOrDefault(chat, DEFAULT_COMMAND_DELIMITER), command)
 
 @SuppressWarnings("ThrowsCount")
-fun parseCommand(chat: Chat, commandDelimiter: String, command: String): CommandWithArgs? {
+fun parseCommand(chat: Chat<*>, commandDelimiter: String, command: String): CommandWithArgs? {
     // Check for the command delimiter, so the grammar doesn't have to worry about it
     if (!command.startsWith(commandDelimiter) || command.isEmpty() || command == commandDelimiter)
         return null

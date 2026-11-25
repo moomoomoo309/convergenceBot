@@ -26,7 +26,7 @@ private fun resolveScope(key: String): CommandScope =
     bot.scopeStrToProtocol(key)?.commandScopeFromKey(key)
         ?: throw IllegalArgumentException("No protocol could resolve a command scope from key: $key")
 
-private fun resolveUser(key: String): User =
+private fun resolveUser(key: String): User<*> =
     bot.scopeStrToProtocol(key)?.userFromKey(key)
         ?: throw IllegalArgumentException("No protocol could resolve a user from key: $key")
 
@@ -44,9 +44,9 @@ object ScopeKeyDeserializer: KeyDeserializer() {
     override fun deserializeKey(key: String, ctxt: DeserializationContext): Any = resolveScope(key)
 }
 
-object ChatValueDeserializer: JsonDeserializer<Chat>() {
-    override fun deserialize(p: JsonParser, ctxt: DeserializationContext): Chat =
-        resolveScope(p.valueAsString) as? Chat
+object ChatValueDeserializer: JsonDeserializer<Chat<*>>() {
+    override fun deserialize(p: JsonParser, ctxt: DeserializationContext): Chat<*> =
+        resolveScope(p.valueAsString) as? Chat<*>
             ?: throw IllegalArgumentException("Key did not resolve to a Chat: ${p.valueAsString}")
 }
 
@@ -58,8 +58,8 @@ object DiscordChatValueDeserializer: JsonDeserializer<DiscordChat>() {
             ?: throw IllegalArgumentException("Key did not resolve to a DiscordChat: ${p.valueAsString}")
 }
 
-object UserKeySerializer: JsonSerializer<User>() {
-    override fun serialize(value: User, gen: JsonGenerator, serializers: SerializerProvider) =
+object UserKeySerializer: JsonSerializer<User<*>>() {
+    override fun serialize(value: User<*>, gen: JsonGenerator, serializers: SerializerProvider) =
         gen.writeFieldName(value.toKey())
 }
 
@@ -67,13 +67,13 @@ object UserKeyDeserializer: KeyDeserializer() {
     override fun deserializeKey(key: String, ctxt: DeserializationContext): Any = resolveUser(key)
 }
 
-object UserValueSerializer: JsonSerializer<User>() {
-    override fun serialize(value: User, gen: JsonGenerator, serializers: SerializerProvider) =
+object UserValueSerializer: JsonSerializer<User<*>>() {
+    override fun serialize(value: User<*>, gen: JsonGenerator, serializers: SerializerProvider) =
         gen.writeString(value.toKey())
 }
 
-object UserValueDeserializer: JsonDeserializer<User>() {
-    override fun deserialize(p: JsonParser, ctxt: DeserializationContext): User = resolveUser(p.valueAsString)
+object UserValueDeserializer: JsonDeserializer<User<*>>() {
+    override fun deserialize(p: JsonParser, ctxt: DeserializationContext): User<*> = resolveUser(p.valueAsString)
 }
 
 // Alias holds a live Command whose resolution is contextual — getCommand(name, scope) needs the alias's
@@ -100,7 +100,7 @@ object AliasDeserializer: JsonDeserializer<Alias>() {
         val node = p.readValueAsTree<JsonNode>()
         val scopeKey = node["scope"].asText()
         val scope = resolveScope(scopeKey)
-        require (scope is Chat) { "Alias scope is not a Chat: $scopeKey" }
+        require (scope is Chat<*>) { "Alias scope is not a Chat: $scopeKey" }
         val name = node["name"].asText()
         val command = getCommand(scope, node["commandName"].asText().lowercase()) as Command
         val args = node["args"].map { it.asText() }

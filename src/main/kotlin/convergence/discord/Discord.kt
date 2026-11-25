@@ -2,12 +2,13 @@ package convergence.discord
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import convergence.*
-import convergence.callbacks.ReactionChanged
-import convergence.callbacks.ReceivedImages
-import convergence.callbacks.callbacks
+import convergence.callbacks.*
 import convergence.command.Alias
 import convergence.command.ArgumentType
 import convergence.command.parseCommand
+import convergence.discord.DiscordProtocol.outgoingFromSimple
+import convergence.discord.DiscordProtocol.own
+import convergence.discord.DiscordProtocol.sendMessage
 import convergence.discord.MessageListener.forwardedMessages
 import convergence.discord.calendar.registerCalendarCommands
 import convergence.model.*
@@ -70,14 +71,14 @@ typealias DUser = net.dv8tion.jda.api.entities.User
 typealias DCustomEmoji = net.dv8tion.jda.api.entities.emoji.CustomEmoji
 
 class DiscordAvailability(val status: OnlineStatus): Availability(status.name)
-class DiscordServer(name: String, val guild: Guild): Server(name, DiscordProtocol) {
+class DiscordServer(name: String, val guild: Guild): Server<DiscordProtocol>(name, DiscordProtocol) {
     constructor(guild: Guild): this(guild.name, guild)
     constructor(id: Long): this(
         jda.getGuildById(id)
             ?: throw IllegalArgumentException("No guild found with ID $id")
     )
 
-    override fun compareTo(other: Server): Int {
+    override fun compareTo(other: Server<*>): Int {
         if (other !is DiscordServer) {
             return name.compareTo(other.name)
         }
@@ -90,17 +91,26 @@ class DiscordServer(name: String, val guild: Guild): Server(name, DiscordProtoco
 val serverCache = mutableMapOf<Long, DiscordServer>()
 
 class DiscordChat(name: String, override val id: Long, @JsonIgnore val channel: GuildMessageChannel):
-    Chat(DiscordProtocol, name), DiscordObject, HasServer<DiscordServer> {
+    Chat<DiscordProtocol>(DiscordProtocol, name), DiscordObject, HasServer<DiscordServer> {
     constructor(channel: GuildMessageChannel): this(channel.name, channel.idLong, channel)
     constructor(message: Message): this(message.channel.asGuildMessageChannel())
-    constructor(id: Long): this(jda.getGuildChannelById(id) as GuildMessageChannel)
+    constructor(id: Long): this(
+        jda.getGuildChannelById(id) as? GuildMessageChannel
+            ?: throw IllegalArgumentException("No guild message channel found with ID $id")
+    )
     constructor(msgEvent: MessageReceivedEvent): this(msgEvent.message)
 
     override val server = serverCache.getOrPut(channel.guild.idLong) { DiscordServer(channel.guild) }
 
     override fun hashCode() = id.hashCode()
-    override fun equals(other: Any?) =
-        this === other || (javaClass == other?.javaClass && id == (other as DiscordChat).id)
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is DiscordChat) return false
+
+        if (id != other.id) return false
+
+        return true
+    }
 
     override fun toKey() = "DiscordChat($id)"
 
@@ -109,12 +119,12 @@ class DiscordChat(name: String, override val id: Long, @JsonIgnore val channel: 
 }
 
 class DiscordMessageHistory(val msg: Message, override val id: Long):
-    MessageHistory(DiscordIncomingMessage(msg), msg.timeCreated, DiscordUser(msg.author)), DiscordObject {
+    MessageHistory<DiscordIncomingMessage>(DiscordIncomingMessage(msg), msg.timeCreated, DiscordUser(msg.author)), DiscordObject {
     constructor(msg: Message): this(msg, msg.idLong)
 }
 
 class DiscordUser(val name: String, override val id: Long, val author: DUser):
-    User(DiscordProtocol), DiscordObject {
+    User<DiscordProtocol>(DiscordProtocol), DiscordObject {
 
     constructor(msgEvent: MessageReceivedEvent): this(msgEvent.author)
     constructor(id: Long): this(jda.getUserById(id) ?: jda.retrieveUserById(id).submit().join())
@@ -136,8 +146,9 @@ class DiscordUser(val name: String, override val id: Long, val author: DUser):
         return id.hashCode()
     }
 
-    fun getNickname(chat: Chat) = DiscordProtocol.getUserNickname(chat, this)
+    fun getNickname(chat: Chat<*>) = DiscordProtocol.getUserNicknameFor(chat, this)
 
+    override fun displayName() = name
     override fun toString(): String = "DiscordUser($name)"
 }
 
@@ -211,18 +222,18 @@ class DiscordOutgoingMessage(val data: MessageCreateData): OutgoingMessage() {
     }
 }
 
-class DiscordIncomingMessage(val data: Message): IncomingMessage() {
+class DiscordIncomingMessage(val data: Message): IncomingMessage<DiscordOutgoingMessage>() {
     override fun toSimple(): SimpleIncomingMessage {
         return SimpleIncomingMessage(data.contentRaw)
     }
 
-    override fun toOutgoing(): OutgoingMessage {
+    override fun toOutgoing(): DiscordOutgoingMessage {
         return DiscordOutgoingMessage(
             try {
                 MessageCreateBuilder.fromMessage(data)
                     .build()
             } catch(_: IllegalStateException) {
-                return SimpleOutgoingMessage("")
+                MessageCreateBuilder().build()
             }
         )
     }
@@ -235,9 +246,21 @@ fun ArgumentType.toDiscord() = when(this) {
     ArgumentType.BOOLEAN -> OptionType.BOOLEAN
 }
 
-object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, HasImages, CanMentionUsers,
-    HasMessageHistory, CanEditOtherMessages, HasUserAvailability, HasCustomEmoji, HasServers<DiscordServer>,
-    HasReactions, HasRoles<DiscordRole> {
+object DiscordProtocol: Protocol<DiscordChat, DiscordUser, DiscordIncomingMessage, DiscordOutgoingMessage>("Discord"),
+    CanFormatMessages, HasNicknames<DiscordChat, DiscordUser>, HasImages<DiscordChat, DiscordUser>,
+    CanMentionUsers<DiscordChat, DiscordUser, DiscordIncomingMessage>,
+    HasMessageHistory<DiscordChat, DiscordUser, DiscordIncomingMessage>,
+    CanEditOtherMessages<DiscordChat, DiscordUser, DiscordIncomingMessage, DiscordOutgoingMessage>,
+    HasUserAvailability<DiscordChat, DiscordUser>, HasCustomEmoji<DiscordChat>,
+    HasServers<DiscordServer>, HasReactions<DiscordChat, DiscordUser, DiscordIncomingMessage>,
+    HasRoles<DiscordRole> {
+    override val changedNicknameEvent = ChangedNicknameEvent<DiscordChat, DiscordUser>()
+    override val receivedImagesEvent = ReceivedImagesEvent<DiscordChat, DiscordUser>()
+    override val mentionedUsersEvent = MentionedUserEvent<DiscordChat, DiscordUser, DiscordIncomingMessage>()
+    override val editedMessageEvent = EditMessageEvent<DiscordUser>()
+    override val changedAvailabilityEvent = ChangedAvailabilityEvent<DiscordChat, DiscordUser>()
+    override val reactionChangedEvent = ReactionChangedEvent<DiscordChat, DiscordUser, DiscordIncomingMessage>()
+
     override fun init() {
         discordLogger.info("Discord Plugin initialized.")
         jda = try {
@@ -274,8 +297,8 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
         discordLogger.info("JDA Initialized.")
         jda.awaitReady()
         jda.addEventListener(MessageListener)
-        callbacks.getOrPut(ReceivedImages::class) { mutableListOf() }.add(imageUploadChannelCallback)
-        callbacks.getOrPut(ReactionChanged::class) { mutableListOf() }.add(reactionChannelCallback)
+        receivedImagesEvent.register(::imageUploadChannelHandler)
+        reactionChangedEvent.register(::reactionChannelHandler)
     }
 
     override fun configLoaded() {
@@ -320,7 +343,7 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
     @JsonIgnore
     override val supportedFormats = formatMap.keys
 
-    override fun userFromKey(key: String): User? {
+    override fun userFromKey(key: String): DiscordUser? {
         if (key.startsWith("DiscordUser("))
             return DiscordUser(key.substringBetween("DiscordUser(", ")").toLong())
         return null
@@ -354,20 +377,16 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
 
     }
 
-    override fun getUserNickname(chat: Chat, user: User): String? {
-        if (user is DiscordUser && chat is DiscordChat && chat.channel is TextChannel)
+    override fun getUserNickname(chat: DiscordChat, user: DiscordUser): String? {
+        if (chat.channel is TextChannel)
             return (chat.channel.guild.getMember(user.author) ?:
                 chat.channel.guild.retrieveMember(user.author).submit().join())?.nickname
         return null
     }
 
-    override fun getBotNickname(chat: Chat): String? = getUserNickname(chat, getBot(chat))
+    override fun getBotNickname(chat: DiscordChat): String? = getUserNickname(chat, getBot(chat))
 
-    override fun setUserNickname(chat: Chat, user: User, newName: String): String? {
-        if (user !is DiscordUser)
-            return "Not a discord user"
-        if (chat !is DiscordChat)
-            return "Not a discord chat"
+    override fun setUserNickname(chat: DiscordChat, user: DiscordUser, newName: String): String? {
         val guild = chat.server.guild
         guild.modifyNickname(guild.getMember(user.author)
             ?: guild.retrieveMember(user.author).submit().join()
@@ -376,10 +395,8 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
         return null
     }
 
-    override fun setBotNickname(chat: Chat, newName: String): String? {
-        if (chat !is DiscordChat)
-            return "Not a discord chat"
-        val user = getBot(chat) as DiscordUser
+    override fun setBotNickname(chat: DiscordChat, newName: String): String? {
+        val user = getBot(chat)
         val guild = chat.server.guild
         guild.modifyNickname(
             guild.getMember(user.author)
@@ -390,39 +407,39 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
     }
 
 
-    override fun sendImages(chat: Chat, sender: User, message: OutgoingMessage, vararg images: Image) {
-        if (chat is DiscordChat && images.isArrayOf<DiscordImage>()) {
-            @Suppress("UNCHECKED_CAST", "KotlinConstantConditions")
-            val discordImages = images as Array<DiscordImage>
-            try {
-                when(message) {
-                    is DiscordOutgoingMessage -> chat.channel.sendMessage(message.data).queue()
-                    else -> chat.channel.sendMessage(
-                        MessageCreateBuilder()
-                            .addFiles(discordImages.map {
-                                FileUpload.fromStreamSupplier(it.image.fileName) {
-                                    it.image.proxy.download().join()
-                                }
-                            })
-                            .setContent(message.toSimple().text)
-                            .build()
-                    ).queue()
-                }
-            } catch(e: Exception) {
-                discordLogger.error("Failed to send images! Exception: ", e)
+    override fun sendImages(chat: DiscordChat, sender: DiscordUser, message: OutgoingMessage, vararg images: Image): Boolean {
+        if (!images.isArrayOf<DiscordImage>()) return false
+        @Suppress("UNCHECKED_CAST", "KotlinConstantConditions")
+        val discordImages = images as Array<DiscordImage>
+        return try {
+            when(message) {
+                is DiscordOutgoingMessage -> chat.channel.sendMessage(message.data).queue()
+                else -> chat.channel.sendMessage(
+                    MessageCreateBuilder()
+                        .addFiles(discordImages.map {
+                            FileUpload.fromStreamSupplier(it.image.fileName) {
+                                it.image.proxy.download().join()
+                            }
+                        })
+                        .setContent(message.toSimple().text)
+                        .build()
+                ).queue()
             }
+            true
+        } catch(e: Exception) {
+            discordLogger.error("Failed to send images! Exception: ", e)
+            false
         }
     }
 
-    override fun editMessage(message: MessageHistory, oldMessage: IncomingMessage, sender: User,
-                             newMessage: OutgoingMessage) {
+    override fun editMessage(message: MessageHistory<DiscordIncomingMessage>, oldMessage: DiscordIncomingMessage,
+                             sender: DiscordUser, newMessage: DiscordOutgoingMessage) {
         if (message is DiscordMessageHistory)
             message.msg.editMessage(newMessage.toSimple().text).queue()
     }
 
-    override fun getMessages(chat: Chat, since: OffsetDateTime?, until: OffsetDateTime?): List<DiscordMessageHistory> {
-        if (chat !is DiscordChat ||
-            (since != null && until != null && since.isAfter(until)))
+    override fun getMessages(chat: DiscordChat, since: OffsetDateTime?, until: OffsetDateTime?): List<DiscordMessageHistory> {
+        if (since != null && until != null && since.isAfter(until))
             return emptyList()
         val history = chat.channel.history
 
@@ -453,22 +470,20 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
     }
 
     override fun getUserMessages(
-        chat: Chat,
-        user: User,
+        chat: DiscordChat,
+        user: DiscordUser,
         since: OffsetDateTime?,
         until: OffsetDateTime?
     ): List<DiscordMessageHistory> {
-        if (user !is DiscordUser)
-            return emptyList()
         return getMessages(chat, since).filter { it.sender == user }
     }
 
-    override fun getRoles(server: Server): List<DiscordRole> {
+    override fun getRoles(server: Server<*>): List<DiscordRole> {
         if (server !is DiscordServer) return emptyList()
         return server.guild.roles.map { DiscordRole(it) }
     }
 
-    override fun getUserRoles(server: Server, user: User): List<DiscordRole> {
+    override fun getUserRoles(server: Server<*>, user: User<*>): List<DiscordRole> {
         if (server !is DiscordServer || user !is DiscordUser) return emptyList()
         val member = server.guild.getMember(user.author)
             ?: server.guild.retrieveMember(user.author).submit().join()
@@ -476,7 +491,7 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
         return member.roles.map { DiscordRole(it) }
     }
 
-    override fun userHasRole(server: Server, user: User, role: DiscordRole): Boolean {
+    override fun userHasRole(server: Server<*>, user: User<*>, role: DiscordRole): Boolean {
         if (server !is DiscordServer || user !is DiscordUser)
             return false
         val guild = server.guild
@@ -485,13 +500,13 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
         return member?.roles?.contains(role.role) ?: false
     }
 
-    override fun setBotAvailability(chat: Chat, availability: Availability) {
+    override fun setBotAvailability(chat: DiscordChat, availability: Availability) {
         if (availability is DiscordAvailability)
             jda.presence.setPresence(availability.status, true)
     }
 
-    override fun getUserAvailability(chat: Chat, user: User): DiscordAvailability {
-        if (user is DiscordUser && chat is DiscordChat && chat.channel is TextChannel) {
+    override fun getUserAvailability(chat: DiscordChat, user: DiscordUser): DiscordAvailability {
+        if (chat.channel is TextChannel) {
             val member = chat.channel.guild.getMember(user.author)
                 ?: chat.channel.guild.retrieveMember(user.author).submit().join()
                 ?: return DiscordAvailability(OnlineStatus.UNKNOWN)
@@ -501,17 +516,13 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
     }
 
     override fun getDelimiters(format: Format): Pair<String, String>? = formatMap[format]
-    override fun getEmojis(chat: Chat): List<DiscordEmoji> = jda.emojis.map { DiscordEmoji(it) }
-    override fun sendMessage(chat: Chat, message: OutgoingMessage): Boolean {
-        return chat is DiscordChat && try {
-            when(message) {
-                is DiscordOutgoingMessage -> chat.channel.sendMessage(message.data).queue()
-                else -> {
-                    val text = message.toSimple().text
-                    if (text.isNotEmpty())
-                        chat.channel.sendMessage(text.take(2000)).queue()
-                }
-            }
+    override fun getEmojis(chat: DiscordChat): List<DiscordEmoji> = jda.emojis.map { DiscordEmoji(it) }
+    override fun sendMessage(chat: DiscordChat, message: DiscordOutgoingMessage): Boolean {
+        if (message.data.content.isEmpty() && message.data.files.isEmpty() &&
+            message.data.embeds.isEmpty())
+            return true
+        return try {
+            chat.channel.sendMessage(message.data).queue()
             true
         } catch(e: Exception) {
             discordLogger.error("Failed to send message, exception: ", e)
@@ -519,9 +530,16 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
         }
     }
 
+    override fun outgoingFromSimple(text: String) = DiscordOutgoingMessage(text.take(2000))
+
+    override fun sendMessageTo(chat: Chat<*>, message: OutgoingMessage): Boolean {
+        if (chat.protocol !== this) return false
+        return sendMessage(own(chat), message as? DiscordOutgoingMessage ?: outgoingFromSimple(message.toSimple().text))
+    }
+
     private val botUser: DiscordUser by lazy { DiscordUser(jda.selfUser) }
-    override fun getBot(chat: Chat): User = botUser
-    override fun getUserName(chat: Chat, user: User): String = if (user is DiscordUser) user.name else ""
+    override fun getBot(chat: DiscordChat): DiscordUser = botUser
+    override fun getUserName(chat: DiscordChat, user: DiscordUser): String = user.name
 
     private val protocolServerCache = mutableMapOf<Long, DiscordServer>()
     override fun getServers(): List<DiscordServer> = jda.guilds.map {
@@ -571,38 +589,33 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
         }
     }
 
-    override fun getUsers(chat: Chat): List<User> {
-        val channel = (chat as DiscordChat).channel
+    override fun getUsers(chat: DiscordChat): List<DiscordUser> {
+        val channel = chat.channel
         return channel.guild.members.map { protocolUserCache.getOrPut(it.user.idLong) { DiscordUser(it.user) } }
 }
 
-    override fun getChatName(chat: Chat): String = if (chat is DiscordChat) chat.name else ""
-    override fun mention(chat: Chat, users: List<User>, message: OutgoingMessage?) {
+    override fun getChatName(chat: DiscordChat): String = chat.name
+    override fun mention(chat: DiscordChat, users: List<DiscordUser>, message: OutgoingMessage?) {
         val mentions = users.joinToString(" ") { user ->
-            (user as DiscordUser).author.asMention
+            user.author.asMention
         }
-        sendMessage(chat, mentions + (message?.let { " $it" } ?: ""))
+        sendMessage(chat, mentions + (message?.let { " ${it.toSimple().text}" } ?: ""))
     }
 
     val discordMentionRegex = Regex("^<@([0-9]{1,20})>$")
-    override fun getUserFromMentionText(chat: Chat, mention: String): User? {
+    override fun getUserFromMentionText(chat: DiscordChat, mention: String): DiscordUser? {
         val match = discordMentionRegex.matchEntire(mention)
         val discordId = match?.groupValues?.getOrNull(1) ?: return null
         return (jda.getUserById(discordId) ?: jda.retrieveUserById(discordId).submit().join())?.let { DiscordUser(it) }
     }
 
-    override fun getMentions(message: IncomingMessage): List<User> {
-        if (message is DiscordIncomingMessage) {
-            return message.data.mentions.users.map {
-                DiscordUser(it)
-            }
+    override fun getMentions(message: DiscordIncomingMessage): List<DiscordUser> {
+        return message.data.mentions.users.map {
+            DiscordUser(it)
         }
-        return emptyList()
     }
 
-    override fun react(message: IncomingMessage, emoji: convergence.model.Emoji) {
-        if (message !is DiscordIncomingMessage)
-            return
+    override fun react(message: DiscordIncomingMessage, emoji: convergence.model.Emoji) {
         when(emoji) {
             is DiscordEmoji -> {
                 message.data.addReaction(emoji.emoji)
@@ -614,10 +627,7 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
         }.queue()
     }
 
-    override fun unreact(message: IncomingMessage, emoji: convergence.model.Emoji) {
-        if (message !is DiscordIncomingMessage)
-            return
-
+    override fun unreact(message: DiscordIncomingMessage, emoji: convergence.model.Emoji) {
         when(emoji) {
             is DiscordEmoji -> {
                 message.data.removeReaction(emoji.emoji)
@@ -629,9 +639,7 @@ object DiscordProtocol: Protocol("Discord"), CanFormatMessages, HasNicknames, Ha
         }.queue()
     }
 
-    override fun getReactions(message: IncomingMessage): Map<convergence.model.Emoji, Int> {
-        if (message !is DiscordIncomingMessage)
-            return emptyMap()
+    override fun getReactions(message: DiscordIncomingMessage): Map<convergence.model.Emoji, Int> {
         return message.data.reactions.associate {
             if (it.emoji.type == Emoji.Type.CUSTOM)
                 DiscordEmoji(it.emoji.asRich()) to it.count
@@ -664,40 +672,47 @@ private fun forwardMessageToReactChannel(
     forwardedMessages.getOrPut(server.guild.idLong) { mutableSetOf() }.add(message.data.idLong)
 }
 
-private val imageUploadChannelCallback =
-    ReceivedImages { chat: Chat, _: User, _: IncomingMessage?, images: Array<out Image> ->
-        for (image in images) {
-            if (image is DiscordImage && chat in settings.imageUploadChannels) {
-                val uploadURL = settings.imageUploadChannels[chat]
-                val timeCreated = image.image.timeCreated.format(DateTimeFormatter.ISO_INSTANT)
-                val filename = image.image.fileName.substringBeforeLast(".")
-                uploadImage(image.getURL(), uploadURL, "$filename-$timeCreated${image.image.fileExtension ?: ""}")
-            }
+private fun imageUploadChannelHandler(
+    chat: DiscordChat,
+    sender: DiscordUser,
+    message: IncomingMessage<*>,
+    images: Array<out Image>
+): Boolean {
+    for (image in images) {
+        if (image is DiscordImage && chat in settings.imageUploadChannels) {
+            val uploadURL = settings.imageUploadChannels[chat]
+            val timeCreated = image.image.timeCreated.format(DateTimeFormatter.ISO_INSTANT)
+            val filename = image.image.fileName.substringBeforeLast(".")
+            uploadImage(image.getURL(), uploadURL, "$filename-$timeCreated${image.image.fileExtension ?: ""}")
         }
-        true
     }
+    return true
+}
 
-private val reactionChannelCallback =
-    ReactionChanged { _: User, chat: Chat, message: IncomingMessage, emoji: convergence.model.Emoji,
-                      _: Int, newAmount: Int ->
-        if (chat !is DiscordChat) return@ReactionChanged false
-        if (message !is DiscordIncomingMessage) return@ReactionChanged false
-        if (emoji !is DiscordEmoji && emoji !is UnicodeEmoji) return@ReactionChanged false
-        val server = chat.server
-        val configs = settings.reactServers[server]?.filter {
-            it.destination.channel.guild.idLong == chat.channel.guild.idLong
-        } ?: return@ReactionChanged false
-        if (configs.isEmpty())
-            return@ReactionChanged false
+private fun reactionChannelHandler(
+    sender: DiscordUser,
+    chat: DiscordChat,
+    message: DiscordIncomingMessage,
+    emoji: convergence.model.Emoji,
+    oldAmount: Int,
+    newAmount: Int
+): Boolean {
+    if (emoji !is DiscordEmoji && emoji !is UnicodeEmoji) return false
+    val server = chat.server
+    val configs = settings.reactServers[server]?.filter {
+        it.destination.channel.guild.idLong == chat.channel.guild.idLong
+    } ?: return false
+    if (configs.isEmpty())
+        return false
 
-        for (config in configs) {
-            val neededScore = config.emojis[emoji.asString()] ?: continue
-            if (newAmount == neededScore) {
-                forwardMessageToReactChannel(message, config, server, emoji)
-            }
+    for (config in configs) {
+        val neededScore = config.emojis[emoji.asString()] ?: continue
+        if (newAmount == neededScore) {
+            forwardMessageToReactChannel(message, config, server, emoji)
         }
-        return@ReactionChanged true
     }
+    return true
+}
 
 val mentionRegex = Regex("<@!?(\\d+)>")
 object MessageListener: ListenerAdapter() {
@@ -737,7 +752,9 @@ object MessageListener: ListenerAdapter() {
             parseCommand(chat, commandDelimiter + event.name + event.options.joinToString(" ", " ") { it.asString })
                 ?: return
         val msg = commandWithArgs(chat, sender)
-        event.reply((msg as? DiscordOutgoingMessage ?: DiscordOutgoingMessage(msg!!.toSimple().text)).data).queue()
+        val reply = (msg as? DiscordOutgoingMessage)?.data
+            ?: DiscordOutgoingMessage(msg?.toSimple()?.text ?: "").data
+        event.reply(reply).queue()
     }
     val forwardedMessages = mutableMapOf<Long, MutableSet<Long>>()
 

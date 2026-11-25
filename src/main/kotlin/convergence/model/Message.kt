@@ -1,11 +1,11 @@
 package convergence.model
 
-abstract class IncomingMessage {
+abstract class IncomingMessage<OM : OutgoingMessage> {
     abstract fun toSimple(): SimpleIncomingMessage
-    abstract fun toOutgoing(): OutgoingMessage
+    abstract fun toOutgoing(): OM
 }
 
-class SimpleIncomingMessage(val text: String): IncomingMessage() {
+class SimpleIncomingMessage(val text: String): IncomingMessage<SimpleOutgoingMessage>() {
     override fun toSimple() = this
     override fun toOutgoing() = SimpleOutgoingMessage(text)
 }

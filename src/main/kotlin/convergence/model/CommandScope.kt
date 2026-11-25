@@ -1,8 +1,8 @@
 package convergence.model
 
-import convergence.Protocol
+import convergence.ProtocolRef
 
 sealed interface CommandScope {
-    val protocol: Protocol
+    val protocol: ProtocolRef
     fun toKey(): String
 }

@@ -1,7 +1,8 @@
 package convergence.model
 
-import convergence.Protocol
+import convergence.ProtocolRef
 
-abstract class User(val protocol: Protocol) {
+abstract class User<P : ProtocolRef>(val protocol: P) {
     abstract fun toKey(): String
+    open fun displayName(): String = toKey()
 }

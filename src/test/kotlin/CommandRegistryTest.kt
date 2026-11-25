@@ -96,7 +96,7 @@ class CommandRegistryTest {
     @Test
     fun registerAliasDifferentScopesCanHaveSameName() {
         val cmd = Command.of(UniversalProtocol, "echo", listOf(), ::echo, "help", "syntax")
-        val otherChat = object : Chat(UniversalProtocol, "Other") {
+        val otherChat = object : Chat<UniversalProtocol>(UniversalProtocol, "Other") {
             override fun toKey() = "UniversalChat(Other)"
         }
         val alias1 = Alias(testChat, "greet", cmd, listOf("hello"))

@@ -2,82 +2,125 @@
 
 package convergence.protocol
 
+import convergence.Protocol
 import convergence.callbacks.*
 import convergence.model.*
 import java.time.OffsetDateTime
 
-interface HasNicknames {
-    fun getUserNickname(chat: Chat, user: User): String?
-    fun getBotNickname(chat: Chat): String?
-    fun setUserNickname(chat: Chat, user: User, newName: String): String?
-    fun setBotNickname(chat: Chat, newName: String): String?
+interface HasNicknames<C : Chat<*>, U : User<*>> {
+    fun getUserNickname(chat: C, user: U): String?
+    fun getBotNickname(chat: C): String?
+    fun setUserNickname(chat: C, user: U, newName: String): String?
+    fun setBotNickname(chat: C, newName: String): String?
 
-    fun changedNickname(chat: Chat, user: User, oldName: String) = runCallbacks<ChangedNickname>(chat, user, oldName)
-}
+    val changedNicknameEvent: ChangedNicknameEvent<C, U>
+    fun changedNickname(chat: C, user: U, oldName: String) = changedNicknameEvent.fire(chat, user, oldName)
 
-interface HasImages {
-    fun sendImages(chat: Chat, sender: User, message: OutgoingMessage, vararg images: Image)
-    fun sendImages(chat: Chat, sender: User, message: String, vararg images: Image) =
-        sendImages(chat, sender, SimpleOutgoingMessage(message), *images)
-
-    fun receivedImages(chat: Chat, sender: User, message: IncomingMessage, vararg images: Image) {
-        runCallbacks<ReceivedImages>(chat, sender, message, images)
+    fun getUserNicknameFor(chat: Chat<*>, user: User<*>): String? {
+        val proto = this as? Protocol<*, *, *, *> ?: return null
+        if (chat.protocol !== proto || user.protocol !== proto) return null
+        @Suppress("UNCHECKED_CAST")
+        return getUserNickname(chat as C, user as U)
     }
 }
 
-interface CanEditOtherMessages {
-    fun editMessage(message: MessageHistory, oldMessage: IncomingMessage, sender: User, newMessage: OutgoingMessage)
-    fun editedMessage(oldMessage: IncomingMessage, sender: User, newMessage: IncomingMessage) =
-        runCallbacks<EditMessage>(oldMessage, sender, newMessage)
+interface HasImages<C : Chat<*>, U : User<*>> {
+    fun sendImages(chat: C, sender: U, message: OutgoingMessage, vararg images: Image): Boolean
+    fun sendImages(chat: C, sender: U, message: String, vararg images: Image): Boolean =
+        sendImages(chat, sender, SimpleOutgoingMessage(message), *images)
+
+    val receivedImagesEvent: ReceivedImagesEvent<C, U>
+    fun receivedImages(chat: C, sender: U, message: IncomingMessage<*>, vararg images: Image) =
+        receivedImagesEvent.fire(chat, sender, message, images)
+
+    fun sendImagesTo(chat: Chat<*>, sender: User<*>, message: OutgoingMessage, vararg images: Image): Boolean {
+        val proto = this as? Protocol<*, *, *, *> ?: return false
+        if (chat.protocol !== proto || sender.protocol !== proto) return false
+        @Suppress("UNCHECKED_CAST")
+        return sendImages(chat as C, sender as U, message, *images)
+    }
 }
 
-interface HasMessageHistory {
-    fun getMessages(chat: Chat, since: OffsetDateTime? = null, until: OffsetDateTime? = null): List<MessageHistory>
+interface CanEditOtherMessages<C : Chat<*>, U : User<*>, IM : IncomingMessage<*>, OM : OutgoingMessage> {
+    fun editMessage(message: MessageHistory<IM>, oldMessage: IM, sender: U, newMessage: OM)
+
+    val editedMessageEvent: EditMessageEvent<U>
+    fun editedMessage(oldMessage: IM, sender: U, newMessage: IM) =
+        editedMessageEvent.fire(oldMessage.toSimple().text, sender, newMessage.toSimple().text)
+}
+
+interface HasMessageHistory<C : Chat<*>, U : User<*>, IM : IncomingMessage<*>> {
+    fun getMessages(chat: C, since: OffsetDateTime? = null, until: OffsetDateTime? = null): List<MessageHistory<IM>>
     fun getUserMessages(
-        chat: Chat,
-        user: User,
+        chat: C,
+        user: U,
         since: OffsetDateTime? = null,
         until: OffsetDateTime? = null
-    ): List<MessageHistory>
+    ): List<MessageHistory<IM>>
 }
 
-interface CanMentionUsers {
-    fun mention(chat: Chat, users: List<User>, message: OutgoingMessage?)
-    fun mention(chat: Chat, users: List<User>) = mention(chat, users, null)
-    fun mentionedUsers(chat: Chat, sender: User, message: IncomingMessage, users: List<User>) =
-        runCallbacks<MentionedUser>(chat, sender, message, users)
-    fun getUserFromMentionText(chat: Chat, mention: String): User?
-    fun getMentions(message: IncomingMessage): List<User>
+interface CanMentionUsers<C : Chat<*>, U : User<*>, IM : IncomingMessage<*>> {
+    fun mention(chat: C, users: List<U>, message: OutgoingMessage?)
+    fun mention(chat: C, users: List<U>) = mention(chat, users, null)
+
+    val mentionedUsersEvent: MentionedUserEvent<C, U, IM>
+    fun mentionedUsers(chat: C, sender: U, message: IM, users: List<U>) =
+        mentionedUsersEvent.fire(chat, sender, message, users)
+
+    fun getUserFromMentionText(chat: C, mention: String): U?
+    fun getMentions(message: IM): List<U>
+
+    fun mentionTo(chat: Chat<*>, users: List<User<*>>, message: OutgoingMessage?) {
+        val proto = this as? Protocol<*, *, *, *> ?: return
+        if (chat.protocol !== proto || users.any { it.protocol !== proto }) return
+        @Suppress("UNCHECKED_CAST")
+        mention(chat as C, users as List<U>, message)
+    }
+
+    fun getUserFromMentionTextFor(chat: Chat<*>, mention: String): User<*>? {
+        val proto = this as? Protocol<*, *, *, *> ?: return null
+        if (chat.protocol !== proto) return null
+        @Suppress("UNCHECKED_CAST")
+        return getUserFromMentionText(chat as C, mention)
+    }
 }
 
-interface HasTypingStatus {
-    fun setBotTypingStatus(chat: Chat, status: Boolean)
-    fun startedTyping(chat: Chat, user: User) = runCallbacks<StartedTyping>(chat, user)
-    fun stoppedTyping(chat: Chat, user: User) = runCallbacks<StoppedTyping>(chat, user)
+interface HasTypingStatus<C : Chat<*>, U : User<*>> {
+    fun setBotTypingStatus(chat: C, status: Boolean)
+
+    val startedTypingEvent: StartedTypingEvent<C, U>
+    val stoppedTypingEvent: StoppedTypingEvent<C, U>
+    fun startedTyping(chat: C, user: U) = startedTypingEvent.fire(chat, user)
+    fun stoppedTyping(chat: C, user: U) = stoppedTypingEvent.fire(chat, user)
 }
 
-interface HasStickers {
-    fun sendSticker(chat: Chat, sticker: Sticker)
-    fun receivedSticker(chat: Chat, sender: User, sticker: Sticker) =
-        runCallbacks<ReceivedSticker>(chat, sender, sticker)
+interface HasStickers<C : Chat<*>, U : User<*>> {
+    fun sendSticker(chat: C, sticker: Sticker)
+
+    val receivedStickerEvent: ReceivedStickerEvent<C, U>
+    fun receivedSticker(chat: C, sender: U, sticker: Sticker) = receivedStickerEvent.fire(chat, sender, sticker)
 }
 
-interface HasUserStatus {
-    fun setBotStatus(chat: Chat, status: String)
-    fun getUserStatus(chat: Chat, user: User): String
+interface HasUserStatus<C : Chat<*>, U : User<*>> {
+    fun setBotStatus(chat: C, status: String)
+    fun getUserStatus(chat: C, user: U): String
 }
 
-interface HasUserAvailability {
-    fun setBotAvailability(chat: Chat, availability: Availability)
-    fun getUserAvailability(chat: Chat, user: User): Availability
-    fun changedAvailability(chat: Chat, user: User, availability: Availability) =
-        runCallbacks<ChangedAvailability>(chat, user, availability)
+interface HasUserAvailability<C : Chat<*>, U : User<*>> {
+    fun setBotAvailability(chat: C, availability: Availability)
+    fun getUserAvailability(chat: C, user: U): Availability
+
+    val changedAvailabilityEvent: ChangedAvailabilityEvent<C, U>
+    fun changedAvailability(chat: C, user: U, availability: Availability) =
+        changedAvailabilityEvent.fire(chat, user, availability)
 }
 
-interface HasReadStatus {
-    fun getReadStatus(chat: Chat, message: MessageHistory): Set<User>
-    fun setRead(chat: Chat, user: User, message: MessageHistory)
-    fun readByUser(chat: Chat, user: User, message: MessageHistory) = runCallbacks<ReadByUser>(chat, user, message)
+interface HasReadStatus<C : Chat<*>, U : User<*>, IM : IncomingMessage<*>> {
+    fun getReadStatus(chat: C, message: MessageHistory<IM>): Set<U>
+    fun setRead(chat: C, user: U, message: MessageHistory<IM>)
+
+    val readByUserEvent: ReadByUserEvent<C, U>
+    fun readByUser(chat: C, user: U, message: MessageHistory<IM>) = readByUserEvent.fire(chat, user, message)
 }
 
 interface CanFormatMessages {
@@ -99,35 +142,37 @@ interface CanFormatMessages {
     }
 }
 
-interface HasCustomEmoji {
-    fun getEmojis(chat: Chat): List<CustomEmoji>
+interface HasCustomEmoji<C : Chat<*>> {
+    fun getEmojis(chat: C): List<CustomEmoji>
 }
 
-interface HasReactions {
-    fun react(message: IncomingMessage, emoji: Emoji)
-    fun unreact(message: IncomingMessage, emoji: Emoji)
-    fun getReactions(message: IncomingMessage): Map<Emoji, Int>
+interface HasReactions<C : Chat<*>, U : User<*>, IM : IncomingMessage<*>> {
+    fun react(message: IM, emoji: Emoji)
+    fun unreact(message: IM, emoji: Emoji)
+    fun getReactions(message: IM): Map<Emoji, Int>
+
+    val reactionChangedEvent: ReactionChangedEvent<C, U, IM>
     fun reactionChanged(
-        sender: User,
-        chat: Chat,
-        message: IncomingMessage,
+        sender: U,
+        chat: C,
+        message: IM,
         emoji: Emoji,
         oldAmount: Int,
         newAmount: Int
-    ) = runCallbacks<ReactionChanged>(sender, chat, message, emoji, oldAmount, newAmount)
+    ) = reactionChangedEvent.fire(sender, chat, message, emoji, oldAmount, newAmount)
 }
 
-interface HasServer<T: Server> {
-    val server: T
+interface HasServer<S : Server<*>> {
+    val server: S
 }
 
-interface HasServers<T: Server> {
-    fun getServers(): List<T>
+interface HasServers<S : Server<*>> {
+    fun getServers(): List<S>
 }
 
 interface HasRoles<RoleType: Role> {
-    fun getRoles(server: Server): List<RoleType>
-    fun getUserRoles(server: Server, user: User): List<RoleType>
-    fun userHasRole(server: Server, user: User, role: RoleType): Boolean =
+    fun getRoles(server: Server<*>): List<RoleType>
+    fun getUserRoles(server: Server<*>, user: User<*>): List<RoleType>
+    fun userHasRole(server: Server<*>, user: User<*>, role: RoleType): Boolean =
         getUserRoles(server, user).any { it == role }
 }

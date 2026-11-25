@@ -78,7 +78,7 @@ class SchedulerTest {
     @Test
     fun getCommandsBySenderFiltersCorrectly() {
         val time = now.plusMinutes(5)
-        val otherUser = object : User(TestProtocol) {
+        val otherUser = object : User<TestProtocol>(TestProtocol) {
             override fun toKey() = "TestUser(Other)"
         }
         Scheduler.schedule(testChat, testUser, "echo", listOf("a"), time)

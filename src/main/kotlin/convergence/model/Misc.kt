@@ -14,6 +14,6 @@ abstract class Sticker(val name: String, val url: String?)
 
 abstract class Availability(val description: String)
 
-abstract class MessageHistory(var message: IncomingMessage, val timestamp: OffsetDateTime, val sender: User)
+abstract class MessageHistory<M : IncomingMessage<*>>(var message: M, val timestamp: OffsetDateTime, val sender: User<*>)
 
 abstract class Role(val name: String)

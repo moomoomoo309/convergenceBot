@@ -8,7 +8,7 @@ import org.natty.Parser
 
 val dateTimeParser = Parser()
 
-fun schedule(args: List<String>, chat: Chat, sender: User): String {
+fun schedule(args: List<String>, chat: Chat<*>, sender: User<*>): String {
     if (args.size != 2)
         return "Expected 2 arguments, got ${args.size} argument${if (args.size != 1) "s" else ""}."
     val timeList = dateTimeParser.parse(args[0])
@@ -31,7 +31,7 @@ fun schedule(args: List<String>, chat: Chat, sender: User): String {
 /**
  * Gets all the currently scheduled events sorted by ID.
  */
-fun events(chat: Chat): String {
+fun events(chat: Chat<*>): String {
     val commands = Scheduler.getCommands()
     if (commands.isEmpty())
         return "No events are currently scheduled."
@@ -41,16 +41,16 @@ fun events(chat: Chat): String {
 /**
  * Gets all the currently scheduled events that were scheduled by [sender].
  */
-private fun getUserEvents(sender: User): Map<User, MutableList<ScheduledCommand>> {
+private fun getUserEvents(sender: User<*>): Map<User<*>, MutableList<ScheduledCommand>> {
     val eventsList = Scheduler.getCommands(sender)
-    val eventMap = HashMap<User, MutableList<ScheduledCommand>>()
+    val eventMap = HashMap<User<*>, MutableList<ScheduledCommand>>()
     for (event in eventsList) {
         eventMap.getOrPut(event.sender) { mutableListOf() }.add(event)
     }
     return eventMap
 }
 
-fun eventsFromUser(chat: Chat, sender: User): String {
+fun eventsFromUser(chat: Chat<*>, sender: User<*>): String {
     val eventMap = getUserEvents(sender)
     if (eventMap.isEmpty())
         return "No events are currently scheduled."
@@ -64,7 +64,7 @@ fun eventsFromUser(chat: Chat, sender: User): String {
     return builder.toString()
 }
 
-fun eventsByUser(chat: Chat, sender: User): String {
+fun eventsByUser(chat: Chat<*>, sender: User<*>): String {
     val eventMap = getUserEvents(sender)
     if (eventMap.isEmpty())
         return "No events are currently scheduled."
@@ -79,10 +79,9 @@ fun eventsByUser(chat: Chat, sender: User): String {
 
 private fun addEventToBuilder(
     events: List<ScheduledCommand>,
-    chat: Chat,
+    chat: Chat<*>,
     builder: StringBuilder
 ) {
-    @Suppress("DestructuringDeclaration")
     for (event in events) {
         val id = event.id
         val time = formatTime(event.scheduledTime)

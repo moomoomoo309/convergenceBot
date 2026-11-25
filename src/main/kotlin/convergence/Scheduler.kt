@@ -79,14 +79,14 @@ object Scheduler: Thread() {
      * Schedules [commandWithArgs] sent by [sender] to run at [time].
      * @return The response the user will get from the command.
      */
-    fun schedule(chat: Chat, sender: User, commandWithArgs: CommandWithArgs, time: OffsetDateTime) =
+    fun schedule(chat: Chat<*>, sender: User<*>, commandWithArgs: CommandWithArgs, time: OffsetDateTime) =
         schedule(chat, sender, commandWithArgs.command.name, commandWithArgs.args, time)
 
     /**
      * Schedules [commandName] sent by [sender] to run at [time] with [args] as its arguments.
      * @return The response the user will get from the command.
      */
-    fun schedule(chat: Chat, sender: User, commandName: String, args: List<String>, time: OffsetDateTime): String {
+    fun schedule(chat: Chat<*>, sender: User<*>, commandName: String, args: List<String>, time: OffsetDateTime): String {
         var id = currentId.getAndIncrement()
         while (id in commandsList)
             id = currentId.getAndIncrement()
@@ -105,7 +105,7 @@ object Scheduler: Thread() {
     /**
      * Gets all the commands scheduled by [sender].
      */
-    fun getCommands(sender: User?): List<ScheduledCommand> =
+    fun getCommands(sender: User<*>?): List<ScheduledCommand> =
         if (sender == null)
             getCommands()
         else
@@ -151,10 +151,10 @@ data class ScheduledCommand(
     // serialized directly.
     @param:JsonProperty("chatKey")
     @get:JsonProperty("chatKey")
-    val chat: Chat,
+    val chat: Chat<*>,
     @param:JsonProperty("senderKey")
     @get:JsonProperty("senderKey")
-    val sender: User,
+    val sender: User<*>,
 
     val protocolName: String,
     val commandName: String,

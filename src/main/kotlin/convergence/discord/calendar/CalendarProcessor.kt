@@ -12,6 +12,7 @@ import convergence.*
 import convergence.command.ArgumentSpec
 import convergence.command.ArgumentType
 import convergence.command.Command
+import convergence.command.commandOf
 import convergence.command.registerCommands
 import convergence.discord.*
 import convergence.model.Chat
@@ -240,7 +241,7 @@ object CalendarProcessor {
         }.sortedBy { it.startTime }.map { DiscordEventWrapper(it) }
     }
 
-    fun syncCommand(args: List<String>, chat: Chat): String {
+    fun syncCommand(args: List<String>, chat: Chat<*>): String {
         if (args.size != 1)
             return "Expected 1 argument, got ${args.size}."
         if (chat !is DiscordChat)
@@ -472,58 +473,52 @@ fun registerCalendarCommands() {
             "Sync a CalDAV calendar to discord events.",
             "syncCalendar (URL)"
         ),
-        Command.of(
-            DiscordProtocol,
+        DiscordProtocol.commandOf(
             "resyncCalendar",
             listOf(),
-            { _, chat -> CalendarProcessor.syncCalendars(chat as DiscordChat) },
+            { _, chat -> CalendarProcessor.syncCalendars(chat) },
             "Resyncs all calendars in this server.",
             "resyncCalendar (Takes no parameters)"
         ),
-        Command.of(
-            DiscordProtocol,
+        DiscordProtocol.commandOf(
             "dryResyncCalendar",
             listOf(),
-            { _, chat -> CalendarProcessor.syncCalendars(chat as DiscordChat, true) },
+            { _, chat -> CalendarProcessor.syncCalendars(chat, true) },
             "Tries to resyncs all calendars in this server, but does not actually add or remove anything.",
             "dryResyncCalendar (Takes no parameters)"
         ),
-        Command.of(
-            DiscordProtocol,
+        DiscordProtocol.commandOf(
             "resyncAllCalendars",
             listOf(),
-            { _, chat -> CalendarProcessor.syncAllCalendars(chat as DiscordChat) },
+            { _, chat -> CalendarProcessor.syncAllCalendars(chat) },
             "Resyncs all calendars in all servers.",
             "resyncAllCalendars (Takes no parameters)"
         ),
-        Command.of(
-            DiscordProtocol,
+        DiscordProtocol.commandOf(
             "dryResyncAllCalendars",
             listOf(),
-            { _, chat -> CalendarProcessor.syncAllCalendars(chat as DiscordChat, true) },
+            { _, chat -> CalendarProcessor.syncAllCalendars(chat, true) },
             "Tries to resync all calendars in all servers, but does not actually add or remove anything.",
             "dryResyncAllCalendars (Takes no parameters)"
         ),
-        Command.of(
-            DiscordProtocol,
+        DiscordProtocol.commandOf(
             "unsyncCalendar",
             listOf(ArgumentSpec("URL", ArgumentType.STRING)),
             { args, chat ->
                 val removed = settings.syncedCalendars.remove(settings.syncedCalendars.firstOrNull {
-                    it.guildId == (chat as DiscordChat).server.guild.idLong && it.calURL == args[0]
+                    it.guildId == chat.server.guild.idLong && it.calURL == args[0]
                 })
                 if (removed) "Calendar removed." else "No calendar with URL ${args[0]} found."
             },
             "Removes a synced calendar.",
             "unsyncCalendar (URL)"
         ),
-        Command.of(
-            DiscordProtocol,
+        DiscordProtocol.commandOf(
             "syncedCalendars",
             listOf(),
             { _, chat ->
                 settings.syncedCalendars.filter {
-                    it.guildId == (chat as DiscordChat).server.guild.idLong
+                    it.guildId == chat.server.guild.idLong
                 }.joinToString(", ").ifEmpty { "No calendars are synced in this chat." }
             },
             "Prints out all the synced calendars in this chat.",
@@ -578,7 +573,7 @@ fun registerCalendarCommands() {
     )
 }
 
-private fun addCalendarNotificationCommand(args: List<String>, chat: Chat): String {
+private fun addCalendarNotificationCommand(args: List<String>, chat: Chat<*>): String {
     if (chat !is DiscordChat)
         return "This command can only be run on Discord."
     if (args.isEmpty())
@@ -610,7 +605,7 @@ private fun addCalendarNotificationCommand(args: List<String>, chat: Chat): Stri
         ?: return "Invalid @ for mentions."
     // Add a new channel, or add the mention to the existing one
     if (existing == null) {
-        val mentions = mutableMapOf<User, String>(mentionUser to (pattern ?: ""))
+        val mentions = mutableMapOf<User<*>, String>(mentionUser to (pattern ?: ""))
         settings.notificationChannels.add(CalendarNotificationChannel(chat, calURL, mentions))
     } else
         existing.mentions[mentionUser] = pattern ?: ""
@@ -624,7 +619,7 @@ private fun addCalendarNotificationCommand(args: List<String>, chat: Chat): Stri
     return "Registered this channel to receive notifications from calendar \"$calName\"$mentionText$filterText)."
 }
 
-private fun removeCalendarNotificationCommand(args: List<String>, chat: Chat): String {
+private fun removeCalendarNotificationCommand(args: List<String>, chat: Chat<*>): String {
     if (chat !is DiscordChat)
         return "This command can only be run on Discord."
     if (args.isEmpty())

@@ -1,11 +1,12 @@
 package convergence.discord.frat
 
 import convergence.*
-import convergence.callbacks.MentionedUser
-import convergence.callbacks.callbacks
 import convergence.command.ArgumentSpec
 import convergence.command.ArgumentType
 import convergence.command.Command
+import convergence.command.PermissionFunction
+import convergence.command.commandOf
+import convergence.command.permissionOf
 import convergence.command.registerCommands
 import convergence.commands.getUserFromName
 import convergence.discord.*
@@ -218,12 +219,10 @@ fun brotherInfo(args: List<String>, searchCriteria: (BrotherInfo) -> String?): D
     )
 }
 
-private fun setAlumnusNickname(args: List<String>, chat: Chat, sender: User): String {
+private fun setAlumnusNickname(args: List<String>, chat: DiscordChat, sender: DiscordUser): String {
     val config = fratConfig ?: return "Frat config not available."
     if (args.size !in 1..2)
         return "Syntax: setAlumnusNickname (roster number) [@user]"
-    if (sender !is DiscordUser || chat !is DiscordChat)
-        return "This command only works on Discord."
     if (chat.server.guild.idLong != config.aaServerID)
         return "You can only run this command on the alumni association server."
     val brotherInfo = getBrotherInfo(args[0]) { it.rosterNumber }
@@ -238,19 +237,16 @@ private fun setAlumnusNickname(args: List<String>, chat: Chat, sender: User): St
 }
 
 var pledgeRole: DiscordRole? = null
-val isNotPledge: (Command, List<String>, Chat, User) -> OutgoingMessage? =
-    { _: Command, _: List<String>, chat: Chat, sender: User ->
-        val config = fratConfig
-        if (config != null) {
-            val server = (chat as? DiscordChat)?.server
-            if (config.pledgeRoleID != 0L && chat is DiscordChat) {
-                pledgeRole = pledgeRole ?: chat.server.guild.getRoleById(config.pledgeRoleID)?.let { DiscordRole(it) }
-                if (server != null && pledgeRole?.let { DiscordProtocol.userHasRole(server, sender, it) } == false)
-                    SimpleOutgoingMessage("Nice try, pledge.")
-                else null
-            } else null
-        } else null
-    }
+val isNotPledge: PermissionFunction = DiscordProtocol.permissionOf { _, _, chat, sender ->
+    val config = fratConfig ?: return@permissionOf null
+    if (config.pledgeRoleID == 0L) return@permissionOf null
+    pledgeRole = pledgeRole ?: chat.server.guild.getRoleById(config.pledgeRoleID)?.let { DiscordRole(it) }
+    val role = pledgeRole ?: return@permissionOf null
+    if (DiscordProtocol.userHasRole(chat.server, sender, role))
+        null
+    else
+        SimpleOutgoingMessage("Nice try, pledge.")
+}
 
 @Suppress("LongMethod", "unused")
 fun registerFratCommands() {
@@ -351,8 +347,7 @@ fun registerFratCommands() {
             { _, chat, _ -> "Mention chat stats for this channel:\n${mentionStats(chat)}" },
             "Lists the stats for this mention chat.",
             "mentionChatStats (takes no arguments)"
-        ), Command.of(
-            DiscordProtocol,
+        ), DiscordProtocol.commandOf(
             "setAlumnusNickname",
             listOf(
                 ArgumentSpec("rosternumber", ArgumentType.NUMBER),
@@ -382,36 +377,30 @@ data class MentionStatsTask(override val scheduledTime: OffsetDateTime): Schedul
 }
 
 private fun registerMentionCallback() {
-    callbacks.getOrPut(MentionedUser::class) { mutableListOf() }.add(
-        MentionedUser { chat: Chat, sender: User, msg: IncomingMessage, users: List<User> ->
-            if (msg is DiscordIncomingMessage) {
-                if (sender !is DiscordUser)
-                    return@MentionedUser true
-                val newMentions = mutableMapOf<DiscordUser, Int>()
-                for (user in users) {
-                    user as? DiscordUser ?: continue
-                    val mentions = (settings.mentionChats[chat] ?: return@MentionedUser true)[user]
-                        ?: return@MentionedUser true
-                    val mentionCount = mentions.getOrDefault(sender, 0) + 1
-                    mentions[sender] = mentionCount
-                    newMentions[user] = mentionCount
-                }
-                updateSettings()
-                if (settings.debugMode) {
-                    val parts = newMentions.toList().map { (user, count) ->
-                        "${DiscordProtocol.getUserNickname(chat, user)} $count time${if (count > 1) "s" else ""}"
-                    }
-                    val mentionStr = when(parts.size) {
-                        1 -> parts[0]
-                        2 -> "${parts[0]} and ${parts[1]}"
-                        else -> "${parts.dropLast(1).joinToString(", ")}, and ${parts.last()}"
-                    }
-                    sendMessage(chat, "You mentioned $mentionStr.")
-                }
-            }
-            true
+    DiscordProtocol.mentionedUsersEvent.register { chat, sender, _, users ->
+        val newMentions = mutableMapOf<DiscordUser, Int>()
+        for (user in users) {
+            val discordUser = user as? DiscordUser ?: continue
+            val mentions = (settings.mentionChats[chat] ?: return@register true)[discordUser]
+                ?: return@register true
+            val mentionCount = mentions.getOrDefault(sender, 0) + 1
+            mentions[sender] = mentionCount
+            newMentions[discordUser] = mentionCount
         }
-    )
+        updateSettings()
+        if (settings.debugMode) {
+            val parts = newMentions.toList().map { (user, count) ->
+                "${DiscordProtocol.getUserNickname(chat, user)} $count time${if (count > 1) "s" else ""}"
+            }
+            val mentionStr = when(parts.size) {
+                1 -> parts[0]
+                2 -> "${parts[0]} and ${parts[1]}"
+                else -> "${parts.dropLast(1).joinToString(", ")}, and ${parts.last()}"
+            }
+            sendMessage(chat, "You mentioned $mentionStr.")
+        }
+        true
+    }
 }
 
 private fun nextMonth(): OffsetDateTime {
@@ -428,7 +417,7 @@ private fun nextMonth(): OffsetDateTime {
     return thisMonth
 }
 
-fun mentionStats(chat: Chat) = settings.mentionChats
+fun mentionStats(chat: Chat<*>) = settings.mentionChats
     .getOrDefault(chat, mutableMapOf())
     .map { (target, mentions) ->
         "${getUserName(chat, target)}:\n\t${

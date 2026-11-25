@@ -20,46 +20,47 @@ import kotlin.test.assertEquals
 
 // A state-free protocol whose scopes/users are fully reconstructable from their keys, so we can exercise the
 // real (de)serialization path (convergenceModule + the per-type converters) without any live protocol state.
-class SerChat(val cid: Int): Chat(SerProtocol, "chat$cid") {
+class SerChat(val cid: Int): Chat<SerProtocol>(SerProtocol, "chat$cid") {
     override fun toKey() = "SerTestChat($cid)"
     override fun equals(other: Any?) = other is SerChat && other.cid == cid
     override fun hashCode() = cid
 }
 
-class SerServer(val sid: Int): Server("srv$sid", SerProtocol) {
+class SerServer(val sid: Int): Server<SerProtocol>("srv$sid", SerProtocol) {
     override fun toKey() = "SerTestServer($sid)"
-    override fun compareTo(other: Server) =
+    override fun compareTo(other: Server<*>) =
         if (other is SerServer) sid.compareTo(other.sid) else name.compareTo(other.name)
 
     override fun equals(other: Any?) = other is SerServer && other.sid == sid
     override fun hashCode() = sid
 }
 
-class SerUser(val uid: Int): User(SerProtocol) {
+class SerUser(val uid: Int): User<SerProtocol>(SerProtocol) {
     override fun toKey() = "SerTestUser($uid)"
     override fun equals(other: Any?) = other is SerUser && other.uid == uid
     override fun hashCode() = uid
 }
 
 @Suppress("EmptyFunctionBlock")
-object SerProtocol: Protocol("SerTest") {
+object SerProtocol: Protocol<Chat<*>, User<*>, SimpleIncomingMessage, SimpleOutgoingMessage>("SerTest") {
     override fun init() {}
     override fun configLoaded() {}
     override fun aliasCreated(alias: Alias) {}
-    override fun sendMessage(chat: Chat, message: OutgoingMessage) = false
-    override fun getBot(chat: Chat): User = SerUser(0)
-    override fun getUserName(chat: Chat, user: User) = "user"
-    override fun getChats(): List<Chat> = emptyList()
-    override fun getUsers(): List<User> = emptyList()
-    override fun getUsers(chat: Chat): List<User> = emptyList()
-    override fun getChatName(chat: Chat) = "chat"
+    override fun sendMessage(chat: Chat<*>, message: SimpleOutgoingMessage) = false
+    override fun outgoingFromSimple(text: String) = SimpleOutgoingMessage(text)
+    override fun getBot(chat: Chat<*>): User<*> = SerUser(0)
+    override fun getUserName(chat: Chat<*>, user: User<*>) = "user"
+    override fun getChats(): List<Chat<*>> = emptyList()
+    override fun getUsers(): List<User<*>> = emptyList()
+    override fun getUsers(chat: Chat<*>): List<User<*>> = emptyList()
+    override fun getChatName(chat: Chat<*>) = "chat"
     override fun commandScopeFromKey(key: String): CommandScope? = when {
         key.startsWith("SerTestChat(") -> SerChat(key.substringBetween("SerTestChat(", ")").toInt())
         key.startsWith("SerTestServer(") -> SerServer(key.substringBetween("SerTestServer(", ")").toInt())
         else -> null
     }
 
-    override fun userFromKey(key: String): User? =
+    override fun userFromKey(key: String): User<*>? =
         if (key.startsWith("SerTestUser(")) SerUser(key.substringBetween("SerTestUser(", ")").toInt()) else null
 }
 
@@ -137,7 +138,8 @@ class SerializationTest {
                 addSerializer(Chat::class.java, ScopeValueSerializer)
                 addDeserializer(SerChat::class.java, object: JsonDeserializer<SerChat>() {
                     override fun deserialize(p: JsonParser, ctxt: DeserializationContext) =
-                        SerProtocol.commandScopeFromKey(p.valueAsString) as SerChat
+                        SerProtocol.commandScopeFromKey(p.valueAsString) as? SerChat
+                            ?: throw IllegalArgumentException("Key did not resolve to a SerChat: ${p.valueAsString}")
                 })
             }
         )

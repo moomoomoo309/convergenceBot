@@ -8,38 +8,38 @@ import convergence.protocol.HasNicknames
 /**
  * Sends [message] in the chat [sender] is in, forwarding the message to any linked chats.
  */
-fun sendMessage(chat: Chat, sender: User, message: OutgoingMessage?) {
-    if (sender != chat.protocol.getBot(chat))
+fun sendMessage(chat: Chat<*>, sender: User<*>, message: OutgoingMessage?) {
+    if (sender != chat.protocol.getBotOf(chat))
         sendMessage(chat, message)
     forwardToLinkedChats(chat, sender, message, isCommand=true)
 }
 
-fun sendMessage(chat: Chat, sender: User, message: String?) =
+fun sendMessage(chat: Chat<*>, sender: User<*>, message: String?) =
     message?.let { sendMessage(chat, sender, SimpleOutgoingMessage(message)) }
 
 /**
  * Sends [message] in [chat], not forwarding it to linked chats.
  */
-fun sendMessage(chat: Chat, message: OutgoingMessage?) {
+fun sendMessage(chat: Chat<*>, message: OutgoingMessage?) {
     if (message == null)
         return
     if (settings.debugMode && message is SimpleOutgoingMessage)
-        chat.protocol.sendMessage(chat, "[Test Mode]: ${message.text}")
+        chat.protocol.sendMessageTo(chat, SimpleOutgoingMessage("[Test Mode]: ${message.text}"))
     else
-        chat.protocol.sendMessage(chat, message)
+        chat.protocol.sendMessageTo(chat, message)
 }
 
-fun sendMessage(chat: Chat, message: String?) = message?.let { sendMessage(chat, SimpleOutgoingMessage(message)) }
+fun sendMessage(chat: Chat<*>, message: String?) = message?.let { sendMessage(chat, SimpleOutgoingMessage(message)) }
 
 /**
  * Gets the nickname (if applicable) or name of a user.
  */
-fun getUserName(chat: Chat, sender: User): String {
+fun getUserName(chat: Chat<*>, sender: User<*>): String {
     val protocol = chat.protocol
-    return if (protocol is HasNicknames)
-        protocol.getUserNickname(chat, sender) ?: protocol.getUserName(chat, sender)
+    return if (protocol is HasNicknames<*, *>)
+        protocol.getUserNicknameFor(chat, sender) ?: protocol.getUserNameFor(chat, sender)
     else
-        protocol.getUserName(chat, sender)
+        protocol.getUserNameFor(chat, sender)
 }
 
 
@@ -48,7 +48,7 @@ val pattern: Regex by lazy { Regex(bot.aliasVars.keys.sortedBy { -it.length }.jo
  * Replaces instances of the keys in [aliasVars] preceded by a percent sign with the result of the functions therein,
  * such as %sender with the name of the user who sent the message.
  */
-fun replaceAliasVars(chat: Chat, sender: User, msg: OutgoingMessage?): OutgoingMessage? {
+fun replaceAliasVars(chat: Chat<*>, sender: User<*>, msg: OutgoingMessage?): OutgoingMessage? {
     return if (msg is SimpleOutgoingMessage)
         SimpleOutgoingMessage(pattern.replace(msg.text) { res ->
             bot.aliasVars[res.value]!!(chat, sender) ?: res.value
@@ -58,8 +58,8 @@ fun replaceAliasVars(chat: Chat, sender: User, msg: OutgoingMessage?): OutgoingM
 }
 
 fun forwardToLinkedChats(
-    chat: Chat,
-    sender: User,
+    chat: Chat<*>,
+    sender: User<*>,
     message: OutgoingMessage?,
     images: Array<out Image> = emptyArray(),
     isCommand: Boolean = false
@@ -77,14 +77,14 @@ fun forwardToLinkedChats(
     }
 
     // Send the messages out to the linked chats if there are any. Don't error if there aren't any.
-    val bot = chat.protocol.getBot(chat)
+    val bot = chat.protocol.getBotOf(chat)
     if ((isCommand || sender != bot) && chat in settings.linkedChats)
         for (linkedChat in settings.linkedChats[chat]!!) {
-            val msg = "$boldOpen${getUserName(chat, if (isCommand) bot else sender)}:$boldClose $message"
-            if (linkedChat.protocol is HasImages && images.isNotEmpty()) {
-                val protocol = (linkedChat.protocol as HasImages)
-                protocol.sendImages(linkedChat, sender, msg, *images)
-            } else
+            val msg = "$boldOpen${getUserName(chat, if (isCommand) bot else sender)}:$boldClose ${message.toSimple().text}"
+            val sentImages = images.isNotEmpty() && linkedChat.protocol is HasImages<*, *> &&
+                    (linkedChat.protocol as HasImages<*, *>)
+                        .sendImagesTo(linkedChat, sender, SimpleOutgoingMessage(msg), *images)
+            if (!sentImages)
                 sendMessage(linkedChat, msg)
         }
 }

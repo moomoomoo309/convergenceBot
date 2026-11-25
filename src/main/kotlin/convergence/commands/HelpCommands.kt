@@ -13,7 +13,7 @@ import kotlin.reflect.jvm.jvmName
 
 const val COMMANDS_PER_PAGE = 10
 
-fun help(args: List<String>, chat: Chat): String {
+fun help(args: List<String>, chat: Chat<*>): String {
     val sortedCommands = bot.commands.values.flatMap { it.values }.sortedBy { it.name }
     val numPages = ceil(sortedCommands.size.toDouble() / COMMANDS_PER_PAGE)
     val pageOrCommand = if (args.isEmpty()) 1 else args[0].toIntOrNull()?.coerceIn(1..numPages) ?: args[0]
@@ -54,7 +54,7 @@ fun help(args: List<String>, chat: Chat): String {
     }
 }
 
-fun commands(chat: Chat): String {
+fun commands(chat: Chat<*>): String {
     val commandList = mutableListOf<String>()
     bot.commands[chat.protocol]?.forEach { commandList.add(it.key) }
     bot.commands[UniversalProtocol]?.forEach { commandList.add(it.key) }
@@ -63,7 +63,7 @@ fun commands(chat: Chat): String {
     return if (commandList.isNotEmpty()) commandList.joinToString(", ") else "No commands found."
 }
 
-fun aliases(chat: Chat): String {
+fun aliases(chat: Chat<*>): String {
     val aliasList = mutableListOf<String>()
     settings.aliases[chat]?.forEach { aliasList.add(it.key) }
     settings.aliases[UniversalChat]?.forEach { aliasList.add(it.key) }

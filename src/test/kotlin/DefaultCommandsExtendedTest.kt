@@ -28,7 +28,7 @@ class DefaultCommandsExtendedTest {
      * Used in tests where we need to distinguish between the two so that
      * commands()/aliases() don't double-count UniversalProtocol entries.
      */
-    private val testProtocolChat = object : Chat(TestProtocol, "TestProtocolChat") {
+    private val testProtocolChat = object : Chat<TestProtocol>(TestProtocol, "TestProtocolChat") {
         override fun toKey() = "TestChat(TestProtocolChat)"
     }
 
@@ -163,7 +163,7 @@ class DefaultCommandsExtendedTest {
 
     @Test
     fun removeServerAliasRejectsNonServerProtocol() {
-        // testChat uses UniversalProtocol which does not implement HasServer
+        // testChat uses TestProtocol which does not implement HasServer
         assertEquals(
             "This protocol doesn't support servers!",
             removeServerAlias(listOf("myAlias"), testChat)
@@ -196,7 +196,7 @@ class DefaultCommandsExtendedTest {
 
     @Test
     fun linkAddsChatToLinkedChats() {
-        val otherChat = object : Chat(UniversalProtocol, "Other") {
+        val otherChat = object : Chat<UniversalProtocol>(UniversalProtocol, "Other") {
             override fun toKey() = "TestChat(Other)"
         }
         bot.chatMap[42] = otherChat
@@ -209,8 +209,8 @@ class DefaultCommandsExtendedTest {
 
     @Test
     fun linkCanLinkMultipleChats() {
-        val chat1 = object : Chat(UniversalProtocol, "C1") { override fun toKey() = "TestChat(C1)" }
-        val chat2 = object : Chat(UniversalProtocol, "C2") { override fun toKey() = "TestChat(C2)" }
+        val chat1 = object : Chat<UniversalProtocol>(UniversalProtocol, "C1") { override fun toKey() = "TestChat(C1)" }
+        val chat2 = object : Chat<UniversalProtocol>(UniversalProtocol, "C2") { override fun toKey() = "TestChat(C2)" }
         bot.chatMap[1] = chat1
         bot.chatMap[2] = chat2
         link(listOf("1"), testChat)
@@ -232,15 +232,15 @@ class DefaultCommandsExtendedTest {
 
     @Test
     fun unlinkFailsWhenNoLinksExist() {
-        val chat = object : Chat(UniversalProtocol, "C") { override fun toKey() = "TestChat(C)" }
+        val chat = object : Chat<UniversalProtocol>(UniversalProtocol, "C") { override fun toKey() = "TestChat(C)" }
         bot.chatMap[42] = chat
         assertEquals("There are no chats linked to this one!", unlink(listOf("42"), testChat))
     }
 
     @Test
     fun unlinkFailsWhenChatIsNotLinked() {
-        val chatInMap = object : Chat(UniversalProtocol, "InMap") { override fun toKey() = "TestChat(InMap)" }
-        val chatLinked = object : Chat(UniversalProtocol, "Linked") { override fun toKey() = "TestChat(Linked)" }
+        val chatInMap = object : Chat<UniversalProtocol>(UniversalProtocol, "InMap") { override fun toKey() = "TestChat(InMap)" }
+        val chatLinked = object : Chat<UniversalProtocol>(UniversalProtocol, "Linked") { override fun toKey() = "TestChat(Linked)" }
         bot.chatMap[42] = chatInMap
         bot.chatMap[43] = chatLinked
         settings.linkedChats[testChat] = mutableSetOf(chatLinked) // only chatLinked is linked
@@ -249,7 +249,7 @@ class DefaultCommandsExtendedTest {
 
     @Test
     fun unlinkRemovesEntry() {
-        val chat = object : Chat(UniversalProtocol, "C") { override fun toKey() = "TestChat(C)" }
+        val chat = object : Chat<UniversalProtocol>(UniversalProtocol, "C") { override fun toKey() = "TestChat(C)" }
         bot.chatMap[42] = chat
         settings.linkedChats[testChat] = mutableSetOf(chat)
         val result = unlink(listOf("42"), testChat)
@@ -260,8 +260,8 @@ class DefaultCommandsExtendedTest {
 
     @Test
     fun unlinkLeavesOtherLinksIntact() {
-        val chat1 = object : Chat(UniversalProtocol, "C1") { override fun toKey() = "TestChat(C1)" }
-        val chat2 = object : Chat(UniversalProtocol, "C2") { override fun toKey() = "TestChat(C2)" }
+        val chat1 = object : Chat<UniversalProtocol>(UniversalProtocol, "C1") { override fun toKey() = "TestChat(C1)" }
+        val chat2 = object : Chat<UniversalProtocol>(UniversalProtocol, "C2") { override fun toKey() = "TestChat(C2)" }
         bot.chatMap[1] = chat1
         bot.chatMap[2] = chat2
         settings.linkedChats[testChat] = mutableSetOf(chat1, chat2)
@@ -278,7 +278,7 @@ class DefaultCommandsExtendedTest {
 
     @Test
     fun linksListsLinkedChatsWithIds() {
-        val chat = object : Chat(UniversalProtocol, "Other") { override fun toKey() = "TestChat(Other)" }
+        val chat = object : Chat<UniversalProtocol>(UniversalProtocol, "Other") { override fun toKey() = "TestChat(Other)" }
         bot.chatMap[42] = chat
         bot.reverseChatMap[chat] = 42
         settings.linkedChats[testChat] = mutableSetOf(chat)

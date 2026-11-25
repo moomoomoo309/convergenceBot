@@ -1,11 +1,14 @@
 
 import convergence.Protocol
+import convergence.UniversalChat
 import convergence.UniversalProtocol
+import convergence.UniversalUser
 import convergence.bot
 import convergence.command.Alias
 import convergence.command.Command
 import convergence.command.CommandFunction
 import convergence.command.PermissionFunction
+import convergence.command.permissionOf
 import convergence.commands.echo
 import convergence.commands.ping
 import convergence.model.Chat
@@ -15,13 +18,14 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 private fun makeCmd(
     name: String,
     permissions: PermissionFunction = { _, _, _, _ -> null },
-    protocol: Protocol = TestProtocol,
+    protocol: Protocol<*, *, *, *> = TestProtocol,
     function: CommandFunction
 ) = Command(protocol, name, listOf(), function, "help", "syntax", permissions)
 
@@ -30,7 +34,7 @@ class CommandTest {
     @Before
     fun setup() {
         resetGlobalState()
-        bot.aliasVars["%sender"] = { c, s -> c.protocol.getUserName(c, s) }
+        bot.aliasVars["%sender"] = { c, s -> c.protocol.getUserNameFor(c, s) }
         bot.aliasVars["%sendername"] = { _, _ -> "testuser" }
     }
 
@@ -55,6 +59,46 @@ class CommandTest {
         assertEquals("success", result?.toSimple()?.text)
     }
 
+    // ─── permissionOf: typed permission registration ────────────────────────
+
+    @Test
+    fun permissionOfAllowsWhenProtocolMatches() {
+        var checkRan = false
+        val perm = TestProtocol.permissionOf { _, _, _, _ -> checkRan = true; null }
+        val cmd = makeCmd("typed-allow", function = { _, _, _ -> SimpleOutgoingMessage("ok") }, permissions = perm)
+        val result = cmd.invoke(listOf(), testChat, testUser)
+        assertTrue(checkRan, "permission check should run when the chat's protocol matches")
+        assertEquals("ok", result?.toSimple()?.text)
+    }
+
+    @Test
+    fun permissionOfPropagatesDenialFromTypedCheck() {
+        val perm = TestProtocol.permissionOf { _, _, _, _ -> SimpleOutgoingMessage("Not allowed!") }
+        val cmd = makeCmd("typed-deny", function = { _, _, _ -> SimpleOutgoingMessage("ok") }, permissions = perm)
+        val result = cmd.invoke(listOf(), testChat, testUser)
+        assertEquals("Not allowed!", result?.toSimple()?.text)
+    }
+
+    @Test
+    fun permissionOfDeniesForeignProtocolWithoutRunningCheck() {
+        var checkRan = false
+        val perm = TestProtocol.permissionOf { _, _, _, _ -> checkRan = true; null }
+        val cmd = makeCmd("typed-guard", function = { _, _, _ -> SimpleOutgoingMessage("body ran") }, permissions = perm)
+        val result = cmd.invoke(listOf(), UniversalChat, UniversalUser)
+        assertFalse(checkRan, "permission check must not run when the chat's protocol cannot be verified")
+        assertEquals("This command can't be run here.", result?.toSimple()?.text)
+    }
+
+    @Test
+    fun permissionOfDeniesWhenOnlySenderIsForeign() {
+        var checkRan = false
+        val perm = TestProtocol.permissionOf { _, _, _, _ -> checkRan = true; null }
+        val cmd = makeCmd("typed-guard-sender", function = { _, _, _ -> SimpleOutgoingMessage("body ran") }, permissions = perm)
+        val result = cmd.invoke(listOf(), testChat, UniversalUser)
+        assertFalse(checkRan, "permission check must not run when the sender's protocol cannot be verified")
+        assertEquals("This command can't be run here.", result?.toSimple()?.text)
+    }
+
     @Test
     fun invokePassesArgsToFunction() {
         var receivedArgs: List<String> = emptyList()
@@ -68,7 +112,7 @@ class CommandTest {
 
     @Test
     fun invokePassesChatToFunction() {
-        var receivedChat: Chat? = null
+        var receivedChat: Chat<*>? = null
         val cmd = makeCmd("test") { _, chat, _ ->
             receivedChat = chat
             SimpleOutgoingMessage("ok")
@@ -79,7 +123,7 @@ class CommandTest {
 
     @Test
     fun invokePassesSenderToFunction() {
-        var receivedSender: User? = null
+        var receivedSender: User<*>? = null
         val cmd = makeCmd("test") { _, _, sender ->
             receivedSender = sender
             SimpleOutgoingMessage("ok")
@@ -116,14 +160,14 @@ class CommandTest {
 
     @Test
     fun ofListChatFunctionCreatesWorkingCommand() {
-        val func: (List<String>, Chat) -> String? = { _, chat -> chat.name }
+        val func: (List<String>, Chat<*>) -> String? = { _, chat -> chat.name }
         val cmd = Command.of(TestProtocol, "name", listOf(), func, "help", "syntax")
         assertEquals("Test", cmd.invoke(listOf(), testChat, testUser)?.toSimple()?.text)
     }
 
     @Test
     fun ofListChatSenderFunctionCreatesWorkingCommand() {
-        val func: (List<String>, Chat, User) -> String? = { _, _, _ -> "sender-invoked" }
+        val func: (List<String>, Chat<*>, User<*>) -> String? = { _, _, _ -> "sender-invoked" }
         val cmd = Command.of(TestProtocol, "who", listOf(), func, "help", "syntax")
         val result = cmd.invoke(listOf(), testChat, testUser)
         assertEquals("sender-invoked", result?.toSimple()?.text)

@@ -28,9 +28,9 @@ data class SyncedCalendar(val guildId: Long, val calURL: String) {
 }
 
 data class CalendarNotificationChannel(
-    val chat: Chat,
+    val chat: Chat<*>,
     val calURL: String,
-    val mentions: MutableMap<User, String>
+    val mentions: MutableMap<User<*>, String>
 ) {
     @get:JsonIgnore
     @delegate:JsonIgnore
@@ -51,14 +51,14 @@ data class ReactConfig(val destination: DiscordChat, val emojis: MutableMap<Stri
 data class Settings(
     var aliases: MutableMap<CommandScope, MutableMap<String, Alias>> = mutableMapOf(),
     var commandDelimiters: MutableMap<CommandScope, String> = mutableMapOf(),
-    var linkedChats: MutableMap<Chat, MutableSet<Chat>> = mutableMapOf(),
+    var linkedChats: MutableMap<Chat<*>, MutableSet<Chat<*>>> = mutableMapOf(),
     var serializedCommands: MutableMap<Int, ScheduledCommand> = mutableMapOf(),
     var syncedCalendars: MutableList<SyncedCalendar> = mutableListOf(),
     var notificationChannels: MutableList<CalendarNotificationChannel> = mutableListOf(),
     var timers: MutableMap<String, OffsetDateTime> = mutableMapOf(),
-    var imageUploadChannels: MutableMap<Chat, URI> = mutableMapOf(),
-    var reactServers: MutableMap<Server, MutableList<ReactConfig>> = mutableMapOf(),
-    var mentionChats: MutableMap<Chat, MutableMap<User, MutableMap<User, Int>>> = mutableMapOf(),
+    var imageUploadChannels: MutableMap<Chat<*>, URI> = mutableMapOf(),
+    var reactServers: MutableMap<Server<*>, MutableList<ReactConfig>> = mutableMapOf(),
+    var mentionChats: MutableMap<Chat<*>, MutableMap<User<*>, MutableMap<User<*>, Int>>> = mutableMapOf(),
     var debugMode: Boolean = false
 )
 

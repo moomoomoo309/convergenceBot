@@ -28,7 +28,7 @@ fun chats(): String {
     return builder.toString()
 }
 
-fun link(args: List<String>, chat: Chat): String {
+fun link(args: List<String>, chat: Chat<*>): String {
     val index = args[0].toIntOrNull() ?: return "${args[0]} is not a chat ID!"
 
     val chatToLink = bot.chatMap[index]
@@ -40,7 +40,7 @@ fun link(args: List<String>, chat: Chat): String {
         "No chat with ID $index found."
 }
 
-fun unlink(args: List<String>, chat: Chat): String {
+fun unlink(args: List<String>, chat: Chat<*>): String {
     val index = args[0].toIntOrNull() ?: return "${args[0]} is not a chat ID!"
     val toUnlink = bot.chatMap[index] ?: return "No chat with ID $index found."
 
@@ -57,9 +57,9 @@ fun unlink(args: List<String>, chat: Chat): String {
     }
 }
 
-fun links(chat: Chat): String {
+fun links(chat: Chat<*>): String {
     return if (chat in settings.linkedChats)
-        "Linked chats: ${settings.linkedChats[chat]!!.joinToString(", ") { c: Chat -> "$c (${bot.reverseChatMap[c]})" }}"
+        "Linked chats: ${settings.linkedChats[chat]!!.joinToString(", ") { c: Chat<*> -> "$c (${bot.reverseChatMap[c]})" }}"
     else
         "No chats are linked to this one."
 }

@@ -3,64 +3,62 @@ package convergence.console
 import convergence.Protocol
 import convergence.command.Alias
 import convergence.model.Chat
-import convergence.model.OutgoingMessage
 import convergence.model.SimpleIncomingMessage
+import convergence.model.SimpleOutgoingMessage
 import convergence.model.User
 import convergence.substringBetween
 import java.util.*
 import kotlin.system.exitProcess
 
-class ConsoleUser(val name: String): User(ConsoleProtocol) {
+class ConsoleUser(val name: String): User<ConsoleProtocol>(ConsoleProtocol) {
     override fun toKey() = "ConsoleUser($name)"
+    override fun displayName() = name
 }
-object ConsoleChat: Chat(ConsoleProtocol, "Console") {
+object ConsoleChat: Chat<ConsoleProtocol>(ConsoleProtocol, "Console") {
     override fun toKey() = "ConsoleChat(Console)"
 }
 
 val user = ConsoleUser("user")
 val bot = ConsoleUser("bot")
 
-object ConsoleProtocol: Protocol("Console") {
-    override fun sendMessage(chat: Chat, message: OutgoingMessage): Boolean {
-        if (chat is ConsoleChat) {
-            println(message.toSimple().text)
-            return true
-        }
-        throw InputMismatchException("Invalid chat or user passed. Can only be ConsoleChat and ConsoleUser.")
+object ConsoleProtocol: Protocol<ConsoleChat, ConsoleUser, SimpleIncomingMessage, SimpleOutgoingMessage>("Console") {
+    override fun sendMessage(chat: ConsoleChat, message: SimpleOutgoingMessage): Boolean {
+        println(message.toSimple().text)
+        return true
     }
 
-    override fun userFromKey(key: String): User? {
+    override fun userFromKey(key: String): ConsoleUser? {
         if (key.startsWith("ConsoleUser"))
             return ConsoleUser(key.substringBetween("ConsoleUser(", ")"))
         return null
     }
 
     override fun commandScopeFromKey(key: String) = if (key == "ConsoleChat(Console)") ConsoleChat else null
-    override fun getBot(chat: Chat): User {
+    override fun getBot(chat: ConsoleChat): ConsoleUser {
         return bot
     }
 
-    override fun getUserName(chat: Chat, user: User): String {
-        if (user is ConsoleUser && chat is ConsoleChat)
-            return user.name
-        throw InputMismatchException("Invalid chat or user passed. Can only be ConsoleChat and ConsoleUser.")
+    override fun getUserName(chat: ConsoleChat, user: ConsoleUser): String {
+        return user.name
     }
 
-    override fun getChats(): List<Chat> {
+    override fun getChats(): List<ConsoleChat> {
         return listOf(ConsoleChat)
     }
 
-    override fun getUsers(): List<User> {
+    override fun getUsers(): List<ConsoleUser> {
         return listOf(user)
     }
 
-    override fun getUsers(chat: Chat): List<User> {
+    override fun getUsers(chat: ConsoleChat): List<ConsoleUser> {
         return listOf(user)
     }
 
-    override fun getChatName(chat: Chat): String {
+    override fun getChatName(chat: ConsoleChat): String {
         return "Console"
     }
+
+    override fun outgoingFromSimple(text: String) = SimpleOutgoingMessage(text)
 
     override fun init() {
         if (System.console() != null) {

@@ -14,7 +14,7 @@ import kotlin.system.exitProcess
 /**
  * Sets the Command delimiter used for the bot's commands. (is it !help, |help, @help, or something else?)
  */
-fun setCommandDelimiter(chat: Chat, commandDelimiter: String): Boolean {
+fun setCommandDelimiter(chat: Chat<*>, commandDelimiter: String): Boolean {
     if (commandDelimiter.any { it.isWhitespace() || it == '"' })
         return false
     settings.commandDelimiters[chat] = commandDelimiter
@@ -22,7 +22,7 @@ fun setCommandDelimiter(chat: Chat, commandDelimiter: String): Boolean {
     return true
 }
 
-fun setDelimiter(args: List<String>, chat: Chat): String = when {
+fun setDelimiter(args: List<String>, chat: Chat<*>): String = when {
     args.isEmpty() -> "You need to pass the new delimiter!"
     setCommandDelimiter(chat, args[0]) -> "Command delimiter set to \"${args[0]}\".".also { updateSettings() }
     else -> "\"${args[0]}\" is not a valid command delimiter!"

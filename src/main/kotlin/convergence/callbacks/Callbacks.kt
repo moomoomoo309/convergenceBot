@@ -1,122 +1,85 @@
-@file:Suppress("UNCHECKED_CAST")
 package convergence.callbacks
 
-import convergence.command.processMessage
 import convergence.model.*
-import kotlin.reflect.KClass
-
-val callbacks = mutableMapOf<KClass<out ChatEvent>, MutableList<ChatEvent>>(
-    ReceivedImages::class to mutableListOf(
-        ReceivedImages { chat: Chat, sender: User, message: IncomingMessage?, images: Array<out Image> ->
-            processMessage(chat, sender, message ?: return@ReceivedImages false, images)
-            true
-        }
-    )
-)
-
-fun registerCallback(event: ChatEvent) {
-    callbacks.putIfAbsent(event::class, ArrayList())
-    callbacks[event::class]?.add(event)
-        ?: throw IllegalArgumentException(
-            "Tried to register callback for unregistered class ${event::class.simpleName}."
-        )
-}
-
-fun runCallbacks(eventClass: KClass<out ChatEvent>, vararg args: Any) =
-    callbacks[eventClass]?.filter { callback ->
-        callback(*args)
-    }
-
-inline fun <reified T: ChatEvent> runCallbacks(vararg args: Any) = runCallbacks(T::class, *args)
 
 /**
- * A callback attached to a specific type of event.
+ * A typed event carrying its own handler list. Handlers return [Boolean]
+ * for compatibility with the old callback API; [fire] ignores the result.
  */
-interface ChatEvent {
-    operator fun invoke(vararg args: Any): Boolean
+class ChangedNicknameEvent<C : Chat<*>, U : User<*>> {
+    private val handlers = mutableListOf<(C, U, String) -> Boolean>()
+    fun register(handler: (C, U, String) -> Boolean) { handlers.add(handler) }
+    fun fire(chat: C, user: U, oldName: String) { handlers.forEach { it(chat, user, oldName) } }
+    val handlerCount: Int get() = handlers.size
 }
 
-class ChangedNickname(val fct: (chat: Chat, user: User, oldName: String) -> Boolean): ChatEvent {
-    override fun invoke(vararg args: Any) = args.let { (chat, user, oldName) ->
-        fct(chat as Chat, user as User, oldName as String)
+class ReceivedImagesEvent<C : Chat<*>, U : User<*>> {
+    private val handlers = mutableListOf<(C, U, IncomingMessage<*>, Array<out Image>) -> Boolean>()
+    fun register(handler: (C, U, IncomingMessage<*>, Array<out Image>) -> Boolean) { handlers.add(handler) }
+    fun fire(chat: C, sender: U, message: IncomingMessage<*>, images: Array<out Image>) {
+        handlers.forEach { it(chat, sender, message, images) }
     }
-    fun invoke(chat: Chat, user: User, oldName: String) = fct(chat, user, oldName)
+    val handlerCount: Int get() = handlers.size
 }
 
-class ReceivedImages(val fct: (Chat, User, IncomingMessage?, Array<out Image>) -> Boolean):
-    ChatEvent {
-    override fun invoke(vararg args: Any) = args.let { (chat, sender, message, images) ->
-        fct(chat as Chat, sender as User, message as? IncomingMessage?, images as Array<out Image>)
+class EditMessageEvent<U : User<*>> {
+    private val handlers = mutableListOf<(oldMessage: String, sender: U, newMessage: String) -> Boolean>()
+    fun register(handler: (oldMessage: String, sender: U, newMessage: String) -> Boolean) { handlers.add(handler) }
+    fun fire(oldMessage: String, sender: U, newMessage: String) {
+        handlers.forEach { it(oldMessage, sender, newMessage) }
     }
-    fun invoke(chat: Chat, sender: User, message: IncomingMessage?, images: Array<out Image>): Boolean =
-        fct(chat, sender, message ?: SimpleIncomingMessage(""), images)
+    val handlerCount: Int get() = handlers.size
 }
 
-class EditMessage(val fct: (oldMessage: String, sender: User, newMessage: String) -> Boolean): ChatEvent {
-    override fun invoke(vararg args: Any) = args.let { (oldMessage, sender, newMessage) ->
-        fct(oldMessage as String, sender as User, newMessage as String)
+class MentionedUserEvent<C : Chat<*>, U : User<*>, IM : IncomingMessage<*>> {
+    private val handlers = mutableListOf<(C, U, IM, List<User<*>>) -> Boolean>()
+    fun register(handler: (C, U, IM, List<User<*>>) -> Boolean) { handlers.add(handler) }
+    fun fire(chat: C, sender: U, message: IM, users: List<User<*>>) {
+        handlers.forEach { it(chat, sender, message, users) }
     }
-    fun invoke(oldMessage: String, sender: User, newMessage: String): Boolean = fct(oldMessage, sender, newMessage)
+    val handlerCount: Int get() = handlers.size
 }
 
-class MentionedUser(val fct: (Chat, sender: User, message: IncomingMessage, users: List<User>) -> Boolean): ChatEvent {
-    override fun invoke(vararg args: Any) = args.let { (chat, sender, message, users) ->
-        fct(chat as Chat, sender as User, message as IncomingMessage, users as List<User>)
+class StartedTypingEvent<C : Chat<*>, U : User<*>> {
+    private val handlers = mutableListOf<(C, U) -> Boolean>()
+    fun register(handler: (C, U) -> Boolean) { handlers.add(handler) }
+    fun fire(chat: C, user: U) { handlers.forEach { it(chat, user) } }
+    val handlerCount: Int get() = handlers.size
+}
+
+class StoppedTypingEvent<C : Chat<*>, U : User<*>> {
+    private val handlers = mutableListOf<(C, U) -> Boolean>()
+    fun register(handler: (C, U) -> Boolean) { handlers.add(handler) }
+    fun fire(chat: C, user: U) { handlers.forEach { it(chat, user) } }
+    val handlerCount: Int get() = handlers.size
+}
+
+class ReceivedStickerEvent<C : Chat<*>, U : User<*>> {
+    private val handlers = mutableListOf<(C, U, Sticker) -> Boolean>()
+    fun register(handler: (C, U, Sticker) -> Boolean) { handlers.add(handler) }
+    fun fire(chat: C, sender: U, sticker: Sticker) { handlers.forEach { it(chat, sender, sticker) } }
+    val handlerCount: Int get() = handlers.size
+}
+
+class ChangedAvailabilityEvent<C : Chat<*>, U : User<*>> {
+    private val handlers = mutableListOf<(C, U, Availability) -> Boolean>()
+    fun register(handler: (C, U, Availability) -> Boolean) { handlers.add(handler) }
+    fun fire(chat: C, user: U, availability: Availability) { handlers.forEach { it(chat, user, availability) } }
+    val handlerCount: Int get() = handlers.size
+}
+
+class ReadByUserEvent<C : Chat<*>, U : User<*>> {
+    private val handlers = mutableListOf<(C, U, MessageHistory<*>) -> Boolean>()
+    fun register(handler: (C, U, MessageHistory<*>) -> Boolean) { handlers.add(handler) }
+    fun fire(chat: C, user: U, message: MessageHistory<*>) { handlers.forEach { it(chat, user, message) } }
+    val handlerCount: Int get() = handlers.size
+}
+
+class ReactionChangedEvent<C : Chat<*>, U : User<*>, IM : IncomingMessage<*>> {
+    private val handlers = mutableListOf<(U, C, IM, Emoji, Int, Int) -> Boolean>()
+    fun register(handler: (U, C, IM, Emoji, Int, Int) -> Boolean) { handlers.add(handler) }
+    fun fire(sender: U, chat: C, message: IM, emoji: Emoji, oldAmount: Int, newAmount: Int) {
+        handlers.forEach { it(sender, chat, message, emoji, oldAmount, newAmount) }
     }
-    fun invoke(chat: Chat, sender: User, message: IncomingMessage, users: List<User>) =
-        fct(chat, sender, message, users)
-}
-
-class StartedTyping(val fct: (Chat, User) -> Boolean): ChatEvent {
-    override fun invoke(vararg args: Any) = args.let { (chat, user) ->
-        fct(chat as Chat, user as User)
-    }
-    fun invoke(chat: Chat, user: User): Boolean = fct(chat, user)
-}
-
-class StoppedTyping(val fct: (Chat, User) -> Boolean): ChatEvent {
-    override fun invoke(vararg args: Any) = args.let { (chat, user) ->
-        fct(chat as Chat, user as User)
-    }
-    fun invoke(chat: Chat, user: User): Boolean = fct(chat, user)
-}
-
-class ReceivedSticker(val fct: (Chat, Sticker, User) -> Boolean): ChatEvent {
-    override fun invoke(vararg args: Any) = args.let { (chat, sticker, user) ->
-        fct(chat as Chat, sticker as Sticker, user as User)
-    }
-    fun invoke(chat: Chat, sticker: Sticker, user: User): Boolean = fct(chat, sticker, user)
-}
-
-class ChangedAvailability(val fct: (Chat, User, Availability) -> Boolean): ChatEvent {
-    override fun invoke(vararg args: Any) = args.let { (chat, user, availability) ->
-        fct(chat as Chat, user as User, availability as Availability)
-    }
-    fun invoke(chat: Chat, user: User, availability: Availability): Boolean = fct(chat, user, availability)
-}
-
-class ReadByUser(val fct: (chat: Chat, user: User, message: MessageHistory) -> Boolean): ChatEvent {
-    override fun invoke(vararg args: Any) = args.let { (chat, user, message) ->
-        fct(chat as Chat, user as User, message as MessageHistory)
-    }
-    fun invoke(chat: Chat, user: User, message: MessageHistory): Boolean = fct(chat, user, message)
-}
-
-class ReactionChanged(val fct: (User, Chat, IncomingMessage, Emoji, oldAmt: Int, newAmt: Int) -> Boolean): ChatEvent {
-    override fun invoke(vararg args: Any) = fct(
-        args[0] as User,
-        args[1] as Chat,
-        args[2] as IncomingMessage,
-        args[3] as Emoji,
-        args[4] as Int,
-        args[5] as Int
-    )
-    fun invoke(
-        sender: User,
-        chat: Chat,
-        message: IncomingMessage,
-        emoji: Emoji,
-        oldAmount: Int,
-        newAmount: Int
-    ): Boolean = fct(sender, chat, message, emoji, oldAmount, newAmount)
+    val handlerCount: Int get() = handlers.size
 }

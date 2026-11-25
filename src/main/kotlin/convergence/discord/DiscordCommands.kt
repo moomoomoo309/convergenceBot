@@ -14,7 +14,7 @@ import java.net.URISyntaxException
 
 val discordEmojiRegex = Regex("^<a?:[a-zA-Z0-9_-]{1,100}:[0-9]{1,20}>$")
 
-private fun registerReactChannel(args: List<String>, chat: Chat): String {
+private fun registerReactChannel(args: List<String>, chat: Chat<*>): String {
     if (chat !is DiscordChat)
         return "This command can only be run on discord."
     if (args.size != 2)
@@ -43,7 +43,7 @@ private fun registerReactChannel(args: List<String>, chat: Chat): String {
             "if they are reacted with $emoji $threshold times or more."
 }
 
-private fun uploadImagesTo(args: List<String>, chat: Chat): String {
+private fun uploadImagesTo(args: List<String>, chat: Chat<*>): String {
     if (args.isEmpty())
         return "A URL has to be provided."
     val url = try {
@@ -72,7 +72,7 @@ fun registerDiscordCommands() {
             DiscordProtocol,
             "stopUploadingImages",
             listOf(),
-            { _, chat: Chat ->
+            { _, chat: Chat<*> ->
                 settings.imageUploadChannels.remove(chat)
                 updateSettings()
                 "Images will no longer be uploaded."

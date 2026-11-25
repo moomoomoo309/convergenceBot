@@ -10,7 +10,7 @@ import convergence.protocol.HasServer
 import convergence.settings
 import convergence.updateSettings
 
-fun addAlias(args: List<String>, chat: Chat, scope: CommandScope): String {
+fun addAlias(args: List<String>, chat: Chat<*>, scope: CommandScope): String {
     val commandDelimiter = settings.commandDelimiters.getOrDefault(chat, DEFAULT_COMMAND_DELIMITER)
     val commandName = if (args[1].startsWith(commandDelimiter)) args[1].substringAfter(commandDelimiter) else args[1]
     val commandStr = "$commandDelimiter$commandName ${args.subList(2, args.size).joinToString(" ")}"
@@ -22,15 +22,15 @@ fun addAlias(args: List<String>, chat: Chat, scope: CommandScope): String {
     return "Alias \"${args[0]}\" registered to \"$commandStr\"."
 }
 
-fun addChatAlias(args: List<String>, chat: Chat) = addAlias(args, chat, chat)
+fun addChatAlias(args: List<String>, chat: Chat<*>) = addAlias(args, chat, chat)
 
-fun addServerAlias(args: List<String>, chat: Chat) =
+fun addServerAlias(args: List<String>, chat: Chat<*>) =
     if (chat !is HasServer<*>)
         "This protocol doesn't support servers!"
     else
         addAlias(args, chat, chat.server)
 
-fun removeServerAlias(args: List<String>, chat: Chat): String {
+fun removeServerAlias(args: List<String>, chat: Chat<*>): String {
     if (chat !is HasServer<*>)
         return "This protocol doesn't support servers!"
     if (args.size != 1) {
@@ -45,7 +45,7 @@ fun removeServerAlias(args: List<String>, chat: Chat): String {
     return "No server alias with name \"${args[0]}\" found."
 }
 
-fun removeAlias(args: List<String>, chat: Chat): String {
+fun removeAlias(args: List<String>, chat: Chat<*>): String {
     if (args.size != 1) {
         return "Only one argument should be passed."
     }

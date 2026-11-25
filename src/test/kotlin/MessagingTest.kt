@@ -15,10 +15,10 @@ class MessagingTest {
     @Before
     fun setup() {
         resetGlobalState()
-        bot.aliasVars["%sender"] = { c, s -> c.protocol.getUserName(c, s) }
+        bot.aliasVars["%sender"] = { c, s -> c.protocol.getUserNameFor(c, s) }
         bot.aliasVars["%sendername"] = { _, _ -> "testuser" }
-        bot.aliasVars["%botname"] = { c, _ -> c.protocol.getUserName(c, c.protocol.getBot(c)) }
-        bot.aliasVars["%chatname"] = { c, _ -> c.protocol.getChatName(c) }
+        bot.aliasVars["%botname"] = { c, _ -> c.protocol.getUserNameFor(c, c.protocol.getBotOf(c)) }
+        bot.aliasVars["%chatname"] = { c, _ -> c.protocol.getChatNameOf(c) }
     }
 
     @After

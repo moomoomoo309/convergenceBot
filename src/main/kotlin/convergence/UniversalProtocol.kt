@@ -2,28 +2,31 @@ package convergence
 
 import convergence.command.Alias
 import convergence.model.Chat
-import convergence.model.OutgoingMessage
+import convergence.model.SimpleIncomingMessage
+import convergence.model.SimpleOutgoingMessage
 import convergence.model.User
 
-object UniversalUser: User(UniversalProtocol) {
+object UniversalUser: User<UniversalProtocol>(UniversalProtocol) {
     override fun toKey() = "UniversalUser()"
+    override fun displayName() = "Universal User"
 }
 
-object UniversalProtocol: Protocol("Universal") {
-    override fun sendMessage(chat: Chat, message: OutgoingMessage): Boolean = false
-    override fun getBot(chat: Chat): User = UniversalUser
-    override fun getUserName(chat: Chat, user: User): String = ""
-    override fun getChats(): List<Chat> = listOf(UniversalChat)
-    override fun getUsers(): List<User> = listOf(UniversalUser)
-    override fun getUsers(chat: Chat): List<User> = listOf(UniversalUser)
-    override fun getChatName(chat: Chat): String = ""
-    override fun commandScopeFromKey(key: String): Chat? {
+object UniversalProtocol: Protocol<UniversalChat, UniversalUser, SimpleIncomingMessage, SimpleOutgoingMessage>("Universal") {
+    override fun sendMessage(chat: UniversalChat, message: SimpleOutgoingMessage): Boolean = false
+    override fun getBot(chat: UniversalChat): UniversalUser = UniversalUser
+    override fun getUserName(chat: UniversalChat, user: UniversalUser): String = ""
+    override fun getChats(): List<UniversalChat> = listOf(UniversalChat)
+    override fun getUsers(): List<UniversalUser> = listOf(UniversalUser)
+    override fun getUsers(chat: UniversalChat): List<UniversalUser> = listOf(UniversalUser)
+    override fun getChatName(chat: UniversalChat): String = ""
+    override fun outgoingFromSimple(text: String) = SimpleOutgoingMessage(text)
+    override fun commandScopeFromKey(key: String): Chat<*>? {
         if (key == "UniversalChat")
             return UniversalChat
         return null
     }
 
-    override fun userFromKey(key: String): User? {
+    override fun userFromKey(key: String): UniversalUser? {
         if (key == "UniversalUser")
             return UniversalUser
         return null
@@ -43,6 +46,6 @@ object UniversalProtocol: Protocol("Universal") {
 }
 
 // Used to represent the universal chat.
-object UniversalChat: Chat(UniversalProtocol, "Universal") {
+object UniversalChat: Chat<UniversalProtocol>(UniversalProtocol, "Universal") {
     override fun toKey() = "UniversalChat"
 }

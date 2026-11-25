@@ -113,10 +113,10 @@ object CalendarNotificationProcessor {
     private fun scheduleNotification(
         eventSummary: String,
         eventStart: Instant,
-        chat: Chat,
+        chat: Chat<*>,
         notifyAt: Instant,
         description: String,
-        mentionUsers: List<User>
+        mentionUsers: List<User<*>>
     ) {
         val notifyAtOffset = notifyAt.toOffsetDateTime()
         val eventStartOffset = eventStart.toOffsetDateTime()
@@ -137,12 +137,12 @@ object CalendarNotificationProcessor {
 }
 
 data class UpcomingNotification(
-    val chat: Chat,
+    val chat: Chat<*>,
     val eventSummary: String,
     override val scheduledTime: OffsetDateTime,
     val eventTime: OffsetDateTime,
     val description: String,
-    val mentionUsers: List<User>
+    val mentionUsers: List<User<*>>
 ): ScheduledTask(scheduledTime) {
     override operator fun invoke() {
         val timeUntil = formatTime(eventTime)
@@ -153,9 +153,9 @@ data class UpcomingNotification(
                     "\n$description"
                 } else ""
 
-        if (chat.protocol is CanMentionUsers) {
-            val protocol = (chat.protocol as CanMentionUsers)
-            protocol.mention(chat, mentionUsers, SimpleOutgoingMessage(message))
+        if (chat.protocol is CanMentionUsers<*, *, *>) {
+            (chat.protocol as CanMentionUsers<*, *, *>)
+                .mentionTo(chat, mentionUsers, SimpleOutgoingMessage(message))
         } else
             sendMessage(chat, message)
     }
