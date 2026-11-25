@@ -15,7 +15,6 @@ import convergence.model.User
 import java.net.URI
 import java.nio.file.Path
 import java.time.OffsetDateTime
-import java.util.*
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
@@ -52,23 +51,21 @@ data class ReactConfig(val destination: DiscordChat, val emojis: MutableMap<Stri
 data class Settings(
     var aliases: MutableMap<CommandScope, MutableMap<String, Alias>> = mutableMapOf(),
     var commandDelimiters: MutableMap<CommandScope, String> = mutableMapOf(),
-    var linkedChats: SortedMap<Chat, MutableSet<Chat>> = sortedMapOf(),
+    var linkedChats: MutableMap<Chat, MutableSet<Chat>> = mutableMapOf(),
     var serializedCommands: MutableMap<Int, ScheduledCommand> = mutableMapOf(),
     var syncedCalendars: MutableList<SyncedCalendar> = mutableListOf(),
     var notificationChannels: MutableList<CalendarNotificationChannel> = mutableListOf(),
     var timers: MutableMap<String, OffsetDateTime> = mutableMapOf(),
-    var imageUploadChannels: SortedMap<Chat, URI> = sortedMapOf(),
-    var reactServers: SortedMap<Server, MutableList<ReactConfig>> = sortedMapOf(),
-    var mentionChats: SortedMap<Chat, MutableMap<User, MutableMap<User, Int>>> = sortedMapOf(),
+    var imageUploadChannels: MutableMap<Chat, URI> = mutableMapOf(),
+    var reactServers: MutableMap<Server, MutableList<ReactConfig>> = mutableMapOf(),
+    var mentionChats: MutableMap<Chat, MutableMap<User, MutableMap<User, Int>>> = mutableMapOf(),
     var debugMode: Boolean = false
 )
 
 val settings = Settings()
 
-@JsonIgnore
 private val updateIsScheduled = AtomicBoolean(false)
 
-@JsonIgnore
 private val updateExecutor = Executors.newSingleThreadScheduledExecutor { runnable ->
     Thread(runnable, "settings-writer").apply { isDaemon = true }
 }

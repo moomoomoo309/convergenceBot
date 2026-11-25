@@ -10,4 +10,7 @@ abstract class Chat(override val protocol: Protocol, val name: String): Comparab
     override fun toString(): String {
         return "${this::class.java.simpleName}($name)"
     }
+
+    override fun equals(other: Any?) = other is Chat && toKey() == other.toKey()
+    override fun hashCode() = toKey().hashCode()
 }

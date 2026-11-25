@@ -105,7 +105,7 @@ class DiscordChat(name: String, override val id: Long, @JsonIgnore val channel: 
     override fun toKey() = "DiscordChat($id)"
 
     override fun toString(): String =
-        "${protocol.name}(${(channel as? GuildChannel)?.guild?.name ?: ""}#${channel.name})"
+        "DiscordChat(${(channel as? GuildChannel)?.guild?.name ?: ""}#${channel.name})"
 }
 
 class DiscordMessageHistory(val msg: Message, override val id: Long):
